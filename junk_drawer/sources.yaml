@@ -1,0 +1,339 @@
+# =============================================================================
+# The Utility Room -- one file describing every data source feeding the lake.
+# =============================================================================
+# Purpose: each source can be inspected, disabled, rate-limited, or swapped
+# for a replacement without touching any other source or any ingest script's
+# internals. This file is the single place to look before deciding "is this
+# source healthy" or "what do I change to fix/replace it."
+#
+# Fields:
+#   id            -- stable short name, matches what scripts/sources.py prints
+#   status        -- active | disabled | deprecated | broken
+#   league        -- which ramp this belongs to (nfl for now)
+#   kind          -- api | web_embed | csv_release
+#   base_url      -- root endpoint/page, for a quick manual health check
+#   auth          -- none | cookie_file | api_key ; if api_key, the ENV VAR NAME
+#                    only -- never a value, per project security rules
+#   ingest_script -- which script pulls this source
+#   feeds_tables  -- which silver/gold tables this source populates
+#   cadence       -- how often it should realistically be re-pulled
+#   risk          -- confirmed risk notes (ToS, stability, access-control caveats)
+#   replacement_candidates -- alternates already vetted or worth checking if
+#                    this source breaks/changes/disappears
+#   last_verified -- date this source was last confirmed live with real data
+
+sources:
+- id: nflverse_stats
+  status: active
+  league: nfl
+  kind: csv_release
+  base_url: https://github.com/nflverse/nflverse-data/releases
+  auth: none
+  ingest_script: scripts/ingest_nfl_2026.py
+  feeds_tables:
+  - silver.nfl_player_passing_week
+  - silver.nfl_player_rushing_week
+  - silver.nfl_player_receiving_week
+  - silver.nfl_player_scrimmage_week
+  - silver.nfl_player_defense_week
+  - silver.nfl_player_scoring_week
+  - silver.nfl_player_kicking_week
+  - silver.nfl_player_returns_week
+  - silver.nfl_pfr_adv_passing_week
+  - silver.nfl_pfr_adv_rushing_week
+  - silver.nfl_pfr_adv_receiving_week
+  - silver.nfl_pfr_adv_defense_week
+  - silver.nfl_team_week
+  - silver.nfl_player
+  - silver.nfl_game
+  cadence: nightly during season (nflverse's own update schedule)
+  risk: 'Open-data community project (GitHub Actions automation, not a paid SLA). Reliable
+    historically but no support contract. Also mirrors PFR''s own advanced stats directly
+    -- this is why PFR itself is never scraped.
+
+    '
+  replacement_candidates:
+  - ESPN team/player season stats (site.web.api.espn.com) -- thinner columns, would need rebuilding
+    the schema mapping
+  last_verified: '2026-09-24'
+- id: nflverse_pbp
+  status: active
+  league: nfl
+  kind: csv_release
+  base_url: https://github.com/nflverse/nflverse-data/releases/tag/pbp
+  auth: none
+  ingest_script: scripts/ingest_nfl_td_logs.py
+  feeds_tables:
+  - silver.nfl_td_log
+  - silver.nfl_target_event
+  cadence: nightly + game-day refreshes (nflverse's own schedule)
+  risk: 'Same open-data risk profile as nflverse_stats (same publisher). One file feeds two
+    ponds: ingest_nfl_td_logs.py builds the TD log, ingest_nfl_player_usage.py builds the target
+    event log from the SAME play_by_play_<season>.csv.gz. Both reuse the bronze copy with
+    --skip-download, so running both costs one download, not two.'
+  replacement_candidates: []
+  last_verified: '2026-09-25'
+- id: nflverse_pbp_defense
+  status: active
+  league: nfl
+  kind: csv_release
+  base_url: https://github.com/nflverse/nflverse-data/releases/tag/pbp
+  auth: none
+  ingest_script: scripts/ingest_nfl_defense.py
+  feeds_tables:
+  - silver.nfl_points_by_half
+  cadence: nightly + game-day refreshes, same file as nflverse_pbp
+  risk: 'Same open-data risk profile as nflverse_pbp -- literally the same file, re-read for a
+    different aggregate (points allowed by half, which nflverse does not publish as a team-week
+    column anywhere). Every other stat in the defense pond (sacks, INTs, turnovers, pressure,
+    coverage) was already loaded by nflverse_stats/nflverse_pbp; this is the one gap. Verified
+    2026-09-25: points-by-half totals cross-checked against silver.nfl_schedule final scores
+    and agreed for all 32 teams (test tolerance 6 pts, actual max diff 0).'
+  replacement_candidates: []
+  last_verified: '2026-09-25'
+- id: nflverse_depth_charts
+  status: active
+  league: nfl
+  kind: csv_release
+  base_url: https://github.com/nflverse/nflverse-data/releases/tag/depth_charts
+  auth: none
+  ingest_script: scripts/ingest_nfl_player_usage.py
+  feeds_tables:
+  - silver.nfl_depth_chart_snapshot
+  cadence: 'multiple times per week -- this is a point-in-time snapshot series, so cadence IS
+    the data. Missing a week does not leave a gap in a weekly table, it leaves you without a
+    pre-kickoff snapshot for that week''s games, which silently drops those games from
+    v_nfl_depth_chart_pregame. Re-pull before each slate.'
+  risk: 'CONFIRMED live 2026-09-25 with real 2026 data: 559,864 rows, 197 distinct snapshot
+    timestamps spanning 2026-03-22 to 2026-09-25, all 32 teams. Team codes match our schedule
+    exactly (uses ''LA'' for the Rams -- NOT the ''LAR'' mismatch that affects rotowire_props).
+    gsis_id populated on ~95% of offensive rows and joins cleanly to silver.nfl_player: 304 of
+    306 qualified players matched a depth rank. Underlying data is ESPN-sourced, so the usual
+    ESPN caveat applies one layer down -- and WR depth is listed up to 16 deep, where the tail
+    ranks (WR5+) are noisy and should not be read as a real hierarchy. dt is ISO-8601 with a
+    literal Z and MUST be cast to TIMESTAMPTZ; storing it naive reproduces the exact bug
+    already fixed on gold.nfl_prop_line_rotowire. File is 53MB uncompressed -- the largest
+    single pull in this ramp.'
+  replacement_candidates:
+  - Tank01 (RapidAPI) -- has depth charts per its docs; not built, needs a live key test
+  - ESPN depth chart endpoints directly (would remove the nflverse mirror layer but add the
+    unofficial-API risk already flagged for espn_news)
+  last_verified: '2026-09-25'
+- id: nflverse_injuries
+  status: active
+  league: nfl
+  kind: csv_release
+  base_url: https://github.com/nflverse/nflverse-data/releases/tag/injuries
+  auth: none
+  ingest_script: scripts/ingest_nflverse_injuries.py
+  feeds_tables:
+  - silver.nfl_injury_report
+  cadence: weekly (practice-report cycle, Wed/Thu/Fri during season)
+  risk: 'Same open-data risk profile. Also: this is the official practice/game report, NOT
+    the final inactives list (released ~90 min pre-kickoff -- not covered by any source in
+    this file yet). See docs/REPORT_ROOM.md.
+
+    '
+  replacement_candidates: []
+  last_verified: '2026-09-25'
+- id: rotowire_props
+  status: active
+  league: nfl
+  kind: web_embed
+  base_url: https://www.rotowire.com/betting/nfl/player-props.php
+  auth: none
+  ingest_script: scripts/ingest_rotowire_props.py
+  feeds_tables:
+  - gold.nfl_prop_line_rotowire
+  - gold.nfl_prop_market_catalog
+  - gold.nfl_prop_book_catalog
+  cadence: ONGOING, multiple times per week (promoted 2026-09-25 per user decision -- this
+    is our own free line-movement source; a hook reminds the agent to re-snapshot regularly).
+    No hard request cap.
+  risk: "robots.txt confirmed to allow /betting/. Data is RotoWire's own first-party embedded\
+    \ JSON (not the \"Props.Cash\" third-party demo widget also present on the page, which\
+    \ is explicitly NOT used). isPaywalled flag only gates their CSV *export* button, not\
+    \ the underlying data. Scoped to draftkings/fanduel/caesars per user request -- the source\
+    \ itself carries more books (betr, betrivers, fanatics, mgm, hardrock, thescore, circasports)\
+    \ if that scope needs widening later. bet365 was requested but does not appear on this\
+    \ source at all.\n Two real bugs found and fixed 2026-09-25: fetched_at_utc was stored\
+    \ as naive local time under a column named _utc (fixed to TIMESTAMPTZ); movement view\
+    \ was mixing pre-game and live in-game snapshots (fixed with an is_pregame flag computed\
+    \ against our own schedule table -- only pregame snapshots feed v_nfl_prop_line_movement)."
+  replacement_candidates:
+  - Tank01 (RapidAPI) -- documented, not built; needs the user's own live test call against
+    their key
+  - The Odds API (THE_ODDS_API_KEY already available) -- game lines confirmed available; player
+    props coverage not yet checked
+  last_verified: '2026-09-25'
+- id: espn_news
+  status: active
+  league: nfl
+  kind: api
+  base_url: https://site.web.api.espn.com/apis/site/v2/sports/football/nfl/news
+  auth: none
+  ingest_script: scripts/ingest_espn_news.py
+  feeds_tables:
+  - silver.nfl_injury_narrative
+  - silver.nfl_news_article
+  - silver.nfl_news_article_tag
+  - silver.nfl_transaction
+  cadence: daily, more often close to gameday if the news feed matters that much
+  risk: 'UNOFFICIAL, UNDOCUMENTED API. site.web.api.espn.com is used because the more commonly
+    cited host, site.api.espn.com, returns HTTP 403 in this environment. Neither host is sanctioned
+    by ESPN -- no ToS grant, no changelog, no support. Can change or vanish without notice.
+    This is the single highest-risk source in the ramp; check this file''s last_verified date
+    before trusting it blindly if time has passed.
+
+    '
+  replacement_candidates:
+  - Tank01 (RapidAPI) -- has an injury list endpoint per the v1 client code; not tested live
+  - Official team beat-writer RSS feeds (not investigated)
+  last_verified: '2026-09-25'
+- id: player_headshots
+  status: active
+  league: nfl
+  kind: csv_release
+  base_url: null
+  auth: none
+  ingest_script: scripts/cache_player_photos.py
+  feeds_tables:
+  - lake/gold/nfl/player_photos/*.png (files, not a DB table)
+  cadence: once per season (images don't change mid-season); re-run only if new players appear
+    whose headshot_url wasn't cached yet
+  risk: 'Depends entirely on nflverse_stats'' headshot_url field staying present and pointing
+    at a live Cloudinary asset. If nflverse drops that column, this source has no independent
+    fallback yet.
+
+    '
+  replacement_candidates:
+  - ESPN athlete headshot URLs (seen in /injuries payload's athlete.headshot field) -- not
+    extracted/tested yet, but present in data already pulled
+  last_verified: '2026-09-25'
+- id: nflverse_schedule
+  status: active
+  league: nfl
+  kind: csv_release
+  base_url: https://github.com/nflverse/nflverse-data/releases/tag/schedules
+  auth: none
+  ingest_script: scripts/ingest_nfl_schedule.py
+  feeds_tables:
+  - silver.nfl_schedule
+  cadence: nightly (kickoff times/odds can shift during the week; game results land here as
+    soon as nflverse records them)
+  risk: 'Same open-data risk profile as other nflverse feeds. Confirmed: gameday/gametime/roof/surface
+    populated for ALL games incl. future ones. spread_line/total_line/moneylines ARE populated
+    for upcoming games too (a second, independent odds source alongside RotoWire -- different
+    grain: team spread/total vs. player prop). temp/wind are ONLY populated for games already
+    played (recorded actual conditions, not a forecast). Also fixes a real gap: silver.nfl_game
+    (from nflverse_stats) had NULL home_team/away_team/ kickoff_utc -- kept as a separate
+    table rather than patching nfl_game, since other tables already join on nfl_game.game_id.'
+  replacement_candidates: []
+  last_verified: '2026-09-25'
+- id: rapidapi_player_props_pond
+  status: tested_mostly_redacted
+  league: nfl
+  kind: api
+  base_url: https://player-props.p.rapidapi.com
+  auth: api_key (env var name only -- NOT set yet; RapidAPI account-level key)
+  ingest_script: null
+  feeds_tables: []
+  cadence: TBD -- Basic tier is 1,000 requests/DAY (vs The Odds API free 500/MONTH)
+  risk: 'CONFIRMED via live test with a real key. Auth works. list_sports/list_events/current
+    odds are FULLY OPEN (23 books, 2779+ real outcomes, zero redaction). markets/hit-rates
+    and markets/resolution-summary are OPEN and confirm 373,772 graded NFL props exist across
+    48 events in the trailing 30 days -- but that history is NOT reachable for free. CONFIRMED
+    REDACTED on free tier: get_event_movement (511/511 outcomes null, steam[] empty), odds/closing
+    (511/511 null), odds/history (511/511 null), player_trends L5/L10/streak (all null). Rate
+    limit measured: x-ratelimit-limit 10,000,000 with a separate rapid-free-plans-hard-limit
+    of 500,000 -- real ceiling unclear, needs one more clarifying call before relying on either
+    number. Verdict: usable as a CURRENT-odds snapshot source (more books than RotoWire: 18-23
+    vs 3), useless for history/movement/trends on the free tier.'
+  replacement_candidates:
+  - rotowire_props (already built, free, 22 markets -- but no history/movement until we snapshot)
+  - The Odds API paid plan (historical odds from mid-2020; props from May 2023)
+  last_verified: '2026-09-25'
+- id: draftkings4_rapidapi
+  status: active
+  league: nfl
+  kind: api
+  base_url: https://draftkings4.p.rapidapi.com
+  auth: api_key (env var name only -- RAPIDAPI_KEY, stored at ~/.rapidapi_env)
+  ingest_script: null
+  feeds_tables: []
+  cadence: VERY LIMITED -- 300 total requests on this plan (confirmed via x-ratelimit-requests-limit
+    header, not a daily reset like other RapidAPI plans -- verify reset behavior before scheduling
+    anything)
+  risk: 'CONFIRMED via live test, temporary key (user: will delete and replace before going
+    live). Real DraftKings-sourced data, NOT redacted, NOT a reseller aggregation -- this
+    is DraftKings own market data. One call to /american-football/events/{eventId} returns
+    ALL markets for that game in one shot (268 markets confirmed for one real 2026 matchup,
+    incl. genuine player props like "Bryce Young Passing Yards O/U" line=225.5 with real decimal
+    odds). Caveat: canonicalMarket field is soccer-templated (ANYTIME_GOALSCORER, BOTH_TEAMS_TO_SCORE)
+    and dumps ~74% of real markets into an OTHER bucket -- usable rawName string matching
+    required, not a clean canonical taxonomy for American football. ONLY covers DraftKings
+    (one book) -- pair with RotoWire (multi-book) rather than replacing it. The 300-request
+    budget makes this suited to periodic spot-checks, not continuous polling.'
+  replacement_candidates:
+  - rotowire_props (multi-book, no hard request cap, already the workhorse)
+  last_verified: '2026-09-25'
+- id: teamrankings_reference
+  status: deprecated
+  league: nfl
+  kind: web_embed
+  base_url: https://www.teamrankings.com/
+  auth: cookie_file (~/.teamrankings_cookies.txt, optional -- anonymous works with reduced
+    data)
+  ingest_script: scripts/pull_teamrankings.sh
+  feeds_tables: []
+  cadence: one-time (chart-design reference pull, not a recurring source)
+  risk: 'Superseded by nflverse+RotoWire once live data sourcing was confirmed. Kept only
+    as the historical record of how the chart/catalog structure was first reverse-engineered
+    (docs/CHART_AUDIT.md). Odds pages on this site are AJAX-rendered and were never fully
+    captured (confirmed gap).
+
+    '
+  replacement_candidates: []
+  last_verified: '2026-09-24'
+- id: pfr_direct
+  status: broken
+  league: nfl
+  kind: web_embed
+  base_url: https://www.pro-football-reference.com/
+  auth: none
+  ingest_script: null
+  feeds_tables: []
+  cadence: n/a
+  risk: 'HTTP 403 on every path confirmed, including robots.txt -- a Cloudflare bot challenge
+    on the whole domain, not a per-path rule. ToS separately prohibits harvesting. Never attempted
+    to circumvent. nflverse mirrors PFR''s own advanced stats, which is why this entry stays
+    "broken" rather than being removed -- it documents why PFR itself was ruled out.
+
+    '
+  replacement_candidates:
+  - nflverse_stats (already the active replacement for this exact need)
+  last_verified: '2026-09-25'
+- id: tank01_rapidapi
+  status: disabled
+  league: nfl
+  kind: api
+  base_url: https://tank01-nfl-live-in-game-real-time-statistics-nfl.p.rapidapi.com
+  auth: api_key (env var name only -- TANK01_RAPIDAPI_KEY if/when configured; never store
+    the value here)
+  ingest_script: null
+  feeds_tables: []
+  cadence: n/a until built
+  risk: 'Free tier: 1,000 requests/month, 1,000/hr rate limit -- confirmed by the user''s
+    own account screenshot, plenty for a nightly batch pull, not for live in-game polling.
+    A prior RapidAPI key was visible in a screenshot shared in this session and should be
+    treated as exposed; rotate before use. Field-shape unconfirmed -- the v1 repo''s client
+    code defensively guesses at multiple possible key names, meaning the real response schema
+    was never nailed down last time either.
+
+    '
+  replacement_candidates:
+  - espn_news (covers injuries already)
+  - rotowire_props (covers props already)
+  - 'Tank01 would mainly add: DFS salaries, depth charts/snap-share data (not currently sourced
+    anywhere in this ramp)'
+  last_verified: null

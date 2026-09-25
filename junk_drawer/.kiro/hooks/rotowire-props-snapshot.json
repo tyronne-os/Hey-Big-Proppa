@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "RotoWire Props Snapshot (ongoing line-movement tracking)",
+      "trigger": "SessionStart",
+      "description": "Reminds the agent at session start that RotoWire prop-line snapshots should be taken repeatedly through the week (not just once) to build real line-movement history, since this is now the ongoing free source for that per the user's 2026-09-25 decision.",
+      "action": {
+        "type": "agent",
+        "prompt": "Reminder for the frontal-lobe2 NFL data lake: RotoWire player prop lines move continuously through the week leading up to games (free, no request cap, already integrated as gold.nfl_prop_line_rotowire). Per the user's decision on 2026-09-25, this is now an ONGOING tracked source for line movement -- take a fresh snapshot regularly through the week (not just once), using:\n\nPYTHONPATH=.pylibs python3 scripts/ingest_rotowire_props.py\n\nEach run is append-only and safe to repeat. The is_pregame flag (fixed 2026-09-25) ensures only pre-kickoff snapshots feed gold.v_nfl_prop_line_movement -- live in-game snapshots are correctly excluded from movement analysis. If the user asks about line movement, trends, or \"what changed this week,\" check whether a fresh snapshot is needed first (gold.v_nfl_prop_line_movement will have 0 rows if only one snapshot exists so far this week)."
+      }
+    }
+  ]
+}
