@@ -11,6 +11,7 @@ Run:
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -223,6 +224,23 @@ def api_news_articles():
 @app.get("/api/health")
 def health():
     return {"status": "ok", "charts_indexed": len(data.chart_index())}
+
+
+@app.get("/api/jev_status")
+def jev_status():
+    """
+    Presence check only -- never the value. Jev itself is NOT WIRED (no code
+    path calls typesafe.ai yet); this just answers "did the Space secret
+    actually reach this container" so that can be confirmed independently of
+    building the integration.
+    """
+    key = os.environ.get("JEV_API_KEY")
+    return {
+        "present": bool(key),
+        "length": len(key) if key else 0,
+        "wired": False,
+        "note": "Jev is not yet called anywhere in the app -- this only confirms the secret reached the container.",
+    }
 
 
 # Serves the built React app (frontend/dist, produced by the Dockerfile's node stage) for the
