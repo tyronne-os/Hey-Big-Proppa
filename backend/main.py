@@ -20,6 +20,7 @@ import leaders as leaders_mod
 import parlays as parlays_mod
 import parlay_engine as engine_mod
 import breakout as breakout_mod
+import matchup as matchup_mod
 import buddy_cosell as buddy_mod
 
 app = FastAPI(title="HEY BIG PROPPA! API")
@@ -172,6 +173,18 @@ def api_canvas_nodes():
             },
         ]
     }
+
+
+@app.get("/api/matchups")
+def api_matchups():
+    """This week's slate: 5 unit edges per side, records, predicted winner and win %."""
+    return {"sourceStatus": data.chart_status("team_game_stats"), "games": matchup_mod.slate()}
+
+
+@app.get("/api/matchups/backtest")
+def api_matchups_backtest():
+    """How the predictor did on seasons it never saw, next to always-home and the Vegas favorite."""
+    return {"sourceStatus": data.chart_status("matchup_backtest"), "rows": data.load("matchup_backtest")}
 
 
 @app.get("/api/breakout")

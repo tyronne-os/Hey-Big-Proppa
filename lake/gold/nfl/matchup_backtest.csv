@@ -1,0 +1,67 @@
+section,model,split,bucket,games,correct,accuracy,log_loss,note
+tuning,K=1 R=0.2,validate 2024,,272,,0.621,0.6441,
+tuning,K=1 R=0.33,validate 2024,,272,,0.621,0.644,
+tuning,K=1 R=0.5,validate 2024,,272,,0.614,0.6439,
+tuning,K=1 R=0.7,validate 2024,,272,,0.614,0.6438,
+tuning,K=2 R=0.2,validate 2024,,272,,0.618,0.6445,
+tuning,K=2 R=0.33,validate 2024,,272,,0.625,0.6444,
+tuning,K=2 R=0.5,validate 2024,,272,,0.621,0.6442,
+tuning,K=2 R=0.7,validate 2024,,272,,0.61,0.644,
+tuning,K=3 R=0.2,validate 2024,,272,,0.625,0.6451,
+tuning,K=3 R=0.33,validate 2024,,272,,0.629,0.6448,
+tuning,K=3 R=0.5,validate 2024,,272,,0.621,0.6444,
+tuning,K=3 R=0.7,validate 2024,,272,,0.621,0.6441,
+tuning,K=4 R=0.2,validate 2024,,272,,0.618,0.6459,
+tuning,K=4 R=0.33,validate 2024,,272,,0.625,0.6453,
+tuning,K=4 R=0.5,validate 2024,,272,,0.629,0.6447,
+tuning,K=4 R=0.7,validate 2024,,272,,0.621,0.6443,
+tuning,K=6 R=0.2,validate 2024,,272,,0.621,0.6484,
+tuning,K=6 R=0.33,validate 2024,,272,,0.61,0.647,
+tuning,K=6 R=0.5,validate 2024,,272,,0.621,0.6456,
+tuning,K=6 R=0.7,validate 2024,,272,,0.618,0.6446,
+tuning,K=8 R=0.2,validate 2024,,272,,0.614,0.6516,
+tuning,K=8 R=0.33,validate 2024,,272,,0.614,0.6494,
+tuning,K=8 R=0.5,validate 2024,,272,,0.614,0.6469,
+tuning,K=8 R=0.7,validate 2024,,272,,0.621,0.645,
+kept,comp_pg:off,,,,,,,AIR
+kept,def_ints_pg:def,,,,,,,BALL SECURITY
+kept,def_pd_pg:def,,,,,,,BALL SECURITY
+kept,def_sack_pct:def,,,,,,,BALL SECURITY
+kept,def_solo_pg:def,,,,,,,BALL SECURITY
+kept,def_tackles_pg:def,,,,,,,BALL SECURITY
+kept,fumbles_pg:off,,,,,,,BALL SECURITY
+kept,ints_pg:off,,,,,,,BALL SECURITY
+kept,margin_pg:def,,,,,,,SCORING
+kept,margin_pg:off,,,,,,,SCORING
+kept,opp_comp_pg:def,,,,,,,AIR
+kept,opp_pass_tds_pg:def,,,,,,,AIR
+kept,opp_pass_ypg:def,,,,,,,AIR
+kept,opp_ppg:def,,,,,,,SCORING
+kept,opp_rush_td_pct:def,,,,,,,GROUND
+kept,opp_rush_tds_pg:def,,,,,,,GROUND
+kept,opp_rush_ypg:def,,,,,,,GROUND
+kept,opp_rz_td_pct:def,,,,,,,RED ZONE
+kept,opp_tds_pg:def,,,,,,,SCORING
+kept,pass_tds_pg:off,,,,,,,AIR
+kept,pass_ypg:off,,,,,,,AIR
+kept,ppg:off,,,,,,,SCORING
+kept,rush_td_pct:off,,,,,,,GROUND
+kept,rush_ypg:off,,,,,,,GROUND
+kept,rz_td_pct:off,,,,,,,RED ZONE
+kept,sack_pct:off,,,,,,,BALL SECURITY
+kept,tds_pg:off,,,,,,,SCORING
+summary,BIG PROPPA matchup,holdout 2025,,272,174.5,0.642,0.6386,
+bucket,BIG PROPPA matchup,holdout 2025,50%-60%,129,75.0,0.581,,
+bucket,BIG PROPPA matchup,holdout 2025,60%-70%,74,47.5,0.642,,
+bucket,BIG PROPPA matchup,holdout 2025,70%-75%,26,14.0,0.538,,
+bucket,BIG PROPPA matchup,holdout 2025,75%-80%,24,21.0,0.875,,
+bucket,BIG PROPPA matchup,holdout 2025,80%-100%,19,17.0,0.895,,
+bucket,BIG PROPPA matchup,holdout 2025,75%+,43,38.0,0.884,,
+summary,always pick home,holdout 2025,,272,144.5,0.531,0.6924,home win prob fixed at 57%
+summary,Vegas favorite,holdout 2025,,268,175.5,0.655,0.6104,"closing moneyline, vig removed; yardstick only"
+bucket,Vegas favorite,holdout 2025,50%-60%,89,52.0,0.584,,
+bucket,Vegas favorite,holdout 2025,60%-70%,77,42.0,0.545,,
+bucket,Vegas favorite,holdout 2025,70%-75%,28,22.5,0.804,,
+bucket,Vegas favorite,holdout 2025,75%-80%,36,24.0,0.667,,
+bucket,Vegas favorite,holdout 2025,80%-100%,38,35.0,0.921,,
+bucket,Vegas favorite,holdout 2025,75%+,74,59.0,0.797,,

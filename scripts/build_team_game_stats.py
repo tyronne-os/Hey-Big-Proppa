@@ -1,8 +1,9 @@
 """
 Build lake/gold/nfl/team_game_stats.csv -- one row per team per regular-season
-game, 2015 onward, with the TeamRankings-style team stats the matchup
-predictor uses. Offense columns are this team's; the defense's "opponent-"
-stats come from joining the opponent's row (backend/matchup.py does that).
+game, modern era only (2023 onward: current rules and the legal-betting
+era), with the TeamRankings-style team stats the matchup predictor uses.
+Offense columns are this team's; the defense's "opponent-" stats come from
+joining the opponent's row (backend/matchup.py does that).
 
 Sources (nflverse, raw files land in lake/bronze/nflverse/, never committed):
   schedules/games.csv                  finals, home/away, neutral site
@@ -12,7 +13,7 @@ Red-zone TD % is exact: a red-zone trip is a drive that reached the opponent
 20 (drive_inside20), and it scores when fixed_drive_result == 'Touchdown'.
 
 Run from the repo root:
-    backend/.venv/bin/python scripts/build_team_game_stats.py [--seasons 2015-2026]
+    backend/.venv/bin/python scripts/build_team_game_stats.py [--seasons 2023-2026]
 """
 from __future__ import annotations
 
@@ -140,7 +141,7 @@ def team_rows(pbp: pd.DataFrame, games: pd.DataFrame) -> list[dict]:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--seasons", default="2015-2026")
+    ap.add_argument("--seasons", default="2023-2026")
     ap.add_argument("--keep-raw", action="store_true", help="keep downloaded pbp files in lake/bronze")
     args = ap.parse_args()
     lo, hi = (int(x) for x in args.seasons.split("-"))
@@ -172,22 +173,25 @@ def main() -> None:
             w.writerow({c: r[c] for c in OUT_COLS})
     print(f"wrote {len(rows)} rows -> {out.relative_to(REPO)}")
 
-    register(len(rows))
+    register_chart("team_game_stats", "scripts/build_team_game_stats.py",
+                   "one row per team per regular-season game, 2023+", len(rows),
+                   "nflverse pbp + schedules (derived)")
 
 
-def register(row_count: int) -> None:
+def register_chart(name: str, source: str, grain: str, row_count: int, source_name: str) -> None:
+    """Add or replace this chart's row in _index.csv, the status gate every endpoint honors."""
     index = GOLD / "_index.csv"
     with index.open(newline="", encoding="utf-8") as fh:
         rows = list(csv.DictReader(fh))
         fields = list(rows[0].keys())
-    rows = [r for r in rows if r["chart_name"] != "team_game_stats"]
+    rows = [r for r in rows if r["chart_name"] != name]
     rows.append({
-        "chart_name": "team_game_stats",
-        "source_table_or_view": "scripts/build_team_game_stats.py",
-        "grain": "one row per team per regular-season game, 2015+",
+        "chart_name": name,
+        "source_table_or_view": source,
+        "grain": grain,
         "row_count": str(row_count),
         "last_exported_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "source_name": "nflverse pbp + schedules (derived)",
+        "source_name": source_name,
         "status": "ok" if row_count else "empty",
     })
     with index.open("w", newline="", encoding="utf-8") as fh:
