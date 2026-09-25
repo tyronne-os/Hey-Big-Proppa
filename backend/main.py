@@ -19,6 +19,7 @@ import jimmy
 import leaders as leaders_mod
 import parlays as parlays_mod
 import parlay_engine as engine_mod
+import breakout as breakout_mod
 import buddy_cosell as buddy_mod
 
 app = FastAPI(title="HEY BIG PROPPA! API")
@@ -169,6 +170,12 @@ def api_canvas_nodes():
             },
         ]
     }
+
+
+@app.get("/api/breakout")
+def api_breakout():
+    """Opportunity-vs-production breakout signal for RB/WR/TE. HEURISTIC, NOT BACKTESTED."""
+    return {"sourceStatus": data.chart_status("player_receiving_week"), "rows": breakout_mod.breakout_table()}
 
 
 @app.get("/api/news/articles")

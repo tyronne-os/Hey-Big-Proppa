@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { LeaderRow, LeadersResponse } from "../types";
 
-const CATEGORIES = ["USAGE INDEX", "DEFENSE TOXICITY", "RUSHING", "RECEIVING", "PASSING", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
+const CATEGORIES = ["USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RECEIVING", "PASSING", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
+const SCORE_LABEL: Record<string, string> = {
+  "USAGE INDEX": "USAGE INDEX",
+  "BREAKOUT": "BREAKOUT SCORE",
+  "DEFENSE TOXICITY": "TOXICITY INDEX",
+};
 
 function initials(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -64,14 +69,15 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
       )}
 
       {data && data.sourceStatus === "ok" && data.rows && (
-        <RowsView rows={data.rows} onOpenPlayer={onOpenPlayer} showRole={category === "USAGE INDEX" || category === "DEFENSE TOXICITY"} isTeam={category === "DEFENSE TOXICITY"} />
+        <RowsView rows={data.rows} onOpenPlayer={onOpenPlayer} scoreLabel={SCORE_LABEL[category]} isTeam={category === "DEFENSE TOXICITY"} />
       )}
     </div>
   );
 }
 
-function RowsView({ rows, onOpenPlayer, showRole = false, isTeam = false }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string) => void; showRole?: boolean; isTeam?: boolean }) {
+function RowsView({ rows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string) => void; scoreLabel?: string; isTeam?: boolean }) {
   const top = rows[0];
+  const showRole = Boolean(scoreLabel);
   return (
     <>
       {top && (
@@ -90,7 +96,7 @@ function RowsView({ rows, onOpenPlayer, showRole = false, isTeam = false }: { ro
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
             <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 26, fontWeight: 800, color: "#2ee6a6" }}>{top.value}</span>
-            {showRole && <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>{isTeam ? "TOXICITY INDEX" : "USAGE INDEX"}</span>}
+            {showRole && <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>{scoreLabel}</span>}
           </div>
         </div>
       )}

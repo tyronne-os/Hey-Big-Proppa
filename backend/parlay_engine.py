@@ -48,6 +48,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+import breakout
 import data
 import jimmy
 from odds import compute_parlay
@@ -395,6 +396,9 @@ def _player_prob(player_id: str, market_slug: str, threshold: float | None,
 def _leg(player_id: str, name: str, team: str, market: str, direction: str,
          label: str, prob: float, l5: float | None, price: float,
          correlation_note: str = "") -> dict:
+    flag = breakout.breakout_by_player().get(player_id, {}).get("flag")
+    if flag in ("BREAKOUT CANDIDATE", "REGRESSION RISK"):
+        correlation_note = f"{correlation_note} | {flag}" if correlation_note else flag
     return {
         "playerId": player_id,
         "name": name,

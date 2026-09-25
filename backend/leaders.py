@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+import breakout
 import data
 
 DIVISIONS = {
@@ -71,6 +72,25 @@ CATEGORY_SOURCES = {
 
 def leaders(category: str) -> dict:
     category = category.upper()
+
+    if category == "BREAKOUT":
+        table = breakout.breakout_table()
+        return {
+            "category": category,
+            "sourceStatus": data.chart_status("player_receiving_week"),
+            "rows": [
+                {
+                    "rank": i,
+                    "playerId": r["playerId"],
+                    "name": r["name"],
+                    "team": r["team"],
+                    "gp": r["games"],
+                    "value": r["breakoutScore"],
+                    "role": f"{r['flag']} · {r['position']} · {r['xpprPerGame']} xPPR vs {r['pprPerGame']} PPR",
+                }
+                for i, r in enumerate(table, start=1)
+            ],
+        }
 
     if category == "DEFENSE TOXICITY":
         rows = sorted(data.load("defense_ib_score"), key=lambda r: float(r.get("toxicity_index_0_100") or 0), reverse=True)
