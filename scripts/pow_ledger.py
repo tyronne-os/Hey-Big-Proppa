@@ -13,8 +13,8 @@ not the measure.
 A leg wins when the stat clears its line in the bet's direction; a player with
 no box-score row that week is void, as a sportsbook would grade it. HOT DOGS!
 team legs are graded on the final score: the moneyline needs an outright win,
-the spread needs margin + spread > 0. A ticket
-wins when every non-void leg wins.
+the spread needs margin + spread > 0. TOTALS! legs are graded on the combined
+final score against the total line. A ticket wins when every non-void leg wins.
 
 Writes lake/gold/nfl/pow_ledger.csv. Run from the repo root:
     backend/.venv/bin/python scripts/pow_ledger.py snapshot
@@ -94,6 +94,14 @@ def snapshot(path: Path) -> None:
             "market": leg["market"], "direction": "over", "line": leg["line"] if leg["line"] is not None else "",
             "odds": leg["odds"], "probability": leg["probability"], "snapshot_at_utc": now,
         })
+    tot = parlays.totals()
+    for i, leg in enumerate(tot["legs"]):
+        new.append({
+            "season": season, "week": week, "kind": "leg", "ticket_id": tot["id"], "correlation_type": "TOTALS",
+            "title": tot["title"], "leg_index": i, "game_id": leg["gameId"],
+            "market": leg["market"], "direction": leg["direction"], "line": leg["line"],
+            "odds": leg["odds"], "probability": leg["probability"], "snapshot_at_utc": now,
+        })
     for g in games:
         new.append({
             "season": season, "week": week, "kind": "game", "ticket_id": g["gameId"],
@@ -116,9 +124,24 @@ def _grade_team_leg(r: dict) -> tuple[str, str]:
     return str(int(margin)), "push" if edge == 0 else ("won" if edge > 0 else "lost")
 
 
+def _grade_total_leg(r: dict) -> tuple[str, str]:
+    """TOTALS! legs: combined final score against the total line."""
+    g = next((g for g in data.load("schedule") if g["game_id"] == r["game_id"]), None)
+    if not g or not g.get("home_score") or not g.get("away_score"):
+        return "", ""
+    total = float(g["home_score"]) + float(g["away_score"])
+    line = float(r["line"])
+    if total == line:
+        return str(total), "push"
+    hit = total > line if r["direction"] == "over" else total < line
+    return str(total), "won" if hit else "lost"
+
+
 def _grade_leg(r: dict) -> tuple[str, str]:
     if r["market"] in ("spread", "moneyline"):
         return _grade_team_leg(r)
+    if r["market"] == "total":
+        return _grade_total_leg(r)
     games = [g for g in parlay_engine._games_for(r["player_id"], r["market"]) if g["week"] == int(r["week"])]
     if not games:
         return "", "void"

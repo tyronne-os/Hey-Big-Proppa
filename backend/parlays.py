@@ -183,6 +183,35 @@ def top_gun() -> dict:
     return _slip("top-gun", "TOP GUN", legs[:3])
 
 
+def totals() -> dict:
+    """
+    Certified Hot Dog games only (hot_dog.py): whichever side of the total
+    (over/under) certified dogs hit more often in the 2023-2025 backtest.
+    """
+    bt = hot_dog.backtest()
+    bet, hit_rate = bt.get("chosenTotalBet"), bt.get("totalHitRate")
+    legs = []
+    for g in hot_dog.slate():
+        if not g["certified"] or not bet:
+            continue
+        price = g["price"]
+        odds_val = price["overOdds"] if bet == "over" else price["underOdds"]
+        legs.append({
+            "gameId": g["gameId"],
+            "name": f"{g['underdog']} vs {g['favorite']}",
+            "prop": f"{bet.upper()} {price['totalLine']:g} total points · certified dog game ({g['statsWon']} of 5)",
+            "market": "total",
+            "direction": bet,
+            "line": price["totalLine"],
+            "statsWon": g["statsWon"],
+            "l5": hit_rate,
+            "probability": hit_rate,
+            "odds": odds_val,
+        })
+    legs.sort(key=lambda leg: leg["statsWon"], reverse=True)
+    return _slip("totals", "TOTALS!", legs[:3])
+
+
 def _slip(slip_id: str, title: str, legs: list[dict]) -> dict:
     math_result = compute_parlay([leg["odds"] for leg in legs], wager=WAGER, boost=BOOST)
     return {
@@ -200,6 +229,7 @@ def _slip(slip_id: str, title: str, legs: list[dict]) -> dict:
 
 SLIPS = {
     "hot_dogs": hot_dogs,
+    "totals": totals,
     "beast_mode": beast_mode,
     "hot_boys": hot_boys,
     "top_gun": top_gun,
