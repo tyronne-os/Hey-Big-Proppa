@@ -36,15 +36,12 @@ HEURISTIC. NOT BACKTESTED. Same discipline as every other lake output.
 """
 from __future__ import annotations
 
-import csv
 from functools import lru_cache
-from pathlib import Path
 
 import data
 import jimmy as jimmy_mod
 import parlay_engine as engine_mod
 
-GOLD = data.GOLD
 
 _STADIUM_CITY: dict[str, str] = {
     "ARI": "GLENDALE, Ariz.",
@@ -112,16 +109,6 @@ _CORR_LABEL: dict[str, str] = {
 
 
 @lru_cache(maxsize=1)
-def _schedule_week() -> list[dict]:
-    """Most recent week of games from schedule.csv."""
-    rows = list(csv.DictReader(open(GOLD / "schedule.csv")))
-    if not rows:
-        return []
-    latest_week = max(int(r["week"]) for r in rows)
-    return [r for r in rows if int(r["week"]) == latest_week]
-
-
-@lru_cache(maxsize=1)
 def _defense_ib_map() -> dict[str, dict]:
     return {r["team"]: r for r in data.load("defense_ib_score")}
 
@@ -139,13 +126,6 @@ def _td_corr_map() -> dict[str, dict]:
 @lru_cache(maxsize=1)
 def _redzone_map() -> dict[str, dict]:
     return {r["player_id"]: r for r in data.load("redzone_tiers") if r.get("player_id")}
-
-
-def _game_for_team(team: str) -> dict | None:
-    for g in _schedule_week():
-        if g["away_team"] == team or g["home_team"] == team:
-            return g
-    return None
 
 
 def _avg_prob(legs: list[dict]) -> float:
@@ -234,7 +214,7 @@ What Jimmy the Greek has surfaced this week is what the sportsmen in these preci
 
 The Greek reminds me, as he always does, that this is a heuristic. It has not been backtested. The 1940s were not a golden age of sample-size discipline. Nevertheless, a {int(avg_prob * 100)}-percent composite from three independent signals is not the sort of number a careful reader dismisses without investigation.
 
-A ten-dollar wager, boosted at {boost_pct} percent by the establishment, returns {boosted:.2f} dollars should all three propositions prove correct. Jimmy considers this adequate compensation for the risk, and your correspondent, after due deliberation, is inclined to agree.
+A {wager:.0f}-dollar wager, boosted at {boost_pct} percent by the establishment, returns {boosted:.2f} dollars should all three propositions prove correct. Jimmy considers this adequate compensation for the risk, and your correspondent, after due deliberation, is inclined to agree.
 
 The line, gentlemen, is under investigation."""
 
@@ -284,7 +264,7 @@ Simultaneously, the Greek notes that {qb_name} himself faces a proposition the b
 
 Jimmy places the combined probability of this two-leg cascade at {int(avg_prob * 100)} percent. The toxicity of the {opp_full}'s defensive alignment, measured at {tox:.0f} on the hundred-point lake index, is the sort of figure that renders the bookmaker's over/under line worthy of investigation.
 
-A ten-dollar position, boosted {boost_pct} percent, returns {boosted:.2f} dollars should this cascade unfold as Jimmy predicts. Your correspondent, having examined the Greek's pond data with some care, finds the logic compelling.
+A {wager:.0f}-dollar position, boosted {boost_pct} percent, returns {boosted:.2f} dollars should this cascade unfold as Jimmy predicts. Your correspondent, having examined the Greek's pond data with some care, finds the logic compelling.
 
 The line is under investigation. Proceed with the caution this column has always counseled and the conviction the numbers seem to warrant."""
 
@@ -324,7 +304,7 @@ The lake's own pond data confirms the usage alignment among these gentlemen. Jim
 
 The combined Jimmy probability stands at {int(avg_prob * 100)} percent. The Greek notes that the bookmakers have priced each proposition in isolation, apparently without consulting the correlation structure the lake makes plain.
 
-Ten dollars, boosted {boost_pct} percent, returns {boosted:.2f} should the machine operate as its designers intended. Your correspondent has seen few arguments as tidy as the one Jimmy has presented this week.
+{wager:.0f} dollars, boosted {boost_pct} percent, returns {boosted:.2f} should the machine operate as its designers intended. Your correspondent has seen few arguments as tidy as the one Jimmy has presented this week.
 
 The line, as ever when the Greek is this certain, is under investigation."""
 
@@ -364,7 +344,7 @@ The Greek's Single Hero ticket calls for {markets} independent markets to clear 
 
 Your correspondent would note that these are not three bets dressed up as a correlation. They are three consequences of the same underlying fact: a player trusted by his coaches, facing a defense that the lake rates as permissive, in a game where the conditions favor offensive production. When these elements align for a single performer, the bookmakers' individual prices, taken together, represent an arithmetic opportunity.
 
-The combined return on a ten-dollar position, boosted {boost_pct} percent by the establishment, is {boosted:.2f} dollars. Jimmy considers this adequate. This correspondent, having reviewed the pond data, is disinclined to disagree.
+The combined return on a {wager:.0f}-dollar position, boosted {boost_pct} percent by the establishment, is {boosted:.2f} dollars. Jimmy considers this adequate. This correspondent, having reviewed the pond data, is disinclined to disagree.
 
 The line is under investigation. {name}'s performance will either vindicate the Greek's methodology or provide your correspondent with a useful cautionary note for a future column. Jimmy, for what it is worth, has not asked for a cautionary note."""
 
@@ -422,14 +402,9 @@ def _headline_deck(slip: dict, game: dict) -> tuple[str, str]:
 
 def articles_today() -> list[dict]:
     slips = engine_mod.run_engine()
-    schedule = _schedule_week()
-    if not schedule:
+    game_by_team = jimmy_mod.next_game_by_team()
+    if not game_by_team:
         return []
-
-    game_by_team: dict[str, dict] = {}
-    for g in schedule:
-        game_by_team[g["away_team"]] = g
-        game_by_team[g["home_team"]] = g
 
     articles = []
     for slip in slips:
@@ -437,8 +412,7 @@ def articles_today() -> list[dict]:
         if not legs:
             continue
 
-        # Find game: use the team of the first leg
-        primary_team = legs[0]["team"]
+        primary_team = jimmy_mod.player_team(legs[0]["playerId"]) or legs[0]["team"]
         game = game_by_team.get(primary_team)
         if not game:
             articles.append({

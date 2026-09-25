@@ -83,22 +83,48 @@ def _redzone_i5_share() -> dict[str, float]:
     return out
 
 
-def _last_opponent(player_id: str) -> str | None:
-    """Most recent game's opponent, as the matchup-toxicity reference point."""
-    latest_week = -1
-    opponent = None
+@lru_cache(maxsize=1)
+def _team_by_player() -> dict[str, str]:
+    """Each player's team as of his most recent game."""
+    latest: dict[str, tuple[int, str]] = {}
     for src in ("player_scrimmage_week", "player_passing_week"):
         for row in data.load(src):
-            if row.get("player_id") != player_id:
-                continue
+            pid, team = row.get("player_id"), row.get("team")
             try:
                 wk = int(row.get("week") or 0)
             except ValueError:
                 continue
-            if wk > latest_week:
-                latest_week = wk
-                opponent = row.get("opponent_team")
-    return opponent
+            if pid and team and wk >= latest.get(pid, (-1, ""))[0]:
+                latest[pid] = (wk, team)
+    return {pid: team for pid, (_, team) in latest.items()}
+
+
+@lru_cache(maxsize=1)
+def next_game_by_team() -> dict[str, dict]:
+    """Each team's game on the current slate (earliest week with no final score). Teams on bye are absent."""
+    unplayed = [g for g in data.load("schedule") if not g.get("home_score") and not g.get("away_score")]
+    if not unplayed:
+        return {}
+    slate_week = min(int(g["week"]) for g in unplayed)
+    out: dict[str, dict] = {}
+    for g in unplayed:
+        if int(g["week"]) == slate_week:
+            out[g["home_team"]] = g
+            out[g["away_team"]] = g
+    return out
+
+
+def player_team(player_id: str) -> str | None:
+    return _team_by_player().get(player_id)
+
+
+def next_opponent(player_id: str) -> str | None:
+    """The defense this player faces on the current slate -- the matchup every probability is about."""
+    team = player_team(player_id)
+    game = next_game_by_team().get(team or "")
+    if not game:
+        return None
+    return game["away_team"] if game["home_team"] == team else game["home_team"]
 
 
 def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None = None) -> float | None:
@@ -111,7 +137,7 @@ def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None 
     if usage is not None:
         components.append(usage / 100)
 
-    opponent = _last_opponent(player_id)
+    opponent = next_opponent(player_id)
     toxicity = _defense_toxicity().get(opponent) if opponent else None
     if toxicity is not None:
         components.append(1 - toxicity / 100)

@@ -179,31 +179,67 @@ def _usage_by_player() -> dict[str, dict]:
 # Helper: get weekly stat totals for a player+market
 # ---------------------------------------------------------------------------
 
-def _matchup_score(player_id: str) -> float:
-    """
-    Pond-only matchup quality: (usage_index_score / 100 + inverted opponent toxicity) / 2.
+_PASS_MARKETS = {"passyds", "passtd", "passatt", "intsthrown"}
+_ML_MARKETS = {"anytd", "firsttd", "lasttd"}
+_MARKET_LABEL = {
+    "passyds": "Pass Yds", "passtd": "Pass TDs", "passatt": "Pass Attempts",
+    "intsthrown": "Interceptions", "recyds": "Rec Yds", "recs": "Receptions",
+    "rushyds": "Rush Yds", "rushrec": "Rush+Rec Yds",
+}
 
-    This is the 'top 10% offense vs bottom 10% defense' signal the user
-    describes -- when a trusted player (high usage) faces a weak defense
-    (low toxicity), the matchup itself justifies inclusion even when
-    hit-rate history is thin (early season).  Returns 0..1.
+
+@lru_cache(maxsize=1)
+def _qb_pass_volume() -> dict[str, float]:
     """
-    usage = _usage_by_player().get(player_id, {})
-    u = float(usage.get("usage_index_score") or 0) / 100
-    opp = jimmy._last_opponent(player_id)
+    Passing-trust stand-in for QBs, 0-100. player_usage scores QBs on the
+    rushing pond (their carries), which says nothing about passing props.
+    Starters (>=80% of their team's attempts in games played) are ranked by
+    attempts per game; the percentile is the score. Non-starters get none.
+    """
+    team_att: dict[tuple[str, str], float] = {}
+    rows = data.load("player_passing_week")
+    for r in rows:
+        key = (r.get("game_id", ""), r.get("team", ""))
+        team_att[key] = team_att.get(key, 0) + float(r.get("attempts") or 0)
+
+    per_qb: dict[str, list[float]] = {}
+    for r in rows:
+        pid = r.get("player_id")
+        att = float(r.get("attempts") or 0)
+        tot = team_att.get((r.get("game_id", ""), r.get("team", "")), 0)
+        if pid and tot:
+            s = per_qb.setdefault(pid, [0.0, 0.0, 0])
+            s[0] += att
+            s[1] += tot
+            s[2] += 1
+    starters = {pid: a / g for pid, (a, t, g) in per_qb.items() if g and a / t >= 0.8}
+    ranked = sorted(starters, key=starters.get)
+    n = len(ranked)
+    return {pid: round(100 * (i + 1) / n, 1) for i, pid in enumerate(ranked)} if n else {}
+
+
+def _matchup_score(player_id: str, market: str | None = None) -> float:
+    """
+    Pond-only matchup quality: (usage / 100 + inverted next-opponent toxicity) / 2.
+
+    The 'top 10% offense vs bottom 10% defense' signal -- a trusted player
+    facing a weak defense justifies a leg even when hit-rate history is thin.
+    Passing markets use the QB passing-volume stand-in instead of player_usage.
+    """
+    if market in _PASS_MARKETS and player_id in _qb_pass_volume():
+        u = _qb_pass_volume()[player_id] / 100
+    else:
+        u = float(_usage_by_player().get(player_id, {}).get("usage_index_score") or 0) / 100
+    opp = jimmy.next_opponent(player_id)
     tox = float(_ib_scores().get(opp or "", {}).get("toxicity_index_0_100") or 50) / 100
     return round((u + (1 - tox)) / 2, 3)
 
 
-def _qualifies(prob: float | None, player_id: str) -> bool:
-    """
-    A leg qualifies if it clears the standard 85% Jimmy score OR if a
-    pond-only matchup score >= 68% justifies it (usage + inverted toxicity
-    both must be present, early-season substitute for a thin hit-rate sample).
-    """
+def _qualifies(prob: float | None, player_id: str, market: str | None = None) -> bool:
+    """Clears the 85% Jimmy score, or the pond-only matchup score clears 68% (thin early-season samples)."""
     if prob is not None and prob >= MIN_PROB:
         return True
-    return _matchup_score(player_id) >= MIN_MATCHUP_PROB
+    return _matchup_score(player_id, market) >= MIN_MATCHUP_PROB
 
 
 def _games_for(player_id: str, market_slug: str) -> list[dict]:
@@ -295,22 +331,36 @@ def _ib_adjust(base_prob: float, ib_score: int, market_slug: str, direction: str
 # FanDuel price lookup for the engine
 # ---------------------------------------------------------------------------
 
-def _fd_price(name: str, market_slug: str, direction: str) -> float | None:
-    row = data.fanduel_line_for(name, market_slug)
-    if not row:
-        return None
-    if direction == "over":
-        v = row.get("over_price")
-    elif direction == "under":
-        v = row.get("under_price")
-    else:  # ml / firsttd / anytd
-        v = row.get("moneyline_price")
-    if not v:
-        return None
+def _num(v) -> float | None:
     try:
-        return float(v)
+        return float(v) if v not in (None, "") else None
     except ValueError:
         return None
+
+
+def _fd_offer(name: str, market_slug: str, direction: str) -> tuple[float, float] | None:
+    """
+    (line, american_price) from FanDuel only. fanduel_line_for falls back to
+    other books when FanDuel has no row; the engine refuses that fallback.
+    Yes/no TD markets are priced from the moneyline, with an implied 0.5 line.
+    """
+    row = data.fanduel_line_for(name, market_slug)
+    if not row or row.get("book") != "fanduel":
+        return None
+    if market_slug in _ML_MARKETS:
+        price, line = _num(row.get("moneyline_price")), 0.5
+    else:
+        price = _num(row.get("under_price" if direction == "under" else "over_price"))
+        line = _num(row.get("line"))
+    if price is None or line is None:
+        return None
+    return line, price
+
+
+def _prop_label(market_slug: str, direction: str, line: float) -> str:
+    if market_slug == "anytd":
+        return "Anytime TD Scorer"
+    return f"{direction.title()} {line:g} {_MARKET_LABEL.get(market_slug, market_slug)}"
 
 
 # ---------------------------------------------------------------------------
@@ -386,6 +436,23 @@ def _slip(slip_id: str, title: str, correlation_type: str, legs: list[dict],
     }
 
 
+def _measure(player_id: str, name: str, market: str, direction: str, ib_score: int) -> dict | None:
+    """Probability measured against the same FanDuel line the leg is priced at. None if FanDuel doesn't offer it."""
+    offer = _fd_offer(name, market, direction)
+    if not offer:
+        return None
+    line, price = offer
+    prob, _ = _player_prob(player_id, market, line, direction, ib_score)
+    l5 = (_hit_rate_under if direction == "under" else _hit_rate)(_games_for(player_id, market), line, window=5)
+    return {"line": line, "price": price, "prob": prob, "l5": l5, "label": _prop_label(market, direction, line)}
+
+
+def _opp_ib(player_id: str) -> tuple[str | None, dict, int]:
+    opp = jimmy.next_opponent(player_id)
+    row = _ib_scores().get(opp or "", {})
+    return opp, row, int(row.get("ib_score") or 3)
+
+
 # ---------------------------------------------------------------------------
 # COACHES SON finder
 # ---------------------------------------------------------------------------
@@ -415,73 +482,39 @@ def find_coaches_son(dim: dict[str, dict]) -> list[dict]:
             continue
 
         usage = _usage_by_player().get(pid, {})
-        usage_score = float(usage.get("usage_index_score") or 0)
-        if usage_score < 55:
+        if float(usage.get("usage_index_score") or 0) < 55:
             continue
 
         name = info["name"]
         team = info.get("team", "")
-
-        # Get opponent's IB score via last_opponent
-        opp = jimmy._last_opponent(pid)
-        ib_row = _ib_scores().get(opp or "", {})
-        ib_score = int(ib_row.get("ib_score") or 3)
+        opp, _, ib_score = _opp_ib(pid)
+        if not opp:
+            continue
+        mq = _matchup_score(pid)
 
         legs = []
-
-        # Leg 1: yards over (market depends on position)
         yds_market = "rushrec" if pos == "RB" else "recyds"
-        yds_thresh = 85.5 if pos == "RB" else (60.5 if pos == "TE" else 80.5)
-        mq = _matchup_score(pid)
-        yds_prob, yds_hr = _player_prob(pid, yds_market, yds_thresh, "over", ib_score)
-        yds_price = _fd_price(name, yds_market, "over")
-        eff_yds_prob = max(yds_prob or 0, mq)
-        if _qualifies(yds_prob, pid) and yds_price:
-            l5 = _hit_rate(_games_for(pid, yds_market), yds_thresh, window=5)
-            legs.append(_leg(pid, name, team, yds_market, "over",
-                             f"Over {yds_thresh} Rush+Rec Yds" if pos == "RB" else f"Over {yds_thresh} Rec Yds",
-                             eff_yds_prob, l5, yds_price,
-                             f"Inside-5 share {pct_i5:.0%} | {flag} | matchup {mq:.0%}"))
-
-        # Leg 2: receptions over
-        recs_thresh = 2.5 if pos == "RB" else (4.5 if pos == "TE" else 6.5)
-        recs_prob, recs_hr = _player_prob(pid, "recs", recs_thresh, "over", ib_score)
-        recs_price = _fd_price(name, "recs", "over")
-        eff_recs_prob = max(recs_prob or 0, mq)
-        if _qualifies(recs_prob, pid) and recs_price:
-            l5 = _hit_rate(_games_for(pid, "recs"), recs_thresh, window=5)
-            legs.append(_leg(pid, name, team, "recs", "over",
-                             f"Over {recs_thresh} Receptions",
-                             eff_recs_prob, l5, recs_price,
-                             "Check-down/slot target in stress situations"))
-
-        # Leg 3: anytime TD (boosted for i5 share)
-        td_prob, td_hr = _player_prob(pid, "anytd", 0.5, "over", ib_score)
-        td_price = _fd_price(name, "anytd", "ml")
-        eff_td_prob = max(td_prob or 0, mq)
-        if _qualifies(td_prob, pid) and td_price:
-            l5 = _hit_rate(_games_for(pid, "anytd"), 0.5, window=5)
-            legs.append(_leg(pid, name, team, "anytd", "over",
-                             "Anytime TD Scorer",
-                             eff_td_prob, l5, td_price,
-                             f"Inside-5 intra share {pct_i5:.0%} | TD rate per RZ opp: {float(tc.get('td_per_redzone_opp') or 0):.2f}"))
+        plan = [
+            (yds_market, f"Inside-5 share {pct_i5:.0%} | {flag} | matchup vs {opp} {mq:.0%}"),
+            ("recs", "Check-down/slot target in stress situations"),
+            ("anytd", f"Inside-5 intra share {pct_i5:.0%} | TD rate per RZ opp: "
+                      f"{float(tc.get('td_per_redzone_opp') or 0):.2f}"),
+        ]
+        for market, note in plan:
+            m = _measure(pid, name, market, "over", ib_score)
+            if m and _qualifies(m["prob"], pid, market):
+                legs.append(_leg(pid, name, team, market, "over", m["label"],
+                                 max(m["prob"] or 0, mq), m["l5"], m["price"], note))
 
         if len(legs) < 2:
             continue
 
-        role_label = usage.get("usage_role", "")
         insight = (
             f"{name} ({pos}) is a COACHES SON: {pct_i5:.0%} inside-5 share, "
-            f"{flag}, usage role '{role_label}'. "
+            f"{flag}, usage role '{usage.get('usage_role', '')}', facing {opp}. "
             f"If the first two legs land, the TD leg follows from the same opportunity well."
         )
-        slip = _slip(
-            f"coaches-son-{pid}",
-            f"COACHES SON · {name}",
-            "COACHES_SON",
-            legs,
-            insight,
-        )
+        slip = _slip(f"coaches-son-{pid}", f"COACHES SON · {name}", "COACHES_SON", legs, insight)
         if slip:
             results.append(slip)
 
@@ -498,73 +531,53 @@ def find_ib_cascade(dim: dict[str, dict]) -> list[dict]:
     QB facing CAT 4-5 defense → distress props for QB + check-down target.
     """
     results = []
-    ib = _ib_scores()
 
-    qb_ids = [pid for pid, row in dim.items() if row.get("position") == "QB"]
-
-    for qb_pid in qb_ids:
-        opp = jimmy._last_opponent(qb_pid)
-        if not opp:
+    for qb_pid, qb_info in dim.items():
+        if qb_info.get("position") != "QB" or qb_pid not in _qb_pass_volume():
             continue
-        ib_row = ib.get(opp, {})
-        ib_score = int(ib_row.get("ib_score") or 3)
-        if ib_score < 4:
+        opp, ib_row, ib_score = _opp_ib(qb_pid)
+        if not opp or ib_score < 4:
             continue
 
-        qb_name = dim[qb_pid]["name"]
-        qb_team = dim[qb_pid].get("team", "")
+        qb_name = qb_info["name"]
+        qb_team = qb_info.get("team", "")
         ib_cat = ib_row.get("ib_category", "")
+        # The defense rating IS the signal here -- a CAT 4-5 rush justifies the leg on a thin sample.
+        ib_prob = min(0.97, (ib_score - 3) * 0.20 + 0.65)
 
         legs = []
-
-        # QB distress props -- pick the best available
-        for market, direction, q_label in [
-            ("passyds",    "under", "Under 225.5 Pass Yards"),
-            ("intsthrown", "over",  "Over 0.5 Interceptions"),
-            ("passatt",    "over",  "Over 32.5 Pass Attempts"),
-        ]:
-            thresh = {"passyds": 225.5, "intsthrown": 0.5, "passatt": 32.5}[market]
-            prob, hr = _player_prob(qb_pid, market, thresh, direction, ib_score)
-            price = _fd_price(qb_name, market, direction)
-            # IB CASCADE: the defense rating IS the probability signal --
-            # a CAT 4-5 defense justifies inclusion even with a thin sample.
-            ib_prob = min(0.97, (ib_score - 3) * 0.20 + 0.65)
-            eff_prob = max(prob or 0, ib_prob)
-            if eff_prob >= MIN_MATCHUP_PROB and price:
-                l5 = (_hit_rate_under if direction == "under" else _hit_rate)(
-                    _games_for(qb_pid, market), thresh, window=5)
-                legs.append(_leg(qb_pid, qb_name, qb_team, market, direction,
-                                 q_label, eff_prob, l5, price,
+        for market, direction in [("passyds", "under"), ("intsthrown", "over"), ("passatt", "over")]:
+            m = _measure(qb_pid, qb_name, market, direction, ib_score)
+            if not m:
+                continue
+            eff = max(m["prob"] or 0, ib_prob)
+            if eff >= MIN_MATCHUP_PROB:
+                legs.append(_leg(qb_pid, qb_name, qb_team, market, direction, m["label"],
+                                 eff, m["l5"], m["price"],
                                  f"Facing {opp} {ib_cat} → IB {ib_score} pressure cascade"))
-                break  # one QB distress leg is enough
+                break
 
         if not legs:
             continue
 
-        # Check-down target: RB1 or TE1 from same team
         depth = _depth_chart().get(qb_team, [])
-        checkdown_pids = [
+        checkdown_pids = list(dict.fromkeys(
             row.get("player_id")
             for row in sorted(depth, key=lambda r: int(r.get("pos_rank") or 99))
             if row.get("pos_abb") in ("RB", "TE") and row.get("player_id")
-        ][:2]
+        ))[:2]
 
+        cd_ib_prob = min(0.97, (ib_score - 3) * 0.15 + 0.65)
         for cd_pid in checkdown_pids:
             cd_name = dim.get(cd_pid, {}).get("name") or data.player_name(cd_pid)
             cd_team = dim.get(cd_pid, {}).get("team", qb_team)
-            cd_pos = dim.get(cd_pid, {}).get("position", "RB")
-            thresh = 2.5 if cd_pos == "RB" else 4.5
-            prob, hr = _player_prob(cd_pid, "recs", thresh, "over", ib_score)
-            price = _fd_price(cd_name, "recs", "over")
-            mq = _matchup_score(cd_pid)
-            # IB CASCADE also boosts check-down target receptions
-            cd_ib_prob = min(0.97, (ib_score - 3) * 0.15 + 0.65)
-            eff_prob = max(prob or 0, mq, cd_ib_prob)
-            if eff_prob >= MIN_MATCHUP_PROB and price:
-                l5 = _hit_rate(_games_for(cd_pid, "recs"), thresh, window=5)
-                legs.append(_leg(cd_pid, cd_name, cd_team, "recs", "over",
-                                 f"Over {thresh} Receptions",
-                                 eff_prob, l5, price,
+            m = _measure(cd_pid, cd_name, "recs", "over", ib_score)
+            if not m:
+                continue
+            eff = max(m["prob"] or 0, _matchup_score(cd_pid), cd_ib_prob)
+            if eff >= MIN_MATCHUP_PROB:
+                legs.append(_leg(cd_pid, cd_name, cd_team, "recs", "over", m["label"],
+                                 eff, m["l5"], m["price"],
                                  f"Check-down target as QB dumps off under {opp} pressure"))
                 break
 
@@ -574,16 +587,10 @@ def find_ib_cascade(dim: dict[str, dict]) -> list[dict]:
         insight = (
             f"{qb_name} faces {opp} ({ib_cat}). "
             f"A CAT {ib_score} pass rush shrinks the pocket, increases quick releases, "
-            f"and punishes downfield attempts. The check-down {legs[-1]['name'] if len(legs) > 1 else ''} "
+            f"and punishes downfield attempts. The check-down {legs[-1]['name']} "
             f"sees more targets in exactly these games."
         )
-        slip = _slip(
-            f"ib-cascade-{qb_pid}",
-            f"IB CASCADE · {qb_name} vs {opp}",
-            "IB_CASCADE",
-            legs,
-            insight,
-        )
+        slip = _slip(f"ib-cascade-{qb_pid}", f"IB CASCADE · {qb_name} vs {opp}", "IB_CASCADE", legs, insight)
         if slip:
             results.append(slip)
 
@@ -597,107 +604,85 @@ def find_ib_cascade(dim: dict[str, dict]) -> list[dict]:
 
 def find_volume_stack(dim: dict[str, dict]) -> list[dict]:
     """
-    Same-offense positive correlations: QB passyds + WR1 recyds; or
-    QB passtd + TE anytd; or RB carries + rushyds (individual volume cascade).
+    Same-offense positive correlations: QB passyds + a WR's recyds, or one
+    RB's rushyds + rushrec (FanDuel has no carries market).
     """
     results = []
 
-    # Group players by team
     by_team: dict[str, dict[str, list[str]]] = {}
     for pid, info in dim.items():
-        team = info.get("team", "")
-        pos = info.get("position", "")
-        by_team.setdefault(team, {}).setdefault(pos, []).append(pid)
+        by_team.setdefault(info.get("team", ""), {}).setdefault(info.get("position", ""), []).append(pid)
 
     for team, pos_map in by_team.items():
-        qb_ids = pos_map.get("QB", [])
-        wr_ids = pos_map.get("WR", [])
-        te_ids = pos_map.get("TE", [])
-        rb_ids = pos_map.get("RB", [])
-
-        opp_ib = 3
-        for qb_pid in qb_ids:
-            opp = jimmy._last_opponent(qb_pid)
-            if opp:
-                opp_ib = int(_ib_scores().get(opp, {}).get("ib_score") or 3)
-                break
-
-        # Pattern A: QB passyds OVER + WR recyds OVER
-        for qb_pid in qb_ids:
+        # Pattern A: starting QB passyds OVER + WR recyds OVER
+        for qb_pid in pos_map.get("QB", []):
+            if qb_pid not in _qb_pass_volume():
+                continue
             qb_name = dim[qb_pid]["name"]
-            qb_prob, _ = _player_prob(qb_pid, "passyds", 250.0, "over", opp_ib)
-            qb_mq = _matchup_score(qb_pid)
-            qb_eff = max(qb_prob or 0, qb_mq)
-            qb_price = _fd_price(qb_name, "passyds", "over")
-            if qb_eff < MIN_MATCHUP_PROB or not qb_price:
+            opp, _, ib = _opp_ib(qb_pid)
+            if not opp:
+                continue
+            qm = _measure(qb_pid, qb_name, "passyds", "over", ib)
+            if not qm:
+                continue
+            qb_eff = max(qm["prob"] or 0, _matchup_score(qb_pid, "passyds"))
+            if qb_eff < MIN_MATCHUP_PROB:
                 continue
 
+            wr_ids = sorted(pos_map.get("WR", []),
+                            key=lambda p: float(_usage_by_player().get(p, {}).get("usage_index_score") or 0),
+                            reverse=True)
             for wr_pid in wr_ids[:3]:
-                wr_name = dim.get(wr_pid, {}).get("name") or data.player_name(wr_pid)
-                wr_prob, _ = _player_prob(wr_pid, "recyds", 80.5, "over", opp_ib)
-                wr_mq = _matchup_score(wr_pid)
-                wr_eff = max(wr_prob or 0, wr_mq)
-                wr_price = _fd_price(wr_name, "recyds", "over")
-                if wr_eff < MIN_MATCHUP_PROB or not wr_price:
+                wr_name = dim[wr_pid]["name"]
+                wm = _measure(wr_pid, wr_name, "recyds", "over", ib)
+                if not wm:
                     continue
-
-                qb_l5 = _hit_rate(_games_for(qb_pid, "passyds"), 250.0, window=5)
-                wr_l5 = _hit_rate(_games_for(wr_pid, "recyds"), 80.5, window=5)
+                wr_eff = max(wm["prob"] or 0, _matchup_score(wr_pid))
+                if wr_eff < MIN_MATCHUP_PROB:
+                    continue
                 legs = [
-                    _leg(qb_pid, qb_name, team, "passyds", "over", "Over 250 Pass Yards",
-                         qb_eff, qb_l5, qb_price,
-                         "Volume game: QB & WR1 totals move together"),
-                    _leg(wr_pid, wr_name, team, "recyds", "over", "Over 80.5 Rec Yards",
-                         wr_eff, wr_l5, wr_price,
+                    _leg(qb_pid, qb_name, team, "passyds", "over", qm["label"], qb_eff, qm["l5"], qm["price"],
+                         f"Volume game vs {opp}: QB & WR totals move together"),
+                    _leg(wr_pid, wr_name, team, "recyds", "over", wm["label"], wr_eff, wm["l5"], wm["price"],
                          "Same-game volume: WR yardage tracks QB yardage"),
                 ]
                 slip = _slip(
-                    f"vol-stack-qb-wr-{qb_pid}-{wr_pid}",
-                    f"VOLUME STACK · {qb_name} + {wr_name}",
-                    "VOLUME_STACK",
-                    legs,
-                    f"If {qb_name} throws for 250+ yards, {wr_name} is a primary beneficiary. "
-                    f"Same-game volume props: both go up together when the offense is clicking.",
+                    f"vol-stack-qb-wr-{qb_pid}-{wr_pid}", f"VOLUME STACK · {qb_name} + {wr_name}", "VOLUME_STACK", legs,
+                    f"If {qb_name} clears {qm['line']:g} passing yards against {opp}, {wr_name} is a primary "
+                    f"beneficiary. Same-game volume props: both go up together when the offense is clicking.",
                 )
                 if slip:
                     results.append(slip)
-                break  # one WR per QB
+                break
 
-        # Pattern B: RB individual volume (carries OVER + rushyds OVER)
-        for rb_pid in rb_ids:
-            rb_name = dim.get(rb_pid, {}).get("name") or data.player_name(rb_pid)
-            carries_prob, _ = _player_prob(rb_pid, "carries", 15.5, "over", opp_ib)
-            carries_price = _fd_price(rb_name, "carries", "over")
-            rush_prob, _ = _player_prob(rb_pid, "rushyds", 75.5, "over", opp_ib)
-            rush_price = _fd_price(rb_name, "rushyds", "over")
-            rb_mq = _matchup_score(rb_pid)
-            carries_eff = max(carries_prob or 0, rb_mq)
-            rush_eff = max(rush_prob or 0, rb_mq)
-            if not (carries_price and rush_price):
+        # Pattern B: one RB's rushyds OVER + rushrec OVER
+        for rb_pid in pos_map.get("RB", []):
+            rb_name = dim[rb_pid]["name"]
+            opp, _, ib = _opp_ib(rb_pid)
+            if not opp:
                 continue
-            if carries_eff < MIN_MATCHUP_PROB or rush_eff < MIN_MATCHUP_PROB:
+            rush = _measure(rb_pid, rb_name, "rushyds", "over", ib)
+            both = _measure(rb_pid, rb_name, "rushrec", "over", ib)
+            if not (rush and both):
                 continue
-
-            c_l5 = _hit_rate(_games_for(rb_pid, "carries"), 15.5, window=5)
-            r_l5 = _hit_rate(_games_for(rb_pid, "rushyds"), 75.5, window=5)
+            mq = _matchup_score(rb_pid)
+            rush_eff, both_eff = max(rush["prob"] or 0, mq), max(both["prob"] or 0, mq)
+            if min(rush_eff, both_eff) < MIN_MATCHUP_PROB:
+                continue
             legs = [
-                _leg(rb_pid, rb_name, team, "carries", "over", "Over 15.5 Carries",
-                     carries_eff, c_l5, carries_price, "Volume load: carries → yards"),
-                _leg(rb_pid, rb_name, team, "rushyds", "over", "Over 75.5 Rush Yards",
-                     rush_eff, r_l5, rush_price, "Same player: more carries = more yards"),
+                _leg(rb_pid, rb_name, team, "rushyds", "over", rush["label"], rush_eff, rush["l5"], rush["price"],
+                     f"Workload vs {opp}: the carries drive both numbers"),
+                _leg(rb_pid, rb_name, team, "rushrec", "over", both["label"], both_eff, both["l5"], both["price"],
+                     "Rushing yards are the bulk of rush+rec yards"),
             ]
-            usage = _usage_by_player().get(rb_pid, {})
             slip = _slip(
-                f"vol-stack-rb-{rb_pid}",
-                f"VOLUME STACK · {rb_name} Bell-Cow",
-                "VOLUME_STACK",
-                legs,
-                f"{rb_name} is a featured back with correlated volume props. "
-                f"High carry counts and rush yardage are the same opportunity — when the game plan calls for the run, both land.",
+                f"vol-stack-rb-{rb_pid}", f"VOLUME STACK · {rb_name} Bell-Cow", "VOLUME_STACK", legs,
+                f"{rb_name} is a featured back facing {opp}. When the game plan calls for the run, "
+                f"rushing yards and rush+rec yards land together.",
             )
             if slip:
                 results.append(slip)
-            break  # one RB per team
+            break
 
     results.sort(key=lambda s: min(lg["probability"] for lg in s["legs"]), reverse=True)
     return results[:4]
@@ -707,77 +692,47 @@ def find_volume_stack(dim: dict[str, dict]) -> list[dict]:
 # SINGLE HERO finder
 # ---------------------------------------------------------------------------
 
+_HERO_MARKETS: dict[str, list[str]] = {
+    "QB": ["passyds", "passtd", "rushyds"],
+    "WR": ["recyds", "recs", "anytd"],
+    "TE": ["recyds", "recs", "anytd"],
+    "RB": ["rushyds", "rushrec", "recs", "anytd"],
+}
+
+
 def find_single_hero(dim: dict[str, dict]) -> list[dict]:
     """
-    One player with 3+ distinct prop legs all clearing 85% probability.
+    One player with 3+ distinct FanDuel-priced prop legs that all qualify.
     """
     results = []
 
-    hero_queries: dict[str, list[tuple]] = {
-        "QB": [
-            ("passyds",    250.0, "over",  "Over 250 Pass Yards"),
-            ("passtd",     2.5,   "over",  "Over 2.5 Pass TDs"),
-            ("passatt",    32.5,  "over",  "Over 32.5 Pass Attempts"),
-        ],
-        "WR": [
-            ("recyds",     80.5,  "over",  "Over 80.5 Rec Yards"),
-            ("recs",       6.5,   "over",  "Over 6.5 Receptions"),
-            ("anytd",      0.5,   "over",  "Anytime TD"),
-        ],
-        "TE": [
-            ("recyds",     60.5,  "over",  "Over 60.5 Rec Yards"),
-            ("recs",       4.5,   "over",  "Over 4.5 Receptions"),
-            ("anytd",      0.5,   "over",  "Anytime TD"),
-        ],
-        "RB": [
-            ("rushyds",    75.5,  "over",  "Over 75.5 Rush Yards"),
-            ("rushrec",    85.5,  "over",  "Over 85.5 Rush+Rec Yards"),
-            ("recs",       2.5,   "over",  "Over 2.5 Receptions"),
-        ],
-    }
-
     for pid, info in dim.items():
-        pos = info.get("position", "")
-        queries = hero_queries.get(pos, [])
-        if not queries:
+        markets = _HERO_MARKETS.get(info.get("position", ""), [])
+        if not markets:
             continue
-
         name = info["name"]
         team = info.get("team", "")
-        opp = jimmy._last_opponent(pid)
-        ib_score = int(_ib_scores().get(opp or "", {}).get("ib_score") or 3)
+        opp, _, ib = _opp_ib(pid)
+        if not opp:
+            continue
+        role = _usage_by_player().get(pid, {}).get("usage_role", "")
 
         legs = []
-        mq = _matchup_score(pid)
-        for market, thresh, direction, qlabel in queries:
-            prob, _ = _player_prob(pid, market, thresh, direction, ib_score)
-            price = _fd_price(name, market, direction if direction != "over" else "over")
-            eff = max(prob or 0, mq)
-            if _qualifies(prob, pid) and price:
-                l5 = (_hit_rate_under if direction == "under" else _hit_rate)(
-                    _games_for(pid, market), thresh, window=5)
-                u_row = _usage_by_player().get(pid, {})
-                role = u_row.get("usage_role", "")
-                legs.append(_leg(pid, name, team, market, direction, qlabel,
-                                 eff, l5, price, role))
+        for market in markets:
+            m = _measure(pid, name, market, "over", ib)
+            if m and _qualifies(m["prob"], pid, market):
+                eff = max(m["prob"] or 0, _matchup_score(pid, market))
+                legs.append(_leg(pid, name, team, market, "over", m["label"], eff, m["l5"], m["price"], role))
 
         if len(legs) < 3:
             continue
+        legs = sorted(legs, key=lambda lg: lg["probability"], reverse=True)[:3]
 
-        usage = _usage_by_player().get(pid, {})
-        role_label = usage.get("usage_role", "")
         insight = (
-            f"{name} ({pos}) clears 85% on all three legs independently. "
-            f"Usage role: {role_label}. "
-            f"All three props are driven by the same opportunity — elite role players dominate every line."
+            f"{name} ({info.get('position')}) qualifies on three FanDuel lines against {opp}. "
+            f"Usage role: {role or 'n/a'}. All three props are driven by the same opportunity."
         )
-        slip = _slip(
-            f"single-hero-{pid}",
-            f"SINGLE HERO · {name}",
-            "SINGLE_HERO",
-            legs[:3],
-            insight,
-        )
+        slip = _slip(f"single-hero-{pid}", f"SINGLE HERO · {name}", "SINGLE_HERO", legs, insight)
         if slip:
             results.append(slip)
 

@@ -62,8 +62,8 @@ def api_jimmy_score(player_id: str, market: str = "rushyds"):
         "market": market,
         "hitRate": hit_rate,
         "usageIndexScore": jimmy._usage_index().get(player_id),
-        "opponent": jimmy._last_opponent(player_id),
-        "opponentToxicity": jimmy._defense_toxicity().get(jimmy._last_opponent(player_id) or ""),
+        "opponent": jimmy.next_opponent(player_id),
+        "opponentToxicity": jimmy._defense_toxicity().get(jimmy.next_opponent(player_id) or ""),
         "jimmyScore": score,
         "method": "average of {hit-rate-vs-line, usage_index/100, 1 - opponent_toxicity/100}, "
                   "+ redzone boost for TD props -- HEURISTIC, not backtested",

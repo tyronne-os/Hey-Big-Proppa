@@ -53,7 +53,7 @@ function LegRow({ leg }: { leg: EngineLeg }) {
         <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "#f1dc92" }}>{leg.prop}</span>
         <ProbBadge prob={leg.probability} />
         <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 12, color: "#d9b45a" }}>
-          {toAmerican(leg.odds)}
+          {leg.odds > 0 ? `+${leg.odds}` : `${leg.odds}`}
         </span>
       </div>
       {leg.correlationNote && (
