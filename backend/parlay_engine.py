@@ -50,6 +50,7 @@ from functools import lru_cache
 
 import breakout
 import data
+import jev
 import jimmy
 import matchup
 from odds import compute_parlay
@@ -403,8 +404,25 @@ def _leg(player_id: str, name: str, team: str, market: str, direction: str,
     if flag in ("BREAKOUT CANDIDATE", "REGRESSION RISK"):
         correlation_note = f"{correlation_note} | {flag}" if correlation_note else flag
     offer = _fd_offer(name, market, direction)
+    line = offer[0] if offer else None
+
+    # Jev's independent read, only for legs that already cleared the pond-only
+    # gate -- not the broad scan every finder runs first. Keeps usage to one
+    # call per final leg (cached per player+market+direction), never per
+    # candidate examined.
+    if jev.available():
+        usage_score = float(_usage_by_player().get(player_id, {}).get("usage_index_score") or 0) or None
+        edge = jimmy.leg_edge(player_id, market, direction)
+        opponent = jimmy.next_opponent(player_id)
+        jev_prob = jev.leg_probability(player_id, name, team, market, direction, line, l5,
+                                       usage_score, edge, opponent)
+        if jev_prob is not None:
+            prob = round((prob + jev_prob) / 2, 3)
+            tag = f"Jev {jev_prob:.0%}"
+            correlation_note = f"{correlation_note} | {tag}" if correlation_note else tag
+
     return {
-        "line": offer[0] if offer else None,
+        "line": line,
         "playerId": player_id,
         "name": name,
         "team": team,

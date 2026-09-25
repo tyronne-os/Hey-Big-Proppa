@@ -25,6 +25,7 @@ import parlays as parlays_mod
 import parlay_engine as engine_mod
 import breakout as breakout_mod
 import hot_dog
+import jev
 import matchup as matchup_mod
 import pow_report
 import buddy_cosell as buddy_mod
@@ -65,20 +66,31 @@ def api_jimmy_score(player_id: str, market: str = "rushyds"):
     """
     hit_rate = data.hit_rate_probability(player_id, market)
     score = jimmy.jimmy_score(player_id, hit_rate, market_slug=market)
+    usage_score = jimmy._usage_index().get(player_id)
+    edge = jimmy.leg_edge(player_id, market)
+    opponent = jimmy.next_opponent(player_id)
+    name = data.player_dimension().get(player_id, {}).get("name", player_id)
+    team = data.player_dimension().get(player_id, {}).get("team", "")
+    jev_prob = (jev.leg_probability(player_id, name, team, market, "over", None, hit_rate,
+                                     usage_score, edge, opponent) if jev.available() else None)
     return {
         "playerId": player_id,
         "market": market,
         "hitRate": hit_rate,
-        "usageIndexScore": jimmy._usage_index().get(player_id),
-        "opponent": jimmy.next_opponent(player_id),
-        "matchupEdge": jimmy.leg_edge(player_id, market),
+        "usageIndexScore": usage_score,
+        "opponent": opponent,
+        "matchupEdge": edge,
         "eligible": jimmy.eligible(player_id),
         "matchupGate": jimmy.matchup_gate(player_id, market),
         "regressionFactor": jimmy.regression_factor(player_id),
+        "jevAvailable": jev.available(),
+        "jevProbability": jev_prob,
         "jimmyScore": score,
         "method": "average of {hit-rate-vs-line, usage_index/100, Phi(matchup unit edge)}, "
                   "+ redzone boost for TD props, x regression cut on REGRESSION RISK players; "
-                  "filtered by losing record and matchup direction -- HEURISTIC, not backtested",
+                  "filtered by losing record and matchup direction -- HEURISTIC, not backtested. "
+                  "jevProbability is Jev's independent read (not blended into jimmyScore here; "
+                  "the engine blends it into final leg probabilities separately).",
     }
 
 
