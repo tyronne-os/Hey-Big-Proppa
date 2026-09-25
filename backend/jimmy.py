@@ -24,6 +24,8 @@ Composite, per the user's chosen weighting (even split across signals):
   ...then, for TD-shaped props (market_slug == 'anytd'), a redzone boost is
   added from redzone_tiers.csv's inside-5 intra-team share, scaled and
   capped so it nudges rather than dominates.
+  ...and OVER props on a REGRESSION RISK player (breakout.py) are cut by up
+  to 15%, scaled by how far his production outruns his opportunity.
 
 A missing input is dropped from the average rather than treated as zero --
 most players this early in the season don't have a full pond footprint yet
@@ -38,6 +40,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+import breakout
 import data
 
 
@@ -127,7 +130,29 @@ def next_opponent(player_id: str) -> str | None:
     return game["away_team"] if game["home_team"] == team else game["home_team"]
 
 
-def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None = None) -> float | None:
+REGRESSION_SCALE = 0.3
+REGRESSION_MAX_PENALTY = 0.15
+
+
+def regression_factor(player_id: str, direction: str = "over") -> float:
+    """
+    Multiplier <= 1 for OVER props on a player flagged REGRESSION RISK by the
+    breakout pond: scoring above what his targets and carries support while
+    his share of them shrinks. The cut scales with how far production runs
+    ahead of opportunity -- 0.3 x (ppr - xppr) / ppr, capped at 15%. Unders
+    are left alone rather than boosted.
+    """
+    if direction != "over":
+        return 1.0
+    row = breakout.breakout_by_player().get(player_id)
+    if not row or row["flag"] != "REGRESSION RISK" or row["pprPerGame"] <= 0:
+        return 1.0
+    excess = (row["pprPerGame"] - row["xpprPerGame"]) / row["pprPerGame"]
+    return round(1 - min(REGRESSION_MAX_PENALTY, REGRESSION_SCALE * excess), 3)
+
+
+def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None = None,
+                direction: str = "over") -> float | None:
     components: list[float] = []
 
     if hit_rate is not None:
@@ -152,4 +177,4 @@ def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None 
         if redzone is not None:
             score = min(1.0, score + min(0.15, redzone * 0.3))
 
-    return round(score, 3)
+    return round(score * regression_factor(player_id, direction), 3)

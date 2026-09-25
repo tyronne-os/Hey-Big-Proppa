@@ -219,13 +219,15 @@ def _qb_pass_volume() -> dict[str, float]:
     return {pid: round(100 * (i + 1) / n, 1) for i, pid in enumerate(ranked)} if n else {}
 
 
-def _matchup_score(player_id: str, market: str | None = None) -> float:
+def _matchup_score(player_id: str, market: str | None = None, direction: str = "over") -> float:
     """
     Pond-only matchup quality: (usage / 100 + inverted next-opponent toxicity) / 2.
 
     The 'top 10% offense vs bottom 10% defense' signal -- a trusted player
     facing a weak defense justifies a leg even when hit-rate history is thin.
     Passing markets use the QB passing-volume stand-in instead of player_usage.
+    Over props on a REGRESSION RISK player take Jimmy's regression cut here too,
+    so the fallback can't let a flagged player skip it.
     """
     if market in _PASS_MARKETS and player_id in _qb_pass_volume():
         u = _qb_pass_volume()[player_id] / 100
@@ -233,7 +235,7 @@ def _matchup_score(player_id: str, market: str | None = None) -> float:
         u = float(_usage_by_player().get(player_id, {}).get("usage_index_score") or 0) / 100
     opp = jimmy.next_opponent(player_id)
     tox = float(_ib_scores().get(opp or "", {}).get("toxicity_index_0_100") or 50) / 100
-    return round((u + (1 - tox)) / 2, 3)
+    return round((u + (1 - tox)) / 2 * jimmy.regression_factor(player_id, direction), 3)
 
 
 def _qualifies(prob: float | None, player_id: str, market: str | None = None) -> bool:
@@ -381,7 +383,7 @@ def _player_prob(player_id: str, market_slug: str, threshold: float | None,
     else:
         raw_hr = _hit_rate(games, eff_threshold)
 
-    base = jimmy.jimmy_score(player_id, raw_hr, market_slug=market_slug)
+    base = jimmy.jimmy_score(player_id, raw_hr, market_slug=market_slug, direction=direction)
     if base is None:
         return None, raw_hr
 
@@ -554,7 +556,7 @@ def find_ib_cascade(dim: dict[str, dict]) -> list[dict]:
             m = _measure(qb_pid, qb_name, market, direction, ib_score)
             if not m:
                 continue
-            eff = max(m["prob"] or 0, ib_prob)
+            eff = max(m["prob"] or 0, ib_prob * jimmy.regression_factor(qb_pid, direction))
             if eff >= MIN_MATCHUP_PROB:
                 legs.append(_leg(qb_pid, qb_name, qb_team, market, direction, m["label"],
                                  eff, m["l5"], m["price"],
@@ -578,7 +580,7 @@ def find_ib_cascade(dim: dict[str, dict]) -> list[dict]:
             m = _measure(cd_pid, cd_name, "recs", "over", ib_score)
             if not m:
                 continue
-            eff = max(m["prob"] or 0, _matchup_score(cd_pid), cd_ib_prob)
+            eff = max(m["prob"] or 0, _matchup_score(cd_pid), cd_ib_prob * jimmy.regression_factor(cd_pid))
             if eff >= MIN_MATCHUP_PROB:
                 legs.append(_leg(cd_pid, cd_name, cd_team, "recs", "over", m["label"],
                                  eff, m["l5"], m["price"],
