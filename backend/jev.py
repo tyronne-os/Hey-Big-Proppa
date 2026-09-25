@@ -39,7 +39,7 @@ except ImportError:  # optional dependency -- local dev without it installed sti
 
 @lru_cache(maxsize=1)
 def _client():
-    key = os.environ.get("JEV_API_KEY")
+    key = os.environ.get("JEV_API_KEY") or os.environ.get("TYPESAFE_API_KEY")
     if not key or TypeSafeClient is None:
         return None
     return TypeSafeClient(api_key=key, model="jev-latest", timeout=8.0)
