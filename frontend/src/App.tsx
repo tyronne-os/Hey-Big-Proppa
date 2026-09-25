@@ -13,10 +13,11 @@ import ChartsTab from "./components/ChartsTab";
 import QueriesTab, { type QueryResult } from "./components/QueriesTab";
 import EngineTab from "./components/EngineTab";
 import NewsTab from "./components/NewsTab";
+import MatchupsTab from "./components/MatchupsTab";
 import { api } from "./api";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
-const VIEW_TABS = ["player", "leaders", "parlay", "charts", "engine", "news", "queries"] as const;
+const VIEW_TABS = ["player", "leaders", "matchups", "parlay", "charts", "engine", "news", "queries"] as const;
 type ViewTab = (typeof VIEW_TABS)[number];
 
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
@@ -155,7 +156,7 @@ export default function App() {
       <Header isDark={isDark} onToggleTheme={() => setIsDark((v) => !v)} onToggleAdmin={() => setAdminOpen((v) => !v)} />
 
       <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
-        {tab !== "leaders" && (
+        {tab !== "leaders" && tab !== "matchups" && (
           <>
             <div style={{ width: `${leftPct}%`, flex: `0 0 ${leftPct}%`, display: "flex", flexDirection: "column", minWidth: 0 }}>
               <div
@@ -228,6 +229,7 @@ export default function App() {
             {tab === "charts" && <ChartsTab playerChart={currentPlayerChart} slip={slip} />}
             {tab === "engine" && <EngineTab />}
             {tab === "news" && <NewsTab />}
+            {tab === "matchups" && <MatchupsTab />}
             {tab === "queries" && (cleared && results.length === 0 ? <QueriesTab results={[]} /> : <QueriesTab results={results} />)}
           </div>
 
