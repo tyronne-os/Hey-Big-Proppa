@@ -49,6 +49,38 @@ def available() -> bool:
     return _client() is not None
 
 
+def diagnose() -> dict:
+    """
+    Real diagnostic, never the value: which env var name is set (catches a
+    JEV_API_KEY / TYPESAFE_API_KEY mix-up), whether the SDK is installed,
+    and -- if a key is present -- an actual trivial API call so a wrong or
+    revoked key shows up as an auth error instead of a silent "present".
+    """
+    jev_key = os.environ.get("JEV_API_KEY")
+    typesafe_key = os.environ.get("TYPESAFE_API_KEY")
+    out = {
+        "jevApiKeyPresent": bool(jev_key), "jevApiKeyLength": len(jev_key) if jev_key else 0,
+        "typesafeApiKeyPresent": bool(typesafe_key),
+        "note_typesafe_key": ("TYPESAFE_API_KEY is set but this app reads JEV_API_KEY -- "
+                              "that's likely the mismatch." if typesafe_key and not jev_key else None),
+        "sdkInstalled": TypeSafeClient is not None,
+        "callTest": None,
+    }
+    if not jev_key or TypeSafeClient is None:
+        return out
+    try:
+        client = TypeSafeClient(api_key=jev_key, model="jev-latest", timeout=8.0)
+        with client:
+            response = client.system_one(
+                state="ping",
+                questions={"ok": Noul(instructions="Is this a connectivity test?")},
+            )
+        out["callTest"] = {"ok": True, "noul": response.nouls["ok"].noul}
+    except Exception as exc:
+        out["callTest"] = {"ok": False, "errorType": type(exc).__name__, "error": str(exc)[:300]}
+    return out
+
+
 @lru_cache(maxsize=4096)
 def leg_probability(
     player_id: str, name: str, team: str, market_slug: str, direction: str,

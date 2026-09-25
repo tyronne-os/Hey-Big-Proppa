@@ -241,18 +241,14 @@ def health():
 @app.get("/api/jev_status")
 def jev_status():
     """
-    Presence check only -- never the value. Jev itself is NOT WIRED (no code
-    path calls typesafe.ai yet); this just answers "did the Space secret
-    actually reach this container" so that can be confirmed independently of
-    building the integration.
+    Real diagnostic, never the value: which env var name is actually set
+    (JEV_API_KEY vs the SDK's default TYPESAFE_API_KEY -- catches a naming
+    mix-up), and if a key is present, an actual trivial Jev call so an
+    invalid or revoked key shows up as a real auth error, not a false
+    "present". Jev IS wired now (parlay_engine.py's _leg()) -- this endpoint
+    exists to debug the secret, not to gate whether it's built.
     """
-    key = os.environ.get("JEV_API_KEY")
-    return {
-        "present": bool(key),
-        "length": len(key) if key else 0,
-        "wired": False,
-        "note": "Jev is not yet called anywhere in the app -- this only confirms the secret reached the container.",
-    }
+    return jev.diagnose()
 
 
 # Serves the built React app (frontend/dist, produced by the Dockerfile's node stage) for the
