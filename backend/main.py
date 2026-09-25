@@ -11,8 +11,11 @@ Run:
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 import data
 import jimmy
@@ -220,3 +223,12 @@ def api_news_articles():
 @app.get("/api/health")
 def health():
     return {"status": "ok", "charts_indexed": len(data.chart_index())}
+
+
+# Serves the built React app (frontend/dist, produced by the Dockerfile's node stage) for the
+# single-container Hugging Face Space deployment -- same-origin, so the frontend's VITE_API_BASE
+# is built empty and every /api/* call above already works with no CORS involved. Local dev keeps
+# using the Vite dev server directly, so this mount is a no-op unless dist/ actually exists.
+_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+if _DIST.is_dir():
+    app.mount("/", StaticFiles(directory=_DIST, html=True), name="frontend")
