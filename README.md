@@ -1,7 +1,7 @@
 ---
 title: Big Proppa
 emoji: 🏈
-colorFrom: gold
+colorFrom: yellow
 colorTo: purple
 sdk: docker
 app_port: 7860
