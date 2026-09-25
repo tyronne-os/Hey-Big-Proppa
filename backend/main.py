@@ -168,27 +168,35 @@ def api_dvp():
 
 @app.get("/api/canvas/nodes")
 def api_canvas_nodes():
-    """
-    Data-driven node list for the Lake Canvas, per HANDOFF_CLAUDE_CODE.md
-    sec 3.3. Two nodes exist today; the shape supports more without a
-    frontend code change. JIMMY THE GREEK stays 'harness . not wired' until
-    Jev is actually connected (needs JEV_API_KEY as an environment variable
-    on this session -- see github.md).
-    """
+    """Data-driven node list for the Lake Canvas — statuses reflect live state."""
+    index = data.chart_index()
+    ok_count = sum(1 for r in index.values() if r.get("status") == "ok")
+    total_count = len(index)
+    ramp_sub = (
+        f"{ok_count}/{total_count} ponds live"
+        if total_count > 0
+        else "lake/gold/nfl — no index"
+    )
+
+    jev_connected = jev.available()
+    jimmy_sub = (
+        f"composite score · Jev {'connected' if jev_connected else 'disconnected'}"
+    )
+
     return {
         "nodes": [
             {
                 "id": "ramp-nfl",
                 "type": "lake",
                 "name": "RAMP NFL",
-                "sub": "lake/nfl.duckdb -- schema . ponds . not wired",
+                "sub": ramp_sub,
                 "chips": [],
             },
             {
                 "id": "jimmy-the-greek",
                 "type": "expert",
                 "name": "JIMMY THE GREEK",
-                "sub": "harness . not wired",
+                "sub": jimmy_sub,
                 "chips": ["Jev"],
             },
         ]
