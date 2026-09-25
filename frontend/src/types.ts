@@ -90,6 +90,7 @@ export interface EngineLeg {
   team: string;
   market: string;
   direction: string;
+  line: number | null;
   prop: string;
   probability: number;
   l5: number;
@@ -146,4 +147,58 @@ export interface NewsArticle {
   dateline: string;
   body: string;
   verdict: string;
+}
+
+export interface PowWeek {
+  season: number;
+  week: number;
+  ticketsPosted: number;
+  ticketsGraded: number;
+  ticketsWon: number;
+  pow: number | null;
+  failure: boolean;
+  picks: number;
+  picksGraded: number;
+  pickAccuracy: number | null;
+}
+
+export interface PowSummary {
+  sourceStatus: SourceStatus;
+  target: number;
+  weeks: PowWeek[];
+  season: { ticketsGraded: number; ticketsWon: number; pow: number | null; failedWeeks: number };
+}
+
+export type MatchupUnit = "SCORING" | "RED ZONE" | "GROUND" | "AIR" | "BALL SECURITY";
+
+export interface MatchupSide {
+  team: string;
+  record: string;
+  losing: boolean;
+  edges: Record<MatchupUnit, number>;
+}
+
+export interface MatchupGame {
+  gameId: string;
+  season: number;
+  week: number;
+  gameDate: string;
+  gameTime: string;
+  home: MatchupSide;
+  away: MatchupSide;
+  predictedWinner: string;
+  winProbability: number;
+  predictedMargin: number;
+}
+
+export interface BacktestRow {
+  section: string;
+  model: string;
+  split: string;
+  bucket: string;
+  games: string;
+  correct: string;
+  accuracy: string;
+  log_loss: string;
+  note: string;
 }

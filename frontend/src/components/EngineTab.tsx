@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { EngineSlip, EngineLeg } from "../types";
+import type { EngineSlip, EngineLeg, PowSummary } from "../types";
 
 const TYPE_META: Record<string, { label: string; color: string; desc: string }> = {
   COACHES_SON: {
@@ -129,15 +129,34 @@ function EngineCard({ slip }: { slip: EngineSlip }) {
 
 const TYPE_ORDER = ["COACHES_SON", "IB_CASCADE", "VOLUME_STACK", "SINGLE_HERO"];
 
+function PowLine({ pow }: { pow: PowSummary | null }) {
+  if (!pow) return null;
+  const target = Math.round(pow.target * 100);
+  const graded = [...pow.weeks].reverse().find((w) => w.ticketsGraded > 0);
+  const posted = pow.weeks[pow.weeks.length - 1];
+  const failed = graded?.failure ?? false;
+  const color = !graded ? "var(--bp-muted)" : failed ? "#ef4444" : "#2ee6a6";
+  return (
+    <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, fontWeight: 700, color }}>
+      {graded
+        ? `POW wk ${graded.week}: ${graded.ticketsWon}/${graded.ticketsGraded} (${Math.round((graded.pow ?? 0) * 100)}%) · target ${target}%${failed ? " · FAILED" : ""}`
+        : `POW: no graded week yet · target ${target}%`}
+      {posted && posted !== graded ? ` · wk ${posted.week} board: ${posted.ticketsPosted} tickets posted` : ""}
+    </span>
+  );
+}
+
 export default function EngineTab() {
   const [slips, setSlips] = useState<EngineSlip[] | null>(null);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState<string>("ALL");
+  const [pow, setPow] = useState<PowSummary | null>(null);
 
   useEffect(() => {
     api.parlaysEngine()
       .then((r) => setSlips(r.slips))
       .catch(() => setError(true));
+    api.pow().then(setPow).catch(() => setPow(null));
   }, []);
 
   const visible = slips
@@ -151,8 +170,9 @@ export default function EngineTab() {
           PROPPA ENGINE · CORRELATED FINDS
         </span>
         <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>
-          Lake-only · FanDuel prices · ≥85% Jimmy probability · Min 30% profit boost · HEURISTIC, NOT BACKTESTED
+          Lake-only · FanDuel prices · Jimmy filters: no losing teams, every leg wins its matchup · Min 30% profit boost
         </span>
+        <PowLine pow={pow} />
       </div>
 
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>

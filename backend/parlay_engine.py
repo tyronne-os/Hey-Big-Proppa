@@ -402,7 +402,9 @@ def _leg(player_id: str, name: str, team: str, market: str, direction: str,
     flag = breakout.breakout_by_player().get(player_id, {}).get("flag")
     if flag in ("BREAKOUT CANDIDATE", "REGRESSION RISK"):
         correlation_note = f"{correlation_note} | {flag}" if correlation_note else flag
+    offer = _fd_offer(name, market, direction)
     return {
+        "line": offer[0] if offer else None,
         "playerId": player_id,
         "name": name,
         "team": team,

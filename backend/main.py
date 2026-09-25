@@ -21,6 +21,7 @@ import parlays as parlays_mod
 import parlay_engine as engine_mod
 import breakout as breakout_mod
 import matchup as matchup_mod
+import pow_report
 import buddy_cosell as buddy_mod
 
 app = FastAPI(title="HEY BIG PROPPA! API")
@@ -187,6 +188,12 @@ def api_matchups():
 def api_matchups_backtest():
     """How the predictor did on seasons it never saw, next to always-home and the Vegas favorite."""
     return {"sourceStatus": data.chart_status("matchup_backtest"), "rows": data.load("matchup_backtest")}
+
+
+@app.get("/api/pow")
+def api_pow():
+    """Parlay Orders Won per week and season; a graded week under 75% is flagged as a failure."""
+    return pow_report.summary()
 
 
 @app.get("/api/breakout")

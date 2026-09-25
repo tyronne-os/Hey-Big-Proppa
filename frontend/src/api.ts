@@ -6,7 +6,7 @@ import type {
   PlayerPropChart,
   PlayerSearchResult,
 } from "./types";
-import type { NewsArticle } from "./types";
+import type { BacktestRow, MatchupGame, NewsArticle, PowSummary, SourceStatus } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
@@ -34,4 +34,7 @@ export const api = {
   dvp: () => get<{ sourceStatus: string; rows: { team: string; toxicity: number; category: string }[] }>("/api/chart/dvp"),
   parlaysEngine: () => get<{ slips: EngineSlip[] }>("/api/parlays/engine"),
   newsArticles: () => get<{ articles: NewsArticle[] }>("/api/news/articles"),
+  pow: () => get<PowSummary>("/api/pow"),
+  matchups: () => get<{ sourceStatus: SourceStatus; games: MatchupGame[] }>("/api/matchups"),
+  matchupsBacktest: () => get<{ sourceStatus: SourceStatus; rows: BacktestRow[] }>("/api/matchups/backtest"),
 };
