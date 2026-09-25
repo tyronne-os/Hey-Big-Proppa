@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import data
 import jimmy
+import matchup
 from odds import compute_parlay
 
 WAGER = 5.0
@@ -74,6 +75,8 @@ def hot_dogs() -> dict:
         # team's own spread; positive means home is the underdog.
         underdog_team = g["home_team"] if spread > 0 else g["away_team"]
         underdog_odds = g.get("home_spread_odds") if spread > 0 else g.get("away_spread_odds")
+        if matchup.is_losing(underdog_team):
+            continue
         a = ats.get(underdog_team)
         if not a or not underdog_odds:
             continue
@@ -102,6 +105,8 @@ def beast_mode() -> dict:
     rb_ids = [pid for pid, row in dim.items() if row.get("position") == "RB"]
     legs = []
     for pid in rb_ids:
+        if not jimmy.eligible(pid) or not jimmy.matchup_gate(pid, "anytd"):
+            continue
         games = data.anytime_td_games(pid)  # total_tds per week
         hit_rate = _hit_rate_at_threshold(games, threshold=2)
         l5 = _l5_rate(games, threshold=2)
@@ -130,6 +135,8 @@ def hot_boys() -> dict:
     wr_te_ids = [pid for pid, row in dim.items() if row.get("position") in ("WR", "TE")]
     legs = []
     for pid in wr_te_ids:
+        if not jimmy.eligible(pid) or not jimmy.matchup_gate(pid, "recs"):
+            continue
         chart = data.player_prop_chart(pid, "recs")
         if chart.get("line") is None:
             continue
@@ -160,6 +167,8 @@ def top_gun() -> dict:
     qb_ids = [pid for pid, row in dim.items() if row.get("position") == "QB"]
     legs = []
     for pid in qb_ids:
+        if not jimmy.eligible(pid) or not jimmy.matchup_gate(pid, "passyds"):
+            continue
         games = data.weekly_games(pid, "player_passing_week", "passing_yards")
         hit_rate = _hit_rate_at_threshold(games, threshold=250)
         l5 = _l5_rate(games, threshold=250)

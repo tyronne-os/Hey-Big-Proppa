@@ -65,12 +65,14 @@ def api_jimmy_score(player_id: str, market: str = "rushyds"):
         "hitRate": hit_rate,
         "usageIndexScore": jimmy._usage_index().get(player_id),
         "opponent": jimmy.next_opponent(player_id),
-        "opponentToxicity": jimmy._defense_toxicity().get(jimmy.next_opponent(player_id) or ""),
+        "matchupEdge": jimmy.leg_edge(player_id, market),
+        "eligible": jimmy.eligible(player_id),
+        "matchupGate": jimmy.matchup_gate(player_id, market),
         "regressionFactor": jimmy.regression_factor(player_id),
         "jimmyScore": score,
-        "method": "average of {hit-rate-vs-line, usage_index/100, 1 - opponent_toxicity/100}, "
-                  "+ redzone boost for TD props, x regression cut on REGRESSION RISK players "
-                  "-- HEURISTIC, not backtested",
+        "method": "average of {hit-rate-vs-line, usage_index/100, Phi(matchup unit edge)}, "
+                  "+ redzone boost for TD props, x regression cut on REGRESSION RISK players; "
+                  "filtered by losing record and matchup direction -- HEURISTIC, not backtested",
     }
 
 

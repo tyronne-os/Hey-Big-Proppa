@@ -11,10 +11,9 @@ data, so it is not something any pond generates.
 """
 from __future__ import annotations
 
-from collections import defaultdict
-
 import breakout
 import data
+import matchup
 
 DIVISIONS = {
     "AFC East": ["BUF", "MIA", "NE", "NYJ"],
@@ -150,25 +149,11 @@ def leaders(category: str) -> dict:
         }
 
     if category == "DIVISIONS":
-        wins: dict[str, int] = defaultdict(int)
-        losses: dict[str, int] = defaultdict(int)
-        for g in data.load("schedule"):
-            if not g.get("home_score") or not g.get("away_score"):
-                continue
-            try:
-                hs, aws = int(g["home_score"]), int(g["away_score"])
-            except ValueError:
-                continue
-            if hs > aws:
-                wins[g["home_team"]] += 1
-                losses[g["away_team"]] += 1
-            elif aws > hs:
-                wins[g["away_team"]] += 1
-                losses[g["home_team"]] += 1
+        records = matchup.team_records()
         divisions = []
         for div_name, teams in DIVISIONS.items():
             standings = sorted(
-                ({"team": t, "wins": wins[t], "losses": losses[t]} for t in teams),
+                ({"team": t, "wins": records.get(t, (0, 0, 0))[0], "losses": records.get(t, (0, 0, 0))[1]} for t in teams),
                 key=lambda s: s["wins"], reverse=True,
             )
             divisions.append({"division": div_name, "standings": standings})

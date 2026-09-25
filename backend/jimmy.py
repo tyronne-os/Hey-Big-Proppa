@@ -18,9 +18,10 @@ Composite, per the user's chosen weighting (even split across signals):
     - hit_rate     : recent-form hit rate vs. the market line (0-1)
     - usage        : the player's own usage_index_score / 100 (0-1) --
                       the lake's "who the offense trusts" pond
-    - matchup      : 1 - (opponent defense toxicity_index_0_100 / 100) --
-                      inverted, since a tougher opposing defense should
-                      LOWER an offensive player's probability
+    - matchup      : Phi(unit edge) from the BIG PROPPA matchup predictor
+                      (matchup.py) -- the unit that drives this market, his
+                      offense against his next opponent's defense, signed
+                      for the bet's direction
   ...then, for TD-shaped props (market_slug == 'anytd'), a redzone boost is
   added from redzone_tiers.csv's inside-5 intra-team share, scaled and
   capped so it nudges rather than dominates.
@@ -33,7 +34,12 @@ most players this early in the season don't have a full pond footprint yet
 punishing a thin sample with a zero would misrepresent the lake's own
 "HEURISTIC, not backtested" labeling discipline.
 
-HEURISTIC. NOT BACKTESTED. Same caveat every other pond in this lake
+Jimmy's filters, applied before any leg is built (Big Proppa does no filtering):
+  eligible()      no player from a team with a losing record (W < L)
+  matchup_gate()  the leg's unit edge must point the same way as the bet
+
+HEURISTIC. NOT BACKTESTED as a prop model (the matchup predictor itself is
+backtested -- see matchup.py). Same caveat every other pond in this lake
 carries -- see docs/HANDOFF.md sec 7 lesson 9.
 """
 from __future__ import annotations
@@ -42,6 +48,7 @@ from functools import lru_cache
 
 import breakout
 import data
+import matchup
 
 
 @lru_cache(maxsize=1)
@@ -130,6 +137,45 @@ def next_opponent(player_id: str) -> str | None:
     return game["away_team"] if game["home_team"] == team else game["home_team"]
 
 
+# Which matchup unit drives each prop market. Interceptions thrown is the one
+# over that pays when the offense struggles.
+MARKET_UNITS: dict[str, tuple[str, ...]] = {
+    "rushyds": ("GROUND",), "carries": ("GROUND",),
+    "rushrec": ("GROUND", "AIR"),
+    "recs": ("AIR",), "recyds": ("AIR",), "passyds": ("AIR",), "passatt": ("AIR",),
+    "anytd": ("RED ZONE", "SCORING"), "passtd": ("RED ZONE", "SCORING"), "firsttd": ("RED ZONE", "SCORING"),
+    "intsthrown": ("BALL SECURITY",),
+}
+OFFENSE_FAILS = {"intsthrown"}
+
+
+def eligible(player_id: str) -> bool:
+    """Losers lose: no player from a team with more losses than wins."""
+    team = player_team(player_id)
+    return bool(team) and not matchup.is_losing(team)
+
+
+def leg_edge(player_id: str, market_slug: str, direction: str = "over") -> float | None:
+    """
+    The matchup edge behind one leg, signed so + favors the bet. Built from
+    the unit(s) for the market, this player's offense against his next
+    opponent's defense.
+    """
+    edges = matchup.edges_for_team(player_team(player_id) or "")
+    units = MARKET_UNITS.get(market_slug)
+    if not edges or not units:
+        return None
+    edge = sum(edges[u] for u in units) / len(units)
+    wants_offense_success = (direction == "over") != (market_slug in OFFENSE_FAILS)
+    return edge if wants_offense_success else -edge
+
+
+def matchup_gate(player_id: str, market_slug: str, direction: str = "over") -> bool:
+    """A leg is only matchup-driven if its unit edge points the same way as the bet."""
+    edge = leg_edge(player_id, market_slug, direction)
+    return edge is not None and edge > 0
+
+
 REGRESSION_SCALE = 0.3
 REGRESSION_MAX_PENALTY = 0.15
 
@@ -162,10 +208,9 @@ def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None 
     if usage is not None:
         components.append(usage / 100)
 
-    opponent = next_opponent(player_id)
-    toxicity = _defense_toxicity().get(opponent) if opponent else None
-    if toxicity is not None:
-        components.append(1 - toxicity / 100)
+    edge = leg_edge(player_id, market_slug or "", direction)
+    if edge is not None:
+        components.append(matchup.phi(edge))
 
     if not components:
         return None

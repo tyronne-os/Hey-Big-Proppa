@@ -51,6 +51,7 @@ from functools import lru_cache
 import breakout
 import data
 import jimmy
+import matchup
 from odds import compute_parlay
 
 WAGER = 5.0
@@ -221,10 +222,10 @@ def _qb_pass_volume() -> dict[str, float]:
 
 def _matchup_score(player_id: str, market: str | None = None, direction: str = "over") -> float:
     """
-    Pond-only matchup quality: (usage / 100 + inverted next-opponent toxicity) / 2.
+    Pond-only matchup quality: (usage / 100 + Phi(unit edge for this leg)) / 2.
 
     The 'top 10% offense vs bottom 10% defense' signal -- a trusted player
-    facing a weak defense justifies a leg even when hit-rate history is thin.
+    whose unit wins its matchup justifies a leg even when hit-rate history is thin.
     Passing markets use the QB passing-volume stand-in instead of player_usage.
     Over props on a REGRESSION RISK player take Jimmy's regression cut here too,
     so the fallback can't let a flagged player skip it.
@@ -233,16 +234,16 @@ def _matchup_score(player_id: str, market: str | None = None, direction: str = "
         u = _qb_pass_volume()[player_id] / 100
     else:
         u = float(_usage_by_player().get(player_id, {}).get("usage_index_score") or 0) / 100
-    opp = jimmy.next_opponent(player_id)
-    tox = float(_ib_scores().get(opp or "", {}).get("toxicity_index_0_100") or 50) / 100
-    return round((u + (1 - tox)) / 2 * jimmy.regression_factor(player_id, direction), 3)
+    edge = jimmy.leg_edge(player_id, market or "", direction)
+    m = matchup.phi(edge) if edge is not None else 0.5
+    return round((u + m) / 2 * jimmy.regression_factor(player_id, direction), 3)
 
 
-def _qualifies(prob: float | None, player_id: str, market: str | None = None) -> bool:
+def _qualifies(prob: float | None, player_id: str, market: str | None = None, direction: str = "over") -> bool:
     """Clears the 85% Jimmy score, or the pond-only matchup score clears 68% (thin early-season samples)."""
     if prob is not None and prob >= MIN_PROB:
         return True
-    return _matchup_score(player_id, market) >= MIN_MATCHUP_PROB
+    return _matchup_score(player_id, market, direction) >= MIN_MATCHUP_PROB
 
 
 def _games_for(player_id: str, market_slug: str) -> list[dict]:
@@ -443,7 +444,13 @@ def _slip(slip_id: str, title: str, correlation_type: str, legs: list[dict],
 
 
 def _measure(player_id: str, name: str, market: str, direction: str, ib_score: int) -> dict | None:
-    """Probability measured against the same FanDuel line the leg is priced at. None if FanDuel doesn't offer it."""
+    """
+    Probability measured against the same FanDuel line the leg is priced at.
+    None if FanDuel doesn't offer it, or Jimmy filters the leg out: a player
+    from a losing team, or a unit edge pointing against the bet.
+    """
+    if not jimmy.eligible(player_id) or not jimmy.matchup_gate(player_id, market, direction):
+        return None
     offer = _fd_offer(name, market, direction)
     if not offer:
         return None
@@ -496,12 +503,10 @@ def find_coaches_son(dim: dict[str, dict]) -> list[dict]:
         opp, _, ib_score = _opp_ib(pid)
         if not opp:
             continue
-        mq = _matchup_score(pid)
-
         legs = []
         yds_market = "rushrec" if pos == "RB" else "recyds"
         plan = [
-            (yds_market, f"Inside-5 share {pct_i5:.0%} | {flag} | matchup vs {opp} {mq:.0%}"),
+            (yds_market, f"Inside-5 share {pct_i5:.0%} | {flag} | wins its matchup vs {opp}"),
             ("recs", "Check-down/slot target in stress situations"),
             ("anytd", f"Inside-5 intra share {pct_i5:.0%} | TD rate per RZ opp: "
                       f"{float(tc.get('td_per_redzone_opp') or 0):.2f}"),
@@ -510,7 +515,7 @@ def find_coaches_son(dim: dict[str, dict]) -> list[dict]:
             m = _measure(pid, name, market, "over", ib_score)
             if m and _qualifies(m["prob"], pid, market):
                 legs.append(_leg(pid, name, team, market, "over", m["label"],
-                                 max(m["prob"] or 0, mq), m["l5"], m["price"], note))
+                                 max(m["prob"] or 0, _matchup_score(pid, market)), m["l5"], m["price"], note))
 
         if len(legs) < 2:
             continue
@@ -580,7 +585,7 @@ def find_ib_cascade(dim: dict[str, dict]) -> list[dict]:
             m = _measure(cd_pid, cd_name, "recs", "over", ib_score)
             if not m:
                 continue
-            eff = max(m["prob"] or 0, _matchup_score(cd_pid), cd_ib_prob * jimmy.regression_factor(cd_pid))
+            eff = max(m["prob"] or 0, _matchup_score(cd_pid, "recs"), cd_ib_prob * jimmy.regression_factor(cd_pid))
             if eff >= MIN_MATCHUP_PROB:
                 legs.append(_leg(cd_pid, cd_name, cd_team, "recs", "over", m["label"],
                                  eff, m["l5"], m["price"],
@@ -643,7 +648,7 @@ def find_volume_stack(dim: dict[str, dict]) -> list[dict]:
                 wm = _measure(wr_pid, wr_name, "recyds", "over", ib)
                 if not wm:
                     continue
-                wr_eff = max(wm["prob"] or 0, _matchup_score(wr_pid))
+                wr_eff = max(wm["prob"] or 0, _matchup_score(wr_pid, "recyds"))
                 if wr_eff < MIN_MATCHUP_PROB:
                     continue
                 legs = [
@@ -671,8 +676,8 @@ def find_volume_stack(dim: dict[str, dict]) -> list[dict]:
             both = _measure(rb_pid, rb_name, "rushrec", "over", ib)
             if not (rush and both):
                 continue
-            mq = _matchup_score(rb_pid)
-            rush_eff, both_eff = max(rush["prob"] or 0, mq), max(both["prob"] or 0, mq)
+            rush_eff = max(rush["prob"] or 0, _matchup_score(rb_pid, "rushyds"))
+            both_eff = max(both["prob"] or 0, _matchup_score(rb_pid, "rushrec"))
             if min(rush_eff, both_eff) < MIN_MATCHUP_PROB:
                 continue
             legs = [
