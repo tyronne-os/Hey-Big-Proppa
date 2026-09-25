@@ -92,6 +92,17 @@ UNITS: dict[str, list[tuple[str, str, int]]] = {
 }
 UNIT_NAMES = list(UNITS)
 
+# NFL power-ranking composites (1 = best) for the "OFF #4 / DEF #19" display. Tested as a 6th
+# "OVERALL" unit fed into the fitted model (scripts/fit_matchup_model.py) and it made the model
+# worse on the 2025 holdout -- 64.2%->61.9% overall, 88.4%->86.4% in the 75%+ confidence bucket --
+# because power_off/power_def are themselves just weighted averages of stats the other 5 units
+# already see, so it added collinear noise rather than new information. Kept as a real, displayed,
+# but informational signal instead of forced into a model that measurably got worse.
+OFFENSE_PROFILE = ["ppg", "tds_pg", "margin_pg", "rz_td_pct", "rush_ypg", "rush_td_pct",
+                    "comp_pg", "pass_ypg", "pass_tds_pg"]
+DEFENSE_PROFILE = ["opp_ppg", "opp_tds_pg", "opp_rz_td_pct", "opp_rush_ypg", "opp_rush_tds_pg",
+                    "opp_pass_ypg", "opp_pass_tds_pg", "opp_comp_pg"]
+
 
 def entry_key(stat: str, side: str) -> str:
     return f"{stat}:{side}"
@@ -190,6 +201,34 @@ def zscores(prof: dict[str, dict[str, float]]) -> dict[str, dict[str, float]]:
     return z
 
 
+def power_scores(z: dict[str, dict[str, float]]) -> dict[str, dict[str, float]]:
+    """
+    Injects each team's overall offense/defense composite z-score (power_off,
+    power_def) into z in place -- the same numbers offense_ranks()/
+    defense_ranks() rank 1-32, so the rank shown on a card and the signal the
+    OVERALL unit feeds the fitted model are never two different formulas.
+    """
+    for t, p in z.items():
+        p["power_off"] = mean(p[s] for s in OFFENSE_PROFILE)
+        p["power_def"] = -mean(p[s] for s in DEFENSE_PROFILE)
+    return z
+
+
+def _ranks(z: dict[str, dict[str, float]], key: str) -> dict[str, int]:
+    ordered = sorted(z, key=lambda t: z[t][key], reverse=True)
+    return {t: i + 1 for i, t in enumerate(ordered)}
+
+
+def offense_ranks(z: dict[str, dict[str, float]]) -> dict[str, int]:
+    """1 = best offense, by the same composite power_scores() computes."""
+    return _ranks(z, "power_off")
+
+
+def defense_ranks(z: dict[str, dict[str, float]]) -> dict[str, int]:
+    """1 = best (stingiest) defense, by the same composite power_scores() computes."""
+    return _ranks(z, "power_def")
+
+
 def unit_edges(z: dict[str, dict[str, float]], attacker: str, defender: str, active: set[str]) -> dict[str, float]:
     edges = {}
     for unit, entries in UNITS.items():
@@ -211,7 +250,7 @@ def week_z(rows: list[dict], season: int, week: int, k: float, r: float) -> dict
     else:
         return None
     teams = sorted({g["team"] for g in rows if g["season"] == season} | set(cur))
-    return zscores(profiles(cur, prior, teams, k))
+    return power_scores(zscores(profiles(cur, prior, teams, k)))
 
 
 def phi(x: float) -> float:
@@ -283,6 +322,7 @@ def slate() -> list[dict]:
     if z is None:
         return []
     records = team_records()
+    off_rank, def_rank = offense_ranks(z), defense_ranks(z)
 
     out = []
     for g in sorted(games.values(), key=lambda g: (g["game_date"], g.get("game_time_local", ""), g["game_id"])):
@@ -298,9 +338,11 @@ def slate() -> list[dict]:
             "gameId": g["game_id"], "season": season, "week": week,
             "gameDate": g["game_date"], "gameTime": g.get("game_time_local", ""),
             "home": {"team": home, "record": "-".join(map(str, records.get(home, (0, 0, 0)))),
-                     "losing": is_losing(home), "edges": {u: round(v, 2) for u, v in eh.items()}},
+                     "losing": is_losing(home), "edges": {u: round(v, 2) for u, v in eh.items()},
+                     "offenseRank": off_rank[home], "defenseRank": def_rank[home]},
             "away": {"team": away, "record": "-".join(map(str, records.get(away, (0, 0, 0)))),
-                     "losing": is_losing(away), "edges": {u: round(v, 2) for u, v in ea.items()}},
+                     "losing": is_losing(away), "edges": {u: round(v, 2) for u, v in ea.items()},
+                     "offenseRank": off_rank[away], "defenseRank": def_rank[away]},
             "predictedWinner": home if margin >= 0 else away,
             "winProbability": round(max(p_home, 1 - p_home), 3),
             "predictedMargin": round(abs(margin), 1),

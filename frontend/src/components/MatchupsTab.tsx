@@ -86,11 +86,14 @@ function DogCompare({ dog }: { dog: HotDogGame }) {
   );
 }
 
-function RecordLine({ team, record, losing }: { team: string; record: string; losing: boolean }) {
+function RecordLine({ team, record, losing, offenseRank, defenseRank }: { team: string; record: string; losing: boolean; offenseRank: number; defenseRank: number }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, minWidth: 0 }}>
       <span style={{ fontSize: 14, fontWeight: 800 }}>{team}</span>
       <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 10, color: "var(--bp-muted)" }}>{record}</span>
+      <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 9, color: "var(--bp-muted)", whiteSpace: "nowrap" }}>
+        OFF <span style={{ color: "#2ee6a6", fontWeight: 700 }}>#{offenseRank}</span> · DEF <span style={{ color: "#ef4444", fontWeight: 700 }}>#{defenseRank}</span>
+      </span>
       {losing && (
         <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 7, fontWeight: 800, letterSpacing: "0.08em", color: "#ef4444", border: "1px solid #ef444466", borderRadius: 3, padding: "1px 4px", whiteSpace: "nowrap" }}>
           LOSING · PASS
@@ -109,7 +112,7 @@ function GameCard({ game, dog }: { game: MatchupGame; dog?: HotDogGame }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
           <Helmet team={away.team} />
-          <RecordLine team={away.team} record={away.record} losing={away.losing} />
+          <RecordLine team={away.team} record={away.record} losing={away.losing} offenseRank={away.offenseRank} defenseRank={away.defenseRank} />
           {dog?.underdog === away.team && <DogTag dog={dog} />}
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flex: 1 }}>
@@ -131,7 +134,7 @@ function GameCard({ game, dog }: { game: MatchupGame; dog?: HotDogGame }) {
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
           <Helmet team={home.team} />
-          <RecordLine team={home.team} record={home.record} losing={home.losing} />
+          <RecordLine team={home.team} record={home.record} losing={home.losing} offenseRank={home.offenseRank} defenseRank={home.defenseRank} />
           {dog?.underdog === home.team && <DogTag dog={dog} />}
         </div>
       </div>

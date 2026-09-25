@@ -176,6 +176,8 @@ export interface MatchupSide {
   record: string;
   losing: boolean;
   edges: Record<MatchupUnit, number>;
+  offenseRank: number;
+  defenseRank: number;
 }
 
 export interface MatchupGame {

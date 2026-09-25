@@ -21,7 +21,6 @@ or spread -- that certified dogs hit more often.
 from __future__ import annotations
 
 from functools import lru_cache
-from statistics import mean
 
 import data
 import matchup
@@ -37,8 +36,7 @@ STATS = [
     ("turnover_pct", "Turnovers / drive", -1),
     ("def_rank", "Defense rank", -1),
 ]
-DEF_PROFILE = ["opp_ppg", "opp_tds_pg", "opp_rz_td_pct", "opp_rush_ypg", "opp_rush_tds_pg",
-               "opp_pass_ypg", "opp_pass_tds_pg", "opp_comp_pg"]
+defense_ranks = matchup.defense_ranks  # moved to matchup.py -- shared with the heat map's OFF/DEF rank display
 
 
 def window_stats(rows: list[dict], team: str, season: int, week: int, n: int = WINDOW) -> dict | None:
@@ -55,13 +53,6 @@ def window_stats(rows: list[dict], team: str, season: int, week: int, n: int = W
         "third_down_pct": sum(g["third_down_conv"] for g in prior) / att if att else 0.0,
         "turnover_pct": sum(g["ints_thrown"] + g["fumbles_lost"] for g in prior) / drives if drives else 0.0,
     }
-
-
-def defense_ranks(z: dict[str, dict[str, float]]) -> dict[str, int]:
-    """1 = best defense: the heat map's defensive z-scores, negated so allowing less ranks higher."""
-    composite = {t: -mean(z[t][s] for s in DEF_PROFILE) for t in z}
-    ordered = sorted(composite, key=composite.get, reverse=True)
-    return {t: i + 1 for i, t in enumerate(ordered)}
 
 
 def compare(dog: dict, fav: dict) -> tuple[list[dict], int]:
