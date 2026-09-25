@@ -11,7 +11,9 @@ not the measure.
                       lake's box scores and each game pick from schedule finals
 
 A leg wins when the stat clears its line in the bet's direction; a player with
-no box-score row that week is void, as a sportsbook would grade it. A ticket
+no box-score row that week is void, as a sportsbook would grade it. HOT DOGS!
+team legs are graded on the final score: the moneyline needs an outright win,
+the spread needs margin + spread > 0. A ticket
 wins when every non-void leg wins.
 
 Writes lake/gold/nfl/pow_ledger.csv. Run from the repo root:
@@ -33,11 +35,12 @@ sys.path.insert(0, str(REPO / "scripts"))
 import data  # noqa: E402
 import matchup  # noqa: E402
 import parlay_engine  # noqa: E402
+import parlays  # noqa: E402
 from build_team_game_stats import GOLD, register_chart  # noqa: E402
 
 LEDGER = GOLD / "pow_ledger.csv"
 COLS = [
-    "season", "week", "kind", "ticket_id", "correlation_type", "title", "leg_index", "player_id", "player_name",
+    "season", "week", "kind", "ticket_id", "correlation_type", "title", "leg_index", "game_id", "player_id", "player_name",
     "team", "market", "direction", "line", "odds", "probability", "predicted_winner", "win_probability",
     "snapshot_at_utc", "actual", "result", "graded_at_utc",
 ]
@@ -83,6 +86,14 @@ def snapshot(path: Path) -> None:
                 "market": leg["market"], "direction": leg["direction"], "line": leg["line"],
                 "odds": leg["odds"], "probability": leg["probability"], "snapshot_at_utc": now,
             })
+    hot = parlays.hot_dogs()
+    for i, leg in enumerate(hot["legs"]):
+        new.append({
+            "season": season, "week": week, "kind": "leg", "ticket_id": hot["id"], "correlation_type": "HOT_DOGS",
+            "title": hot["title"], "leg_index": i, "game_id": leg["gameId"], "team": leg["teamId"],
+            "market": leg["market"], "direction": "over", "line": leg["line"] if leg["line"] is not None else "",
+            "odds": leg["odds"], "probability": leg["probability"], "snapshot_at_utc": now,
+        })
     for g in games:
         new.append({
             "season": season, "week": week, "kind": "game", "ticket_id": g["gameId"],
@@ -94,7 +105,20 @@ def snapshot(path: Path) -> None:
     print(f"snapshot {season} week {week}: {tickets} tickets, {len(games)} game picks -> {path.name}")
 
 
+def _grade_team_leg(r: dict) -> tuple[str, str]:
+    """HOT DOGS! legs: the dog's final margin against the moneyline or its spread."""
+    g = next((g for g in data.load("schedule") if g["game_id"] == r["game_id"]), None)
+    if not g or not g.get("home_score") or not g.get("away_score"):
+        return "", ""
+    hs, as_ = float(g["home_score"]), float(g["away_score"])
+    margin = hs - as_ if g["home_team"] == r["team"] else as_ - hs
+    edge = margin if r["market"] == "moneyline" else margin + float(r["line"])
+    return str(int(margin)), "push" if edge == 0 else ("won" if edge > 0 else "lost")
+
+
 def _grade_leg(r: dict) -> tuple[str, str]:
+    if r["market"] in ("spread", "moneyline"):
+        return _grade_team_leg(r)
     games = [g for g in parlay_engine._games_for(r["player_id"], r["market"]) if g["week"] == int(r["week"])]
     if not games:
         return "", "void"

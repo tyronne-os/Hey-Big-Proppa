@@ -202,3 +202,26 @@ export interface BacktestRow {
   log_loss: string;
   note: string;
 }
+
+export interface HotDogStat {
+  key: "win_pct" | "opp_ppg" | "third_down_pct" | "turnover_pct" | "def_rank";
+  label: string;
+  dog: number;
+  fav: number;
+  dogWins: boolean;
+}
+
+export interface HotDogGame {
+  gameId: string;
+  underdog: string;
+  favorite: string;
+  dogRecord: string;
+  favRecord: string;
+  dogWinning: boolean;
+  certifiable: boolean;
+  certified: boolean;
+  statsWon: number;
+  stats: HotDogStat[];
+  price: { moneyline: number; spread: number; spreadOdds: number; source: string };
+  recommendedBet: string | null;
+}

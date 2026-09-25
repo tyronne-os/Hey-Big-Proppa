@@ -46,7 +46,7 @@ matchup_toxicity,gold.v_nfl_matchup_toxicity,one row per scheduled game -- each 
 team_ats_current,silver.v_nfl_team_ats_current,"one row per team, last-5/last-10 ATS cover %% as of most recent game",32,2026-09-25T07:24:15.501041+00:00,"nflverse (derived, computed not sourced)",ok
 matchup_model,scripts/fit_matchup_model.py,one row per model parameter,38,2026-09-25T21:14:22.387969+00:00,fitted on team_game_stats,ok
 matchup_backtest,scripts/fit_matchup_model.py,one row per backtest result,66,2026-09-25T21:14:22.388671+00:00,fitted on team_game_stats,ok
-pow_ledger,scripts/pow_ledger.py,one row per posted leg or game pick,30,2026-09-25T21:18:55.199474+00:00,Big Proppa board + lake box scores,ok
 team_game_stats,scripts/build_team_game_stats.py,"one row per team per regular-season game, 2023+",1698,2026-09-25T21:28:55.693042+00:00,nflverse pbp + schedules (derived),ok
 hot_dog_history,scripts/backtest_hot_dogs.py,"one row per underdog game, 2023-2025, with both teams' last-5 stats",732,2026-09-25T21:30:23.616435+00:00,team_game_stats + closing lines (derived),ok
 hot_dog_backtest,scripts/backtest_hot_dogs.py,one row per backtest group,8,2026-09-25T21:30:23.617036+00:00,hot_dog_history (derived),ok
+pow_ledger,scripts/pow_ledger.py,one row per posted leg or game pick,30,2026-09-25T21:31:46.344235+00:00,Big Proppa board + lake box scores,ok

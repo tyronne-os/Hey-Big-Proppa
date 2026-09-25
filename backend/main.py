@@ -20,6 +20,7 @@ import leaders as leaders_mod
 import parlays as parlays_mod
 import parlay_engine as engine_mod
 import breakout as breakout_mod
+import hot_dog
 import matchup as matchup_mod
 import pow_report
 import buddy_cosell as buddy_mod
@@ -188,6 +189,13 @@ def api_matchups():
 def api_matchups_backtest():
     """How the predictor did on seasons it never saw, next to always-home and the Vegas favorite."""
     return {"sourceStatus": data.chart_status("matchup_backtest"), "rows": data.load("matchup_backtest")}
+
+
+@app.get("/api/hotdogs")
+def api_hotdogs():
+    """This week's underdogs through the Hot Dog indicator, plus the 2023-2025 backtest."""
+    return {"sourceStatus": data.chart_status("hot_dog_history"), "games": hot_dog.slate(),
+            "backtest": hot_dog.backtest()}
 
 
 @app.get("/api/pow")

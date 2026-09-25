@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { BacktestRow, MatchupGame, MatchupUnit } from "../types";
+import type { BacktestRow, HotDogGame, HotDogStat, MatchupGame, MatchupUnit } from "../types";
 
 const UNITS: MatchupUnit[] = ["SCORING", "RED ZONE", "GROUND", "AIR", "BALL SECURITY"];
 const GREEN = "46,230,166";
@@ -13,6 +13,49 @@ function heat(edge: number): string {
 
 function signed(v: number): string {
   return `${v > 0 ? "+" : ""}${v.toFixed(2)}`;
+}
+
+function fmtStat(s: HotDogStat, v: number): string {
+  if (s.key === "def_rank") return `#${v}`;
+  if (s.key === "opp_ppg") return v.toFixed(1);
+  return `${(v * 100).toFixed(1)}%`;
+}
+
+function DogTag({ dog }: { dog: HotDogGame }) {
+  const certified = dog.certified;
+  return (
+    <span style={{ alignSelf: "flex-start", fontFamily: "var(--font-mono, monospace)", fontSize: 8, fontWeight: 800, letterSpacing: "0.1em", borderRadius: 3, padding: "1px 5px",
+      color: certified ? "#1a0d05" : "var(--bp-muted)", background: certified ? "#c9a54e" : "transparent",
+      border: certified ? "none" : "1px solid var(--bp-border)" }}>
+      {certified ? "CERTIFIED HOT DOG" : "UNDERDOG"}{dog.certifiable ? ` · WINS ${dog.statsWon} OF 5` : ""}
+    </span>
+  );
+}
+
+function DogCompare({ dog }: { dog: HotDogGame }) {
+  if (!dog.certifiable) return null;
+  const check = (on: boolean) => <span style={{ color: on ? "#2ee6a6" : "transparent" }}>✓</span>;
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr)", gap: "3px 8px", fontSize: 11, borderTop: "1px solid var(--bp-border)", paddingTop: 8 }}>
+      <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: "var(--bp-muted)" }}>LAST 5 GAMES</span>
+      <span style={{ textAlign: "right", fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: "var(--bp-muted)" }}>{dog.underdog} (DOG)</span>
+      <span style={{ textAlign: "right", fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: "var(--bp-muted)" }}>{dog.favorite}</span>
+      {dog.stats.map((s) => (
+        <DogRow key={s.key} stat={s} check={check} />
+      ))}
+    </div>
+  );
+}
+
+function DogRow({ stat, check }: { stat: HotDogStat; check: (on: boolean) => JSX.Element }) {
+  const mono = { fontFamily: "var(--font-mono, monospace)", textAlign: "right" as const };
+  return (
+    <>
+      <span style={{ color: "var(--bp-muted)" }}>{stat.label}</span>
+      <span style={mono}>{fmtStat(stat, stat.dog)} {check(stat.dogWins)}</span>
+      <span style={mono}>{fmtStat(stat, stat.fav)} {check(!stat.dogWins)}</span>
+    </>
+  );
 }
 
 function TeamTag({ team, record, losing }: { team: string; record: string; losing: boolean }) {
@@ -29,7 +72,7 @@ function TeamTag({ team, record, losing }: { team: string; record: string; losin
   );
 }
 
-function GameCard({ game }: { game: MatchupGame }) {
+function GameCard({ game, dog }: { game: MatchupGame; dog?: HotDogGame }) {
   const { home, away } = game;
   const confident = game.winProbability >= 0.75;
   const awayUnits = UNITS.filter((u) => away.edges[u] > home.edges[u]).length;
@@ -40,8 +83,10 @@ function GameCard({ game }: { game: MatchupGame }) {
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "flex-start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
           <TeamTag team={away.team} record={away.record} losing={away.losing} />
+          {dog?.underdog === away.team && <DogTag dog={dog} />}
           <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>@</span>
           <TeamTag team={home.team} record={home.record} losing={home.losing} />
+          {dog?.underdog === home.team && <DogTag dog={dog} />}
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
           <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 10, color: "var(--bp-muted)" }}>
@@ -80,6 +125,8 @@ function GameCard({ game }: { game: MatchupGame }) {
           <span>{home.team} holds {homeUnits} of 5 units</span>
         </div>
       </div>
+
+      {dog && <DogCompare dog={dog} />}
     </div>
   );
 }
@@ -116,10 +163,14 @@ export default function MatchupsTab() {
   const [games, setGames] = useState<MatchupGame[] | null>(null);
   const [error, setError] = useState(false);
   const [backtest, setBacktest] = useState<string | null>(null);
+  const [dogs, setDogs] = useState<Record<string, HotDogGame>>({});
 
   useEffect(() => {
     api.matchups().then((r) => setGames(r.games)).catch(() => setError(true));
     api.matchupsBacktest().then((r) => setBacktest(backtestLine(r.rows))).catch(() => setBacktest(null));
+    api.hotdogs()
+      .then((r) => setDogs(Object.fromEntries(r.games.map((g) => [g.gameId, g]))))
+      .catch(() => setDogs({}));
   }, []);
 
   const week = games?.[0]?.week;
@@ -140,7 +191,7 @@ export default function MatchupsTab() {
       {games && games.length === 0 && <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>No games on the slate.</div>}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 360px), 1fr))", gap: 12 }}>
-        {games?.map((g) => <GameCard key={g.gameId} game={g} />)}
+        {games?.map((g) => <GameCard key={g.gameId} game={g} dog={dogs[g.gameId]} />)}
       </div>
 
       <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>

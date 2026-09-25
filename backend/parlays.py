@@ -5,10 +5,8 @@ Probability is JIMMY THE GREEK's lake-only composite score (see jimmy.py) --
 hit-rate-vs-threshold, usage_index_score, and opponent defense toxicity,
 evenly weighted, per the user's explicit choice this session (this REPLACES
 the earlier hit-rate-only v1). HOT DOGS! is the one exception: it's a
-team-vs-spread bet (covers the point spread), not a player prop, so there's
-no analogous player usage/toxicity pond to run through Jimmy -- it stays on
-team_ats_current's real cover rate, which is itself already a computed lake
-stat, not a placeholder.
+team bet on certified Hot Dogs (hot_dog.py), priced from the reference game
+line, with the Hot Dog backtest's hit rate as its probability.
 
 Every leg still needs a REAL FanDuel price from prop_best_price.csv; a
 player who clears the threshold but has no tracked FanDuel price for that
@@ -20,8 +18,8 @@ for show).
 from __future__ import annotations
 
 import data
+import hot_dog
 import jimmy
-import matchup
 from odds import compute_parlay
 
 WAGER = 5.0
@@ -60,42 +58,36 @@ def _l5_rate(games: list[dict], threshold: float) -> float | None:
 
 
 def hot_dogs() -> dict:
-    """3 underdogs to cover, by ATS cover rate."""
-    ats = {r["team"]: r for r in data.load("team_ats_current")}
-    odds_by_game = data.load("matchup_game_odds")
+    """
+    Certified Hot Dogs only (hot_dog.py): sportsbook underdogs with a winning
+    record that beat the favorite on 3+ of 5 last-5-game stats. The bet type is
+    the one certified dogs hit more often in the 2023-2025 backtest, and each
+    leg's probability is that backtest hit rate -- not a guess.
+    """
+    bt = hot_dog.backtest()
+    bet, hit_rate = bt.get("chosenBet"), bt.get("certifiedHitRate")
     legs = []
-    for g in odds_by_game:
-        try:
-            spread = float(g.get("spread_line") or 0)
-        except ValueError:
+    for g in hot_dog.slate():
+        if not g["certified"] or not bet:
             continue
-        if spread == 0:
-            continue
-        # spread_line convention in this lake's schedule export is the home
-        # team's own spread; positive means home is the underdog.
-        underdog_team = g["home_team"] if spread > 0 else g["away_team"]
-        underdog_odds = g.get("home_spread_odds") if spread > 0 else g.get("away_spread_odds")
-        if matchup.is_losing(underdog_team):
-            continue
-        a = ats.get(underdog_team)
-        if not a or not underdog_odds:
-            continue
-        prob = float(a["cover_pct_last_5"] or 0) / 100
-        if prob < 0.85:
-            continue
-        try:
-            odds_val = float(underdog_odds)
-        except ValueError:
-            continue
+        price = g["price"]
+        if bet == "moneyline":
+            prop, odds_val = "Wins outright (moneyline)", price["moneyline"]
+        else:
+            prop, odds_val = f"{price['spread']:+g} covers the spread", price["spreadOdds"]
         legs.append({
-            "teamId": underdog_team,
-            "name": underdog_team,
-            "prop": "Covers the spread",
-            "l5": prob,
-            "probability": prob,
+            "teamId": g["underdog"],
+            "name": g["underdog"],
+            "prop": f"{prop} vs {g['favorite']} · wins {g['statsWon']} of 5",
+            "market": bet,
+            "line": price["spread"] if bet == "spread" else None,
+            "gameId": g["gameId"],
+            "statsWon": g["statsWon"],
+            "l5": hit_rate,
+            "probability": hit_rate,
             "odds": odds_val,
         })
-    legs.sort(key=lambda leg: leg["probability"], reverse=True)
+    legs.sort(key=lambda leg: leg["statsWon"], reverse=True)
     return _slip("hot-dogs", "HOT DOGS!", legs[:3])
 
 
