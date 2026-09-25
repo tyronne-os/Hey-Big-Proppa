@@ -42,7 +42,8 @@ import data
 FIELDS = [
     "points_for", "points_against", "margin", "tds", "rz_trips", "rz_tds", "rush_att", "rush_yds",
     "rush_tds", "pass_tds", "dropbacks", "completions", "pass_yds", "sacks_taken", "ints_thrown",
-    "fumbles", "def_passes_defended", "def_tackles_solo", "def_tackles_total",
+    "fumbles", "fumbles_lost", "def_passes_defended", "def_tackles_solo", "def_tackles_total",
+    "third_down_att", "third_down_conv", "drives",
 ]
 
 # stat -> (numerator, denominator). "opp:" reads the opponent's row for that game; "G" counts games.

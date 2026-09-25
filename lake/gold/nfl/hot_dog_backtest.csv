@@ -1,0 +1,9 @@
+group,games,outright_wins,outright_rate,covers,cover_games,cover_rate,bet,hit_rate,note
+certified hot dogs,86,34,0.395,42,84,0.500,,,
+all underdogs,732,228,0.311,347,718,0.483,,,
+underdogs with a winning record,200,66,0.330,86,195,0.441,,,
+underdogs winning 3+ of 5 (any record),202,75,0.371,99,198,0.500,,,
+certified hot dogs 2023,20,3,0.150,4,19,0.211,,,
+certified hot dogs 2024,32,12,0.375,18,31,0.581,,,
+certified hot dogs 2025,34,19,0.559,20,34,0.588,,,
+chosen_bet,86,,,,,,spread,0.500,"higher certified hit rate; POW counts tickets won, not cash"
