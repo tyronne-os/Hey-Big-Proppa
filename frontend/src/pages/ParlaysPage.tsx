@@ -71,6 +71,7 @@ export default function ParlaysPage() {
 
 const COL_LABEL: Record<string, string> = {
   "HOT DOGS!": "UNDERDOG",
+  "TOTALS!": "TOTAL POINTS",
   "BEAST MODE": "RUNNING BACK",
   "HOT BOYS": "RECEIVER",
   "TOP GUN": "QUARTERBACK",

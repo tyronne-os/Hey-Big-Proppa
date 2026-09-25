@@ -74,7 +74,7 @@ export interface ParlayLeg {
 
 export interface ParlaySlip {
   id: string;
-  title: "HOT DOGS!" | "BEAST MODE" | "HOT BOYS" | "TOP GUN";
+  title: "HOT DOGS!" | "TOTALS!" | "BEAST MODE" | "HOT BOYS" | "TOP GUN";
   legs: ParlayLeg[];
   wager: number;
   boost: number;
@@ -222,6 +222,26 @@ export interface HotDogGame {
   certified: boolean;
   statsWon: number;
   stats: HotDogStat[];
-  price: { moneyline: number; spread: number; spreadOdds: number; source: string };
+  price: {
+    moneyline: number;
+    spread: number;
+    spreadOdds: number;
+    totalLine: number;
+    overOdds: number;
+    underOdds: number;
+    source: string;
+  };
   recommendedBet: string | null;
+  recommendedTotalBet: string | null;
+}
+
+export interface HotDogBacktest {
+  groups: Record<string, string>[];
+  chosenBet?: string;
+  certifiedHitRate?: number;
+  chosenTotalBet?: string;
+  totalHitRate?: number;
+  ledRate?: number | null;
+  cover3Rate?: number | null;
+  cover7Rate?: number | null;
 }
