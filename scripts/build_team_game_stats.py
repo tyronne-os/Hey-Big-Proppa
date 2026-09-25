@@ -35,14 +35,14 @@ PBP_COLS = [
     "drive_inside20", "play_type", "pass_attempt", "complete_pass", "passing_yards", "pass_touchdown",
     "rush_attempt", "rushing_yards", "rush_touchdown", "sack", "interception", "fumble", "fumble_lost",
     "touchdown", "td_team", "two_point_attempt", "solo_tackle", "tackle_with_assist",
-    "pass_defense_1_player_id", "pass_defense_2_player_id",
+    "pass_defense_1_player_id", "pass_defense_2_player_id", "down", "third_down_converted", "third_down_failed",
 ]
 
 OUT_COLS = [
     "season", "week", "game_id", "game_date", "team", "opponent", "home", "points_for", "points_against",
     "margin", "win", "tds", "rz_trips", "rz_tds", "rush_att", "rush_yds", "rush_tds", "dropbacks",
     "completions", "pass_yds", "pass_tds", "sacks_taken", "ints_thrown", "fumbles", "fumbles_lost",
-    "def_passes_defended", "def_tackles_solo", "def_tackles_total",
+    "def_passes_defended", "def_tackles_solo", "def_tackles_total", "third_down_att", "third_down_conv", "drives",
 ]
 
 
@@ -91,6 +91,12 @@ def team_rows(pbp: pd.DataFrame, games: pd.DataFrame) -> list[dict]:
     pass_tds = td[td["pass_touchdown"] == 1].groupby(["game_id", "td_team"]).size().rename("pass_tds")
 
     drives = plays.dropna(subset=["fixed_drive"]).drop_duplicates(["game_id", "posteam", "fixed_drive"])
+    drive_count = drives.groupby(["game_id", "posteam"]).size().rename("drives")
+
+    third = plays[(plays["down"] == 3)
+                  & ((plays["third_down_converted"] == 1) | (plays["third_down_failed"] == 1))]
+    third_att = third.groupby(["game_id", "posteam"]).size().rename("third_down_att")
+    third_conv = third.groupby(["game_id", "posteam"])["third_down_converted"].sum().rename("third_down_conv")
     rz = drives[drives["drive_inside20"] == 1]
     rz_trips = rz.groupby(["game_id", "posteam"]).size().rename("rz_trips")
     rz_tds = rz[rz["fixed_drive_result"] == "Touchdown"].groupby(["game_id", "posteam"]).size().rename("rz_tds")
@@ -132,6 +138,8 @@ def team_rows(pbp: pd.DataFrame, games: pd.DataFrame) -> list[dict]:
                 "def_passes_defended": val(dfn, key, "def_passes_defended"),
                 "def_tackles_solo": val(dfn, key, "def_tackles_solo"),
                 "def_tackles_total": val(dfn, key, "def_tackles_solo") + val(dfn, key, "def_tackles_assisted"),
+                "third_down_att": val(third_att, key), "third_down_conv": val(third_conv, key),
+                "drives": val(drive_count, key),
             }
             for col in off.columns:
                 row[col] = val(off, key, col)
