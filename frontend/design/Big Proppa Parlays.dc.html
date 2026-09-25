@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/colors.css">
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/typography.css">
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/styles.css">
+<script src="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/_ds_bundle.js"></script>
+<style>
+@keyframes bpEmber{0%{opacity:.5;transform:scale(1)}6%{opacity:1;transform:scale(1.8)}14%{opacity:.95;transform:scale(1.4)}40%{opacity:.6;transform:scale(1.05)}100%{opacity:.5;transform:scale(1)}}
+@keyframes bpCore{0%{opacity:.35}6%{opacity:1}20%{opacity:.7}100%{opacity:.35}}
+@keyframes bpPuffA{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:.8}45%{transform:translate(-1.4em,-7em) scale(1.5);opacity:.5}100%{transform:translate(.8em,-17em) scale(3);opacity:0}}
+@keyframes bpPuffB{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:.75}45%{transform:translate(1.2em,-6.5em) scale(1.4);opacity:.45}100%{transform:translate(-1.6em,-16em) scale(2.8);opacity:0}}
+@keyframes bpPuffC{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:.7}45%{transform:translate(-2.4em,-5.5em) scale(1.6);opacity:.4}100%{transform:translate(-4em,-13em) scale(3.2);opacity:0}}
+@keyframes bpWisp{0%{transform:translate(0,0) scale(.4);opacity:0}20%{opacity:.35}100%{transform:translate(-.6em,-19em) scale(2.2);opacity:0}}
+html,body{margin:0;height:100%;background:#0b0512;overflow:hidden}
+a{color:#d9b45a;text-decoration:none}a:hover{color:#f1dc92}
+*{scrollbar-width:thin;scrollbar-color:#2a1e36 transparent}
+</style>
+</helmet>
+<div data-screen-label="Parlay dashboard" style="display:flex;width:100vw;height:100vh;background:radial-gradient(ellipse 50% 60% at 18% 60%, rgba(125,52,18,0.35), transparent 70%), radial-gradient(ellipse 60% 50% at 80% 10%, rgba(201,165,78,0.10), transparent 70%), #0b0512;font-family:var(--font-sans);color:#ece6f2">
+
+  <div style="width:20%;flex:0 0 20%;min-width:220px;position:relative;overflow:hidden">
+    <div style="position:absolute;left:-25%;bottom:90px;width:150%;aspect-ratio:260 / 256">
+      <img src="assets/big-proppa.png" alt="Big Proppa" style="width:100%;height:100%;object-fit:cover;display:block">
+      <div style="position:absolute;left:21.5%;top:61%;width:0;height:0;font-size:9px;pointer-events:none">
+            <div style="position:absolute;left:-2em;top:-2em;width:4em;height:4em;border-radius:50%;background:radial-gradient(circle,rgba(255,80,30,0.7),rgba(255,40,10,0) 70%);mix-blend-mode:screen;animation:bpEmber 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-.55em;top:-.7em;width:1.1em;height:1.4em;border-radius:50%;background:radial-gradient(circle,rgba(255,240,170,1),rgba(255,120,40,0.9) 45%,rgba(220,30,10,0) 80%);animation:bpCore 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.6),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.25s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.55),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.4s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.5),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffC 3.6s ease-out 0.55s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.45),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.75s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.95s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 0s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 2s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 4s infinite"></div>
+          </div>
+    </div>
+    <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg, transparent 60%, #0b0512 100%), linear-gradient(0deg, #0b0512 0%, rgba(11,5,18,0.6) 90px, transparent 40%), linear-gradient(180deg, #0b0512 30%, transparent 55%)"></div>
+    <div style="position:absolute;left:20px;right:20px;bottom:28px;pointer-events:none;display:flex;flex-direction:column;gap:6px">
+      <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.3em;color:#c9a54e">THE HOUSE PICKS</span>
+      <span style="font-size:13px;color:#b8b0c0;text-wrap:pretty">Legs at 85%+ probability only. Every slip boosted +50% profit.</span>
+    </div>
+  </div>
+
+  <div style="flex:1;min-width:0;overflow-y:auto;padding:28px 36px 32px 28px;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:18px">
+      <div style="width:92px;height:92px;flex:0 0 92px;border-radius:50%;padding:3px;box-sizing:border-box;background:conic-gradient(from 210deg,#6b4a1c,#c9a54e,#f4e4a8,#a07a2c,#e8e8ec,#8c8c94,#f6f6f8,#b48a3a,#6b4a1c);box-shadow:0 12px 30px rgba(0,0,0,0.5)">
+        <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;border:2px solid #0b0512;box-sizing:border-box;position:relative">
+          <div style="position:absolute;inset:0;transform:scale(1.25);transform-origin:50% 38%"><img src="assets/big-proppa.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block"><div style="position:absolute;left:21.5%;top:61%;width:0;height:0;font-size:2.6px;pointer-events:none">
+            <div style="position:absolute;left:-2em;top:-2em;width:4em;height:4em;border-radius:50%;background:radial-gradient(circle,rgba(255,80,30,0.7),rgba(255,40,10,0) 70%);mix-blend-mode:screen;animation:bpEmber 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-.55em;top:-.7em;width:1.1em;height:1.4em;border-radius:50%;background:radial-gradient(circle,rgba(255,240,170,1),rgba(255,120,40,0.9) 45%,rgba(220,30,10,0) 80%);animation:bpCore 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.6),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.25s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.55),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.4s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.5),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffC 3.6s ease-out 0.55s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.45),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.75s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.95s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 0s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 2s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 4s infinite"></div>
+          </div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:0.32em;color:#8a8290">TONIGHT'S SLIPS</span>
+        <span style="font-size:64px;line-height:0.92;font-weight:900;letter-spacing:-0.01em;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 38%,#8a6224 55%,#c9a54e 72%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #2a1a08)">HEY BIG PROPPA!</span>
+      </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;border:1px solid #6b4a1c;border-radius:999px;font-size:12px;font-weight:700;color:#f1dc92">WAGER <span style="font-family:var(--font-mono);font-size:14px">${{ wager }}</span></span>
+        <span style="display:flex;align-items:center;height:34px;padding:0 14px;border:1px solid #2a1e36;border-radius:999px;font-family:var(--font-mono);font-size:11px;color:#8a8290">FANDUEL ODDS · EXAMPLE</span>
+        <a href="Lake Canvas.dc.html" style="display:flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:1px solid #2a1e36;border-radius:999px;font-size:12px;font-weight:600;color:#b8b0c0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>Canvas</a>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:18px;align-items:start">
+      <sc-for list="{{ slips }}" as="s" hint-placeholder-count="4">
+        <div style="position:relative;background:linear-gradient(180deg,#160c22,#110818);border:1px solid #3a2610;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 50px rgba(0,0,0,0.45)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <span style="font-size:28px;font-weight:900;letter-spacing:0.01em;line-height:1;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 58%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">{{ s.title }}</span>
+              <span style="font-size:12px;color:#8a8290;text-wrap:pretty">{{ s.tagline }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:0 0 auto">
+              <span style="font-family:var(--font-mono);font-size:22px;font-weight:800;color:#2ee6a6">{{ s.boostOdds }}</span>
+              <span style="font-family:var(--font-mono);font-size:10px;color:#8a8290"><span style="text-decoration:line-through">{{ s.odds }}</span> · {{ s.legCount }}-LEG</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 44px 52px 52px;gap:10px;padding:0 2px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:0.12em;color:#6e6878">
+            <span>{{ s.colLabel }}</span><span style="text-align:right">L5</span><span style="text-align:right">PROB</span><span style="text-align:right">ODDS</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ s.legs }}" as="l" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 44px 52px 52px;gap:10px;align-items:center;background:#0e0714;border:1px solid #241e2c;border-radius:12px;padding:8px 10px">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <div style="width:38px;height:38px;flex:0 0 38px;border-radius:50%;padding:1.5px;box-sizing:border-box;background:linear-gradient(145deg,#f1dc92,#8a6224 50%,#c9a54e)">
+                    <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;background:#1e1628;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:700;color:#b8b0c0">
+                      <sc-if value="{{ l.hasPhoto }}" hint-placeholder-val="{{ false }}"><div style="width:100%;height:100%;background-size:cover;background-position:center;background-image:{{ l.photoBg }}"></div></sc-if>
+                      <sc-if value="{{ l.noPhoto }}" hint-placeholder-val="{{ true }}"><span>{{ l.initials }}</span></sc-if>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;min-width:0">
+                    <span style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.name }} <span style="font-weight:400;color:#8a8290">{{ l.team }}</span></span>
+                    <span style="font-size:11px;color:#b8b0c0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.prop }}</span>
+                  </div>
+                </div>
+                <span style="text-align:right;font-family:var(--font-mono);font-size:12px;font-weight:700;color:{{ l.l5Color }}">{{ l.l5 }}</span>
+                <span style="justify-self:end;font-family:var(--font-mono);font-size:11px;font-weight:800;color:#06140e;background:#2ee6a6;border-radius:6px;padding:3px 6px">{{ l.prob }}</span>
+                <span style="text-align:right;font-family:var(--font-mono);font-size:12px;color:#ece6f2">{{ l.odds }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="position:relative;height:22px;margin:0 -20px">
+            <div style="position:absolute;left:-11px;top:0;width:22px;height:22px;border-radius:50%;background:#0b0512;border:1px solid #3a2610;clip-path:inset(0 0 0 50%)"></div>
+            <div style="position:absolute;right:-11px;top:0;width:22px;height:22px;border-radius:50%;background:#0b0512;border:1px solid #3a2610;clip-path:inset(0 50% 0 0)"></div>
+            <div style="position:absolute;left:18px;right:18px;top:10px;border-top:2px dashed #3a2610"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="align-self:flex-start;font-family:var(--font-mono);font-size:10px;font-weight:800;letter-spacing:0.08em;color:#06140e;background:#2ee6a6;border-radius:6px;padding:3px 8px">+50% PROFIT BOOST</span>
+              <span style="font-family:var(--font-mono);font-size:10px;color:#6e6878">{{ s.ticket }} · ${{ wager }} WAGER</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+              <span style="font-family:var(--font-mono);font-size:11px;color:#6e6878;text-decoration:line-through">{{ s.payout }}</span>
+              <span style="font-size:28px;line-height:1;font-weight:900;background:linear-gradient(180deg,#f7e7a6,#d9b45a 45%,#8a6224 62%,#f1dc92);-webkit-background-clip:text;background-clip:text;color:transparent">{{ s.boostPayout }}</span>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;wager&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:500,&quot;step&quot;:1,&quot;unit&quot;:&quot;$&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Slips&quot;},&quot;boostPct&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:50,&quot;min&quot;:0,&quot;max&quot;:100,&quot;step&quot;:5,&quot;unit&quot;:&quot;%&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Slips&quot;}}">
+class Component extends DCLogic {
+  SLIPS = [
+    { title: 'HOT DOGS!', tagline: 'Top 3 underdogs who could upset — locks to cover', colLabel: 'UNDERDOG', legs: [
+      { name: 'Jets', team: 'NYJ', prop: '+6.5 vs BUF', l5: 80, prob: 88, odds: -110 },
+      { name: 'Cardinals', team: 'ARI', prop: '+4.5 @ SF', l5: 80, prob: 86, odds: -108 },
+      { name: 'Patriots', team: 'NE', prop: '+3.5 vs MIA', l5: 100, prob: 91, odds: -112 }
+    ] },
+    { title: 'BEAST MODE', tagline: 'Top 2 RBs who could score two TDs', colLabel: 'RUNNING BACK', legs: [
+      { name: 'J. Carter', team: 'PHI', prop: '2+ Rush TD', l5: 80, prob: 87, odds: 340 },
+      { name: 'T. Grant', team: 'DET', prop: '2+ Rush TD', l5: 60, prob: 85, odds: 380 }
+    ] },
+    { title: 'HOT BOYS', tagline: 'Top receivers in targets', colLabel: 'RECEIVER', legs: [
+      { name: 'D. Foster', team: 'NE', prop: 'O 8.5 Targets', l5: 100, prob: 92, odds: -125 },
+      { name: 'R. Vance', team: 'BUF', prop: 'O 7.5 Targets', l5: 80, prob: 89, odds: -118 },
+      { name: 'L. Moss', team: 'SF', prop: 'O 7.5 Targets', l5: 80, prob: 86, odds: -115 }
+    ] },
+    { title: 'TOP GUN', tagline: 'Top 5 QBs who could pass for 250 yards', colLabel: 'QUARTERBACK', legs: [
+      { name: 'M. Reid', team: 'LA', prop: 'O 249.5 Pass Yds', l5: 100, prob: 93, odds: -115 },
+      { name: 'A. Torres', team: 'ARI', prop: 'O 249.5 Pass Yds', l5: 80, prob: 90, odds: -112 },
+      { name: 'P. Hoyt', team: 'KC', prop: 'O 249.5 Pass Yds', l5: 80, prob: 89, odds: -110 },
+      { name: 'C. Nolan', team: 'CHI', prop: 'O 249.5 Pass Yds', l5: 80, prob: 87, odds: -105 },
+      { name: 'E. Pryor', team: 'MIA', prop: 'O 249.5 Pass Yds', l5: 60, prob: 85, odds: -110 },
+      { name: 'B. Hale', team: 'DAL', prop: 'O 249.5 Pass Yds', l5: 60, prob: 81, odds: -108 }
+    ] }
+  ];
+  renderVals() {
+    const wager = this.props.wager ?? 5;
+    const minProb = 85;
+    const dec = o => (o > 0 ? 1 + o / 100 : 1 + 100 / Math.abs(o));
+    const amer = d => (d >= 2 ? `+${Math.round((d - 1) * 100)}` : `-${Math.round(100 / (d - 1))}`);
+    const boost = (this.props.boostPct ?? 50) / 100;
+    const slips = this.SLIPS.map((s, si) => {
+      const legs = s.legs.filter(l => l.prob >= minProb);
+      const d = legs.reduce((acc, l) => acc * dec(l.odds), 1);
+      return {
+        ...s, legCount: legs.length, odds: amer(d),
+        boostOdds: amer(1 + (d - 1) * (1 + boost)),
+        payout: `$${(wager * d).toFixed(2)}`,
+        boostPayout: `$${(wager + wager * (d - 1) * (1 + boost)).toFixed(2)}`,
+        ticket: `HBP-W04-${String(si + 1).padStart(3, '0')}`,
+        legs: legs.map(l => ({
+          ...l, initials: l.team, hasPhoto: !!l.photoUrl, noPhoto: !l.photoUrl, photoBg: l.photoUrl ? `url("${l.photoUrl}")` : 'none',
+          l5: `${l.l5}%`, prob: `${l.prob}%`, odds: l.odds > 0 ? `+${l.odds}` : `${l.odds}`,
+          l5Color: l.l5 >= 80 ? '#2ee6a6' : l.l5 >= 60 ? '#ece6f2' : '#ef4444'
+        }))
+      };
+    });
+    return { slips, wager };
+  }
+}
+</script>
+</body>
+</html>

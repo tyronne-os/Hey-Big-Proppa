@@ -1,0 +1,2 @@
+frontend/design/assets/big-proppa.png filter=lfs diff=lfs merge=lfs -text
+frontend/public/big-proppa.png filter=lfs diff=lfs merge=lfs -text

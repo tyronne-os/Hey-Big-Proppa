@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/colors.css">
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/typography.css">
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/styles.css">
+<script src="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/_ds_bundle.js"></script>
+<style>@keyframes bpEmber{0%{opacity:.5;transform:scale(1)}6%{opacity:1;transform:scale(1.8)}14%{opacity:.95;transform:scale(1.4)}40%{opacity:.6;transform:scale(1.05)}100%{opacity:.5;transform:scale(1)}}
+@keyframes bpCore{0%{opacity:.35}6%{opacity:1}20%{opacity:.7}100%{opacity:.35}}
+@keyframes bpPuffA{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:.8}45%{transform:translate(-1.4em,-7em) scale(1.5);opacity:.5}100%{transform:translate(.8em,-17em) scale(3);opacity:0}}
+@keyframes bpPuffB{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:.75}45%{transform:translate(1.2em,-6.5em) scale(1.4);opacity:.45}100%{transform:translate(-1.6em,-16em) scale(2.8);opacity:0}}
+@keyframes bpPuffC{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:.7}45%{transform:translate(-2.4em,-5.5em) scale(1.6);opacity:.4}100%{transform:translate(-4em,-13em) scale(3.2);opacity:0}}
+@keyframes bpWisp{0%{transform:translate(0,0) scale(.4);opacity:0}20%{opacity:.35}100%{transform:translate(-.6em,-19em) scale(2.2);opacity:0}}
+html,body{margin:0;background:#0b0512}a{color:#e0a050}a:hover{color:#f2c080}</style>
+</helmet>
+<div style="min-height:100vh;background:#0b0512;font-family:var(--font-sans);color:#ece6f2;padding:48px 40px;box-sizing:border-box;display:flex;flex-direction:column;gap:40px;align-items:center">
+
+  <div data-screen-label="Primary badge" style="width:100%;max-width:1000px;display:flex;flex-direction:column;align-items:center;gap:28px;padding:64px 24px;border:1px solid #241e2c;border-radius:24px;background:radial-gradient(ellipse 60% 55% at 50% 40%, rgba(125,52,18,0.30), transparent 70%), #0e0714">
+    <div style="position:relative;width:520px;height:520px;max-width:90vw;max-height:90vw;border-radius:50%;padding:11px;box-sizing:border-box;background:conic-gradient(from 210deg,#6b4a1c,#c9a54e,#f4e4a8,#a07a2c,#e8e8ec,#8c8c94,#f6f6f8,#b48a3a,#6b4a1c);box-shadow:0 30px 70px rgba(0,0,0,0.6)">
+      <div style="width:100%;height:100%;border-radius:50%;padding:6px;box-sizing:border-box;background:#0b0512">
+        <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;position:relative;border:2px solid #8c6a2c">
+          <div style="position:absolute;inset:0;transform:scale(1.18);transform-origin:50% 38%"><img src="assets/big-proppa.png" alt="Big Proppa" style="width:100%;height:100%;object-fit:cover;display:block"><div style="position:absolute;left:21.5%;top:61%;width:0;height:0;font-size:13px;pointer-events:none">
+            <div style="position:absolute;left:-2em;top:-2em;width:4em;height:4em;border-radius:50%;background:radial-gradient(circle,rgba(255,80,30,0.7),rgba(255,40,10,0) 70%);mix-blend-mode:screen;animation:bpEmber 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-.55em;top:-.7em;width:1.1em;height:1.4em;border-radius:50%;background:radial-gradient(circle,rgba(255,240,170,1),rgba(255,120,40,0.9) 45%,rgba(220,30,10,0) 80%);animation:bpCore 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.6),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.25s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.55),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.4s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.5),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffC 3.6s ease-out 0.55s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.45),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.75s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.95s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 0s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 2s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 4s infinite"></div>
+          </div></div>
+          <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 40%, transparent 45%, rgba(11,5,18,0.75) 100%)"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(160deg, rgba(201,165,78,0.22), transparent 55%);mix-blend-mode:overlay"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:-4px">
+      <span style="font-size:40px;font-weight:900;letter-spacing:0.45em;padding-left:0.45em;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 38%,#8a6224 52%,#c9a54e 70%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">HEY</span>
+      <span style="font-size:100px;font-weight:900;line-height:0.95;letter-spacing:-0.01em;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 38%,#8a6224 52%,#c9a54e 70%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #2a1a08) drop-shadow(0 10px 24px rgba(0,0,0,0.5));white-space:nowrap">BIG PROPPA!</span>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:14px">
+        <span style="width:48px;height:1px;background:linear-gradient(90deg,transparent,#c9a54e)"></span>
+        <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.36em;color:#c9a54e">PROPS · LINES · EXPERTS</span>
+        <span style="width:48px;height:1px;background:linear-gradient(90deg,#c9a54e,transparent)"></span>
+      </div>
+    </div>
+  </div>
+
+  <div style="width:100%;max-width:1000px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
+    <div data-screen-label="Header lockup" style="display:flex;flex-direction:column;gap:14px;padding:28px;border:1px solid #241e2c;border-radius:20px;background:#0e0714">
+      <span style="font-size:10px;font-weight:700;letter-spacing:0.2em;color:#8a8290">HEADER LOCKUP</span>
+      <div style="display:flex;align-items:center;gap:12px;height:52px">
+        <div style="width:38px;height:38px;flex:0 0 38px;border-radius:50%;padding:2px;box-sizing:border-box;background:conic-gradient(from 210deg,#6b4a1c,#c9a54e,#f4e4a8,#a07a2c,#e8e8ec,#8c8c94,#f6f6f8,#b48a3a,#6b4a1c)">
+          <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;border:1.5px solid #0b0512;box-sizing:border-box;position:relative"><div style="position:absolute;inset:0;transform:scale(1.25);transform-origin:50% 38%"><img src="assets/big-proppa.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block"><div style="position:absolute;left:21.5%;top:61%;width:0;height:0;font-size:1.2px;pointer-events:none">
+            <div style="position:absolute;left:-2em;top:-2em;width:4em;height:4em;border-radius:50%;background:radial-gradient(circle,rgba(255,80,30,0.7),rgba(255,40,10,0) 70%);mix-blend-mode:screen;animation:bpEmber 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-.55em;top:-.7em;width:1.1em;height:1.4em;border-radius:50%;background:radial-gradient(circle,rgba(255,240,170,1),rgba(255,120,40,0.9) 45%,rgba(220,30,10,0) 80%);animation:bpCore 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.6),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.25s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.55),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.4s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.5),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffC 3.6s ease-out 0.55s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.45),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.75s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.95s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 0s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 2s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 4s infinite"></div>
+          </div></div></div>
+        </div>
+        <span style="font-size:21px;font-weight:900;letter-spacing:0.02em;white-space:nowrap;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 55%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">HEY BIG PROPPA!</span>
+      </div>
+    </div>
+    <div data-screen-label="App icon" style="display:flex;flex-direction:column;gap:14px;padding:28px;border:1px solid #241e2c;border-radius:20px;background:#0e0714">
+      <span style="font-size:10px;font-weight:700;letter-spacing:0.2em;color:#8a8290">APP ICON</span>
+      <div style="display:flex;align-items:center;gap:18px">
+        <div style="width:96px;height:96px;border-radius:24px;padding:2px;box-sizing:border-box;background:linear-gradient(145deg,#f4e4a8,#8a6224 40%,#e8e8ec 70%,#6b4a1c)">
+          <div style="width:100%;height:100%;border-radius:22px;overflow:hidden;position:relative;background:#0b0512">
+            <div style="position:relative;width:100%;height:100%"><img src="assets/big-proppa.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block;filter:brightness(0.9)"><div style="position:absolute;left:21.5%;top:61%;width:0;height:0;font-size:2.4px;pointer-events:none">
+            <div style="position:absolute;left:-2em;top:-2em;width:4em;height:4em;border-radius:50%;background:radial-gradient(circle,rgba(255,80,30,0.7),rgba(255,40,10,0) 70%);mix-blend-mode:screen;animation:bpEmber 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-.55em;top:-.7em;width:1.1em;height:1.4em;border-radius:50%;background:radial-gradient(circle,rgba(255,240,170,1),rgba(255,120,40,0.9) 45%,rgba(220,30,10,0) 80%);animation:bpCore 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.6),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.25s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.55),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.4s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.5),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffC 3.6s ease-out 0.55s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.45),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.75s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.95s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 0s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 2s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 4s infinite"></div>
+          </div></div>
+            <span style="position:absolute;left:0;right:0;bottom:7px;text-align:center;font-size:15px;font-weight:900;letter-spacing:0.04em;background:linear-gradient(180deg,#f7e7a6,#c9a54e 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.9))">HBP!</span>
+          </div>
+        </div>
+        <div style="width:48px;height:48px;border-radius:12px;padding:1.5px;box-sizing:border-box;background:linear-gradient(145deg,#f4e4a8,#8a6224 40%,#e8e8ec 70%,#6b4a1c)">
+          <div style="width:100%;height:100%;border-radius:11px;overflow:hidden;background:#0b0512"><div style="position:relative;width:100%;height:100%"><img src="assets/big-proppa.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block;filter:brightness(0.9)"><div style="position:absolute;left:21.5%;top:61%;width:0;height:0;font-size:1.3px;pointer-events:none">
+            <div style="position:absolute;left:-2em;top:-2em;width:4em;height:4em;border-radius:50%;background:radial-gradient(circle,rgba(255,80,30,0.7),rgba(255,40,10,0) 70%);mix-blend-mode:screen;animation:bpEmber 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-.55em;top:-.7em;width:1.1em;height:1.4em;border-radius:50%;background:radial-gradient(circle,rgba(255,240,170,1),rgba(255,120,40,0.9) 45%,rgba(220,30,10,0) 80%);animation:bpCore 3.6s ease-out infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.6),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.25s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.55),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.4s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.5),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffC 3.6s ease-out 0.55s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.45),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffA 3.6s ease-out 0.75s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpPuffB 3.6s ease-out 0.95s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.4),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 0s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 2s infinite"></div>
+            <div style="position:absolute;left:-1.6em;top:-3.2em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(228,225,235,0.35),rgba(228,225,235,0) 70%);filter:blur(0.45em);opacity:0;animation:bpWisp 6s ease-out 4s infinite"></div>
+          </div></div></div>
+        </div>
+      </div>
+    </div>
+    <div data-screen-label="Palette" style="display:flex;flex-direction:column;gap:14px;padding:28px;border:1px solid #241e2c;border-radius:20px;background:#0e0714">
+      <span style="font-size:10px;font-weight:700;letter-spacing:0.2em;color:#8a8290">OLD GOLD + CHROME</span>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="height:44px;border-radius:8px;background:#f1dc92"></div><span style="font-family:var(--font-mono);font-size:10px;color:#8a8290">#F1DC92</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="height:44px;border-radius:8px;background:#c9a54e"></div><span style="font-family:var(--font-mono);font-size:10px;color:#8a8290">#C9A54E</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="height:44px;border-radius:8px;background:#8a6224"></div><span style="font-family:var(--font-mono);font-size:10px;color:#8a8290">#8A6224</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="height:44px;border-radius:8px;background:linear-gradient(180deg,#ffffff,#9a9aa4 55%,#e8e8ee)"></div><span style="font-family:var(--font-mono);font-size:10px;color:#8a8290">CHROME</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

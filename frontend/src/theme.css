@@ -1,0 +1,180 @@
+/*
+ * HEY BIG PROPPA! design tokens -- ported from frontend/design/HANDOFF_CLAUDE_CODE.md
+ * section 2 (Brand) and the smoke-animation keyframes in
+ * frontend/design/Lake Canvas.dc.html's <style> block. Do not hand-roll new
+ * hex values elsewhere -- add a variable here instead.
+ */
+
+:root {
+  --bp-page-bg: #0b0512;
+  --bp-card-bg: #140a20;
+  --bp-border: #2a1e36;
+  --bp-composer-border: #3a2a48;
+  --bp-muted: #8a8290;
+  --bp-label: #d9a066;
+  --bp-avatar-bg: #1e1628;
+  --bp-fg: #ece6f2;
+
+  --bp-canvas-bg: #120818;
+  --bp-canvas-glow-orange: rgba(125, 52, 18, 0.38);
+  --bp-canvas-glow-purple: rgba(112, 40, 150, 0.38);
+
+  --bp-gold-1: #f1dc92;
+  --bp-gold-2: #d9b45a;
+  --bp-gold-3: #c9a54e;
+  --bp-gold-4: #8a6224;
+  --bp-gold-5: #6b4a1c;
+
+  --bp-orange: #e0782f;
+  --bp-orange-bright: #f08a3a;
+
+  --bp-green: #2ee6a6;
+  --bp-green-fg: #06140e;
+  --bp-red: #ef4444;
+
+  --bp-wordmark-gradient: linear-gradient(
+    180deg,
+    #f7e7a6 0%,
+    #d9b45a 38%,
+    #8a6224 52%,
+    #c9a54e 70%,
+    #f1dc92 100%
+  );
+  --bp-badge-ring: conic-gradient(
+    from 210deg,
+    #6b4a1c,
+    #c9a54e,
+    #f4e4a8,
+    #a07a2c,
+    #e8e8ec,
+    #8c8c94,
+    #f6f6f8,
+    #b48a3a,
+    #6b4a1c
+  );
+  --bp-betting-line-gradient: linear-gradient(
+    90deg,
+    #8a6224,
+    #d9b45a 30%,
+    #f1dc92 50%,
+    #d9b45a 70%,
+    #8a6224
+  );
+}
+
+:root[data-theme="light"] {
+  --bp-page-bg: #f6f3f8;
+  --bp-card-bg: #ffffff;
+  --bp-border: #e2dce8;
+  --bp-composer-border: #d6cedd;
+  --bp-muted: #6e6878;
+  --bp-label: #a8581a;
+  --bp-avatar-bg: #ece6f2;
+  --bp-fg: #1a1420;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  background: var(--bp-page-bg);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bp-border) transparent;
+  box-sizing: border-box;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bp-border);
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Smoke animation -- exact keyframes from Lake Canvas.dc.html, respects   */
+/* prefers-reduced-motion by freezing on the glowing ember / hiding puffs. */
+/* ---------------------------------------------------------------------- */
+
+@keyframes bpEmber {
+  0% { opacity: 0.5; transform: scale(1); }
+  6% { opacity: 1; transform: scale(1.8); }
+  14% { opacity: 0.95; transform: scale(1.4); }
+  40% { opacity: 0.6; transform: scale(1.05); }
+  100% { opacity: 0.5; transform: scale(1); }
+}
+@keyframes bpCore {
+  0% { opacity: 0.35; }
+  6% { opacity: 1; }
+  20% { opacity: 0.7; }
+  100% { opacity: 0.35; }
+}
+@keyframes bpPuffA {
+  0% { transform: translate(0, 0) scale(0.3); opacity: 0; }
+  8% { opacity: 0.8; }
+  45% { transform: translate(-1.4em, -7em) scale(1.5); opacity: 0.5; }
+  100% { transform: translate(0.8em, -17em) scale(3); opacity: 0; }
+}
+@keyframes bpPuffB {
+  0% { transform: translate(0, 0) scale(0.3); opacity: 0; }
+  8% { opacity: 0.75; }
+  45% { transform: translate(1.2em, -6.5em) scale(1.4); opacity: 0.45; }
+  100% { transform: translate(-1.6em, -16em) scale(2.8); opacity: 0; }
+}
+@keyframes bpPuffC {
+  0% { transform: translate(0, 0) scale(0.3); opacity: 0; }
+  8% { opacity: 0.7; }
+  45% { transform: translate(-2.4em, -5.5em) scale(1.6); opacity: 0.4; }
+  100% { transform: translate(-4em, -13em) scale(3.2); opacity: 0; }
+}
+@keyframes bpWisp {
+  0% { transform: translate(0, 0) scale(0.4); opacity: 0; }
+  20% { opacity: 0.35; }
+  100% { transform: translate(-0.6em, -19em) scale(2.2); opacity: 0; }
+}
+
+.bp-ember { animation: bpEmber 3.6s ease-out infinite; }
+.bp-core { animation: bpCore 3.6s ease-out infinite; }
+.bp-puff-a1 { animation: bpPuffA 3.6s ease-out 0.25s infinite; }
+.bp-puff-b1 { animation: bpPuffB 3.6s ease-out 0.4s infinite; }
+.bp-puff-c1 { animation: bpPuffC 3.6s ease-out 0.55s infinite; }
+.bp-puff-a2 { animation: bpPuffA 3.6s ease-out 0.75s infinite; }
+.bp-puff-b2 { animation: bpPuffB 3.6s ease-out 0.95s infinite; }
+.bp-wisp-1 { animation: bpWisp 6s ease-out 0s infinite; }
+.bp-wisp-2 { animation: bpWisp 6s ease-out 2s infinite; }
+.bp-wisp-3 { animation: bpWisp 6s ease-out 4s infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bp-ember,
+  .bp-core,
+  .bp-puff-a1,
+  .bp-puff-b1,
+  .bp-puff-c1,
+  .bp-puff-a2,
+  .bp-puff-b2,
+  .bp-wisp-1,
+  .bp-wisp-2,
+  .bp-wisp-3 {
+    animation: none !important;
+  }
+  .bp-ember { opacity: 1; }
+  .bp-core { opacity: 0.7; }
+  .bp-puff-a1, .bp-puff-b1, .bp-puff-c1, .bp-puff-a2, .bp-puff-b2,
+  .bp-wisp-1, .bp-wisp-2, .bp-wisp-3 {
+    display: none;
+  }
+}
+
+/* Node canvas pulse edge dot + the gold betting-line ball share this motion */
+@keyframes bpPulse {
+  0% { left: 0%; }
+  50% { left: 100%; }
+  100% { left: 0%; }
+}

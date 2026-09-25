@@ -1,0 +1,145 @@
+tag_id,espn_article_id,tag_type,espn_athlete_id,team,tag_description
+6b800b3022da0f65968bffe0347184225610f7ea,50024284,team,,BUF,Buffalo Bills
+865e80c7ae1d2e6a5ca63aae1379741a0a2a017b,50024284,athlete,3918298,,Josh Allen
+b78a53b64c8b509a7beb9381be00b31bbbf52b99,50014666,league,,,NFL
+b5836bbfdbea967b2fa46a2c38a763adb2e1f8b4,50014666,team,,BUF,Buffalo Bills
+7fc27a398c863272bf104b36b5bd90e0a4a2574f,50014666,athlete,4684527,,TJ Sanders
+7b9f896d8149ddfd15e78cf001b86b3187c0b955,50023562,league,,,NFL
+2d16bcb1c9f03f06d70f7163c973d5eb8ba3c32b,50023562,team,,MIA,Miami Dolphins
+5ba814f9c7aa561aaca8855df2d91c8e9c22446b,50023562,team,,KC,Kansas City Chiefs
+f4145021074ee283687120253047daecfdc44cab,50022275,league,,,NFL
+073d38027050e70da0f1afb5d5f25e95e554772f,50022275,team,,KC,Kansas City Chiefs
+d3b7523c4c7507860a3d206a8cbee883daa7cc9d,50022275,athlete,4567048,,Kenneth Walker III
+e787d6b94581ffc35f407ee0787b6005b95d7f52,50021828,league,,,NFL
+f2ee562467101c2eef85426fb88ef56f7b7306e1,50021828,team,,KC,Kansas City Chiefs
+daa2cd7dc37f0d193c154a4a830e5e2d2ea6f126,50021828,athlete,3139477,,Patrick Mahomes
+d5a99322ad51662843fb96b16e0b216feba05423,50021828,team,,BUF,Buffalo Bills
+e11da93d249b74059a18ad5eee41d5173b67ab4a,50021828,athlete,3918298,,Josh Allen
+d5ba530c2d108c9aebbefaec6e88b6e8a8564015,50016050,team,,KC,Kansas City Chiefs
+eab0d2e290b25292f7d64a7bcd70876931568380,50015353,league,,,NFL
+bba90801faa99699c33bd76888b4ac4396b1fcb9,50015353,team,,KC,Kansas City Chiefs
+5ceddc8e5eea88e3a2e5fe55ded8ee8ade79835c,50015353,athlete,15847,,Travis Kelce
+3b769d9b11aeaacfed33a853e2ada68358834936,50023183,league,,,NFL
+e25ef9ff33f1183ec49e84cad97bd86e5a13a459,50023183,team,,CHI,Chicago Bears
+a6849e86b790d14fffba200c04bbb6c5ccff220e,50023183,team,,PHI,Philadelphia Eagles
+c993cd7e335109e94720c1e330efcea9519e97c0,50022170,league,,,NFL
+cecf655915bb58639d1ab52faeb6c49300916f2b,50022170,team,,CHI,Chicago Bears
+23ed5d78f5e7dc0d43d9dc230b4cec0e81fcb593,50022170,team,,PHI,Philadelphia Eagles
+00bfec5b2788b400d39429eaadd3e85ca3bf1aab,49998629,league,,,NFL
+8c8f63a2d81d5df0b52ae218281350bf51765ddb,49998629,team,,KC,Kansas City Chiefs
+c1b071221a5cd54e32afadd4646d2069ca287381,49998629,team,,BUF,Buffalo Bills
+b06bf09cd14f6e835df2a7a31bdf8f958c7bf49a,49998629,team,,NYJ,New York Jets
+9b954ef72d9b6d9dc74e62bb6898334b0b55a5d6,49998629,team,,MIA,Miami Dolphins
+aad1b6a3b0c02b083e6db0210a00f5ca502dab91,49998629,team,,NE,New England Patriots
+9f3de47dfdaf988ce33231efc41217737f54d989,49998629,team,,PHI,Philadelphia Eagles
+78cf15946dc0e14fcc6d24daa410abf9b36c6a53,49998629,team,,NYG,New York Giants
+d992bf4c257bd197e2ec1907ee57b49a7372003c,49998629,team,,DAL,Dallas Cowboys
+59c986ec1bf0a7c3e4f5beb5d10bad34d1b9c615,49998629,team,,WSH,Washington Commanders
+cfadccc63740c2d749bcd09759c144ea2f90062f,49998629,team,,BAL,Baltimore Ravens
+6028356d2e6040a882cc09c0d959c5e784cd7074,49998629,team,,CIN,Cincinnati Bengals
+48ed14424610b2b409f52a2c41e0a393de4c36be,49998629,team,,CLE,Cleveland Browns
+23f0c19a217b1973eb6c6c0b3274a6521e645b7f,49998629,team,,PIT,Pittsburgh Steelers
+6921a5cb4bd4aaadcefe765d3ce50c828eecf9f8,49998629,team,,CHI,Chicago Bears
+5918186b473dff125f2f0249db8e8073474f2921,49998629,team,,DET,Detroit Lions
+b8c354fdf936dc3b8bc6609e36e25655513d0b23,49998629,team,,GB,Green Bay Packers
+0b81668853d411656ea72be713ba8232293f4f02,49998629,team,,MIN,Minnesota Vikings
+5d016f2707e00bf50929db97da9e43e67a5c139b,49998629,team,,HOU,Houston Texans
+25b0319d36800c36c241da00874bdb1f0c8b1640,49998629,team,,IND,Indianapolis Colts
+7e055aa7ac02208836fd0204c90554603e418289,49998629,team,,TEN,Tennessee Titans
+6d17dad2c356939c1b37a72393648c696f5752b1,49998629,team,,JAX,Jacksonville Jaguars
+1e68a7f195684aa500b390fcb69b4c4b5ae0fd39,49998629,team,,ATL,Atlanta Falcons
+60abf0c6fac56e47760fc5c32559d16cbc9d79b3,49998629,team,,CAR,Carolina Panthers
+0687d634f591e4ddbe52addfc2f78e09e48a55eb,49998629,team,,TB,Tampa Bay Buccaneers
+6b547f154dd77de60444776b1ec55824182e8fd9,49998629,team,,NO,New Orleans Saints
+f463e9480bf3ecfac5ac3c6a47add42a6a4f14be,49998629,team,,ARI,Arizona Cardinals
+38fe5e5fd6c42fadc8c993a09aba2bce84fdf46f,49998629,team,,LAR,Los Angeles Rams
+470f35b4b4a6d98fc3b105b370e0dc982161cf9b,49998629,team,,SF,San Francisco 49ers
+1388ed1d9b08a942329c5541bdbea6dd5e0321d9,49998629,team,,SEA,Seattle Seahawks
+ef41539f0fa34cf0216bbeed487bf43eb0828271,49998629,team,,DEN,Denver Broncos
+afa0be7b383cf01d30894a7482dc68b08a92450e,49998629,team,,LAC,Los Angeles Chargers
+456d688e38b04c6d5c3279c7ecb09b6dbcad0e48,49998629,team,,LV,Las Vegas Raiders
+5e7d3fc702eb67fe86b7e42e99138d0100394619,50006942,league,,,NFL
+d83479f15a54f5563dc9fa18bac50cadd129e24a,50006942,team,,PHI,Philadelphia Eagles
+af0ee6eaf1cb1dacc375a8c458da818c235a96de,50006942,athlete,4218312,,Kenny Moore II
+cb990c767340b69324f937beb85c8857f976a439,47809892,league,,,Sports Betting
+4af8c5865a7352f18f7339d346de352568aa5c52,47809892,team,,SEA,Seattle Seahawks
+bc3f6a22a8f9eaba05c67db3e41f3dbbedd91062,47809892,team,,BAL,Baltimore Ravens
+90f857709581079e52bc9cca48bf78745864050e,47809892,team,,LAR,Los Angeles Rams
+29e9edd300152e43c20b5f232ddfd8b927f60a6b,47809892,team,,BUF,Buffalo Bills
+482b9e89ca8c4a0d18c400c438247ab4bd889e27,47809892,team,,SF,San Francisco 49ers
+10dde68d94402a6e62724c423c26f9ed12b97ca6,47809892,team,,CHI,Chicago Bears
+a43e6754f7f543bff287da3e45a41acf38584558,47809892,team,,KC,Kansas City Chiefs
+ab0f7cbcd583e36c6dc726fd8e0deb081b17997b,47809892,team,,DET,Detroit Lions
+4a15c017a38f1029c05892693e66c495607efb46,47809892,team,,PHI,Philadelphia Eagles
+5000edd0839c87f8711f253176ab1015a1586c07,47809892,team,,CIN,Cincinnati Bengals
+c9850bd0a3a99dfd4c94019872cbc68eaeb6841d,50023086,league,,,NFL
+99aa895ea52b2eed2906b713d2cec7ab7e932e58,50023086,team,,GB,Green Bay Packers
+ecc23824e4d3240974283f8847aa849720158b80,50023086,team,,ATL,Atlanta Falcons
+e53fdf1e7f9e0c41c8638c79376063113d2541aa,50023086,athlete,4036378,,Jordan Love
+cfadec68c2e2eade7b4171374e623ebc2ec96bc7,50023086,athlete,4360423,,Michael Penix Jr
+f71f5e7a1158256fdf91bf40090b7282bbdf03da,50023929,athlete,16002,,Kyle Juszczyk
+ffb61ed6466cd1f6f12acbf539c0ab272dcb962e,50023929,league,,,NFL
+b175b9b21375a9f1d4bfaa71522dc268185698d7,50023929,team,,SF,San Francisco 49ers
+899fd5fbe067dcbe4d3d2f3f84c49c564f9422a3,50023808,league,,,NFL
+41d772eb3c402cd3d4518968da081335b88ecd43,50023808,team,,CLE,Cleveland Browns
+ad1aacebccc0e1d8b0d6fc74def2f3d96ccc7349,50023808,team,,CAR,Carolina Panthers
+2ff2f2d902177792bb7a9c130ee6ac687470544d,50023758,league,,,NFL
+ddf8d12193d660153df24816e8c62e9a68c5faf2,50023758,team,,DEN,Denver Broncos
+ca1ff92b023d636f6d20032c2f48346b72b97d58,50023758,team,,LAR,Los Angeles Rams
+c2509378db9fde028d00a28fac1d7de20721289a,28074905,team,,NYY,New York Yankees
+1550e0471570e2a58443addbf9eb13fa740071ae,28074905,team,,LAA,Los Angeles Angels
+2f448d3736e126ba5df20620361e98d4e13c01c8,28074905,team,,ARI,Arizona Diamondbacks
+3cb5ac65ffe12ea8c1fe0b9c89225dd6184880f5,28074905,team,,PHI,Philadelphia Phillies
+07763b640c051948be9092d297f5a6fb32f7cde6,28074905,league,,,Tennis
+41afaf0b26aadc66496cbd2eb5fb5fc4e74a4775,50023703,team,,LAC,Los Angeles Chargers
+41bbca047bfefbd04ffe6612949b7678cca2b0ae,50023703,athlete,4038941,,Justin Herbert
+1f5f9cf5bfe943f5097b2b6cf841cd3e16a14b10,50023691,league,,,NFL
+5e58130ea7871cf1fedea896efab811d971fb600,50023691,team,,BUF,Buffalo Bills
+84beab4de1495da3b108cba5ac610c93fbdaba0c,50023691,team,,LAC,Los Angeles Chargers
+606e7f22235396629527067176d5e150ddb5b422,50008808,league,,,NFL
+3d279aa3665ef9a44113c60dcabd3bb6cd53ae45,50008808,team,,ARI,Arizona Cardinals
+2e4b8ef1cace9beae8f044d5dea697572c6cd4db,50008808,team,,ATL,Atlanta Falcons
+174183f8ec01f3c7d12d09cf4a75bbd2520e6cca,50008808,team,,BAL,Baltimore Ravens
+70af17c6c96a98822129501291e28a2aff7c9656,50008808,team,,BUF,Buffalo Bills
+0712bd67f2dd5227a3d0c1f6ac7e83f234c8dc48,50008808,team,,CAR,Carolina Panthers
+607b9261d7a89ca6ff4e0c84ac1cab55be271466,50008808,team,,CHI,Chicago Bears
+c0320c7d1a71d9036210e3cc24cbe66e2d6d86db,50008808,team,,CIN,Cincinnati Bengals
+7111f127f413603725c1c993102776389b39c158,50008808,team,,CLE,Cleveland Browns
+bd4cf432fb59d9b423506a119dd38fc8ebe6ecf6,50008808,team,,DAL,Dallas Cowboys
+c033cb919b56550892c0979311c08d9f153534e7,50008808,team,,DEN,Denver Broncos
+da55689733ecbf03b192d304add1cb83073f4bd9,50008808,team,,DET,Detroit Lions
+e6e19c7bab3ba08f283d2192f1e086f331552672,50008808,team,,GB,Green Bay Packers
+21b96ee258125c5a132e47d7f206f39c09bb1e5b,50008808,team,,HOU,Houston Texans
+1c7cbdb536bbcbcf7e76ed5aaf46e427c6df9b3e,50008808,team,,IND,Indianapolis Colts
+bd73651f46be1c919258e8b291c657cb29555142,50008808,team,,JAX,Jacksonville Jaguars
+2960b4ad7b88ea47aca5b1e857402ac0a199dd90,50008808,team,,KC,Kansas City Chiefs
+a2d8901bcb1f0f0b5146d9cfb9a70e279546201f,50008808,team,,LV,Las Vegas Raiders
+6b4ba4fd4d3b3179226892d67c0bd63269397882,50008808,team,,LAC,Los Angeles Chargers
+faf1b52b6c0e0964ae640c54f892e2be39fa0f56,50008808,team,,LAR,Los Angeles Rams
+a0db7338c6fff650539e3b58ed476f84dda534c8,50008808,team,,MIA,Miami Dolphins
+18e8e3791c3ff73305842827fffc63406e007fbf,50008808,team,,MIN,Minnesota Vikings
+d42a143d12b42ace6905ebde3aebf51003e721e5,50008808,team,,NE,New England Patriots
+57ff2c9c3416e28c2e8f6bc4013d386f88016a33,50008808,team,,NO,New Orleans Saints
+b3c58335e309723a442648dc0e9a1f0357c7b337,50008808,team,,NYG,New York Giants
+4df72e4141eb662f0730291dcc8f2d1a6f0a830a,50008808,team,,NYJ,New York Jets
+47a2243eeedeb6a11423faabdc02232d42ec6c50,50008808,team,,PHI,Philadelphia Eagles
+af944aef2f4ab21c7fbd561dd5033ef629a08d7f,50008808,team,,PIT,Pittsburgh Steelers
+b644c1871ba7bc345414ff6f65b9ad8cf5d5a69d,50008808,team,,SF,San Francisco 49ers
+62833c2bbdefac425c88470f5d82f0b96fac368b,50008808,team,,SEA,Seattle Seahawks
+9e60f85e4815fe322783a9e67e421a53d6dfbc63,50008808,team,,TB,Tampa Bay Buccaneers
+0e643a296f09daf25b105487b2451e62be127380,50008808,team,,TEN,Tennessee Titans
+b45c99b1b05e4a627e24a882123fb21a5da0c8b1,50008808,team,,WSH,Washington Commanders
+6ff99ae121e9cdca61e6302194185e6a26544556,50006560,league,,,NFL
+bd7a0ad08cfac7672b3a5ed28b050dc9e2493083,50006560,team,,ATL,Atlanta Falcons
+99f72f026f8bbe5898cb1cc61e878537a6018f70,50006560,team,,HOU,Houston Texans
+7258211f47ca6c0867c815bf45241cc7d4ed1165,50006560,team,,IND,Indianapolis Colts
+7dc63015feb3d64490a448393b3973b8e3aff532,50006560,team,,LAC,Los Angeles Chargers
+00650c79e87d79f70b8b2b719dfdf4684a23b948,50006560,team,,MIA,Miami Dolphins
+a3de16f2ed637c1f091225e58d56ab0118b37da2,50006560,team,,TB,Tampa Bay Buccaneers
+b2ae2eaf1e08da00990004ebba058064f0cfc48b,50006560,team,,TEN,Tennessee Titans
+8947ab19ac87a3a42c269db114e85b88d40df2a9,50006560,team,,WSH,Washington Commanders
+0eca5e059bfe69ea9cb3b8eed62d8aa997d0b57f,50016938,team,,LAC,Los Angeles Chargers
+ff00e872cad53c450f6f748af7f1849330da653f,50016938,athlete,4038941,,Justin Herbert
+9de05bc43ff474325505c0f1e86cce52702ceacc,50016633,league,,,NFL
+5d16c4c964e4f348bcb712eb624dd0b31aad9499,50016633,team,,LAC,Los Angeles Chargers
+d64f79d34ad8b18f04db6347f770a3f6b9cc5a48,50016633,athlete,4038941,,Justin Herbert

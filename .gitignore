@@ -1,0 +1,30 @@
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite
+lake/bronze/*
+lake/silver/*
+lake/gold/*
+!lake/*/.gitkeep
+!lake/gold/nfl/
+!lake/gold/nfl/*.csv
+lake/gold/nfl/player_photos/*.png
+__pycache__/
+.venv/
+node_modules/
+*.pem
+*.key
+*_cookies.txt
+.teamrankings_cookies.txt
+
+# local python libs (installed via pip --target)
+.pylibs/
+
+# duckdb database files
+*.duckdb
+*.duckdb.wal
+
+# frontend build artifacts
+frontend/node_modules/
+frontend/dist/

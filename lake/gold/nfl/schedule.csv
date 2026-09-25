@@ -1,0 +1,273 @@
+game_id,season,game_type,week,game_date,weekday,game_time_local,away_team,home_team,away_score,home_score,location,result_margin,total_points,overtime,roof,surface,stadium_id,stadium,temp_actual,wind_actual,spread_line,away_spread_odds,home_spread_odds,total_line,over_odds,under_odds,away_moneyline,home_moneyline,div_game,away_qb_name,home_qb_name,away_coach,home_coach,referee,ingest_run_id
+2026_01_NE_SEA,2026,REG,1,2026-09-09,Wednesday,20:20,NE,SEA,10,13,Home,3,23,False,outdoors,fieldturf,SEA00,Lumen Field,74,6,3.0,-102,-118,44.5,-108,-112,140,-166,False,Drake Maye,Sam Darnold,Mike Vrabel,Mike Macdonald,Adrian Hill,20260925T021551Z
+2026_01_SF_LA,2026,REG,1,2026-09-10,Thursday,20:35,SF,LA,27,7,Neutral,-20,34,False,dome,grass,MEL00,Melbourne Cricket Ground,57,4,3.5,-105,-115,47.5,-115,-105,180,-218,True,Brock Purdy,Matthew Stafford,Kyle Shanahan,Sean McVay,Alex Kemp,20260925T021551Z
+2026_01_CHI_CAR,2026,REG,1,2026-09-13,Sunday,13:00,CHI,CAR,59,37,Home,-22,96,False,outdoors,grass,CAR00,Bank of America Stadium,89,2,-3.0,-112,-108,47.5,-105,-115,-166,140,False,Caleb Williams,Bryce Young,Ben Johnson,Dave Canales,Brad Allen,20260925T021551Z
+2026_01_TB_CIN,2026,REG,1,2026-09-13,Sunday,13:00,TB,CIN,27,33,Home,6,60,False,outdoors,fieldturf,CIN00,Paycor Stadium,85,7,3.5,-102,-118,50.5,-108,-112,170,-205,False,Baker Mayfield,Joe Burrow,Todd Bowles,Zac Taylor,John Hussey,20260925T021551Z
+2026_01_NO_DET,2026,REG,1,2026-09-13,Sunday,13:00,NO,DET,30,31,Home,1,61,True,dome,fieldturf,DET00,Ford Field,,,7.0,-110,-110,49.5,-115,-105,260,-325,False,Tyler Shough,Jared Goff,Kellen Moore,Dan Campbell,Alan Eck,20260925T021551Z
+2026_01_BUF_HOU,2026,REG,1,2026-09-13,Sunday,13:00,BUF,HOU,36,31,Home,-5,67,False,closed,astroturf,HOU00,Reliant Stadium,,,-1.5,-105,-115,44.5,-110,-110,-112,-108,False,Josh Allen,C.J. Stroud,Sean McDermott,DeMeco Ryans,Alex Moore,20260925T021551Z
+2026_01_BAL_IND,2026,REG,1,2026-09-13,Sunday,13:00,BAL,IND,41,23,Home,-18,64,False,closed,fieldturf,IND00,Lucas Oil Stadium,,,-3.0,-108,-112,48.5,-102,-118,-162,136,False,Lamar Jackson,Daniel Jones,Jesse Minter,Shane Steichen,Scott Novak,20260925T021551Z
+2026_01_CLE_JAX,2026,REG,1,2026-09-13,Sunday,13:00,CLE,JAX,10,34,Home,24,44,False,outdoors,grass,JAX00,EverBank Stadium,89,3,8.5,-105,-115,40.5,-102,-118,360,-470,False,Deshaun Watson,Trevor Lawrence,Todd Monken,Liam Coen,Craig Wrolstad,20260925T021551Z
+2026_01_ATL_PIT,2026,REG,1,2026-09-13,Sunday,13:00,ATL,PIT,13,20,Home,7,33,False,outdoors,grass,PIT00,Acrisure Stadium,77,4,6.5,-108,-112,40.5,-112,-108,240,-298,False,Cooper Rush,Aaron Rodgers,Raheem Morris,Mike McCarthy,Brad Rogers,20260925T021551Z
+2026_01_NYJ_TEN,2026,REG,1,2026-09-13,Sunday,13:00,NYJ,TEN,23,10,Home,-13,33,False,outdoors,grass,NAS00,Nissan Stadium,90,2,1.5,-115,-105,39.5,-110,-110,-102,-118,False,Geno Smith,Cam Ward,Aaron Glenn,Robert Saleh,Land Clark,20260925T021551Z
+2026_01_ARI_LAC,2026,REG,1,2026-09-13,Sunday,16:25,ARI,LAC,26,14,Home,-12,40,False,dome,matrixturf,LAX01,SoFi Stadium,,,8.5,-102,-118,47.5,-102,-118,350,-455,False,Jacoby Brissett,Justin Herbert,Jonathan Gannon,Jim Harbaugh,Ron Torbert,20260925T021551Z
+2026_01_MIA_LV,2026,REG,1,2026-09-13,Sunday,16:25,MIA,LV,13,27,Home,14,40,False,dome,grass,VEG00,Allegiant Stadium,,,3.0,-110,-110,40.5,-110,-110,142,-170,False,Malik Willis,Kirk Cousins,Jeff Hafley,Klint Kubliak,Clete Blakeman,20260925T021551Z
+2026_01_GB_MIN,2026,REG,1,2026-09-13,Sunday,16:25,GB,MIN,22,39,Home,17,61,False,dome,sportturf,MIN01,U.S. Bank Stadium,,,1.5,-105,-115,46.5,-102,-118,105,-125,True,Jordan Love,Kyler Murray,Matt LaFleur,Kevin O'Connell,Shawn Hochuli,20260925T021551Z
+2026_01_WAS_PHI,2026,REG,1,2026-09-13,Sunday,16:25,WAS,PHI,22,24,Home,2,46,False,outdoors,grass,PHI00,Lincoln Financial Field,82,7,6.0,-110,-110,43.5,-115,-105,200,-245,True,Jayden Daniels,Jalen Hurts,Dan Quinn,Nick Sirianni,Shawn Smith,20260925T021551Z
+2026_01_DAL_NYG,2026,REG,1,2026-09-13,Sunday,20:20,DAL,NYG,20,28,Home,8,48,False,outdoors,fieldturf,NYC01,MetLife Stadium,80,7,-3.0,-112,-108,47.5,-115,-105,-166,140,True,Dak Prescott,Jaxson Dart,Brian Schottenheimer,John Harbaugh,Carl Cheffers,20260925T021551Z
+2026_01_DEN_KC,2026,REG,1,2026-09-14,Monday,20:15,DEN,KC,10,31,Home,21,41,False,outdoors,grass,KAN00,GEHA Field at Arrowhead Stadium,91,13,2.5,-112,-108,42.5,-110,-110,110,-130,True,Bo Nix,Patrick Mahomes,Sean Payton,Andy Reid,Clay Martin,20260925T021551Z
+2026_02_DET_BUF,2026,REG,2,2026-09-17,Thursday,20:15,DET,BUF,31,41,Home,10,72,False,outdoors,grass,BUF00,Highmark Stadium,67,4,5.5,-115,-105,54.5,-118,-102,195,-238,False,Jared Goff,Josh Allen,Dan Campbell,Sean McDermott,Ron Torbert,20260925T021551Z
+2026_02_CAR_ATL,2026,REG,2,2026-09-20,Sunday,13:00,CAR,ATL,34,3,Home,-31,37,False,closed,fieldturf,ATL97,Mercedes-Benz Stadium,,,-2.5,-120,100,43.5,-110,-110,-155,130,True,Bryce Young,Tua Tagovailoa,Dave Canales,Raheem Morris,Alex Moore,20260925T021551Z
+2026_02_NO_BAL,2026,REG,2,2026-09-20,Sunday,13:00,NO,BAL,24,17,Home,-7,41,False,outdoors,grass,BAL00,M&T Bank Stadium,79,10,8.5,-115,-105,45.5,-105,-115,295,-375,False,Tyler Shough,Lamar Jackson,Kellen Moore,Jesse Minter,Clete Blakeman,20260925T021551Z
+2026_02_MIN_CHI,2026,REG,2,2026-09-20,Sunday,13:00,MIN,CHI,9,3,Home,-6,12,False,outdoors,grass,CHI98,Soldier Field,68,8,4.5,-108,-112,46.5,-115,-105,180,-218,True,Carson Wentz,Caleb Williams,Kevin O'Connell,Ben Johnson,Land Clark,20260925T021551Z
+2026_02_CIN_HOU,2026,REG,2,2026-09-20,Sunday,13:00,CIN,HOU,20,6,Home,-14,26,False,closed,astroturf,HOU00,Reliant Stadium,,,3.0,-118,-102,45.5,-110,-110,124,-148,False,Joe Burrow,C.J. Stroud,Zac Taylor,DeMeco Ryans,Adrian Hill,20260925T021551Z
+2026_02_PIT_NE,2026,REG,2,2026-09-20,Sunday,13:00,PIT,NE,3,20,Home,17,23,False,outdoors,fieldturf,BOS00,Gillette Stadium,63,7,4.5,-102,-118,41.5,-105,-115,185,-225,False,Aaron Rodgers,Drake Maye,Mike McCarthy,Mike Vrabel,Carl Cheffers,20260925T021551Z
+2026_02_GB_NYJ,2026,REG,2,2026-09-20,Sunday,13:00,GB,NYJ,20,17,Home,-3,37,True,outdoors,fieldturf,NYC01,MetLife Stadium,69,7,-3.5,-108,-112,44.5,-110,-110,-185,154,False,Jordan Love,Geno Smith,Matt LaFleur,Aaron Glenn,Scott Novak,20260925T021551Z
+2026_02_CLE_TB,2026,REG,2,2026-09-20,Sunday,13:00,CLE,TB,23,19,Home,-4,42,False,outdoors,grass,TAM00,Raymond James Stadium,86,4,8.5,-115,-105,41.5,-108,-112,330,-425,False,Deshaun Watson,Baker Mayfield,Todd Monken,Todd Bowles,Brad Rogers,20260925T021551Z
+2026_02_PHI_TEN,2026,REG,2,2026-09-20,Sunday,13:00,PHI,TEN,24,20,Home,-4,44,False,outdoors,grass,NAS00,Nissan Stadium,92,5,-7.0,-115,-105,39.5,-112,-108,-325,260,False,Jalen Hurts,Cam Ward,Nick Sirianni,Robert Saleh,Clay Martin,20260925T021551Z
+2026_02_JAX_DEN,2026,REG,2,2026-09-20,Sunday,16:05,JAX,DEN,13,20,Home,7,33,False,outdoors,grass,DEN00,Empower Field at Mile High,73,12,2.5,-105,-115,45.5,-110,-110,124,-148,False,Trevor Lawrence,Bo Nix,Liam Coen,Sean Payton,John Hussey,20260925T021551Z
+2026_02_LV_LAC,2026,REG,2,2026-09-20,Sunday,16:05,LV,LAC,26,14,Home,-12,40,False,dome,matrixturf,LAX01,SoFi Stadium,,,6.5,102,-122,43.5,-110,-110,260,-325,True,Kirk Cousins,Justin Herbert,Klint Kubliak,Jim Harbaugh,Bill Vinovich,20260925T021551Z
+2026_02_SEA_ARI,2026,REG,2,2026-09-20,Sunday,16:25,SEA,ARI,31,7,Home,-24,38,False,closed,grass,PHO00,State Farm Stadium,,,-3.5,-120,100,40.5,-115,-105,-218,180,True,Drew Lock,Jacoby Brissett,Mike Macdonald,Jonathan Gannon,Alan Eck,20260925T021551Z
+2026_02_WAS_DAL,2026,REG,2,2026-09-20,Sunday,16:25,WAS,DAL,20,37,Home,17,57,False,closed,matrixturf,DAL00,AT&T Stadium,,,3.5,100,-120,51.5,-105,-115,180,-218,True,Jayden Daniels,Dak Prescott,Dan Quinn,Brian Schottenheimer,Shawn Hochuli,20260925T021551Z
+2026_02_MIA_SF,2026,REG,2,2026-09-20,Sunday,16:25,MIA,SF,13,35,Home,22,48,False,outdoors,grass,SFO01,Levi's Stadium,69,5,12.5,-105,-115,44.5,-115,-105,600,-900,False,Malik Willis,Brock Purdy,Jeff Hafley,Kyle Shanahan,Shawn Smith,20260925T021551Z
+2026_02_IND_KC,2026,REG,2,2026-09-20,Sunday,20:20,IND,KC,30,33,Home,3,63,True,outdoors,grass,KAN00,GEHA Field at Arrowhead Stadium,71,10,6.0,-112,-108,46.5,-102,-118,215,-265,False,Daniel Jones,Patrick Mahomes,Shane Steichen,Andy Reid,Craig Wrolstad,20260925T021551Z
+2026_02_NYG_LA,2026,REG,2,2026-09-21,Monday,20:15,NYG,LA,6,28,Home,22,34,False,dome,matrixturf,LAX01,SoFi Stadium,,,6.5,-105,-115,47.5,-110,-110,240,-298,False,Jaxson Dart,Matthew Stafford,John Harbaugh,Sean McVay,Brad Allen,20260925T021551Z
+2026_03_ATL_GB,2026,REG,3,2026-09-24,Thursday,20:15,ATL,GB,,,Home,,,,outdoors,grass,GNB00,Lambeau Field,,,4.5,-108,-112,43.5,-102,-118,190,-230,False,Michael Penix Jr.,Jordan Love,Raheem Morris,Matt LaFleur,,20260925T021551Z
+2026_03_LAC_BUF,2026,REG,3,2026-09-27,Sunday,13:00,LAC,BUF,,,Home,,,,outdoors,a_turf,BUF00,Highmark Stadium,,,7.0,-105,-115,50.5,-105,-115,270,-340,False,Justin Herbert,Josh Allen,Jim Harbaugh,Sean McDermott,,20260925T021551Z
+2026_03_CAR_CLE,2026,REG,3,2026-09-27,Sunday,13:00,CAR,CLE,,,Home,,,,outdoors,grass,CLE00,Huntington Bank Field,,,-2.5,-118,-102,42.5,-108,-112,-148,124,False,Bryce Young,Deshaun Watson,Dave Canales,Todd Monken,,20260925T021551Z
+2026_03_NYJ_DET,2026,REG,3,2026-09-27,Sunday,13:00,NYJ,DET,,,Home,,,,dome,fieldturf,DET00,Ford Field,,,6.5,-110,-110,47.5,-112,-108,240,-298,False,Geno Smith,Jared Goff,Aaron Glenn,Dan Campbell,,20260925T021551Z
+2026_03_HOU_IND,2026,REG,3,2026-09-27,Sunday,13:00,HOU,IND,,,Home,,,,,fieldturf,IND00,Lucas Oil Stadium,,,-1.5,-118,-102,42.5,-112,-108,-125,105,True,C.J. Stroud,Daniel Jones,DeMeco Ryans,Shane Steichen,,20260925T021551Z
+2026_03_NE_JAX,2026,REG,3,2026-09-27,Sunday,13:00,NE,JAX,,,Home,,,,outdoors,grass,JAX00,EverBank Stadium,,,3.0,-115,-105,45.5,-115,-105,130,-155,False,Drake Maye,Trevor Lawrence,Mike Vrabel,Liam Coen,,20260925T021551Z
+2026_03_KC_MIA,2026,REG,3,2026-09-27,Sunday,13:00,KC,MIA,,,Home,,,,outdoors,grass,MIA00,Hard Rock Stadium,,,-10.5,-112,-108,45.5,-115,-105,-650,470,False,Patrick Mahomes,Malik Willis,Andy Reid,Jeff Hafley,,20260925T021551Z
+2026_03_TEN_NYG,2026,REG,3,2026-09-27,Sunday,13:00,TEN,NYG,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,2.5,-102,-118,38.5,-108,-112,110,-130,False,Cam Ward,Jameis Winston,Robert Saleh,John Harbaugh,,20260925T021551Z
+2026_03_CIN_PIT,2026,REG,3,2026-09-27,Sunday,13:00,CIN,PIT,,,Home,,,,outdoors,grass,PIT00,Acrisure Stadium,,,-3.5,-115,-105,42.5,-110,-110,-185,154,True,Joe Burrow,Aaron Rodgers,Zac Taylor,Mike McCarthy,,20260925T021551Z
+2026_03_SEA_WAS,2026,REG,3,2026-09-27,Sunday,13:00,SEA,WAS,,,Home,,,,outdoors,grass,WAS00,Northwest Stadium,,,-7.5,-108,-112,40.5,-102,-118,-355,280,False,Drew Lock,Jayden Daniels,Mike Macdonald,Dan Quinn,,20260925T021551Z
+2026_03_ARI_SF,2026,REG,3,2026-09-27,Sunday,16:05,ARI,SF,,,Home,,,,outdoors,grass,SFO01,Levi's Stadium,,,8.5,-112,-108,47.5,-115,-105,350,-455,True,Jacoby Brissett,Brock Purdy,Jonathan Gannon,Kyle Shanahan,,20260925T021551Z
+2026_03_MIN_TB,2026,REG,3,2026-09-27,Sunday,16:05,MIN,TB,,,Home,,,,outdoors,grass,TAM00,Raymond James Stadium,,,-1.5,-108,-112,42.5,-110,-110,-122,102,False,Kyler Murray,Baker Mayfield,Kevin O'Connell,Todd Bowles,,20260925T021551Z
+2026_03_BAL_DAL,2026,REG,3,2026-09-27,Sunday,16:25,BAL,DAL,,,Neutral,,,,,matrixturf,RIO00,Maracana Stadium,,,-3.5,-105,-115,53.5,-105,-115,-175,145,False,Lamar Jackson,Dak Prescott,Jesse Minter,Brian Schottenheimer,,20260925T021551Z
+2026_03_LV_NO,2026,REG,3,2026-09-27,Sunday,16:25,LV,NO,,,Home,,,,dome,sportturf,NOR00,Caesars Superdome,,,3.0,102,-122,43.5,-110,-110,154,-185,False,Kirk Cousins,Tyler Shough,Klint Kubliak,Kellen Moore,,20260925T021551Z
+2026_03_LA_DEN,2026,REG,3,2026-09-27,Sunday,20:20,LA,DEN,,,Home,,,,outdoors,grass,DEN00,Empower Field at Mile High,,,-2.5,-110,-110,44.5,-112,-108,-130,110,False,Matthew Stafford,Bo Nix,Sean McVay,Sean Payton,,20260925T021551Z
+2026_03_PHI_CHI,2026,REG,3,2026-09-28,Monday,20:15,PHI,CHI,,,Home,,,,outdoors,grass,CHI98,Soldier Field,,,-4.5,-120,100,41.5,-105,-115,-225,185,False,Jalen Hurts,Case Keenum,Nick Sirianni,Ben Johnson,,20260925T021551Z
+2026_04_PIT_CLE,2026,REG,4,2026-10-01,Thursday,20:15,PIT,CLE,,,Home,,,,outdoors,grass,CLE00,Huntington Bank Field,,,-3.0,100,-120,38.5,-110,-110,-148,124,True,Aaron Rodgers,Deshaun Watson,Mike McCarthy,Todd Monken,,20260925T021551Z
+2026_04_IND_WAS,2026,REG,4,2026-10-04,Sunday,09:30,IND,WAS,,,Neutral,,,,outdoors,grass,LON02,Tottenham Hotspur Stadium,,,-4.5,-110,-110,46.5,-110,-110,-205,170,False,Daniel Jones,Jayden Daniels,Shane Steichen,Dan Quinn,,20260925T021551Z
+2026_04_TEN_BAL,2026,REG,4,2026-10-04,Sunday,13:00,TEN,BAL,,,Home,,,,outdoors,grass,BAL00,M&T Bank Stadium,,,10.5,-110,-110,44.5,-110,-110,440,-600,False,Cam Ward,Lamar Jackson,Robert Saleh,Jesse Minter,,20260925T021551Z
+2026_04_NE_BUF,2026,REG,4,2026-10-04,Sunday,13:00,NE,BUF,,,Home,,,,outdoors,a_turf,BUF00,Highmark Stadium,,,5.5,-110,-110,49.5,-110,-110,205,-250,True,Drake Maye,Josh Allen,Mike Vrabel,Sean McDermott,,20260925T021551Z
+2026_04_NYJ_CHI,2026,REG,4,2026-10-04,Sunday,13:00,NYJ,CHI,,,Home,,,,outdoors,grass,CHI98,Soldier Field,,,3.0,-110,-110,43.5,-110,-110,136,-162,False,Geno Smith,Tyson Bagent,Aaron Glenn,Ben Johnson,,20260925T021551Z
+2026_04_JAX_CIN,2026,REG,4,2026-10-04,Sunday,13:00,JAX,CIN,,,Home,,,,outdoors,fieldturf,CIN00,Paycor Stadium,,,3.0,-110,-110,49.5,-110,-110,136,-162,False,Trevor Lawrence,Joe Burrow,Liam Coen,Zac Taylor,,20260925T021551Z
+2026_04_DAL_HOU,2026,REG,4,2026-10-04,Sunday,13:00,DAL,HOU,,,Home,,,,,astroturf,HOU00,Reliant Stadium,,,3.0,-110,-110,47.5,-110,-110,136,-162,False,Dak Prescott,C.J. Stroud,Brian Schottenheimer,DeMeco Ryans,,20260925T021551Z
+2026_04_ARI_NYG,2026,REG,4,2026-10-04,Sunday,13:00,ARI,NYG,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,2.5,-110,-110,43.5,-110,-110,114,-135,False,Jacoby Brissett,Jameis Winston,Jonathan Gannon,John Harbaugh,,20260925T021551Z
+2026_04_LA_PHI,2026,REG,4,2026-10-04,Sunday,13:00,LA,PHI,,,Home,,,,outdoors,grass,PHI00,Lincoln Financial Field,,,-1.5,-115,-105,45.5,-110,-110,-135,114,False,Matthew Stafford,Jalen Hurts,Sean McVay,Nick Sirianni,,20260925T021551Z
+2026_04_GB_TB,2026,REG,4,2026-10-04,Sunday,13:00,GB,TB,,,Home,,,,outdoors,grass,TAM00,Raymond James Stadium,,,,,,,,,,,False,Jordan Love,Baker Mayfield,Matt LaFleur,Todd Bowles,,20260925T021551Z
+2026_04_MIA_MIN,2026,REG,4,2026-10-04,Sunday,16:05,MIA,MIN,,,Home,,,,dome,sportturf,MIN01,U.S. Bank Stadium,,,10.5,-110,-110,42.5,-110,-110,500,-700,False,Malik Willis,Kyler Murray,Jeff Hafley,Kevin O'Connell,,20260925T021551Z
+2026_04_KC_LV,2026,REG,4,2026-10-04,Sunday,16:25,KC,LV,,,Home,,,,dome,grass,VEG00,Allegiant Stadium,,,-6.0,-110,-110,45.5,-110,-110,-258,210,True,Patrick Mahomes,Kirk Cousins,Andy Reid,Klint Kubliak,,20260925T021551Z
+2026_04_LAC_SEA,2026,REG,4,2026-10-04,Sunday,16:25,LAC,SEA,,,Home,,,,outdoors,fieldturf,SEA00,Lumen Field,,,6.5,-110,-110,42.5,-110,-110,230,-285,False,Justin Herbert,Drew Lock,Jim Harbaugh,Mike Macdonald,,20260925T021551Z
+2026_04_DEN_SF,2026,REG,4,2026-10-04,Sunday,16:25,DEN,SF,,,Home,,,,outdoors,grass,SFO01,Levi's Stadium,,,4.5,-115,-105,45.5,-110,-110,180,-218,False,Bo Nix,Brock Purdy,Sean Payton,Kyle Shanahan,,20260925T021551Z
+2026_04_DET_CAR,2026,REG,4,2026-10-04,Sunday,20:20,DET,CAR,,,Home,,,,outdoors,grass,CAR00,Bank of America Stadium,,,-3.0,100,-120,49.5,-110,-110,-155,130,False,Jared Goff,Bryce Young,Dan Campbell,Dave Canales,,20260925T021551Z
+2026_04_ATL_NO,2026,REG,4,2026-10-05,Monday,20:15,ATL,NO,,,Home,,,,dome,sportturf,NOR00,Caesars Superdome,,,,,,,,,,,True,Michael Penix Jr.,Tyler Shough,Raheem Morris,Kellen Moore,,20260925T021551Z
+2026_05_TB_DAL,2026,REG,5,2026-10-08,Thursday,20:15,TB,DAL,,,Home,,,,,matrixturf,DAL00,AT&T Stadium,,,,,,,,,,,False,,,Todd Bowles,Brian Schottenheimer,,20260925T021551Z
+2026_05_PHI_JAX,2026,REG,5,2026-10-11,Sunday,09:30,PHI,JAX,,,Home,,,,outdoors,grass,JAX00,Tottenham Hotspur Stadium,,,,,,,,,,,False,,,Nick Sirianni,Liam Coen,,20260925T021551Z
+2026_05_CIN_MIA,2026,REG,5,2026-10-11,Sunday,13:00,CIN,MIA,,,Home,,,,outdoors,grass,MIA00,Hard Rock Stadium,,,,,,,,,,,False,,,Zac Taylor,Jeff Hafley,,20260925T021551Z
+2026_05_LV_NE,2026,REG,5,2026-10-11,Sunday,13:00,LV,NE,,,Home,,,,outdoors,fieldturf,BOS00,Gillette Stadium,,,,,,,,,,,False,,,Klint Kubliak,Mike Vrabel,,20260925T021551Z
+2026_05_MIN_NO,2026,REG,5,2026-10-11,Sunday,13:00,MIN,NO,,,Home,,,,dome,sportturf,NOR00,Caesars Superdome,,,,,,,,,,,False,,,Kevin O'Connell,Kellen Moore,,20260925T021551Z
+2026_05_CLE_NYJ,2026,REG,5,2026-10-11,Sunday,13:00,CLE,NYJ,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,False,,,Todd Monken,Aaron Glenn,,20260925T021551Z
+2026_05_IND_PIT,2026,REG,5,2026-10-11,Sunday,13:00,IND,PIT,,,Home,,,,outdoors,grass,PIT00,Acrisure Stadium,,,,,,,,,,,False,,,Shane Steichen,Mike McCarthy,,20260925T021551Z
+2026_05_HOU_TEN,2026,REG,5,2026-10-11,Sunday,13:00,HOU,TEN,,,Home,,,,outdoors,grass,NAS00,Nissan Stadium,,,,,,,,,,,True,,,DeMeco Ryans,Robert Saleh,,20260925T021551Z
+2026_05_NYG_WAS,2026,REG,5,2026-10-11,Sunday,13:00,NYG,WAS,,,Home,,,,outdoors,grass,WAS00,Northwest Stadium,,,,,,,,,,,True,,,John Harbaugh,Dan Quinn,,20260925T021551Z
+2026_05_DEN_LAC,2026,REG,5,2026-10-11,Sunday,16:05,DEN,LAC,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,True,,,Sean Payton,Jim Harbaugh,,20260925T021551Z
+2026_05_DET_ARI,2026,REG,5,2026-10-11,Sunday,16:25,DET,ARI,,,Home,,,,,grass,PHO00,State Farm Stadium,,,,,,,,,,,False,,,Dan Campbell,Jonathan Gannon,,20260925T021551Z
+2026_05_CHI_GB,2026,REG,5,2026-10-11,Sunday,16:25,CHI,GB,,,Home,,,,outdoors,grass,GNB00,Lambeau Field,,,,,,,,,,,True,,,Ben Johnson,Matt LaFleur,,20260925T021551Z
+2026_05_SF_SEA,2026,REG,5,2026-10-11,Sunday,16:25,SF,SEA,,,Home,,,,outdoors,fieldturf,SEA00,Lumen Field,,,,,,,,,,,True,,,Kyle Shanahan,Mike Macdonald,,20260925T021551Z
+2026_05_BAL_ATL,2026,REG,5,2026-10-11,Sunday,20:20,BAL,ATL,,,Home,,,,,fieldturf,ATL97,Mercedes-Benz Stadium,,,,,,,,,,,False,,,Jesse Minter,Raheem Morris,,20260925T021551Z
+2026_05_BUF_LA,2026,REG,5,2026-10-12,Monday,20:15,BUF,LA,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,False,,,Sean McDermott,Sean McVay,,20260925T021551Z
+2026_06_SEA_DEN,2026,REG,6,2026-10-15,Thursday,20:15,SEA,DEN,,,Home,,,,outdoors,grass,DEN00,Empower Field at Mile High,,,,,,,,,,,False,,,Mike Macdonald,Sean Payton,,20260925T021551Z
+2026_06_HOU_JAX,2026,REG,6,2026-10-18,Sunday,09:30,HOU,JAX,,,Neutral,,,,outdoors,grass,LON00,Wembley Stadium,,,,,,,,,,,True,,,DeMeco Ryans,Liam Coen,,20260925T021551Z
+2026_06_CHI_ATL,2026,REG,6,2026-10-18,Sunday,13:00,CHI,ATL,,,Home,,,,,fieldturf,ATL97,Mercedes-Benz Stadium,,,,,,,,,,,False,,,Ben Johnson,Raheem Morris,,20260925T021551Z
+2026_06_BAL_CLE,2026,REG,6,2026-10-18,Sunday,13:00,BAL,CLE,,,Home,,,,outdoors,grass,CLE00,Huntington Bank Field,,,,,,,,,,,True,,,Jesse Minter,Todd Monken,,20260925T021551Z
+2026_06_TEN_IND,2026,REG,6,2026-10-18,Sunday,13:00,TEN,IND,,,Home,,,,,fieldturf,IND00,Lucas Oil Stadium,,,,,,,,,,,True,,,Robert Saleh,Shane Steichen,,20260925T021551Z
+2026_06_NYJ_NE,2026,REG,6,2026-10-18,Sunday,13:00,NYJ,NE,,,Home,,,,outdoors,fieldturf,BOS00,Gillette Stadium,,,,,,,,,,,True,,,Aaron Glenn,Mike Vrabel,,20260925T021551Z
+2026_06_NO_NYG,2026,REG,6,2026-10-18,Sunday,13:00,NO,NYG,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,False,,,Kellen Moore,John Harbaugh,,20260925T021551Z
+2026_06_CAR_PHI,2026,REG,6,2026-10-18,Sunday,13:00,CAR,PHI,,,Home,,,,outdoors,grass,PHI00,Lincoln Financial Field,,,,,,,,,,,False,,,Dave Canales,Nick Sirianni,,20260925T021551Z
+2026_06_PIT_TB,2026,REG,6,2026-10-18,Sunday,13:00,PIT,TB,,,Home,,,,outdoors,grass,TAM00,Raymond James Stadium,,,,,,,,,,,False,,,Mike McCarthy,Todd Bowles,,20260925T021551Z
+2026_06_ARI_LA,2026,REG,6,2026-10-18,Sunday,16:05,ARI,LA,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,True,,,Jonathan Gannon,Sean McVay,,20260925T021551Z
+2026_06_LAC_KC,2026,REG,6,2026-10-18,Sunday,16:25,LAC,KC,,,Home,,,,outdoors,grass,KAN00,GEHA Field at Arrowhead Stadium,,,,,,,,,,,True,,,Jim Harbaugh,Andy Reid,,20260925T021551Z
+2026_06_BUF_LV,2026,REG,6,2026-10-18,Sunday,16:25,BUF,LV,,,Home,,,,dome,grass,VEG00,Allegiant Stadium,,,,,,,,,,,False,,,Sean McDermott,Klint Kubliak,,20260925T021551Z
+2026_06_DAL_GB,2026,REG,6,2026-10-18,Sunday,20:20,DAL,GB,,,Home,,,,outdoors,grass,GNB00,Lambeau Field,,,,,,,,,,,False,,,Brian Schottenheimer,Matt LaFleur,,20260925T021551Z
+2026_06_WAS_SF,2026,REG,6,2026-10-19,Monday,20:15,WAS,SF,,,Home,,,,outdoors,grass,SFO01,Levi's Stadium,,,,,,,,,,,False,,,Dan Quinn,Kyle Shanahan,,20260925T021551Z
+2026_07_NE_CHI,2026,REG,7,2026-10-22,Thursday,20:15,NE,CHI,,,Home,,,,outdoors,grass,CHI98,Soldier Field,,,,,,,,,,,False,,,Mike Vrabel,Ben Johnson,,20260925T021551Z
+2026_07_PIT_NO,2026,REG,7,2026-10-25,Sunday,09:30,PIT,NO,,,Neutral,,,,dome,sportturf,PAR00,Stade de France,,,,,,,,,,,False,,,Mike McCarthy,Kellen Moore,,20260925T021551Z
+2026_07_SF_ATL,2026,REG,7,2026-10-25,Sunday,13:00,SF,ATL,,,Home,,,,,fieldturf,ATL97,Mercedes-Benz Stadium,,,,,,,,,,,False,,,Kyle Shanahan,Raheem Morris,,20260925T021551Z
+2026_07_CIN_BAL,2026,REG,7,2026-10-25,Sunday,13:00,CIN,BAL,,,Home,,,,outdoors,grass,BAL00,M&T Bank Stadium,,,,,,,,,,,True,,,Zac Taylor,Jesse Minter,,20260925T021551Z
+2026_07_TB_CAR,2026,REG,7,2026-10-25,Sunday,13:00,TB,CAR,,,Home,,,,outdoors,grass,CAR00,Bank of America Stadium,,,,,,,,,,,True,,,Todd Bowles,Dave Canales,,20260925T021551Z
+2026_07_NYG_HOU,2026,REG,7,2026-10-25,Sunday,13:00,NYG,HOU,,,Home,,,,,astroturf,HOU00,Reliant Stadium,,,,,,,,,,,False,,,John Harbaugh,DeMeco Ryans,,20260925T021551Z
+2026_07_IND_MIN,2026,REG,7,2026-10-25,Sunday,13:00,IND,MIN,,,Home,,,,dome,sportturf,MIN01,U.S. Bank Stadium,,,,,,,,,,,False,,,Shane Steichen,Kevin O'Connell,,20260925T021551Z
+2026_07_MIA_NYJ,2026,REG,7,2026-10-25,Sunday,13:00,MIA,NYJ,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,True,,,Jeff Hafley,Aaron Glenn,,20260925T021551Z
+2026_07_CLE_TEN,2026,REG,7,2026-10-25,Sunday,13:00,CLE,TEN,,,Home,,,,outdoors,grass,NAS00,Nissan Stadium,,,,,,,,,,,False,,,Todd Monken,Robert Saleh,,20260925T021551Z
+2026_07_DEN_ARI,2026,REG,7,2026-10-25,Sunday,16:05,DEN,ARI,,,Home,,,,,grass,PHO00,State Farm Stadium,,,,,,,,,,,False,,,Sean Payton,Jonathan Gannon,,20260925T021551Z
+2026_07_GB_DET,2026,REG,7,2026-10-25,Sunday,16:25,GB,DET,,,Home,,,,dome,fieldturf,DET00,Ford Field,,,,,,,,,,,True,,,Matt LaFleur,Dan Campbell,,20260925T021551Z
+2026_07_LA_LV,2026,REG,7,2026-10-25,Sunday,16:25,LA,LV,,,Home,,,,dome,grass,VEG00,Allegiant Stadium,,,,,,,,,,,False,,,Sean McVay,Klint Kubliak,,20260925T021551Z
+2026_07_KC_SEA,2026,REG,7,2026-10-25,Sunday,20:20,KC,SEA,,,Home,,,,outdoors,fieldturf,SEA00,Lumen Field,,,,,,,,,,,False,,,Andy Reid,Mike Macdonald,,20260925T021551Z
+2026_07_DAL_PHI,2026,REG,7,2026-10-26,Monday,20:15,DAL,PHI,,,Home,,,,outdoors,grass,PHI00,Lincoln Financial Field,,,,,,,,,,,True,,,Brian Schottenheimer,Nick Sirianni,,20260925T021551Z
+2026_08_CAR_GB,2026,REG,8,2026-10-29,Thursday,20:15,CAR,GB,,,Home,,,,outdoors,grass,GNB00,Lambeau Field,,,,,,,,,,,False,,,Dave Canales,Matt LaFleur,,20260925T021551Z
+2026_08_BAL_BUF,2026,REG,8,2026-11-01,Sunday,13:00,BAL,BUF,,,Home,,,,outdoors,a_turf,BUF00,Highmark Stadium,,,,,,,,,,,False,,,Jesse Minter,Sean McDermott,,20260925T021551Z
+2026_08_TEN_CIN,2026,REG,8,2026-11-01,Sunday,13:00,TEN,CIN,,,Home,,,,outdoors,fieldturf,CIN00,Paycor Stadium,,,,,,,,,,,False,,,Robert Saleh,Zac Taylor,,20260925T021551Z
+2026_08_ARI_DAL,2026,REG,8,2026-11-01,Sunday,13:00,ARI,DAL,,,Home,,,,,matrixturf,DAL00,AT&T Stadium,,,,,,,,,,,False,,,Jonathan Gannon,Brian Schottenheimer,,20260925T021551Z
+2026_08_MIN_DET,2026,REG,8,2026-11-01,Sunday,13:00,MIN,DET,,,Home,,,,dome,fieldturf,DET00,Ford Field,,,,,,,,,,,True,,,Kevin O'Connell,Dan Campbell,,20260925T021551Z
+2026_08_IND_JAX,2026,REG,8,2026-11-01,Sunday,13:00,IND,JAX,,,Home,,,,outdoors,grass,JAX00,EverBank Stadium,,,,,,,,,,,True,,,Shane Steichen,Liam Coen,,20260925T021551Z
+2026_08_LV_NYJ,2026,REG,8,2026-11-01,Sunday,13:00,LV,NYJ,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,False,,,Klint Kubliak,Aaron Glenn,,20260925T021551Z
+2026_08_CLE_PIT,2026,REG,8,2026-11-01,Sunday,13:00,CLE,PIT,,,Home,,,,outdoors,grass,PIT00,Acrisure Stadium,,,,,,,,,,,True,,,Todd Monken,Mike McCarthy,,20260925T021551Z
+2026_08_ATL_TB,2026,REG,8,2026-11-01,Sunday,13:00,ATL,TB,,,Home,,,,outdoors,grass,TAM00,Raymond James Stadium,,,,,,,,,,,True,,,Raheem Morris,Todd Bowles,,20260925T021551Z
+2026_08_LAC_LA,2026,REG,8,2026-11-01,Sunday,16:05,LAC,LA,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,False,,,Jim Harbaugh,Sean McVay,,20260925T021551Z
+2026_08_KC_DEN,2026,REG,8,2026-11-01,Sunday,16:25,KC,DEN,,,Home,,,,outdoors,grass,DEN00,Empower Field at Mile High,,,,,,,,,,,True,,,Andy Reid,Sean Payton,,20260925T021551Z
+2026_08_NE_MIA,2026,REG,8,2026-11-01,Sunday,16:25,NE,MIA,,,Home,,,,outdoors,grass,MIA00,Hard Rock Stadium,,,,,,,,,,,True,,,Mike Vrabel,Jeff Hafley,,20260925T021551Z
+2026_08_PHI_WAS,2026,REG,8,2026-11-01,Sunday,20:20,PHI,WAS,,,Home,,,,outdoors,grass,WAS00,Northwest Stadium,,,,,,,,,,,True,,,Nick Sirianni,Dan Quinn,,20260925T021551Z
+2026_08_CHI_SEA,2026,REG,8,2026-11-02,Monday,20:15,CHI,SEA,,,Home,,,,outdoors,fieldturf,SEA00,Lumen Field,,,,,,,,,,,False,,,Ben Johnson,Mike Macdonald,,20260925T021551Z
+2026_09_JAX_BAL,2026,REG,9,2026-11-05,Thursday,20:15,JAX,BAL,,,Home,,,,outdoors,grass,BAL00,M&T Bank Stadium,,,,,,,,,,,False,,,Liam Coen,Jesse Minter,,20260925T021551Z
+2026_09_CIN_ATL,2026,REG,9,2026-11-08,Sunday,09:30,CIN,ATL,,,Neutral,,,,,fieldturf,MAD01,Bernabeu,,,,,,,,,,,False,,,Zac Taylor,Raheem Morris,,20260925T021551Z
+2026_09_DEN_CAR,2026,REG,9,2026-11-08,Sunday,13:00,DEN,CAR,,,Home,,,,outdoors,grass,CAR00,Bank of America Stadium,,,,,,,,,,,False,,,Sean Payton,Dave Canales,,20260925T021551Z
+2026_09_DAL_IND,2026,REG,9,2026-11-08,Sunday,13:00,DAL,IND,,,Home,,,,,fieldturf,IND00,Lucas Oil Stadium,,,,,,,,,,,False,,,Brian Schottenheimer,Shane Steichen,,20260925T021551Z
+2026_09_NYJ_KC,2026,REG,9,2026-11-08,Sunday,13:00,NYJ,KC,,,Home,,,,outdoors,grass,KAN00,GEHA Field at Arrowhead Stadium,,,,,,,,,,,False,,,Aaron Glenn,Andy Reid,,20260925T021551Z
+2026_09_DET_MIA,2026,REG,9,2026-11-08,Sunday,13:00,DET,MIA,,,Home,,,,outdoors,grass,MIA00,Hard Rock Stadium,,,,,,,,,,,False,,,Dan Campbell,Jeff Hafley,,20260925T021551Z
+2026_09_CLE_NO,2026,REG,9,2026-11-08,Sunday,13:00,CLE,NO,,,Home,,,,dome,sportturf,NOR00,Caesars Superdome,,,,,,,,,,,False,,,Todd Monken,Kellen Moore,,20260925T021551Z
+2026_09_NYG_PHI,2026,REG,9,2026-11-08,Sunday,13:00,NYG,PHI,,,Home,,,,outdoors,grass,PHI00,Lincoln Financial Field,,,,,,,,,,,True,,,John Harbaugh,Nick Sirianni,,20260925T021551Z
+2026_09_LA_WAS,2026,REG,9,2026-11-08,Sunday,13:00,LA,WAS,,,Home,,,,outdoors,grass,WAS00,Northwest Stadium,,,,,,,,,,,False,,,Sean McVay,Dan Quinn,,20260925T021551Z
+2026_09_HOU_LAC,2026,REG,9,2026-11-08,Sunday,16:05,HOU,LAC,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,False,,,DeMeco Ryans,Jim Harbaugh,,20260925T021551Z
+2026_09_LV_SF,2026,REG,9,2026-11-08,Sunday,16:05,LV,SF,,,Home,,,,outdoors,grass,SFO01,Levi's Stadium,,,,,,,,,,,False,,,Klint Kubliak,Kyle Shanahan,,20260925T021551Z
+2026_09_GB_NE,2026,REG,9,2026-11-08,Sunday,16:25,GB,NE,,,Home,,,,outdoors,fieldturf,BOS00,Gillette Stadium,,,,,,,,,,,False,,,Matt LaFleur,Mike Vrabel,,20260925T021551Z
+2026_09_ARI_SEA,2026,REG,9,2026-11-08,Sunday,16:25,ARI,SEA,,,Home,,,,outdoors,fieldturf,SEA00,Lumen Field,,,,,,,,,,,True,,,Jonathan Gannon,Mike Macdonald,,20260925T021551Z
+2026_09_TB_CHI,2026,REG,9,2026-11-08,Sunday,20:20,TB,CHI,,,Home,,,,outdoors,grass,CHI98,Soldier Field,,,,,,,,,,,False,,,Todd Bowles,Ben Johnson,,20260925T021551Z
+2026_09_BUF_MIN,2026,REG,9,2026-11-09,Monday,20:15,BUF,MIN,,,Home,,,,dome,sportturf,MIN01,U.S. Bank Stadium,,,,,,,,,,,False,,,Sean McDermott,Kevin O'Connell,,20260925T021551Z
+2026_10_WAS_NYG,2026,REG,10,2026-11-12,Thursday,20:15,WAS,NYG,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,True,,,Dan Quinn,John Harbaugh,,20260925T021551Z
+2026_10_NE_DET,2026,REG,10,2026-11-15,Sunday,09:30,NE,DET,,,Neutral,,,,dome,fieldturf,MUN01,FC Bayern Munich Stadium,,,,,,,,,,,False,,,Mike Vrabel,Dan Campbell,,20260925T021551Z
+2026_10_KC_ATL,2026,REG,10,2026-11-15,Sunday,13:00,KC,ATL,,,Home,,,,,fieldturf,ATL97,Mercedes-Benz Stadium,,,,,,,,,,,False,,,Andy Reid,Raheem Morris,,20260925T021551Z
+2026_10_HOU_CLE,2026,REG,10,2026-11-15,Sunday,13:00,HOU,CLE,,,Home,,,,outdoors,grass,CLE00,Huntington Bank Field,,,,,,,,,,,False,,,DeMeco Ryans,Todd Monken,,20260925T021551Z
+2026_10_MIN_GB,2026,REG,10,2026-11-15,Sunday,13:00,MIN,GB,,,Home,,,,outdoors,grass,GNB00,Lambeau Field,,,,,,,,,,,True,,,Kevin O'Connell,Matt LaFleur,,20260925T021551Z
+2026_10_MIA_IND,2026,REG,10,2026-11-15,Sunday,13:00,MIA,IND,,,Home,,,,,fieldturf,IND00,Lucas Oil Stadium,,,,,,,,,,,False,,,Jeff Hafley,Shane Steichen,,20260925T021551Z
+2026_10_CAR_NO,2026,REG,10,2026-11-15,Sunday,13:00,CAR,NO,,,Home,,,,dome,sportturf,NOR00,Caesars Superdome,,,,,,,,,,,True,,,Dave Canales,Kellen Moore,,20260925T021551Z
+2026_10_BUF_NYJ,2026,REG,10,2026-11-15,Sunday,13:00,BUF,NYJ,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,True,,,Sean McDermott,Aaron Glenn,,20260925T021551Z
+2026_10_JAX_TEN,2026,REG,10,2026-11-15,Sunday,13:00,JAX,TEN,,,Home,,,,outdoors,grass,NAS00,Nissan Stadium,,,,,,,,,,,True,,,Liam Coen,Robert Saleh,,20260925T021551Z
+2026_10_LA_ARI,2026,REG,10,2026-11-15,Sunday,16:05,LA,ARI,,,Home,,,,,grass,PHO00,State Farm Stadium,,,,,,,,,,,True,,,Sean McVay,Jonathan Gannon,,20260925T021551Z
+2026_10_SEA_LV,2026,REG,10,2026-11-15,Sunday,16:05,SEA,LV,,,Home,,,,dome,grass,VEG00,Allegiant Stadium,,,,,,,,,,,False,,,Mike Macdonald,Klint Kubliak,,20260925T021551Z
+2026_10_SF_DAL,2026,REG,10,2026-11-15,Sunday,16:25,SF,DAL,,,Home,,,,,matrixturf,DAL00,AT&T Stadium,,,,,,,,,,,False,,,Kyle Shanahan,Brian Schottenheimer,,20260925T021551Z
+2026_10_PIT_CIN,2026,REG,10,2026-11-15,Sunday,20:20,PIT,CIN,,,Home,,,,outdoors,fieldturf,CIN00,Paycor Stadium,,,,,,,,,,,True,,,Mike McCarthy,Zac Taylor,,20260925T021551Z
+2026_10_LAC_BAL,2026,REG,10,2026-11-16,Monday,20:15,LAC,BAL,,,Home,,,,outdoors,grass,BAL00,M&T Bank Stadium,,,,,,,,,,,False,,,Jim Harbaugh,Jesse Minter,,20260925T021551Z
+2026_11_IND_HOU,2026,REG,11,2026-11-19,Thursday,20:15,IND,HOU,,,Home,,,,,astroturf,HOU00,Reliant Stadium,,,,,,,,,,,True,,,Shane Steichen,DeMeco Ryans,,20260925T021551Z
+2026_11_MIA_BUF,2026,REG,11,2026-11-22,Sunday,13:00,MIA,BUF,,,Home,,,,outdoors,a_turf,BUF00,Highmark Stadium,,,,,,,,,,,True,,,Jeff Hafley,Sean McDermott,,20260925T021551Z
+2026_11_BAL_CAR,2026,REG,11,2026-11-22,Sunday,13:00,BAL,CAR,,,Home,,,,outdoors,grass,CAR00,Bank of America Stadium,,,,,,,,,,,False,,,Jesse Minter,Dave Canales,,20260925T021551Z
+2026_11_NO_CHI,2026,REG,11,2026-11-22,Sunday,13:00,NO,CHI,,,Home,,,,outdoors,grass,CHI98,Soldier Field,,,,,,,,,,,False,,,Kellen Moore,Ben Johnson,,20260925T021551Z
+2026_11_TEN_DAL,2026,REG,11,2026-11-22,Sunday,13:00,TEN,DAL,,,Home,,,,,matrixturf,DAL00,AT&T Stadium,,,,,,,,,,,False,,,Robert Saleh,Brian Schottenheimer,,20260925T021551Z
+2026_11_TB_DET,2026,REG,11,2026-11-22,Sunday,13:00,TB,DET,,,Home,,,,dome,fieldturf,DET00,Ford Field,,,,,,,,,,,False,,,Todd Bowles,Dan Campbell,,20260925T021551Z
+2026_11_ARI_KC,2026,REG,11,2026-11-22,Sunday,13:00,ARI,KC,,,Home,,,,outdoors,grass,KAN00,GEHA Field at Arrowhead Stadium,,,,,,,,,,,False,,,Jonathan Gannon,Andy Reid,,20260925T021551Z
+2026_11_JAX_NYG,2026,REG,11,2026-11-22,Sunday,13:00,JAX,NYG,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,False,,,Liam Coen,John Harbaugh,,20260925T021551Z
+2026_11_NYJ_LAC,2026,REG,11,2026-11-22,Sunday,16:05,NYJ,LAC,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,False,,,Aaron Glenn,Jim Harbaugh,,20260925T021551Z
+2026_11_LV_DEN,2026,REG,11,2026-11-22,Sunday,16:25,LV,DEN,,,Home,,,,outdoors,grass,DEN00,Empower Field at Mile High,,,,,,,,,,,True,,,Klint Kubliak,Sean Payton,,20260925T021551Z
+2026_11_PIT_PHI,2026,REG,11,2026-11-22,Sunday,16:25,PIT,PHI,,,Home,,,,outdoors,grass,PHI00,Lincoln Financial Field,,,,,,,,,,,False,,,Mike McCarthy,Nick Sirianni,,20260925T021551Z
+2026_11_MIN_SF,2026,REG,11,2026-11-22,Sunday,20:20,MIN,SF,,,Neutral,,,,outdoors,grass,MEX00,Estadio Banorte,,,,,,,,,,,False,,,Kevin O'Connell,Kyle Shanahan,,20260925T021551Z
+2026_11_CIN_WAS,2026,REG,11,2026-11-23,Monday,20:15,CIN,WAS,,,Home,,,,outdoors,grass,WAS00,Northwest Stadium,,,,,,,,,,,False,,,Zac Taylor,Dan Quinn,,20260925T021551Z
+2026_12_GB_LA,2026,REG,12,2026-11-25,Wednesday,20:00,GB,LA,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,False,,,Matt LaFleur,Sean McVay,,20260925T021551Z
+2026_12_CHI_DET,2026,REG,12,2026-11-26,Thursday,13:00,CHI,DET,,,Home,,,,dome,fieldturf,DET00,Ford Field,,,,,,,,,,,True,,,Ben Johnson,Dan Campbell,,20260925T021551Z
+2026_12_PHI_DAL,2026,REG,12,2026-11-26,Thursday,16:30,PHI,DAL,,,Home,,,,,matrixturf,DAL00,AT&T Stadium,,,,,,,,,,,True,,,Nick Sirianni,Brian Schottenheimer,,20260925T021551Z
+2026_12_KC_BUF,2026,REG,12,2026-11-26,Thursday,20:20,KC,BUF,,,Home,,,,outdoors,a_turf,BUF00,Highmark Stadium,,,,,,,,,,,False,,,Andy Reid,Sean McDermott,,20260925T021551Z
+2026_12_DEN_PIT,2026,REG,12,2026-11-27,Friday,15:00,DEN,PIT,,,Home,,,,outdoors,grass,PIT00,Acrisure Stadium,,,,,,,,,,,False,,,Sean Payton,Mike McCarthy,,20260925T021551Z
+2026_12_NO_CIN,2026,REG,12,2026-11-29,Sunday,13:00,NO,CIN,,,Home,,,,outdoors,fieldturf,CIN00,Paycor Stadium,,,,,,,,,,,False,,,Kellen Moore,Zac Taylor,,20260925T021551Z
+2026_12_LV_CLE,2026,REG,12,2026-11-29,Sunday,13:00,LV,CLE,,,Home,,,,outdoors,grass,CLE00,Huntington Bank Field,,,,,,,,,,,False,,,Klint Kubliak,Todd Monken,,20260925T021551Z
+2026_12_BAL_HOU,2026,REG,12,2026-11-29,Sunday,13:00,BAL,HOU,,,Home,,,,,astroturf,HOU00,Reliant Stadium,,,,,,,,,,,False,,,Jesse Minter,DeMeco Ryans,,20260925T021551Z
+2026_12_NYG_IND,2026,REG,12,2026-11-29,Sunday,13:00,NYG,IND,,,Home,,,,,fieldturf,IND00,Lucas Oil Stadium,,,,,,,,,,,False,,,John Harbaugh,Shane Steichen,,20260925T021551Z
+2026_12_NYJ_MIA,2026,REG,12,2026-11-29,Sunday,13:00,NYJ,MIA,,,Home,,,,outdoors,grass,MIA00,Hard Rock Stadium,,,,,,,,,,,True,,,Aaron Glenn,Jeff Hafley,,20260925T021551Z
+2026_12_ATL_MIN,2026,REG,12,2026-11-29,Sunday,13:00,ATL,MIN,,,Home,,,,dome,sportturf,MIN01,U.S. Bank Stadium,,,,,,,,,,,False,,,Raheem Morris,Kevin O'Connell,,20260925T021551Z
+2026_12_TEN_JAX,2026,REG,12,2026-11-29,Sunday,16:05,TEN,JAX,,,Home,,,,outdoors,grass,JAX00,EverBank Stadium,,,,,,,,,,,True,,,Robert Saleh,Liam Coen,,20260925T021551Z
+2026_12_WAS_ARI,2026,REG,12,2026-11-29,Sunday,16:25,WAS,ARI,,,Home,,,,,grass,PHO00,State Farm Stadium,,,,,,,,,,,False,,,Dan Quinn,Jonathan Gannon,,20260925T021551Z
+2026_12_SEA_SF,2026,REG,12,2026-11-29,Sunday,16:25,SEA,SF,,,Home,,,,outdoors,grass,SFO01,Levi's Stadium,,,,,,,,,,,True,,,Mike Macdonald,Kyle Shanahan,,20260925T021551Z
+2026_12_NE_LAC,2026,REG,12,2026-11-29,Sunday,20:20,NE,LAC,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,False,,,Mike Vrabel,Jim Harbaugh,,20260925T021551Z
+2026_12_CAR_TB,2026,REG,12,2026-11-30,Monday,20:15,CAR,TB,,,Home,,,,outdoors,grass,TAM00,Raymond James Stadium,,,,,,,,,,,True,,,Dave Canales,Todd Bowles,,20260925T021551Z
+2026_13_KC_LA,2026,REG,13,2026-12-03,Thursday,20:15,KC,LA,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,False,,,Andy Reid,Sean McVay,,20260925T021551Z
+2026_13_DET_ATL,2026,REG,13,2026-12-06,Sunday,13:00,DET,ATL,,,Home,,,,,fieldturf,ATL97,Mercedes-Benz Stadium,,,,,,,,,,,False,,,Dan Campbell,Raheem Morris,,20260925T021551Z
+2026_13_JAX_CHI,2026,REG,13,2026-12-06,Sunday,13:00,JAX,CHI,,,Home,,,,outdoors,grass,CHI98,Soldier Field,,,,,,,,,,,False,,,Liam Coen,Ben Johnson,,20260925T021551Z
+2026_13_CIN_CLE,2026,REG,13,2026-12-06,Sunday,13:00,CIN,CLE,,,Home,,,,outdoors,grass,CLE00,Huntington Bank Field,,,,,,,,,,,True,,,Zac Taylor,Todd Monken,,20260925T021551Z
+2026_13_GB_NO,2026,REG,13,2026-12-06,Sunday,13:00,GB,NO,,,Home,,,,dome,sportturf,NOR00,Caesars Superdome,,,,,,,,,,,False,,,Matt LaFleur,Kellen Moore,,20260925T021551Z
+2026_13_SF_NYG,2026,REG,13,2026-12-06,Sunday,13:00,SF,NYG,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,False,,,Kyle Shanahan,John Harbaugh,,20260925T021551Z
+2026_13_LAC_TB,2026,REG,13,2026-12-06,Sunday,13:00,LAC,TB,,,Home,,,,outdoors,grass,TAM00,Raymond James Stadium,,,,,,,,,,,False,,,Jim Harbaugh,Todd Bowles,,20260925T021551Z
+2026_13_WAS_TEN,2026,REG,13,2026-12-06,Sunday,13:00,WAS,TEN,,,Home,,,,outdoors,grass,NAS00,Nissan Stadium,,,,,,,,,,,False,,,Dan Quinn,Robert Saleh,,20260925T021551Z
+2026_13_PHI_ARI,2026,REG,13,2026-12-06,Sunday,16:05,PHI,ARI,,,Home,,,,,grass,PHO00,State Farm Stadium,,,,,,,,,,,False,,,Nick Sirianni,Jonathan Gannon,,20260925T021551Z
+2026_13_MIA_DEN,2026,REG,13,2026-12-06,Sunday,16:05,MIA,DEN,,,Home,,,,outdoors,grass,DEN00,Empower Field at Mile High,,,,,,,,,,,False,,,Jeff Hafley,Sean Payton,,20260925T021551Z
+2026_13_CAR_MIN,2026,REG,13,2026-12-06,Sunday,16:25,CAR,MIN,,,Home,,,,dome,sportturf,MIN01,U.S. Bank Stadium,,,,,,,,,,,False,,,Dave Canales,Kevin O'Connell,,20260925T021551Z
+2026_13_BUF_NE,2026,REG,13,2026-12-06,Sunday,16:25,BUF,NE,,,Home,,,,outdoors,fieldturf,BOS00,Gillette Stadium,,,,,,,,,,,True,,,Sean McDermott,Mike Vrabel,,20260925T021551Z
+2026_13_HOU_PIT,2026,REG,13,2026-12-06,Sunday,20:20,HOU,PIT,,,Home,,,,outdoors,grass,PIT00,Acrisure Stadium,,,,,,,,,,,False,,,DeMeco Ryans,Mike McCarthy,,20260925T021551Z
+2026_13_DAL_SEA,2026,REG,13,2026-12-07,Monday,20:15,DAL,SEA,,,Home,,,,outdoors,fieldturf,SEA00,Lumen Field,,,,,,,,,,,False,,,Brian Schottenheimer,Mike Macdonald,,20260925T021551Z
+2026_14_MIN_NE,2026,REG,14,2026-12-10,Thursday,20:15,MIN,NE,,,Home,,,,outdoors,fieldturf,BOS00,Gillette Stadium,,,,,,,,,,,False,,,Kevin O'Connell,Mike Vrabel,,20260925T021551Z
+2026_14_TB_BAL,2026,REG,14,2026-12-13,Sunday,13:00,TB,BAL,,,Home,,,,outdoors,grass,BAL00,M&T Bank Stadium,,,,,,,,,,,False,,,Todd Bowles,Jesse Minter,,20260925T021551Z
+2026_14_NO_CAR,2026,REG,14,2026-12-13,Sunday,13:00,NO,CAR,,,Home,,,,outdoors,grass,CAR00,Bank of America Stadium,,,,,,,,,,,True,,,Kellen Moore,Dave Canales,,20260925T021551Z
+2026_14_ATL_CLE,2026,REG,14,2026-12-13,Sunday,13:00,ATL,CLE,,,Home,,,,outdoors,grass,CLE00,Huntington Bank Field,,,,,,,,,,,False,,,Raheem Morris,Todd Monken,,20260925T021551Z
+2026_14_TEN_DET,2026,REG,14,2026-12-13,Sunday,13:00,TEN,DET,,,Home,,,,dome,fieldturf,DET00,Ford Field,,,,,,,,,,,False,,,Robert Saleh,Dan Campbell,,20260925T021551Z
+2026_14_CHI_MIA,2026,REG,14,2026-12-13,Sunday,13:00,CHI,MIA,,,Home,,,,outdoors,grass,MIA00,Hard Rock Stadium,,,,,,,,,,,False,,,Ben Johnson,Jeff Hafley,,20260925T021551Z
+2026_14_DEN_NYJ,2026,REG,14,2026-12-13,Sunday,13:00,DEN,NYJ,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,False,,,Sean Payton,Aaron Glenn,,20260925T021551Z
+2026_14_IND_PHI,2026,REG,14,2026-12-13,Sunday,13:00,IND,PHI,,,Home,,,,outdoors,grass,PHI00,Lincoln Financial Field,,,,,,,,,,,False,,,Shane Steichen,Nick Sirianni,,20260925T021551Z
+2026_14_HOU_WAS,2026,REG,14,2026-12-13,Sunday,13:00,HOU,WAS,,,Home,,,,outdoors,grass,WAS00,Northwest Stadium,,,,,,,,,,,False,,,DeMeco Ryans,Dan Quinn,,20260925T021551Z
+2026_14_LAC_LV,2026,REG,14,2026-12-13,Sunday,16:05,LAC,LV,,,Home,,,,dome,grass,VEG00,Allegiant Stadium,,,,,,,,,,,True,,,Jim Harbaugh,Klint Kubliak,,20260925T021551Z
+2026_14_KC_CIN,2026,REG,14,2026-12-13,Sunday,16:25,KC,CIN,,,Home,,,,outdoors,fieldturf,CIN00,Paycor Stadium,,,,,,,,,,,False,,,Andy Reid,Zac Taylor,,20260925T021551Z
+2026_14_NYG_SEA,2026,REG,14,2026-12-13,Sunday,16:25,NYG,SEA,,,Home,,,,outdoors,fieldturf,SEA00,Lumen Field,,,,,,,,,,,False,,,John Harbaugh,Mike Macdonald,,20260925T021551Z
+2026_14_LA_SF,2026,REG,14,2026-12-13,Sunday,16:25,LA,SF,,,Home,,,,outdoors,grass,SFO01,Levi's Stadium,,,,,,,,,,,True,,,Sean McVay,Kyle Shanahan,,20260925T021551Z
+2026_14_BUF_GB,2026,REG,14,2026-12-13,Sunday,20:20,BUF,GB,,,Home,,,,outdoors,grass,GNB00,Lambeau Field,,,,,,,,,,,False,,,Sean McDermott,Matt LaFleur,,20260925T021551Z
+2026_14_PIT_JAX,2026,REG,14,2026-12-14,Monday,20:15,PIT,JAX,,,Home,,,,outdoors,grass,JAX00,EverBank Stadium,,,,,,,,,,,False,,,Mike McCarthy,Liam Coen,,20260925T021551Z
+2026_15_SF_LAC,2026,REG,15,2026-12-17,Thursday,20:15,SF,LAC,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,False,,,Kyle Shanahan,Jim Harbaugh,,20260925T021551Z
+2026_15_SEA_PHI,2026,REG,15,2026-12-19,Saturday,17:00,SEA,PHI,,,Home,,,,outdoors,grass,PHI00,Lincoln Financial Field,,,,,,,,,,,False,,,Mike Macdonald,Nick Sirianni,,20260925T021551Z
+2026_15_CHI_BUF,2026,REG,15,2026-12-19,Saturday,20:20,CHI,BUF,,,Home,,,,outdoors,a_turf,BUF00,Highmark Stadium,,,,,,,,,,,False,,,Ben Johnson,Sean McDermott,,20260925T021551Z
+2026_15_CIN_CAR,2026,REG,15,2026-12-20,Sunday,13:00,CIN,CAR,,,Home,,,,outdoors,grass,CAR00,Bank of America Stadium,,,,,,,,,,,False,,,Zac Taylor,Dave Canales,,20260925T021551Z
+2026_15_MIA_GB,2026,REG,15,2026-12-20,Sunday,13:00,MIA,GB,,,Home,,,,outdoors,grass,GNB00,Lambeau Field,,,,,,,,,,,False,,,Jeff Hafley,Matt LaFleur,,20260925T021551Z
+2026_15_JAX_HOU,2026,REG,15,2026-12-20,Sunday,13:00,JAX,HOU,,,Home,,,,,astroturf,HOU00,Reliant Stadium,,,,,,,,,,,True,,,Liam Coen,DeMeco Ryans,,20260925T021551Z
+2026_15_CLE_NYG,2026,REG,15,2026-12-20,Sunday,13:00,CLE,NYG,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,False,,,Todd Monken,John Harbaugh,,20260925T021551Z
+2026_15_BAL_PIT,2026,REG,15,2026-12-20,Sunday,13:00,BAL,PIT,,,Home,,,,outdoors,grass,PIT00,Acrisure Stadium,,,,,,,,,,,True,,,Jesse Minter,Mike McCarthy,,20260925T021551Z
+2026_15_NO_TB,2026,REG,15,2026-12-20,Sunday,13:00,NO,TB,,,Home,,,,outdoors,grass,TAM00,Raymond James Stadium,,,,,,,,,,,True,,,Kellen Moore,Todd Bowles,,20260925T021551Z
+2026_15_IND_TEN,2026,REG,15,2026-12-20,Sunday,13:00,IND,TEN,,,Home,,,,outdoors,grass,NAS00,Nissan Stadium,,,,,,,,,,,True,,,Shane Steichen,Robert Saleh,,20260925T021551Z
+2026_15_ATL_WAS,2026,REG,15,2026-12-20,Sunday,13:00,ATL,WAS,,,Home,,,,outdoors,grass,WAS00,Northwest Stadium,,,,,,,,,,,False,,,Raheem Morris,Dan Quinn,,20260925T021551Z
+2026_15_NYJ_ARI,2026,REG,15,2026-12-20,Sunday,16:05,NYJ,ARI,,,Home,,,,,grass,PHO00,State Farm Stadium,,,,,,,,,,,False,,,Aaron Glenn,Jonathan Gannon,,20260925T021551Z
+2026_15_DAL_LA,2026,REG,15,2026-12-20,Sunday,16:25,DAL,LA,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,False,,,Brian Schottenheimer,Sean McVay,,20260925T021551Z
+2026_15_DEN_LV,2026,REG,15,2026-12-20,Sunday,16:25,DEN,LV,,,Home,,,,dome,grass,VEG00,Allegiant Stadium,,,,,,,,,,,True,,,Sean Payton,Klint Kubliak,,20260925T021551Z
+2026_15_DET_MIN,2026,REG,15,2026-12-20,Sunday,20:20,DET,MIN,,,Home,,,,dome,sportturf,MIN01,U.S. Bank Stadium,,,,,,,,,,,True,,,Dan Campbell,Kevin O'Connell,,20260925T021551Z
+2026_15_NE_KC,2026,REG,15,2026-12-21,Monday,20:15,NE,KC,,,Home,,,,outdoors,grass,KAN00,GEHA Field at Arrowhead Stadium,,,,,,,,,,,False,,,Mike Vrabel,Andy Reid,,20260925T021551Z
+2026_16_HOU_PHI,2026,REG,16,2026-12-24,Thursday,20:15,HOU,PHI,,,Home,,,,outdoors,grass,PHI00,Lincoln Financial Field,,,,,,,,,,,False,,,DeMeco Ryans,Nick Sirianni,,20260925T021551Z
+2026_16_GB_CHI,2026,REG,16,2026-12-25,Friday,13:00,GB,CHI,,,Home,,,,outdoors,grass,CHI98,Soldier Field,,,,,,,,,,,True,,,Matt LaFleur,Ben Johnson,,20260925T021551Z
+2026_16_BUF_DEN,2026,REG,16,2026-12-25,Friday,16:30,BUF,DEN,,,Home,,,,outdoors,grass,DEN00,Empower Field at Mile High,,,,,,,,,,,False,,,Sean McDermott,Sean Payton,,20260925T021551Z
+2026_16_LA_SEA,2026,REG,16,2026-12-25,Friday,20:15,LA,SEA,,,Home,,,,outdoors,fieldturf,SEA00,Lumen Field,,,,,,,,,,,True,,,Sean McVay,Mike Macdonald,,20260925T021551Z
+2026_16_TB_ATL,2026,REG,16,2026-12-27,Sunday,13:00,TB,ATL,,,Home,,,,,fieldturf,ATL97,Mercedes-Benz Stadium,,,,,,,,,,,True,,,Todd Bowles,Raheem Morris,,20260925T021551Z
+2026_16_CLE_BAL,2026,REG,16,2026-12-27,Sunday,13:00,CLE,BAL,,,Home,,,,outdoors,grass,BAL00,M&T Bank Stadium,,,,,,,,,,,True,,,Todd Monken,Jesse Minter,,20260925T021551Z
+2026_16_CIN_IND,2026,REG,16,2026-12-27,Sunday,13:00,CIN,IND,,,Home,,,,,fieldturf,IND00,Lucas Oil Stadium,,,,,,,,,,,False,,,Zac Taylor,Shane Steichen,,20260925T021551Z
+2026_16_LAC_MIA,2026,REG,16,2026-12-27,Sunday,13:00,LAC,MIA,,,Home,,,,outdoors,grass,MIA00,Hard Rock Stadium,,,,,,,,,,,False,,,Jim Harbaugh,Jeff Hafley,,20260925T021551Z
+2026_16_WAS_MIN,2026,REG,16,2026-12-27,Sunday,13:00,WAS,MIN,,,Home,,,,dome,sportturf,MIN01,U.S. Bank Stadium,,,,,,,,,,,False,,,Dan Quinn,Kevin O'Connell,,20260925T021551Z
+2026_16_ARI_NO,2026,REG,16,2026-12-27,Sunday,13:00,ARI,NO,,,Home,,,,dome,sportturf,NOR00,Caesars Superdome,,,,,,,,,,,False,,,Jonathan Gannon,Kellen Moore,,20260925T021551Z
+2026_16_NE_NYJ,2026,REG,16,2026-12-27,Sunday,13:00,NE,NYJ,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,True,,,Mike Vrabel,Aaron Glenn,,20260925T021551Z
+2026_16_CAR_PIT,2026,REG,16,2026-12-27,Sunday,13:00,CAR,PIT,,,Home,,,,outdoors,grass,PIT00,Acrisure Stadium,,,,,,,,,,,False,,,Dave Canales,Mike McCarthy,,20260925T021551Z
+2026_16_TEN_LV,2026,REG,16,2026-12-27,Sunday,16:05,TEN,LV,,,Home,,,,dome,grass,VEG00,Allegiant Stadium,,,,,,,,,,,False,,,Robert Saleh,Klint Kubliak,,20260925T021551Z
+2026_16_SF_KC,2026,REG,16,2026-12-27,Sunday,16:25,SF,KC,,,Home,,,,outdoors,grass,KAN00,GEHA Field at Arrowhead Stadium,,,,,,,,,,,False,,,Kyle Shanahan,Andy Reid,,20260925T021551Z
+2026_16_JAX_DAL,2026,REG,16,2026-12-27,Sunday,20:20,JAX,DAL,,,Home,,,,,matrixturf,DAL00,AT&T Stadium,,,,,,,,,,,False,,,Liam Coen,Brian Schottenheimer,,20260925T021551Z
+2026_16_NYG_DET,2026,REG,16,2026-12-28,Monday,20:15,NYG,DET,,,Home,,,,dome,fieldturf,DET00,Ford Field,,,,,,,,,,,False,,,John Harbaugh,Dan Campbell,,20260925T021551Z
+2026_17_BAL_CIN,2026,REG,17,2026-12-31,Thursday,20:15,BAL,CIN,,,Home,,,,outdoors,fieldturf,CIN00,Paycor Stadium,,,,,,,,,,,True,,,Jesse Minter,Zac Taylor,,20260925T021551Z
+2026_17_NO_ATL,2026,REG,17,2027-01-03,Sunday,13:00,NO,ATL,,,Home,,,,,fieldturf,ATL97,Mercedes-Benz Stadium,,,,,,,,,,,True,,,Kellen Moore,Raheem Morris,,20260925T021551Z
+2026_17_SEA_CAR,2026,REG,17,2027-01-03,Sunday,13:00,SEA,CAR,,,Home,,,,outdoors,grass,CAR00,Bank of America Stadium,,,,,,,,,,,False,,,Mike Macdonald,Dave Canales,,20260925T021551Z
+2026_17_IND_CLE,2026,REG,17,2027-01-03,Sunday,13:00,IND,CLE,,,Home,,,,outdoors,grass,CLE00,Huntington Bank Field,,,,,,,,,,,False,,,Shane Steichen,Todd Monken,,20260925T021551Z
+2026_17_NYG_DAL,2026,REG,17,2027-01-03,Sunday,13:00,NYG,DAL,,,Home,,,,,matrixturf,DAL00,AT&T Stadium,,,,,,,,,,,True,,,John Harbaugh,Brian Schottenheimer,,20260925T021551Z
+2026_17_WAS_JAX,2026,REG,17,2027-01-03,Sunday,13:00,WAS,JAX,,,Home,,,,outdoors,grass,JAX00,EverBank Stadium,,,,,,,,,,,False,,,Dan Quinn,Liam Coen,,20260925T021551Z
+2026_17_KC_LAC,2026,REG,17,2027-01-03,Sunday,13:00,KC,LAC,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,True,,,Andy Reid,Jim Harbaugh,,20260925T021551Z
+2026_17_BUF_MIA,2026,REG,17,2027-01-03,Sunday,13:00,BUF,MIA,,,Home,,,,outdoors,grass,MIA00,Hard Rock Stadium,,,,,,,,,,,True,,,Sean McDermott,Jeff Hafley,,20260925T021551Z
+2026_17_DEN_NE,2026,REG,17,2027-01-03,Sunday,13:00,DEN,NE,,,Home,,,,outdoors,fieldturf,BOS00,Gillette Stadium,,,,,,,,,,,False,,,Sean Payton,Mike Vrabel,,20260925T021551Z
+2026_17_MIN_NYJ,2026,REG,17,2027-01-03,Sunday,13:00,MIN,NYJ,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,False,,,Kevin O'Connell,Aaron Glenn,,20260925T021551Z
+2026_17_LA_TB,2026,REG,17,2027-01-03,Sunday,13:00,LA,TB,,,Home,,,,outdoors,grass,TAM00,Raymond James Stadium,,,,,,,,,,,False,,,Sean McVay,Todd Bowles,,20260925T021551Z
+2026_17_PIT_TEN,2026,REG,17,2027-01-03,Sunday,13:00,PIT,TEN,,,Home,,,,outdoors,grass,NAS00,Nissan Stadium,,,,,,,,,,,False,,,Mike McCarthy,Robert Saleh,,20260925T021551Z
+2026_17_LV_ARI,2026,REG,17,2027-01-03,Sunday,16:05,LV,ARI,,,Home,,,,,grass,PHO00,State Farm Stadium,,,,,,,,,,,False,,,Klint Kubliak,Jonathan Gannon,,20260925T021551Z
+2026_17_DET_CHI,2026,REG,17,2027-01-03,Sunday,16:25,DET,CHI,,,Home,,,,outdoors,grass,CHI98,Soldier Field,,,,,,,,,,,True,,,Dan Campbell,Ben Johnson,,20260925T021551Z
+2026_17_PHI_SF,2026,REG,17,2027-01-03,Sunday,20:20,PHI,SF,,,Home,,,,outdoors,grass,SFO01,Levi's Stadium,,,,,,,,,,,False,,,Nick Sirianni,Kyle Shanahan,,20260925T021551Z
+2026_17_HOU_GB,2026,REG,17,2027-01-04,Monday,20:15,HOU,GB,,,Home,,,,outdoors,grass,GNB00,Lambeau Field,,,,,,,,,,,False,,,DeMeco Ryans,Matt LaFleur,,20260925T021551Z
+2026_18_SF_ARI,2026,REG,18,2027-01-10,Sunday,13:00,SF,ARI,,,Home,,,,,grass,PHO00,State Farm Stadium,,,,,,,,,,,True,,,Kyle Shanahan,Jonathan Gannon,,20260925T021551Z
+2026_18_PIT_BAL,2026,REG,18,2027-01-10,Sunday,13:00,PIT,BAL,,,Home,,,,outdoors,grass,BAL00,M&T Bank Stadium,,,,,,,,,,,True,,,Mike McCarthy,Jesse Minter,,20260925T021551Z
+2026_18_NYJ_BUF,2026,REG,18,2027-01-10,Sunday,13:00,NYJ,BUF,,,Home,,,,outdoors,a_turf,BUF00,Highmark Stadium,,,,,,,,,,,True,,,Aaron Glenn,Sean McDermott,,20260925T021551Z
+2026_18_ATL_CAR,2026,REG,18,2027-01-10,Sunday,13:00,ATL,CAR,,,Home,,,,outdoors,grass,CAR00,Bank of America Stadium,,,,,,,,,,,True,,,Raheem Morris,Dave Canales,,20260925T021551Z
+2026_18_CLE_CIN,2026,REG,18,2027-01-10,Sunday,13:00,CLE,CIN,,,Home,,,,outdoors,fieldturf,CIN00,Paycor Stadium,,,,,,,,,,,True,,,Todd Monken,Zac Taylor,,20260925T021551Z
+2026_18_LAC_DEN,2026,REG,18,2027-01-10,Sunday,13:00,LAC,DEN,,,Home,,,,outdoors,grass,DEN00,Empower Field at Mile High,,,,,,,,,,,True,,,Jim Harbaugh,Sean Payton,,20260925T021551Z
+2026_18_DET_GB,2026,REG,18,2027-01-10,Sunday,13:00,DET,GB,,,Home,,,,outdoors,grass,GNB00,Lambeau Field,,,,,,,,,,,True,,,Dan Campbell,Matt LaFleur,,20260925T021551Z
+2026_18_TEN_HOU,2026,REG,18,2027-01-10,Sunday,13:00,TEN,HOU,,,Home,,,,,astroturf,HOU00,Reliant Stadium,,,,,,,,,,,True,,,Robert Saleh,DeMeco Ryans,,20260925T021551Z
+2026_18_JAX_IND,2026,REG,18,2027-01-10,Sunday,13:00,JAX,IND,,,Home,,,,,fieldturf,IND00,Lucas Oil Stadium,,,,,,,,,,,True,,,Liam Coen,Shane Steichen,,20260925T021551Z
+2026_18_LV_KC,2026,REG,18,2027-01-10,Sunday,13:00,LV,KC,,,Home,,,,outdoors,grass,KAN00,GEHA Field at Arrowhead Stadium,,,,,,,,,,,True,,,Klint Kubliak,Andy Reid,,20260925T021551Z
+2026_18_SEA_LA,2026,REG,18,2027-01-10,Sunday,13:00,SEA,LA,,,Home,,,,dome,matrixturf,LAX01,SoFi Stadium,,,,,,,,,,,True,,,Mike Macdonald,Sean McVay,,20260925T021551Z
+2026_18_CHI_MIN,2026,REG,18,2027-01-10,Sunday,13:00,CHI,MIN,,,Home,,,,dome,sportturf,MIN01,U.S. Bank Stadium,,,,,,,,,,,True,,,Ben Johnson,Kevin O'Connell,,20260925T021551Z
+2026_18_MIA_NE,2026,REG,18,2027-01-10,Sunday,13:00,MIA,NE,,,Home,,,,outdoors,fieldturf,BOS00,Gillette Stadium,,,,,,,,,,,True,,,Jeff Hafley,Mike Vrabel,,20260925T021551Z
+2026_18_TB_NO,2026,REG,18,2027-01-10,Sunday,13:00,TB,NO,,,Home,,,,dome,sportturf,NOR00,Caesars Superdome,,,,,,,,,,,True,,,Todd Bowles,Kellen Moore,,20260925T021551Z
+2026_18_PHI_NYG,2026,REG,18,2027-01-10,Sunday,13:00,PHI,NYG,,,Home,,,,outdoors,fieldturf,NYC01,MetLife Stadium,,,,,,,,,,,True,,,Nick Sirianni,John Harbaugh,,20260925T021551Z
+2026_18_DAL_WAS,2026,REG,18,2027-01-10,Sunday,13:00,DAL,WAS,,,Home,,,,outdoors,grass,WAS00,Northwest Stadium,,,,,,,,,,,True,,,Brian Schottenheimer,Dan Quinn,,20260925T021551Z
