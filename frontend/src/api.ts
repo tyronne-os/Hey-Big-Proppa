@@ -8,7 +8,7 @@ import type {
 } from "./types";
 import type { BacktestRow, HotDogBacktest, HotDogGame, MatchupGame, NewsArticle, PowSummary, SourceStatus } from "./types";
 
-const BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);
