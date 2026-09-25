@@ -107,11 +107,21 @@ def evaluate(rows: list[dict], z, season: int, week: int, dog: str, fav: str,
 @lru_cache(maxsize=1)
 def backtest() -> dict:
     rows = data.load("hot_dog_backtest")
-    out: dict = {"groups": [r for r in rows if r["group"] != "chosen_bet"]}
+    out: dict = {"groups": [r for r in rows if r["group"] not in ("chosen_bet", "chosen_total_bet")]}
     chosen = next((r for r in rows if r["group"] == "chosen_bet"), None)
     if chosen:
         out["chosenBet"] = chosen["bet"]
         out["certifiedHitRate"] = float(chosen["hit_rate"])
+    total_chosen = next((r for r in rows if r["group"] == "chosen_total_bet"), None)
+    if total_chosen:
+        out["chosenTotalBet"] = total_chosen["bet"]
+        out["totalHitRate"] = float(total_chosen["hit_rate"])
+    cert = next((r for r in out["groups"] if r["group"] == "certified hot dogs"), None)
+    if cert:
+        # Informational only -- no FanDuel cash-out price exists in the lake to grade this against.
+        out["ledRate"] = float(cert["led_rate"]) if cert.get("led_rate") else None
+        out["cover3Rate"] = float(cert["cover3_rate"]) if cert.get("cover3_rate") else None
+        out["cover7Rate"] = float(cert["cover7_rate"]) if cert.get("cover7_rate") else None
     return out
 
 
@@ -136,6 +146,7 @@ def slate() -> list[dict]:
         o = odds.get(gid)
         try:
             hml, aml, spread = float(o["home_moneyline"]), float(o["away_moneyline"]), float(o["spread_line"])
+            total_line = float(o["total_line"])
         except (TypeError, ValueError, KeyError):
             continue
         home, away = g["home_team"], g["away_team"]
@@ -155,8 +166,12 @@ def slate() -> list[dict]:
                 "moneyline": hml if dog_is_home else aml,
                 "spread": dog_spread(spread, dog_is_home),
                 "spreadOdds": float(o["home_spread_odds" if dog_is_home else "away_spread_odds"] or -110),
+                "totalLine": total_line,
+                "overOdds": float(o.get("over_odds") or -110),
+                "underOdds": float(o.get("under_odds") or -110),
                 "source": "reference line (nflverse schedule), not a live FanDuel price",
             },
             "recommendedBet": bt.get("chosenBet"),
+            "recommendedTotalBet": bt.get("chosenTotalBet"),
         })
     return out

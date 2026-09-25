@@ -1,9 +1,10 @@
-group,games,outright_wins,outright_rate,covers,cover_games,cover_rate,bet,hit_rate,note
-certified hot dogs,86,34,0.395,42,84,0.500,,,
-all underdogs,732,228,0.311,347,718,0.483,,,
-underdogs with a winning record,200,66,0.330,86,195,0.441,,,
-underdogs winning 3+ of 5 (any record),202,75,0.371,99,198,0.500,,,
-certified hot dogs 2023,20,3,0.150,4,19,0.211,,,
-certified hot dogs 2024,32,12,0.375,18,31,0.581,,,
-certified hot dogs 2025,34,19,0.559,20,34,0.588,,,
-chosen_bet,86,,,,,,spread,0.500,"higher certified hit rate; POW counts tickets won, not cash"
+group,games,outright_wins,outright_rate,covers,cover_games,cover_rate,led_games,led_rate,cover3_games,cover3_of,cover3_rate,cover7_games,cover7_of,cover7_rate,over_games,under_games,ou_of,over_rate,under_rate,bet,hit_rate,note
+certified hot dogs,86,34,0.395,42,84,0.500,63,0.733,40,81,0.494,54,78,0.692,41,45,86,0.477,0.523,,,
+all underdogs,732,228,0.311,347,718,0.483,504,0.689,269,676,0.398,409,687,0.595,376,352,728,0.516,0.484,,,
+underdogs with a winning record,200,66,0.330,86,195,0.441,141,0.705,80,186,0.430,115,186,0.618,99,100,199,0.497,0.503,,,
+underdogs winning 3+ of 5 (any record),202,75,0.371,99,198,0.500,145,0.718,88,186,0.473,123,185,0.665,88,114,202,0.436,0.564,,,
+certified hot dogs 2023,20,3,0.150,4,19,0.211,10,0.500,5,17,0.294,10,19,0.526,9,11,20,0.450,0.550,,,
+certified hot dogs 2024,32,12,0.375,18,31,0.581,25,0.781,15,30,0.500,21,28,0.750,15,17,32,0.469,0.531,,,
+certified hot dogs 2025,34,19,0.559,20,34,0.588,28,0.824,20,34,0.588,23,31,0.742,17,17,34,0.500,0.500,,,
+chosen_bet,86,,,,,,,,,,,,,,,,,,,spread,0.500,"higher certified hit rate; POW counts tickets won, not cash"
+chosen_total_bet,86,,,,,,,,,,,,,,,,,,,under,0.523,higher certified hit rate of over/under vs. closing total
