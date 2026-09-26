@@ -275,7 +275,7 @@ def _ticket(legs: tuple[dict, ...], series: str = "BPL_EDGE", kelly_cap: float |
     spy = series == "SPY_BOY"
     return {
         "id": f"{'SPY' if spy else 'BPL'}-{tid}",
-        "title": f"{'SPY BOY' if spy else 'BPL'} {len(legs)}-LEG {'+' if american > 0 else ''}{american}",
+        "title": f"{'SPY BOY' if spy else 'BPL'}{' CFB' if all(l.get('sport') == 'CFB' for l in legs) else ''} {len(legs)}-LEG {'+' if american > 0 else ''}{american}",
         "correlationType": series,
         "insight": (f"Hit chance {p:.1%} vs FanDuel implied {1 / dec:.1%} · ticket EV {ev:+.0%} · "
                     f"stake {kelly:.1%} of bankroll{' (capped)' if kelly_cap is not None else ''}. One leg per game."
@@ -300,7 +300,12 @@ def _tickets(pool: list[dict], sizes, per_size: int, series: str, min_dec: float
 
 
 def build_parlays() -> list[dict]:
-    return _tickets(candidate_legs()[:MAX_CANDIDATES], TICKET_SIZES, TICKETS_PER_SIZE, "BPL_EDGE")
+    """Mixed NFL+college tickets, plus college-only tickets so the college slate is always represented."""
+    legs = candidate_legs()
+    mixed = _tickets(legs[:MAX_CANDIDATES], TICKET_SIZES, TICKETS_PER_SIZE, "BPL_EDGE")
+    college = _tickets([l for l in legs if l.get("sport") == "CFB"][:MAX_CANDIDATES], (2, 3, 4), 1, "BPL_EDGE")
+    seen = {t["id"] for t in mixed}
+    return mixed + [t for t in college if t["id"] not in seen]
 
 
 def build_spy_boy() -> list[dict]:
