@@ -166,6 +166,8 @@ def leaders(category: str) -> dict:
     if src is None:
         return {"category": category, "sourceStatus": "error", "rows": [], "error": "unknown category"}
     rows = _rank(_sum_by_player(src, stat_col))
+    for r in rows:
+        r["photoUrl"] = data.photo_url(r["playerId"])
     market = bpl.LEADER_MARKET.get(category)
     if market:
         rows = [r for r in rows if r["value"] > 0][:BPL_ROWS]

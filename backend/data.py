@@ -125,16 +125,27 @@ def player_team(player_id: str) -> str:
     return player_dimension().get(player_id, {}).get("team", "")
 
 
+@lru_cache(maxsize=1)
+def _headshots() -> dict[str, str]:
+    return {r["player_id"]: r["headshot_url"] for r in load("player_headshots")}
+
+
 def photo_url(player_id: str) -> str | None:
-    """
-    Real per-player headshots are NOT available in this deployment -- the
-    *.png files are gitignored and this environment's network policy blocks
-    the NFL.com/Cloudinary host they'd normally be cached from (see the plan
-    doc / github.md for the full story). Always returns None so the frontend
-    falls back to its initials avatar, per HANDOFF_CLAUDE_CODE.md sec 0 rule 4
-    ("never hotlink").
-    """
-    return None
+    """Tank01's ESPN headshot first (matched on name + team), nflverse's headshot as fallback.
+    The browser loads the URL directly; the frontend shows an initials avatar if it fails."""
+    d = player_dimension().get(player_id)
+    if d:
+        try:
+            import tank01
+            hits = tank01.player_photos().get(normalize_name(d["name"]), []) if tank01.available() else []
+        except Exception:
+            hits = []
+        same_team = [u for t, u in hits if t == d.get("team")]
+        if same_team:
+            return same_team[0]
+        if len(hits) == 1:
+            return hits[0][1]
+    return _headshots().get(player_id)
 
 
 def search_players(query: str, limit: int = 20) -> list[dict]:

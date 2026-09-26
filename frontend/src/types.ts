@@ -164,6 +164,7 @@ export interface LeaderRow {
   gp: number;
   value: number;
   role?: string;
+  photoUrl?: string | null;
   bpl?: BplPlayerLine;
 }
 

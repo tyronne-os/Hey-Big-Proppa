@@ -292,6 +292,18 @@ def get_player_info(player_id: str) -> dict:
     }
 
 
+def player_photos() -> dict[str, list[tuple[str, str]]]:
+    """normalized player name -> [(team, ESPN headshot url)] from one getNFLPlayerList call (cached 24h)."""
+    import data
+    raw = _get("getNFLPlayerList", ttl=86400)
+    body = (raw or {}).get("body") if isinstance(raw, dict) else None
+    out: dict[str, list[tuple[str, str]]] = {}
+    for p in body or []:
+        if p.get("espnHeadshot") and p.get("longName"):
+            out.setdefault(data.normalize_name(p["longName"]), []).append((p.get("team", ""), p["espnHeadshot"]))
+    return out
+
+
 def get_fantasy_projections(week: int | None = None, season_type: str = "reg") -> list[dict]:
     """
     Fantasy point projections — used as 4th Jimmy signal.
