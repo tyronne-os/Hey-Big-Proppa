@@ -23,6 +23,11 @@ const TYPE_META: Record<string, { label: string; color: string; desc: string }> 
     color: "#22c55e",
     desc: "Legs where the Big Proppa Line beats FanDuel's price · one leg per game",
   },
+  SPY_BOY: {
+    label: "SPY BOY",
+    color: "#f97316",
+    desc: "Aggressive series · every leg BPL 75%+, FanDuel 60%+ and confirmed by recent games · +300 or better",
+  },
   SINGLE_HERO: {
     label: "SINGLE HERO",
     color: "#a78bfa",
@@ -288,7 +293,7 @@ function EngineCard({ slip }: { slip: EngineSlip }) {
   );
 }
 
-const TYPE_ORDER = ["BPL_EDGE"];
+const TYPE_ORDER = ["BPL_EDGE", "SPY_BOY"];
 
 function PowLine({ pow }: { pow: PowSummary | null }) {
   if (!pow) return null;

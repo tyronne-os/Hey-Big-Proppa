@@ -19,7 +19,7 @@ price is wrong:
      independent). Ranked by ticket EV = product(P) * product(decimal) - 1.
   4. Stake.      Quarter-Kelly share of bankroll, shown per ticket.
 
-FanDuel is the only book used for prices. Every ticket is logged to MY BOO as a
+SPY BOY is the aggressive series (see spy_boy_legs). FanDuel is the only book used for prices. Every ticket is logged to MY BOO as a
 SIM order once (TAKE IT on the Big Proppa page promotes it to POW).
 
 Honest limits: the BPL was backtested for accuracy, but the lake has no
@@ -31,6 +31,7 @@ from __future__ import annotations
 import bisect
 import hashlib
 import itertools
+import math
 from functools import lru_cache
 
 import bpl
@@ -51,6 +52,17 @@ MIN_GAMES_THIS_SEASON = 2
 # that population the hit probabilities are not calibrated
 MIN_BASELINE = {"rushyds": 25.0, "recyds": 25.0, "recs": 2.5, "passyds": 150.0}
 EXCLUDE_STATUS = {"Out", "Doubtful", "Questionable"}
+# SPY BOY (aggressive series): leg floor 75% vs the safe series' 85%
+SPY_MIN_P = 0.75
+# Measured shortfall of the BPL's over-probabilities on 2026 receiving/rushing tails
+# (scripts/check_bpl_live.py: predicted 4-8 pts above actual, zero-stat games included).
+SPY_HAIRCUT = 0.05
+SPY_MAX_CREDIT = 0.25      # credit at most +25 pts over FanDuel's own probability
+SPY_MIN_BOOK = 0.60        # FanDuel itself must price the leg at 60%+ (the model is not the only voice)
+SPY_MIN_RECENT = 0.80      # leg must have cleared in 80%+ of this season's games
+SPY_SIZES = (3, 4, 5)
+SPY_MIN_DECIMAL = 4.0      # +300 or better, otherwise it is not an aggressive ticket
+SPY_KELLY_CAP = 0.02       # stake never above 2% of bankroll
 MAX_CANDIDATES = 14        # best legs considered for combination
 TICKET_SIZES = (2, 3, 4, 5)
 TICKETS_PER_SIZE = 2
@@ -110,11 +122,53 @@ def _player_index() -> dict[tuple[str, str], str]:
     return {(data.normalize_name(d["name"]), d["team"]): pid for pid, d in data.player_dimension().items()}
 
 
-def candidate_legs() -> list[dict]:
-    """Every FanDuel prop in a BPL market, scored against the BPL. Qualifying legs only."""
+def _side_dicts(pid: str, name: str, team: str, game: dict, market: str, line: float, row: dict,
+                offers: list[tuple[str, float, float, float]], alt: bool) -> list[dict]:
+    """offers: (side, decimal, american, book probability). Scores each side against the BPL."""
+    parts = row["parts"]
+    po = p_over(market, parts["raw"], line)
+    if po is None:
+        return []
+    recent = [g["value"] for g in row["l5"]]
+    gap = bpl.diff_pct(row["bpl"], line)
+    out = []
+    for side, dec, px, book_p in offers:
+        p = po if side == "over" else 1 - po
+        hits = sum(1 for v in recent if (v > line if side == "over" else v < line))
+        out.append({
+            "playerId": pid, "name": name, "team": team, "market": market,
+            "direction": side, "line": line, "odds": int(px), "decimal": round(dec, 4),
+            "modelP": round(p, 4), "bookP": round(book_p, 4), "recentHits": hits, "recentGames": len(recent),
+            "bpl": row["bpl"], "gapPct": gap, "gameId": game["gameId"], "week": game["week"],
+            "prop": f"{side.upper()} {line:g} {MARKET_LABEL[market]}" + (" (ALT)" if alt else ""),
+            "l5": row["seasonAvg"] or 0, "alt": alt,
+        })
+    return out
+
+
+def _scored_sides() -> list[dict]:
+    """
+    Every FanDuel prop side in a BPL market that passes the data guards (next game,
+    healthy, 2+ games this season, inside the calibrated population), scored two ways:
+    the BPL hit probability and FanDuel's own probability. Main lines use the no-vig
+    pair; alternate rungs (fanduel_alt_lines.csv) use the price-implied probability.
+    """
     idx = _player_index()
     nxt = bpl.next_games()
-    legs: list[dict] = []
+    injured = _injured()
+    rows: dict[tuple[str, str], dict | None] = {}
+
+    def usable(pid: str, name: str, team: str, market: str) -> dict | None:
+        if pid in injured:
+            return None
+        key = (pid, market)
+        if key not in rows:
+            row = bpl.nfl_player_line(pid, market, name, team)
+            ok = row.get("parts") and len(row["l5"]) >= MIN_GAMES_THIS_SEASON and row["parts"]["baseline"] >= MIN_BASELINE[market]
+            rows[key] = row if ok else None
+        return rows[key]
+
+    out: list[dict] = []
     for r in data.load("prop_line_rotowire"):
         market = r.get("market_slug")
         if r.get("book_slug") != BOOK or market not in bpl.NFL_MARKETS or not r.get("line"):
@@ -124,47 +178,82 @@ def candidate_legs() -> list[dict]:
         if not game or game["opp"] != r.get("opponent", "").lstrip("@"):
             continue  # stale prop for a game already played
         pid = idx.get((data.normalize_name(r.get("player_name", "")), team))
-        if not pid:
+        over_px, under_px = r.get("over_price_american"), r.get("under_price_american")
+        if not pid or not over_px or not under_px:
             continue
-        if pid in _injured():
+        row = usable(pid, r["player_name"], team, market)
+        if not row:
             continue
-        row = bpl.nfl_player_line(pid, market, r["player_name"], team)
-        parts = row.get("parts")
-        if not parts or len(row["l5"]) < MIN_GAMES_THIS_SEASON or parts["baseline"] < MIN_BASELINE[market]:
+        d_over, d_under = _dec(float(over_px)), _dec(float(under_px))
+        book_over = (1 / d_over) / (1 / d_over + 1 / d_under)
+        out += _side_dicts(pid, r["player_name"], team, game, market, float(r["line"]), row,
+                           [("over", d_over, float(over_px), book_over), ("under", d_under, float(under_px), 1 - book_over)], False)
+
+    for r in data.load("fanduel_alt_lines"):
+        market = r.get("market_slug")
+        if market not in bpl.NFL_MARKETS or r.get("side") != "over" or not r.get("line") or not r.get("price_american"):
             continue
-        line = float(r["line"])
-        po = p_over(market, parts["raw"], line)
-        if po is None:
-            continue
-        for side, p, price in (("over", po, r.get("over_price_american")), ("under", 1 - po, r.get("under_price_american"))):
-            if not price:
-                continue
-            american = float(price)
-            dec = _dec(american)
-            ev = p * dec - 1
-            if not (MIN_LEG_EV <= ev <= MAX_LEG_EV) or not (MIN_LEG_P <= p <= MAX_LEG_P):
-                continue
-            gap = bpl.diff_pct(row["bpl"], line)
-            legs.append({
-                "playerId": pid, "name": r["player_name"], "team": team, "market": market,
-                "direction": side, "line": line, "odds": int(american), "decimal": round(dec, 4),
-                "probability": round(p, 4), "impliedProbability": round(1 / dec, 4), "ev": round(ev, 4),
-                "bpl": row["bpl"], "gapPct": gap, "gameId": game["gameId"], "week": game["week"],
-                "prop": f"{side.upper()} {line:g} {MARKET_LABEL[market]}",
-                "l5": row["seasonAvg"] or 0,
-                "correlationNote": (f"BPL {row['bpl']:g} vs FanDuel {line:g} ({gap:+.1f}%) · "
-                                    f"hit {p:.0%} vs FanDuel implied {1 / dec:.0%} · EV {ev:+.0%}"),
-            })
-    # one side per player-market (the better EV), best first
+        for team in (r["home"], r["away"]):
+            pid = idx.get((data.normalize_name(r["player_name"]), team))
+            game = nxt.get(team)
+            if pid and game:
+                row = usable(pid, r["player_name"], team, market)
+                if row:
+                    dec = _dec(float(r["price_american"]))
+                    out += _side_dicts(pid, r["player_name"], team, game, market, float(r["line"]), row,
+                                       [("over", dec, float(r["price_american"]), 1 / dec)], True)
+                break
+    return out
+
+
+def _finish_leg(leg: dict, p: float) -> dict:
+    ev = p * leg["decimal"] - 1
+    return {**leg, "probability": round(p, 4), "impliedProbability": round(1 / leg["decimal"], 4), "ev": round(ev, 4),
+            "correlationNote": (f"BPL {leg['bpl']:g} vs FanDuel {leg['line']:g} ({leg['gapPct']:+.1f}%) · "
+                                f"hit {p:.0%} vs FanDuel implied {1 / leg['decimal']:.0%} · "
+                                f"{leg['recentHits']}/{leg['recentGames']} recent games cleared it")}
+
+
+def _best_per_market(legs: list[dict]) -> list[dict]:
     best: dict[tuple[str, str], dict] = {}
     for leg in legs:
         k = (leg["playerId"], leg["market"])
-        if k not in best or leg["ev"] > best[k]["ev"]:
+        if k not in best or (leg["ev"], leg["modelP"]) > (best[k]["ev"], best[k]["modelP"]):
             best[k] = leg
-    return sorted(best.values(), key=lambda l: -l["ev"])
+    return sorted(best.values(), key=lambda l: (-l["ev"], -l["modelP"]))
 
 
-def _ticket(legs: tuple[dict, ...]) -> dict:
+def candidate_legs() -> list[dict]:
+    """Value legs: FanDuel price beaten by 5-25% on the BPL hit probability."""
+    legs = []
+    for l in _scored_sides():
+        if l["alt"]:
+            continue
+        leg = _finish_leg(l, l["modelP"])
+        if MIN_LEG_EV <= leg["ev"] <= MAX_LEG_EV and MIN_LEG_P <= l["modelP"] <= MAX_LEG_P:
+            legs.append(leg)
+    return _best_per_market(legs)
+
+
+def spy_boy_legs() -> list[dict]:
+    """
+    SPY BOY legs need three voices to agree: the BPL says 75%+, FanDuel's own price
+    says 60%+, and the leg cleared in at least 80% of the player's games this season
+    (so a stale prior cannot carry it). The BPL probability is cut by SPY_HAIRCUT
+    first, and credit is capped at 25 points over FanDuel.
+    Main lines and FanDuel alternate rungs both qualify; the best rung per
+    player-market wins.
+    """
+    legs = []
+    for l in _scored_sides():
+        p_used = min(l["modelP"] - SPY_HAIRCUT, l["bookP"] + SPY_MAX_CREDIT)
+        recent_ok = l["recentGames"] >= MIN_GAMES_THIS_SEASON and l["recentHits"] / l["recentGames"] >= SPY_MIN_RECENT
+        if p_used >= SPY_MIN_P and l["bookP"] >= SPY_MIN_BOOK and recent_ok:
+            legs.append(_finish_leg(l, p_used))
+    return _best_per_market(legs)
+
+
+def _ticket(legs: tuple[dict, ...], series: str = "BPL_EDGE", kelly_cap: float | None = None) -> dict:
     dec = 1.0
     p = 1.0
     for leg in legs:
@@ -172,16 +261,20 @@ def _ticket(legs: tuple[dict, ...]) -> dict:
         p *= leg["probability"]
     ev = p * dec - 1
     kelly = max(0.0, (p * dec - 1) / (dec - 1)) / 4
+    if kelly_cap is not None:
+        kelly = min(kelly, kelly_cap)
     sig = "|".join(sorted(f"{l['playerId']}:{l['market']}:{l['direction']}:{l['line']}" for l in legs))
     tid = hashlib.sha1(sig.encode()).hexdigest()[:8].upper()
     payout = round(STAKE * dec, 2)
     american = _american(dec)
+    spy = series == "SPY_BOY"
     return {
-        "id": f"BPL-{tid}",
-        "title": f"BPL {len(legs)}-LEG {'+' if american > 0 else ''}{american}",
-        "correlationType": "BPL_EDGE",
+        "id": f"{'SPY' if spy else 'BPL'}-{tid}",
+        "title": f"{'SPY BOY' if spy else 'BPL'} {len(legs)}-LEG {'+' if american > 0 else ''}{american}",
+        "correlationType": series,
         "insight": (f"Hit chance {p:.1%} vs FanDuel implied {1 / dec:.1%} · ticket EV {ev:+.0%} · "
-                    f"quarter-Kelly {kelly:.1%} of bankroll. One leg per game."),
+                    f"stake {kelly:.1%} of bankroll{' (capped)' if kelly_cap is not None else ''}. One leg per game."
+                    + (" Every leg: BPL 75%+ after a 5-pt haircut, FanDuel price 60%+, cleared in 80%+ of recent games." if spy else "")),
         "legs": [{k: v for k, v in l.items() if k != "decimal"} for l in legs],
         "wager": STAKE, "boost": 0.0,
         "combinedDecimalOdds": round(dec, 4), "payout": payout, "boostedPayout": payout,
@@ -191,14 +284,42 @@ def _ticket(legs: tuple[dict, ...]) -> dict:
     }
 
 
-def build_parlays() -> list[dict]:
-    pool = candidate_legs()[:MAX_CANDIDATES]
+def _tickets(pool: list[dict], sizes, per_size: int, series: str, min_dec: float = 0.0, kelly_cap: float | None = None) -> list[dict]:
     out: list[dict] = []
-    for size in TICKET_SIZES:
+    for size in sizes:
         combos = [c for c in itertools.combinations(pool, size) if len({l["gameId"] for l in c}) == size]
-        ranked = sorted((_ticket(c) for c in combos), key=lambda t: -t["expectedValue"])
-        out.extend(ranked[:TICKETS_PER_SIZE])
+        ranked = sorted((_ticket(c, series, kelly_cap) for c in combos if math.prod(l["decimal"] for l in c) >= min_dec),
+                        key=lambda t: -t["expectedValue"])
+        out.extend(ranked[:per_size])
     return out
+
+
+def build_parlays() -> list[dict]:
+    return _tickets(candidate_legs()[:MAX_CANDIDATES], TICKET_SIZES, TICKETS_PER_SIZE, "BPL_EDGE")
+
+
+def build_spy_boy() -> list[dict]:
+    """The aggressive series: 3-5 high-probability legs stacked for a +300 or better payout."""
+    return _tickets(spy_boy_legs()[:MAX_CANDIDATES], SPY_SIZES, 1, "SPY_BOY", SPY_MIN_DECIMAL, SPY_KELLY_CAP)
+
+
+# The weekly question board: which bet types Jimmy can price from FanDuel data in the lake.
+# The rest need FanDuel markets the lake does not carry yet (or same-game combo pricing).
+QUESTION_BOARD = {
+    "live": [
+        "QB pass yards over/under", "QB rush yards over", "RB rush yards over/under",
+        "WR/TE receiving yards over/under", "WR/TE/RB receptions over/under",
+    ],
+    "waiting_on_fanduel_data": [
+        "QB pass TDs (only 29 lines in the lake, count model not calibrated)", "QB interceptions", "QB completions/attempts",
+        "RB carries", "RB rush+rec yards (30 lines, not calibrated)", "longest reception", "kicker points / FGs",
+        "sacks", "anytime / first / last TD (moneyline only, no TD model)",
+    ],
+    "needs_same_game_pricing": [
+        "any 'AND' combo (yards AND TD, QB yards AND WR yards, stat AND team win): FanDuel prices these with its own "
+        "correlation, which is not in the lake, so a payout cannot be computed honestly",
+    ],
+}
 
 
 def log_to_myboo(slips: list[dict]) -> None:
@@ -210,5 +331,5 @@ def log_to_myboo(slips: list[dict]) -> None:
             "SIM", s["title"] + f" · {s['id']}",
             [{"player_name": l["name"], "team": l["team"], "market": l["market"], "direction": l["direction"],
               "line": l["line"], "odds": l["odds"], "probability": l["probability"], "game_date": ""} for l in s["legs"]],
-            season, s["week"], s["boostedAmericanOdds"], s["wager"], f"JIMMY BPL · EV {s['expectedValue']:+.0%}",
+            season, s["week"], s["boostedAmericanOdds"], s["wager"], f"JIMMY {'SPY BOY' if s['correlationType'] == 'SPY_BOY' else 'BPL'} · EV {s['expectedValue']:+.0%}",
         )

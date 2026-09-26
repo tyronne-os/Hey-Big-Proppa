@@ -236,7 +236,7 @@ export interface EngineLeg {
 export interface EngineSlip {
   id: string;
   title: string;
-  correlationType: "COACHES_SON" | "IB_CASCADE" | "VOLUME_STACK" | "SINGLE_HERO" | "BPL_EDGE";
+  correlationType: "COACHES_SON" | "IB_CASCADE" | "VOLUME_STACK" | "SINGLE_HERO" | "BPL_EDGE" | "SPY_BOY";
   hitProbability?: number;
   expectedValue?: number;
   kellyPct?: number;

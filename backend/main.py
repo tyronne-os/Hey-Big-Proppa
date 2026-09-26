@@ -146,7 +146,7 @@ def api_parlays_engine():
     Jimmy BPL mode: 2-5 leg FanDuel tickets built from Big Proppa Line edges.
     Every ticket is noted by MY BOO as a SIM order (deduplicated).
     """
-    slips = jimmy_bpl.build_parlays()
+    slips = jimmy_bpl.build_parlays() + jimmy_bpl.build_spy_boy()
     jimmy_bpl.log_to_myboo(slips)
     return {"slips": slips, "mode": "BPL", "version": bpl_mod.BPL_VERSION}
 
@@ -164,6 +164,12 @@ def api_parlays_engine_legacy():
 def api_jimmy_bpl_legs():
     """Every FanDuel prop that beats the Big Proppa Line by the value threshold."""
     return {"legs": jimmy_bpl.candidate_legs(), "book": jimmy_bpl.BOOK, "minLegEv": jimmy_bpl.MIN_LEG_EV}
+
+
+@app.get("/api/jimmy/spy-boy")
+def api_jimmy_spy_boy():
+    """SPY BOY legs (75%+ BPL probability, recent-form confirmed) and which weekly questions Jimmy can price."""
+    return {"legs": jimmy_bpl.spy_boy_legs(), "board": jimmy_bpl.QUESTION_BOARD, "minP": jimmy_bpl.SPY_MIN_P}
 
 
 _PAUSED = {"paused": True, "message": "Jimmy's LLM mode is paused. Jimmy now runs on the Big Proppa Line (see /api/parlays/engine).",
