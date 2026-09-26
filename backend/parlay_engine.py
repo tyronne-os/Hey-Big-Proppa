@@ -12,14 +12,13 @@ Four correlation types, each built from a different pond combination:
                   20-yard line is his coach's highest trust level." These are
                   the guys the QB looks for in clutch short-yardage.
 
-  IB CASCADE   -- QB facing a CAT 4+ defense (ib_score >= 4). The defensive
-                  pressure reduces pocket time, forcing quicker releases:
-                  QB Under passyds / Over intsthrown / Over passatt all
-                  become more likely, AND the check-down RB/TE's receptions
-                  Over becomes more likely because the QB is dumping off.
-                  Jimmy's probability is adjusted UP for these "distress"
-                  props by an IB multiplier derived from the defense's
-                  ib_score (4 or 5).
+  IB CASCADE   -- QB facing an IB 2.0 score of 5 (scripts/build_ib2.py: the
+                  opponent's pass rush against this offense's protection).
+                  Two correlated QB legs: Under passyds + Over intsthrown.
+                  The IB shift on each is read from ib2_bucket_rates.csv
+                  (2023-2025 outcomes at that score), not a hand-set
+                  multiplier. The old check-down "recs Over" leg is gone:
+                  check-down backs caught fewer balls vs IB 5, not more.
 
   VOLUME STACK -- same offensive unit, two players whose totals move together
                   (QB passyds + WR1 recyds; or QB passtd + TE anytd). Positive
@@ -134,6 +133,18 @@ def _ib_scores() -> dict[str, dict]:
         if team:
             out[team] = row
     return out
+
+
+@lru_cache(maxsize=1)
+def _ib2_matchups() -> dict[tuple[str, str], dict]:
+    """(defense, offense) -> IB 2.0 row for this week's slate (scripts/build_ib2.py)."""
+    return {(r["defteam"], r["posteam"]): r for r in data.load("ib2_matchups_current")}
+
+
+@lru_cache(maxsize=1)
+def _ib2_calibration() -> dict[int, dict]:
+    """IB 2.0 score -> what actually happened at that score, 2023-2025 (ib2_bucket_rates.csv)."""
+    return {int(r["ib2_score"]): {k: float(v) for k, v in r.items()} for r in data.load("ib2_bucket_rates")}
 
 
 @lru_cache(maxsize=1)
@@ -283,53 +294,32 @@ def _hit_rate_under(games: list[dict], threshold: float, window: int = 10) -> fl
 # IB adjustment: amplify or dampen Jimmy score based on matchup pressure
 # ---------------------------------------------------------------------------
 
+def _ib_shift(ib_score: int, market_slug: str, direction: str) -> float:
+    """
+    Additive probability shift for an IB 2.0 matchup score, read straight off what
+    happened at that score in 2023-2025 (ib2_bucket_rates.csv), relative to the
+    all-games average. Only markets the backtest actually measured move:
+      passyds  -- pass yards vs the spread/total-implied expectation
+      intsthrown -- chance the QB throws 1+ interception
+    Check-down receptions, pass attempts and pass TDs showed no IB effect (check-down
+    backs actually caught FEWER balls vs IB 5), so they are left alone.
+    """
+    cal = _ib2_calibration()
+    row = cal.get(ib_score)
+    if not row or not cal:
+        return 0.0
+    if market_slug == "passyds":
+        under_edge = row["pass_under_lines_rate"] - 0.5
+        return under_edge if direction == "under" else -under_edge
+    if market_slug == "intsthrown":
+        base = sum(r["qb_int_1plus_rate"] * r["games"] for r in cal.values()) / sum(r["games"] for r in cal.values())
+        edge = row["qb_int_1plus_rate"] - base
+        return edge if direction == "over" else -edge
+    return 0.0
+
+
 def _ib_adjust(base_prob: float, ib_score: int, market_slug: str, direction: str) -> float:
-    """
-    Adjust a base probability using the opposing defense's IB score.
-
-    CAT 4+ pressures the QB, cascading to:
-      - Under passyds: probability UP (less time in pocket = shorter gains)
-      - Over intsthrown: probability UP (pressure causes mistakes)
-      - Over passatt: probability UP (more quick-fire attempts to release)
-      - Over recs (check-down RB/TE): probability UP
-      - Over passtd: probability DOWN (harder to hit downfield TDs)
-
-    CAT 1-2 (weak defense):
-      - Over passyds: probability UP
-      - Over passtd: probability UP
-      - Over recyds: probability UP
-    """
-    score = base_prob
-    pressure = max(0, ib_score - 3)  # 0 for CAT 1-3, 1 for CAT 4, 2 for CAT 5
-
-    distress_up = {
-        ("passyds", "under"),
-        ("intsthrown", "over"),
-        ("passatt", "over"),
-        ("recs", "over"),   # check-down target
-    }
-    distress_down = {
-        ("passtd", "over"),
-        ("passyds", "over"),
-    }
-    feast_up = {
-        ("passyds", "over"),
-        ("passtd", "over"),
-        ("recyds", "over"),
-    }
-
-    key = (market_slug, direction)
-    if pressure > 0:
-        if key in distress_up:
-            score = min(0.97, score * (1.0 + pressure * 0.08))
-        elif key in distress_down:
-            score = score * (1.0 - pressure * 0.06)
-    else:
-        weakness = max(0, 2 - ib_score)
-        if weakness > 0 and key in feast_up:
-            score = min(0.97, score * (1.0 + weakness * 0.07))
-
-    return round(min(0.97, max(0.0, score)), 3)
+    return round(min(0.97, max(0.0, base_prob + _ib_shift(ib_score, market_slug, direction))), 3)
 
 
 # ---------------------------------------------------------------------------
@@ -481,7 +471,11 @@ def _measure(player_id: str, name: str, market: str, direction: str, ib_score: i
 
 
 def _opp_ib(player_id: str) -> tuple[str | None, dict, int]:
+    """IB 2.0 matchup score (this opponent's pass rush vs this player's offense); IB 1.0 if not built."""
     opp = jimmy.next_opponent(player_id)
+    ib2 = _ib2_matchups().get((opp or "", jimmy.player_team(player_id) or ""))
+    if ib2:
+        return opp, ib2, int(ib2["ib2_score"])
     row = _ib_scores().get(opp or "", {})
     return opp, row, int(row.get("ib_score") or 3)
 
@@ -567,59 +561,33 @@ def find_ib_cascade(dim: dict[str, dict]) -> list[dict]:
         if qb_info.get("position") != "QB" or qb_pid not in _qb_pass_volume():
             continue
         opp, ib_row, ib_score = _opp_ib(qb_pid)
-        if not opp or ib_score < 4:
+        # 2023-2025: only the top IB 2.0 score moved pass yards past the lines; 4 did not.
+        if not opp or ib_score < 5:
             continue
 
         qb_name = qb_info["name"]
         qb_team = qb_info.get("team", "")
-        ib_cat = ib_row.get("ib_category", "")
-        # The defense rating IS the signal here -- a CAT 4-5 rush justifies the leg on a thin sample.
-        ib_prob = min(0.97, (ib_score - 3) * 0.20 + 0.65)
+        cal = _ib2_calibration().get(ib_score, {})
 
+        # Both legs are the same bad afternoon for the QB, so they correlate. No IB floor:
+        # each leg must clear on Jimmy's own number, which already carries the calibrated IB shift.
         legs = []
-        for market, direction in [("passyds", "under"), ("intsthrown", "over"), ("passatt", "over")]:
+        for market, direction in [("passyds", "under"), ("intsthrown", "over")]:
             m = _measure(qb_pid, qb_name, market, direction, ib_score)
-            if not m:
-                continue
-            eff = max(m["prob"] or 0, ib_prob * jimmy.regression_factor(qb_pid, direction))
-            if eff >= MIN_MATCHUP_PROB:
-                legs.append(_leg(qb_pid, qb_name, qb_team, market, direction, m["label"],
-                                 eff, m["l5"], m["price"],
-                                 f"Facing {opp} {ib_cat} → IB {ib_score} pressure cascade"))
-                break
-
-        if not legs:
-            continue
-
-        depth = _depth_chart().get(qb_team, [])
-        checkdown_pids = list(dict.fromkeys(
-            row.get("player_id")
-            for row in sorted(depth, key=lambda r: int(r.get("pos_rank") or 99))
-            if row.get("pos_abb") in ("RB", "TE") and row.get("player_id")
-        ))[:2]
-
-        cd_ib_prob = min(0.97, (ib_score - 3) * 0.15 + 0.65)
-        for cd_pid in checkdown_pids:
-            cd_name = dim.get(cd_pid, {}).get("name") or data.player_name(cd_pid)
-            cd_team = dim.get(cd_pid, {}).get("team", qb_team)
-            m = _measure(cd_pid, cd_name, "recs", "over", ib_score)
-            if not m:
-                continue
-            eff = max(m["prob"] or 0, _matchup_score(cd_pid, "recs"), cd_ib_prob * jimmy.regression_factor(cd_pid))
-            if eff >= MIN_MATCHUP_PROB:
-                legs.append(_leg(cd_pid, cd_name, cd_team, "recs", "over", m["label"],
-                                 eff, m["l5"], m["price"],
-                                 f"Check-down target as QB dumps off under {opp} pressure"))
-                break
+            if m and _qualifies(m["prob"], qb_pid, market, direction):
+                eff = m["prob"] if m["prob"] is not None else _matchup_score(qb_pid, market, direction)
+                legs.append(_leg(qb_pid, qb_name, qb_team, market, direction, m["label"], eff, m["l5"], m["price"],
+                                 f"IB 2.0 score {ib_score} vs {opp}"))
 
         if len(legs) < 2:
             continue
 
         insight = (
-            f"{qb_name} faces {opp} ({ib_cat}). "
-            f"A CAT {ib_score} pass rush shrinks the pocket, increases quick releases, "
-            f"and punishes downfield attempts. The check-down {legs[-1]['name']} "
-            f"sees more targets in exactly these games."
+            f"{qb_name} faces {opp}, an IB 2.0 score of {ib_score}: {opp}'s pressure rate "
+            f"{float(ib_row.get('pre_pressure_rate') or 0):.0%} against a line allowing "
+            f"{float(ib_row.get('pre_off_pressure_allowed') or 0):.0%}. In 2023-2025 matchups at this score the QB "
+            f"threw 1+ INT {cal.get('qb_int_1plus_rate', 0):.0%} of the time and passing went under the "
+            f"lines-implied number {cal.get('pass_under_lines_rate', 0):.0%} of the time."
         )
         slip = _slip(f"ib-cascade-{qb_pid}", f"IB CASCADE · {qb_name} vs {opp}", "IB_CASCADE", legs, insight)
         if slip:

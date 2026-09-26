@@ -1,0 +1,16 @@
+{
+ "cuts_matchup_raw": [
+  -2.3571927094543224,
+  -0.6935842076985149,
+  0.6531074873311198,
+  2.324639587332677
+ ],
+ "proxy_scale": 1.4492,
+ "week": 3,
+ "calibration_seasons": [
+  2023,
+  2024,
+  2025
+ ],
+ "current_season_source": "play-by-play proxy (sack|hit|scramble)"
+}

@@ -1,0 +1,44 @@
+factor,bucket,dropbacks,int_rate,int_worthy_rate,sack_rate,epa_per_db,int_lift
+pressure,CLEAN,42356,0.019,0.0302,0.0,0.236,0.96
+pressure,PRESSURED,18187,0.0217,0.0334,0.2204,-0.446,1.1
+blitzers,0,43329,0.0198,0.0315,0.06,0.04,1.0
+blitzers,1,12477,0.0189,0.0296,0.0753,0.031,0.96
+blitzers,2,4076,0.0211,0.0324,0.1021,-0.05,1.07
+blitzers,3+,661,0.0227,0.0333,0.0862,-0.034,1.15
+time_to_throw,<2.0s,15870,0.0126,0.0205,0.0006,0.101,0.64
+time_to_throw,2.0-2.5s,12796,0.0214,0.0345,0.0012,0.178,1.08
+time_to_throw,2.5-3.0s,10445,0.0275,0.0398,0.0027,0.19,1.39
+time_to_throw,3.0-3.5s,6432,0.0299,0.0487,0.0026,0.215,1.51
+time_to_throw,3.5s+,7803,0.0308,0.0493,0.004,0.015,1.56
+down_distance,1st/2nd & 10+,29598,0.0182,0.0282,0.0523,0.056,0.92
+down_distance,1st/2nd & <10,12729,0.0165,0.026,0.057,0.089,0.83
+down_distance,3rd & 7+,8890,0.0245,0.0394,0.1051,-0.099,1.24
+down_distance,3rd & <7,7712,0.021,0.0336,0.0883,-0.008,1.06
+down_distance,4th down,1614,0.0415,0.0682,0.0762,0.015,2.1
+game_state,4Q trailing 1-8,4549,0.0286,0.0376,0.0662,0.034,1.45
+game_state,4Q trailing 9+,7417,0.0258,0.0406,0.0751,-0.066,1.3
+game_state,leading 8+,6790,0.0144,0.0262,0.0585,0.125,0.73
+game_state,trailing 8+ (Q1-3),7940,0.0215,0.0331,0.0767,-0.02,1.09
+game_state,within one score,33847,0.0179,0.0287,0.0634,0.045,0.91
+coverage,2_MAN,3694,0.0192,0.0295,0.0663,0.017,0.97
+coverage,COVER_0,2216,0.0181,0.0307,0.06,0.073,0.91
+coverage,COVER_1,18357,0.0177,0.0287,0.0695,0.032,0.9
+coverage,COVER_2,11857,0.0198,0.0289,0.0613,0.018,1.0
+coverage,COVER_3,12808,0.0221,0.0334,0.0621,0.061,1.12
+coverage,COVER_4,5700,0.0177,0.0335,0.0681,0.037,0.9
+coverage,COVER_6,2828,0.024,0.0375,0.0697,0.009,1.22
+coverage,COVER_9,1248,0.0248,0.0369,0.0705,-0.043,1.26
+pocket,IN POCKET,49190,0.0209,0.0325,0.0614,0.036,1.06
+pocket,OUT OF POCKET,11353,0.015,0.0252,0.0872,0.009,0.76
+play_action,PLAY ACTION,13351,0.0163,0.0264,0.0607,0.121,0.83
+play_action,STRAIGHT DROPBACK,47192,0.0207,0.0325,0.0678,0.006,1.05
+pressure_x_state,CLEAN · 4Q trailing 1-8,3108,0.0241,0.0335,0.0003,0.221,1.22
+pressure_x_state,CLEAN · 4Q trailing 9+,5036,0.0252,0.0401,0.0002,0.156,1.28
+pressure_x_state,CLEAN · leading 8+,4817,0.0149,0.0259,0.0,0.318,0.76
+pressure_x_state,CLEAN · trailing 8+ (Q1-3),5478,0.0228,0.0343,0.0,0.195,1.15
+pressure_x_state,CLEAN · within one score,23917,0.0169,0.0276,0.0,0.248,0.85
+pressure_x_state,PRESSURED · 4Q trailing 1-8,1441,0.0382,0.0465,0.2082,-0.37,1.93
+pressure_x_state,PRESSURED · 4Q trailing 9+,2381,0.0269,0.0416,0.2335,-0.534,1.36
+pressure_x_state,PRESSURED · leading 8+,1973,0.0132,0.0269,0.2012,-0.346,0.67
+pressure_x_state,PRESSURED · trailing 8+ (Q1-3),2462,0.0187,0.0305,0.2474,-0.5,0.95
+pressure_x_state,PRESSURED · within one score,9930,0.0204,0.0316,0.2162,-0.442,1.03

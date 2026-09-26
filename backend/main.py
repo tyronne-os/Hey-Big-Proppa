@@ -485,6 +485,36 @@ def api_grader_grade(week: int):
     return grader_mod.grade_pending(week)
 
 
+@app.get("/api/ib2")
+def api_ib2():
+    """
+    IB 2.0 (IRRITABLE BOWEL) pass-rush matchup scores for this week, with the
+    2023-2025 calibration behind each score. Built by scripts/build_ib2.py.
+    """
+    status = data.chart_status("ib2_matchups_current")
+    return {
+        "sourceStatus": status,
+        "matchups": data.load("ib2_matchups_current"),
+        "calibration": data.load("ib2_bucket_rates"),
+        "findings": [
+            "Pressure crushes efficiency (EPA/dropback +0.24 clean vs -0.45 pressured) far more than it creates "
+            "interceptions (2.2% vs 1.9% per dropback).",
+            "Interceptions come from holding the ball: 3.0s+ to throw carries 1.5x the INT rate of under 2.0s; "
+            "throws 15+ air yards carry 3.8x the odds of an INT-worthy ball.",
+            "Most dangerous state: pressured while trailing by 1-8 in the 4th quarter -- 1.9x the normal INT rate.",
+            "Rattle is real but small: on a clean pocket right after being hit, the same QB in the same game throws "
+            "an INT-worthy ball ~22% more often (t=2.5).",
+            "Pressure with four rushers matters; blitzing does not: pressure-with-four defenses held offenses "
+            "19 yds under their passing average in 2025, blitz-heavy defenses held them to even.",
+            "A QB's reaction to pressure barely repeats year to year (r=0.12); how long he holds the ball does (r=0.59).",
+            "First-half hits lower second-half efficiency but NOT second-half passing yards -- the trailing team "
+            "throws more. Don't live-bet a 2H passing under off first-half sacks.",
+        ],
+        "method": "Weights set on 2023-24, checked on 2025 untouched. Current season uses a play-by-play pressure "
+                  "proxy (r=0.72 with true pressure). Lines comparison uses spread/total, not historical prop lines.",
+    }
+
+
 @app.get("/api/target-share")
 def api_target_share(team: str | None = None):
     """
