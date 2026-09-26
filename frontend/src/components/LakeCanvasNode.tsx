@@ -8,6 +8,7 @@ import type { CanvasNode } from "../types";
  * IDLE status, footer icon row, remove button, top/bottom handles.
  */
 export type LakeCanvasNodeData = Pick<CanvasNode, "type" | "name" | "sub" | "chips"> & {
+  store?: string;
   onRemove?: () => void;
   onSettings?: () => void;
 };
@@ -100,7 +101,7 @@ export default function LakeCanvasNode({ data }: NodeProps<LakeCanvasNodeData>) 
         <>
           <div style={{ fontSize: 9, fontWeight: 700, color: "#f2ecf4", margin: "8px 2px 4px" }}>Store</div>
           <div style={{ fontSize: 10, color: "#d8d0d8", background: "#1a1520", border: "1px solid rgba(0,0,0,0.45)", borderRadius: 5, padding: "5px 8px" }}>
-            lake/nfl.duckdb
+            {data.store ?? "lake/nfl.duckdb"}
           </div>
           <div style={{ marginTop: 6, fontFamily: "var(--font-mono, monospace)", fontSize: 9, color: "#8a8290", background: "#0e0a14", border: "1px solid rgba(0,0,0,0.5)", borderRadius: 5, padding: "5px 8px" }}>
             schema &middot; ponds &middot; not wired
