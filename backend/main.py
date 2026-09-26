@@ -26,6 +26,7 @@ import parlay_engine as engine_mod
 import breakout as breakout_mod
 import hot_dog
 import jev
+import jimmy_hunt
 import matchup as matchup_mod
 import pow_report
 import buddy_cosell as buddy_mod
@@ -257,6 +258,26 @@ def jev_status():
     exists to debug the secret, not to gate whether it's built.
     """
     return jev.diagnose()
+
+
+@app.get("/api/jimmy/hunt")
+def jimmy_hunt_endpoint():
+    """
+    Jimmy the Greek's daily prop hunt. Cycles 35 standard questions (2 lists)
+    through Jimmy's composite score + JEV, returns:
+      - questions:       best picks per question with jimmyScore, jevScore, defWeakness
+      - parlays:         top 30 2-5 leg combos ranked by geometric mean of combined scores
+      - exploitParlays:  same, but all legs must face a notably weak defense (defWeakness >= 0.55)
+    Refreshes once per UTC calendar day; subsequent calls within the day are cached.
+    """
+    return jimmy_hunt.hunt()
+
+
+@app.post("/api/jimmy/hunt/refresh")
+def jimmy_hunt_refresh():
+    """Force a fresh hunt run (ignores the daily cache)."""
+    jimmy_hunt.invalidate_cache()
+    return jimmy_hunt.hunt()
 
 
 # Serves the built React app (frontend/dist, produced by the Dockerfile's node stage) for the
