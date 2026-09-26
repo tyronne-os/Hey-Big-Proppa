@@ -55,6 +55,19 @@ def nvidia_available() -> bool:
     return bool(os.environ.get("NVIDIA_API_KEY"))
 
 
+_GEMMA_SPACE_URL = "https://aibruh-jimmy-gemma-analyst.hf.space/run/predict"
+
+
+def gemma_available() -> bool:
+    """Gemma runs on HF ZeroGPU — always reachable if the Space is awake."""
+    try:
+        import httpx
+        r = httpx.get("https://aibruh-jimmy-gemma-analyst.hf.space", timeout=5.0)
+        return r.status_code < 500
+    except Exception:
+        return False
+
+
 def ai_status() -> dict:
     jev_diag = jev.diagnose()
     return {
@@ -73,6 +86,11 @@ def ai_status() -> dict:
             "connected": nvidia_available(),
             "model": "nvidia/llama-3.1-nemotron-70b-instruct",
             "keyVar": "NVIDIA_API_KEY",
+        },
+        "gemma": {
+            "connected": gemma_available(),
+            "model": "google/gemma-3-4b-it",
+            "keyVar": "HF_TOKEN (ZeroGPU)",
         },
     }
 
@@ -260,6 +278,32 @@ def _ask_nvidia(nuggets: list[dict], lake_ctx: str) -> dict[int, str]:
 
 
 # ---------------------------------------------------------------------------
+# Gemma 3 ZeroGPU analysis (HF Space)
+# ---------------------------------------------------------------------------
+def _ask_gemma(lake_ctx: str) -> list[dict]:
+    """Call the AIBRUH/jimmy-gemma-analyst Space for a Gemma 3 prop nugget set."""
+    try:
+        import httpx
+        resp = httpx.post(
+            _GEMMA_SPACE_URL,
+            json={"data": [lake_ctx[:4000]]},
+            headers={"Content-Type": "application/json"},
+            timeout=90.0,  # ZeroGPU cold-start can take 60s
+        )
+        resp.raise_for_status()
+        raw = resp.json().get("data", ["[]"])[0]
+        if isinstance(raw, str):
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+            return json.loads(raw)
+        return raw if isinstance(raw, list) else []
+    except Exception as e:
+        return [{"error": f"Gemma: {str(e)[:120]}", "rank": 0}]
+
+
+# ---------------------------------------------------------------------------
 # JEV scoring of Claude's hypotheses
 # ---------------------------------------------------------------------------
 def _score_nuggets_with_jev(nuggets: list[dict]) -> list[dict]:
@@ -320,11 +364,24 @@ def _build_nuggets(today: str) -> dict:
     # Claude: strategic analysis
     claude_nuggets = _ask_claude(lake_ctx)
 
+    # Gemma: independent open-weight perspective (concurrent would be ideal but
+    # ZeroGPU cold starts are slow — run after Claude so we don't block the main path)
+    gemma_nuggets = _ask_gemma(lake_ctx)
+    gemma_ok = gemma_nuggets and not any("error" in n for n in gemma_nuggets)
+
+    # Merge Claude + Gemma before JEV scoring — tag source
+    combined: list[dict] = []
+    for n in claude_nuggets:
+        combined.append({**n, "source": "claude"})
+    for n in (gemma_nuggets if gemma_ok else []):
+        # Offset rank so Gemma doesn't collide with Claude rank numbers
+        combined.append({**n, "rank": n.get("rank", 0) + 100, "source": "gemma"})
+
     # JEV: probability scores on each claim
-    if claude_nuggets and not any("error" in n for n in claude_nuggets):
-        scored = _score_nuggets_with_jev(claude_nuggets)
+    if combined and not any("error" in n for n in combined):
+        scored = _score_nuggets_with_jev(combined)
     else:
-        scored = claude_nuggets
+        scored = combined
 
     # NVIDIA: independent validation
     nvidia_comments = _ask_nvidia(scored, lake_ctx)
@@ -359,7 +416,12 @@ def _build_nuggets(today: str) -> dict:
     return {
         "date":         today,
         "generatedAt":  datetime.now(timezone.utc).isoformat(),
-        "providers":    {"claude": claude_available(), "jev": jev.available(), "nvidia": nvidia_available()},
+        "providers":    {
+            "claude": claude_available(),
+            "jev":    jev.available(),
+            "nvidia": nvidia_available(),
+            "gemma":  gemma_ok,
+        },
         "nuggets":      final,
         "lakeSnapshot": lake_ctx[:500] + "…",
     }
@@ -402,10 +464,26 @@ def deep_dive(query: str) -> dict:
         except Exception as e:
             nvidia_response = f"[NVIDIA error: {str(e)[:100]}]"
 
+    # Gemma quick take
+    gemma_response = None
+    try:
+        lake_short = lake_ctx[:2000] + f"\n\nQUESTION: {query}\nAnswer with 5 focused nuggets on this question."
+        raw_g = _ask_gemma(lake_short)
+        if raw_g and not any("error" in n for n in raw_g):
+            gemma_response = raw_g
+    except Exception:
+        pass
+
     return {
         "query":           query,
         "timestamp":       datetime.now(timezone.utc).isoformat(),
-        "providers":       {"claude": claude_available(), "jev": jev.available(), "nvidia": nvidia_available()},
+        "providers":       {
+            "claude": claude_available(),
+            "jev":    jev.available(),
+            "nvidia": nvidia_available(),
+            "gemma":  gemma_response is not None,
+        },
         "claudeNuggets":   claude_response,
         "nvidiaResponse":  nvidia_response,
+        "gemmaResponse":   gemma_response,
     }

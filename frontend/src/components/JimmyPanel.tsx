@@ -14,6 +14,7 @@ interface AiStatus {
   claude: AiProvider;
   jev: AiProvider;
   nvidia: AiProvider;
+  gemma: AiProvider;
 }
 
 interface Nugget {
@@ -26,6 +27,7 @@ interface Nugget {
   jevProbability?: number | null;
   nvidiaNote?: string | null;
   consensusScore?: number | null;
+  source?: "claude" | "gemma";
   error?: string;
 }
 
@@ -39,6 +41,7 @@ const PROVIDER_COLOR: Record<string, string> = {
   claude: "#f08a3a",
   jev:    "#2ee6a6",
   nvidia: "#76b900",
+  gemma:  "#4f9eff",
 };
 
 function Dot({ on, color }: { on: boolean; color: string }) {
@@ -88,9 +91,19 @@ function NuggetCard({ n }: { n: Nugget }) {
     <div style={{ background: "#0e0a14", border: `1px solid ${catColor}44`, borderRadius: 10,
       padding: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: "0.12em", color: catColor,
-          border: `1px solid ${catColor}`, borderRadius: 3, padding: "2px 6px",
-          textTransform: "uppercase" }}>{n.category}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: "0.12em", color: catColor,
+            border: `1px solid ${catColor}`, borderRadius: 3, padding: "2px 6px",
+            textTransform: "uppercase" }}>{n.category}</span>
+          {n.source && (
+            <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: "0.1em",
+              color: PROVIDER_COLOR[n.source] ?? "#6e6478",
+              border: `1px solid ${PROVIDER_COLOR[n.source] ?? "#6e6478"}44`,
+              borderRadius: 3, padding: "2px 5px", textTransform: "uppercase" }}>
+              {n.source}
+            </span>
+          )}
+        </div>
         {score != null && (
           <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 13, fontWeight: 800,
             color: score >= 0.65 ? "#2ee6a6" : score >= 0.50 ? "#d9b45a" : "#ef4444" }}>
@@ -148,7 +161,7 @@ export default function JimmyPanel({ onClose }: { onClose: () => void }) {
     api.jimmyDeepDive(query).then(r => setDiveResult(r as Record<string, unknown>)).catch(e => setDiveResult({ error: String(e) })).finally(() => setDiveLoading(false));
   }
 
-  const anyConnected = status && (status.claude.connected || status.jev.connected || status.nvidia.connected);
+  const anyConnected = status && (status.claude.connected || status.jev.connected || status.nvidia.connected || status.gemma?.connected);
 
   return (
     <div style={{
@@ -177,6 +190,7 @@ export default function JimmyPanel({ onClose }: { onClose: () => void }) {
               {status?.claude.connected && <Dot on color={PROVIDER_COLOR.claude} />}
               {status?.jev.connected    && <Dot on color={PROVIDER_COLOR.jev} />}
               {status?.nvidia.connected && <Dot on color={PROVIDER_COLOR.nvidia} />}
+              {status?.gemma?.connected && <Dot on color={PROVIDER_COLOR.gemma} />}
             </div>
           )}
           <button onClick={onClose} style={{ background: "transparent", border: 0,
@@ -213,6 +227,7 @@ export default function JimmyPanel({ onClose }: { onClose: () => void }) {
                 <ProviderRow name="claude" p={status.claude} />
                 <ProviderRow name="jev"    p={status.jev} />
                 <ProviderRow name="nvidia" p={status.nvidia} />
+                {status.gemma && <ProviderRow name="gemma" p={status.gemma} />}
               </>
             ) : (
               <div style={{ color: "#6e6478", fontSize: 12 }}>Loading…</div>
