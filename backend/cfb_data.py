@@ -3,6 +3,15 @@ CFB data layer — thin wrapper around the CFBD API.
 
 Auth: Bearer token from CFBD_API_KEY env var.
 All calls return [] / {} / None on any error so callers degrade gracefully.
+
+Signal inventory (2026):
+  sp_ratings()       → SP+ overall/offense/defense ratings (Bill Connelly model)
+  advanced_stats()   → PPA, success rate, explosiveness, havoc, line yards
+  elo_ratings()      → Elo per team
+  talent_composite() → Recruiting talent composite
+  pregame_wp()       → Model win probability per game_id
+  current_week_lines() → Spread, total, moneylines (consensus preferred)
+  team_recent_games()  → Last-N completed game results
 """
 from __future__ import annotations
 
@@ -17,6 +26,10 @@ import json
 
 _BASE = "https://api.collegefootballdata.com"
 _TIMEOUT = 12
+
+# TTL cache for signal endpoints — avoids poisoning lru_cache with empty API failure results
+_signal_cache: dict[str, tuple[Any, float]] = {}
+_SIGNAL_TTL = 900  # 15 minutes
 
 
 def _key() -> str | None:
@@ -36,6 +49,20 @@ def _get(path: str, params: dict | None = None) -> Any:
             return json.loads(r.read())
     except Exception:
         return None
+
+
+def _get_cached(path: str, params: dict | None = None, ttl: int = _SIGNAL_TTL) -> Any:
+    """Like _get() but uses a TTL dict cache — never caches None/empty results."""
+    cache_key = path + str(sorted((params or {}).items()))
+    entry = _signal_cache.get(cache_key)
+    if entry:
+        data, expires = entry
+        if time.time() < expires:
+            return data
+    result = _get(path, params)
+    if result:  # only cache non-empty, non-None results
+        _signal_cache[cache_key] = (result, time.time() + ttl)
+    return result
 
 
 def available() -> bool:
@@ -211,4 +238,125 @@ def current_week_lines() -> dict[int, dict]:
         except (TypeError, ValueError):
             continue
 
+    return out
+
+
+# ---------------------------------------------------------------------------
+# SP+ ratings — Bill Connelly's most predictive CFB model
+# ---------------------------------------------------------------------------
+
+def sp_ratings() -> dict[str, dict]:
+    """
+    {team: {overall, offense_rank, offense_rating, defense_rank, defense_rating}}
+    SP+ overall: positive = better, scale roughly -30 to +35.
+    """
+    year = _current_season()
+    raw = _get_cached("/ratings/sp", {"year": year}) or []
+    out: dict[str, dict] = {}
+    for r in raw:
+        team = r.get("team", "")
+        if not team:
+            continue
+        off = r.get("offense") or {}
+        dfe = r.get("defense") or {}
+        out[team] = {
+            "overall":        r.get("rating"),
+            "overall_rank":   r.get("ranking"),
+            "offense_rank":   off.get("ranking"),
+            "offense_rating": off.get("rating"),
+            "defense_rank":   dfe.get("ranking"),
+            "defense_rating": dfe.get("rating"),
+            "sos":            r.get("sos"),
+        }
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Advanced stats — PPA, success rate, explosiveness, havoc
+# ---------------------------------------------------------------------------
+
+def advanced_stats() -> dict[str, dict]:
+    """
+    {team: {off_ppa, def_ppa, off_success, def_success,
+            off_explosiveness, def_explosiveness,
+            off_havoc, def_havoc, off_stuff_rate, def_stuff_rate,
+            off_line_yards, off_open_field_yards}}
+    PPA > 0 on offense = efficient; PPA < 0 on defense = holding opponents.
+    """
+    year = _current_season()
+    raw = _get_cached("/stats/season/advanced", {"year": year, "excludeGarbageTime": "true"}) or []
+    out: dict[str, dict] = {}
+    for r in raw:
+        team = r.get("team", "")
+        if not team:
+            continue
+        off = r.get("offense") or {}
+        dfe = r.get("defense") or {}
+        out[team] = {
+            "off_ppa":              off.get("ppa"),
+            "off_success":          off.get("successRate"),
+            "off_explosiveness":    off.get("explosiveness"),
+            "off_havoc":            (off.get("havoc") or {}).get("total"),
+            "off_stuff_rate":       off.get("stuffRate"),
+            "off_line_yards":       off.get("lineYards"),
+            "off_open_field_yards": off.get("openFieldYards"),
+            "def_ppa":              dfe.get("ppa"),
+            "def_success":          dfe.get("successRate"),
+            "def_explosiveness":    dfe.get("explosiveness"),
+            "def_havoc":            (dfe.get("havoc") or {}).get("total"),
+            "def_stuff_rate":       dfe.get("stuffRate"),
+        }
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Elo ratings
+# ---------------------------------------------------------------------------
+
+def elo_ratings() -> dict[str, float]:
+    """{team: elo} — 1500 = average, higher = better."""
+    year = _current_season()
+    week = current_week()
+    params: dict = {"year": year}
+    if week:
+        params["week"] = week
+    raw = _get_cached("/ratings/elo", params) or []
+    return {r["team"]: r["elo"] for r in raw if r.get("team") and r.get("elo")}
+
+
+# ---------------------------------------------------------------------------
+# Talent composite
+# ---------------------------------------------------------------------------
+
+def talent_composite() -> dict[str, float]:
+    """{team: talent_score} — composite recruiting talent (higher = better)."""
+    year = _current_season()
+    raw = _get_cached("/talent", {"year": year}) or []
+    return {r["team"]: r["talent"] for r in raw if r.get("team") and r.get("talent")}
+
+
+# ---------------------------------------------------------------------------
+# Pregame win probability (model-driven, per game_id)
+# ---------------------------------------------------------------------------
+
+def pregame_wp() -> dict[int, dict]:
+    """
+    {game_id: {home_team, away_team, home_wp, spread}}
+    Model win probability from CFBD's SP+-calibrated model.
+    """
+    year = _current_season()
+    week = current_week()
+    if week is None:
+        return {}
+    raw = _get_cached("/metrics/wp/pregame", {"year": year, "week": week, "seasonType": "regular"}) or []
+    out: dict[int, dict] = {}
+    for r in raw:
+        gid = r.get("gameId")
+        if gid:
+            out[gid] = {
+                "home_team": r.get("homeTeam", ""),
+                "away_team": r.get("awayTeam", ""),
+                "home_wp":   r.get("homeWinProbability"),
+                "spread":    r.get("spread"),
+            }
     return out
