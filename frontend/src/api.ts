@@ -89,4 +89,78 @@ export const api = {
   // ── #14 Target share + #15/#25 Grader ────────────────────────────────────
   targetShare: (team?: string) => get<{ teams: Record<string, unknown[]>; season: number }>(`/api/target-share${team ? `?team=${encodeURIComponent(team)}` : ""}`),
   graderSeasonStats: () => get<{ crazyHorse: unknown; hotDog: unknown }>("/api/grader/season-stats"),
+
+  // ── MY BOO ticket engine ──────────────────────────────────────────────────
+  myBooTickets: (orderType?: string) =>
+    get<{ tickets: MyBooTicket[] }>(`/api/myboo/tickets${orderType ? `?order_type=${orderType}` : ""}`),
+  myBooCreateTicket: (payload: Record<string, unknown>) =>
+    fetch(`${BASE}/api/myboo/tickets`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).then(r => r.json()),
+  myBooLedger: () => get<{ ledger: MyBooWeek[] }>("/api/myboo/ledger"),
+  myBooTrainingLog: () => get<MyBooTrainingLog>("/api/myboo/training-log"),
+  myBooPostMortem: () => get<MyBooPostMortem>("/api/myboo/post-mortem"),
 };
+
+export interface MyBooLeg {
+  leg_id: string;
+  ticket_id: string;
+  player_name: string;
+  team: string;
+  market: string;
+  direction: string;
+  line: string;
+  odds: string;
+  probability: string;
+  game_date: string;
+  actual_value: string;
+  pct_complete: number;
+  status: "PENDING" | "WON" | "LOST" | "PUSH";
+}
+
+export interface MyBooTicket {
+  ticket_id: string;
+  order_type: "POW" | "SIM";
+  name: string;
+  created_at: string;
+  season: string;
+  week: string;
+  status: "OPEN" | "IN_PROGRESS" | "SETTLED_WIN" | "SETTLED_LOSS" | "PUSH_VOID";
+  payout_odds: string;
+  stake_units: string;
+  result_units: string;
+  settled_at: string;
+  note: string;
+  legs: MyBooLeg[];
+}
+
+export interface MyBooWeek {
+  season: number;
+  week: number;
+  pow_tickets: number;
+  wins: number;
+  losses: number;
+  pending: number;
+  units_staked: number;
+  units_won: number;
+  hit_rate: number | null;
+  roi: number | null;
+}
+
+export interface MyBooTrainingLog {
+  summary: string;
+  hit_patterns: Array<{ market: string; direction: string; total: number; hits: number; misses: number; hit_rate: number; avg_margin: number }>;
+  failure_modes: Array<{ market: string; direction: string; total: number; hits: number; misses: number; hit_rate: number; avg_margin: number; failure_type: string }>;
+  scale_recommendations: Array<{ market: string; direction: string; recommendation: string; confidence: string; hit_rate: number; total: number }>;
+  training_payload: Record<string, { weight_adjustment: number; sample_size: number }>;
+}
+
+export interface MyBooPostMortem {
+  summary: { total_graded: number; near_misses: number; left_on_table: number; aggressive_recs_ready: number };
+  near_misses: Array<{ player: string; market: string; direction: string; line: number; actual: number; margin: number; pct_off: number; week: string; note: string }>;
+  left_on_table: Array<{ player: string; market: string; line: number; actual: number; over_by: number; pct_over: number; week: string; note: string }>;
+  aggressive_scale_recs: Array<{ player: string; market: string; games_analyzed: number; avg_pct_over_line: number; recommendation: string; confidence: string }>;
+  conservatism_note: string;
+}

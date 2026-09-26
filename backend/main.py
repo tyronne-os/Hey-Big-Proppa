@@ -35,6 +35,7 @@ import buddy_cosell as buddy_mod
 import tank01
 import sportsbook
 import grader as grader_mod
+import myboo as myboo_mod
 
 app = FastAPI(title="HEY BIG PROPPA! API")
 
@@ -547,6 +548,59 @@ def api_target_share(team: str | None = None):
     for t in result:
         result[t].sort(key=lambda r: r["shareOverall"], reverse=True)
     return {"teams": result, "season": 2026}
+
+
+@app.get("/api/myboo/tickets")
+def api_myboo_tickets(order_type: str | None = None):
+    """All MY BOO tickets (POW + SIM) with embedded legs and live progress."""
+    return {"tickets": myboo_mod.load_tickets(order_type)}
+
+
+@app.post("/api/myboo/tickets")
+def api_myboo_create_ticket(payload: dict):
+    """
+    Create a new POW or SIM parlay ticket.
+    Body: {order_type, name, legs, season, week, payout_odds, stake_units, note}
+    """
+    try:
+        ticket_id = myboo_mod.create_ticket(
+            order_type=payload.get("order_type", "SIM"),
+            name=payload.get("name", "Untitled"),
+            legs=payload.get("legs", []),
+            season=int(payload.get("season", 2026)),
+            week=int(payload.get("week", 1)),
+            payout_odds=float(payload.get("payout_odds", 0)),
+            stake_units=float(payload.get("stake_units", 1)),
+            note=payload.get("note", ""),
+        )
+        return {"ticket_id": ticket_id, "status": "created"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/myboo/ledger")
+def api_myboo_ledger():
+    """Tuesday-to-Tuesday weekly ROI ledger for all POW orders."""
+    return {"ledger": myboo_mod.weekly_ledger()}
+
+
+@app.get("/api/myboo/training-log")
+def api_myboo_training_log():
+    """
+    Jimmy the Greek training payload — hit patterns, failure modes,
+    and conservative-to-aggressive scale recommendations derived from graded picks.
+    """
+    return myboo_mod.training_log()
+
+
+@app.get("/api/myboo/post-mortem")
+def api_myboo_post_mortem():
+    """
+    Near-miss audit and money-left-on-the-table analysis.
+    Identifies structural failures vs variance and recommends aggressive scaling
+    only when data lake shows ≥72% hit rate under matching conditions.
+    """
+    return myboo_mod.post_mortem()
 
 
 @app.get("/api/hotdogs")

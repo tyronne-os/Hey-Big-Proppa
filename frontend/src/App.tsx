@@ -16,10 +16,11 @@ import NewsTab from "./components/NewsTab";
 import MatchupsTab from "./components/MatchupsTab";
 import JimmyPanel from "./components/JimmyPanel";
 import RampIndex from "./components/RampIndex";
+import MyBooTab from "./components/MyBooTab";
 import { api } from "./api";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
-const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "parlay", "charts", "engine", "news", "queries"] as const;
+const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "parlay", "charts", "engine", "news", "queries", "myboo"] as const;
 type ViewTab = (typeof VIEW_TABS)[number];
 
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
@@ -174,7 +175,7 @@ export default function App() {
       <Header isDark={isDark} onToggleTheme={() => setIsDark((v) => !v)} onToggleAdmin={() => setAdminOpen((v) => !v)} />
 
       <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
-        {tab !== "leaders" && tab !== "matchups" && tab !== "ramp" && (
+        {tab !== "leaders" && tab !== "matchups" && tab !== "ramp" && tab !== "myboo" && (
           <>
             <div style={{ width: `${leftPct}%`, flex: `0 0 ${leftPct}%`, display: "flex", flexDirection: "column", minWidth: 0 }}>
               <div
@@ -209,21 +210,28 @@ export default function App() {
           <div style={{ height: 8, flex: "0 0 8px" }} />
 
           <div style={{ display: "flex", gap: 6, padding: "0 20px 10px", flexWrap: "wrap", flex: "0 0 auto" }}>
-            {VIEW_TABS.map((vt) => (
-              <button
-                key={vt}
-                onClick={() => setTab(vt)}
-                style={{
-                  height: 32, padding: "0 14px", borderRadius: 999,
-                  border: `1px solid ${vt === tab ? "#c9a54e" : "var(--bp-border)"}`,
-                  background: vt === tab ? "rgba(201,165,78,0.14)" : "var(--bp-card-bg)",
-                  color: vt === tab ? "#d9b45a" : "var(--bp-fg)",
-                  fontSize: 12, fontWeight: 700, cursor: "pointer",
-                }}
-              >
-                {vt.toUpperCase()}
-              </button>
-            ))}
+            {VIEW_TABS.map((vt) => {
+              const isBoo = vt === "myboo";
+              const isActive = vt === tab;
+              return (
+                <button
+                  key={vt}
+                  onClick={() => setTab(vt)}
+                  style={{
+                    height: 32, padding: "0 14px", borderRadius: 999,
+                    border: `1px solid ${isActive ? (isBoo ? "#a78bfa" : "#c9a54e") : (isBoo ? "#3a2060" : "var(--bp-border)")}`,
+                    background: isActive
+                      ? (isBoo ? "rgba(139,92,246,0.18)" : "rgba(201,165,78,0.14)")
+                      : (isBoo ? "rgba(139,92,246,0.06)" : "var(--bp-card-bg)"),
+                    color: isActive ? (isBoo ? "#c4b5fd" : "#d9b45a") : (isBoo ? "#a78bfa" : "var(--bp-fg)"),
+                    fontSize: 12, fontWeight: isBoo ? 900 : 700, cursor: "pointer",
+                    letterSpacing: isBoo ? "0.06em" : undefined,
+                  }}
+                >
+                  {isBoo ? "MY BOO" : vt.toUpperCase()}
+                </button>
+              );
+            })}
           </div>
 
           <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px 20px", minHeight: 0 }}>
@@ -250,6 +258,7 @@ export default function App() {
             {tab === "news" && <NewsTab />}
             {tab === "matchups" && <MatchupsTab />}
             {tab === "queries" && (cleared && results.length === 0 ? <QueriesTab results={[]} /> : <QueriesTab results={results} />)}
+            {tab === "myboo" && <MyBooTab />}
           </div>
 
           <Composer
