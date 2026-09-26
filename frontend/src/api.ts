@@ -38,4 +38,15 @@ export const api = {
   matchups: () => get<{ sourceStatus: SourceStatus; games: MatchupGame[] }>("/api/matchups"),
   hotdogs: () => get<{ sourceStatus: SourceStatus; games: HotDogGame[]; backtest: HotDogBacktest }>("/api/hotdogs"),
   matchupsBacktest: () => get<{ sourceStatus: SourceStatus; rows: BacktestRow[] }>("/api/matchups/backtest"),
+
+  jimmyHunt: () => get<Record<string, unknown>>("/api/jimmy/hunt"),
+  jimmyAiStatus: () => get<Record<string, unknown>>("/api/jimmy/ai-status"),
+  jimmyNuggets: () => get<Record<string, unknown>>("/api/jimmy/nuggets"),
+  jimmyNuggetsRefresh: () => fetch(`${BASE}/api/jimmy/nuggets/refresh`, { method: "POST" }).then(r => r.json()),
+  jimmyDeepDive: (query: string) =>
+    fetch(`${BASE}/api/jimmy/deep-dive`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query }),
+    }).then(r => r.json()),
 };

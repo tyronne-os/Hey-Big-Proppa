@@ -27,6 +27,7 @@ import breakout as breakout_mod
 import hot_dog
 import jev
 import jimmy_hunt
+import intelligence
 import matchup as matchup_mod
 import pow_report
 import buddy_cosell as buddy_mod
@@ -278,6 +279,42 @@ def jimmy_hunt_refresh():
     """Force a fresh hunt run (ignores the daily cache)."""
     jimmy_hunt.invalidate_cache()
     return jimmy_hunt.hunt()
+
+
+@app.get("/api/jimmy/ai-status")
+def jimmy_ai_status():
+    """Live connection state for all three AI providers: Claude, JEV, NVIDIA."""
+    return intelligence.ai_status()
+
+
+@app.get("/api/jimmy/nuggets")
+def jimmy_nuggets():
+    """
+    Daily AI-collaboration insights: Claude finds overhyped lines + correlations,
+    JEV scores each claim as a Noul probability, NVIDIA independently validates.
+    Ranked by consensus score. Cached until midnight UTC.
+    """
+    return intelligence.nuggets()
+
+
+@app.post("/api/jimmy/nuggets/refresh")
+def jimmy_nuggets_refresh():
+    """Force a fresh nuggets run (ignores daily cache)."""
+    intelligence.invalidate_cache()
+    return intelligence.nuggets(force=True)
+
+
+@app.post("/api/jimmy/deep-dive")
+async def jimmy_deep_dive(body: dict):
+    """
+    Ad-hoc RAG query over the lake. Claude analyzes with lake context,
+    NVIDIA cross-validates, JEV scores any specific claims found.
+    Body: {"query": "Which RBs have the best spot this week?"}
+    """
+    query = (body.get("query") or "").strip()
+    if not query:
+        return {"error": "query is required"}
+    return intelligence.deep_dive(query)
 
 
 # Serves the built React app (frontend/dist, produced by the Dockerfile's node stage) for the

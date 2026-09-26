@@ -9,6 +9,7 @@ import type { CanvasNode } from "../types";
  */
 export type LakeCanvasNodeData = Pick<CanvasNode, "type" | "name" | "sub" | "chips"> & {
   onRemove?: () => void;
+  onSettings?: () => void;
 };
 
 const FRAME = {
@@ -36,15 +37,28 @@ export default function LakeCanvasNode({ data }: NodeProps<LakeCanvasNodeData>) 
         <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: "0.32em", color: "rgba(255,255,255,0.85)" }}>
           {isLake ? "LAKE" : "HARNESS"}
         </span>
-        {data.onRemove && (
-          <button
-            onClick={data.onRemove}
-            title="Remove node"
-            style={{ width: 14, height: 14, background: "transparent", border: 0, color: "rgba(255,255,255,0.6)", cursor: "pointer", padding: 0 }}
-          >
-            &times;
-          </button>
-        )}
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+          {!isLake && data.onSettings && (
+            <button
+              onClick={data.onSettings}
+              title="Intelligence panel"
+              style={{ width: 16, height: 16, background: "transparent", border: 0,
+                color: "rgba(255,255,255,0.7)", cursor: "pointer", padding: 0,
+                fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              ⚙
+            </button>
+          )}
+          {data.onRemove && (
+            <button
+              onClick={data.onRemove}
+              title="Remove node"
+              style={{ width: 14, height: 14, background: "transparent", border: 0, color: "rgba(255,255,255,0.6)", cursor: "pointer", padding: 0 }}
+            >
+              &times;
+            </button>
+          )}
+        </div>
       </div>
 
       <div

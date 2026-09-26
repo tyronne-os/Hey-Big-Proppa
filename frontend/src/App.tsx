@@ -14,6 +14,7 @@ import QueriesTab, { type QueryResult } from "./components/QueriesTab";
 import EngineTab from "./components/EngineTab";
 import NewsTab from "./components/NewsTab";
 import MatchupsTab from "./components/MatchupsTab";
+import JimmyPanel from "./components/JimmyPanel";
 import { api } from "./api";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
@@ -42,6 +43,7 @@ export default function App() {
   const [logs, setLogs] = useState<{ t: string; msg: string }[]>([{ t: now(), msg: "Canvas ready. Enter a query to begin." }]);
   const [results, setResults] = useState<QueryResult[]>([]);
   const [cleared, setCleared] = useState(false);
+  const [jimmyPanelOpen, setJimmyPanelOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
@@ -60,7 +62,10 @@ export default function App() {
         id: n.id,
         type: "canvasNode",
         position: { x: 40, y: 40 + i * 340 },
-        data: { type: n.type, name: n.name, sub: n.sub, chips: n.chips },
+        data: {
+          type: n.type, name: n.name, sub: n.sub, chips: n.chips,
+          ...(n.type === "expert" ? { onSettings: () => setJimmyPanelOpen(true) } : {}),
+        },
       }));
       setRfNodes(built);
       setRfEdges(
@@ -250,6 +255,10 @@ export default function App() {
               chartIndex={chartIndex}
               logs={logs}
             />
+          )}
+
+          {jimmyPanelOpen && (
+            <JimmyPanel onClose={() => setJimmyPanelOpen(false)} />
           )}
         </div>
       </div>
