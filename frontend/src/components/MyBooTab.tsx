@@ -75,7 +75,7 @@ function LegProgress({ leg }: { leg: MyBooLeg }) {
         <StatusBadge status={leg.status || "PENDING"} />
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--bp-muted)" }}>
-        <span>{fmt(leg.market)} {isOver ? "OVER" : "UNDER"} {line > 0 ? line : "—"}</span>
+        <span>{fmt(leg.market)} {(leg.direction || (isOver ? "over" : "under")).toUpperCase()} {line > 0 ? line : ""}</span>
         <span style={{ fontFamily: "monospace" }}>{oddsLabel(leg.odds)}</span>
       </div>
       {line > 0 && (

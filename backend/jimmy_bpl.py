@@ -19,7 +19,8 @@ price is wrong:
      independent). Ranked by ticket EV = product(P) * product(decimal) - 1.
   4. Stake.      Quarter-Kelly share of bankroll, shown per ticket.
 
-SPY BOY is the aggressive series (see spy_boy_legs). FanDuel is the only book used for prices. Every ticket is logged to MY BOO as a
+College legs (jimmy_cfb_bpl.py: FanDuel total/spread/moneyline vs the BPL team-points model) join the
+same pools. SPY BOY is the aggressive series (see spy_boy_legs). FanDuel is the only book used for prices. Every ticket is logged to MY BOO as a
 SIM order once (TAKE IT on the Big Proppa page promotes it to POW).
 
 Honest limits: the BPL was backtested for accuracy, but the lake has no
@@ -203,13 +204,17 @@ def _scored_sides() -> list[dict]:
                     out += _side_dicts(pid, r["player_name"], team, game, market, float(r["line"]), row,
                                        [("over", dec, float(r["price_american"]), 1 / dec)], True)
                 break
+
+    import jimmy_cfb_bpl
+    out += jimmy_cfb_bpl.cfb_sides(next(iter(nxt.values()))["week"] if nxt else 0)
     return out
 
 
 def _finish_leg(leg: dict, p: float) -> dict:
     ev = p * leg["decimal"] - 1
+    note = leg.pop("note", None)
     return {**leg, "probability": round(p, 4), "impliedProbability": round(1 / leg["decimal"], 4), "ev": round(ev, 4),
-            "correlationNote": (f"BPL {leg['bpl']:g} vs FanDuel {leg['line']:g} ({leg['gapPct']:+.1f}%) · "
+            "correlationNote": note or (f"BPL {leg['bpl']:g} vs FanDuel {leg['line']:g} ({leg['gapPct']:+.1f}%) · "
                                 f"hit {p:.0%} vs FanDuel implied {1 / leg['decimal']:.0%} · "
                                 f"{leg['recentHits']}/{leg['recentGames']} recent games cleared it")}
 
@@ -229,7 +234,7 @@ def candidate_legs() -> list[dict]:
     for l in _scored_sides():
         if l["alt"]:
             continue
-        leg = _finish_leg(l, l["modelP"])
+        leg = _finish_leg(dict(l), l["modelP"])
         if MIN_LEG_EV <= leg["ev"] <= MAX_LEG_EV and MIN_LEG_P <= l["modelP"] <= MAX_LEG_P:
             legs.append(leg)
     return _best_per_market(legs)
@@ -249,7 +254,7 @@ def spy_boy_legs() -> list[dict]:
         p_used = min(l["modelP"] - SPY_HAIRCUT, l["bookP"] + SPY_MAX_CREDIT)
         recent_ok = l["recentGames"] >= MIN_GAMES_THIS_SEASON and l["recentHits"] / l["recentGames"] >= SPY_MIN_RECENT
         if p_used >= SPY_MIN_P and l["bookP"] >= SPY_MIN_BOOK and recent_ok:
-            legs.append(_finish_leg(l, p_used))
+            legs.append(_finish_leg(dict(l), p_used))
     return _best_per_market(legs)
 
 
@@ -309,6 +314,7 @@ QUESTION_BOARD = {
     "live": [
         "QB pass yards over/under", "QB rush yards over", "RB rush yards over/under",
         "WR/TE receiving yards over/under", "WR/TE/RB receptions over/under",
+        "college game total over/under, spread cover, moneyline (FanDuel main lines, BPL team-points model)",
     ],
     "waiting_on_fanduel_data": [
         "QB pass TDs (only 29 lines in the lake, count model not calibrated)", "QB interceptions", "QB completions/attempts",

@@ -345,7 +345,11 @@ def _cfb_points_for(year: int) -> dict[str, dict[str, list[float]]]:
     hit = _cfb_points_cache.get(year)
     if hit and time.time() < hit[1]:
         return hit[0]
-    parsed = _cfb_team_points(cfb_data._get_cached("/games", {"year": year, "seasonType": "regular"}) or [])
+    parsed: dict = {}
+    for _ in range(2):  # CFBD sometimes fails the first cold call
+        parsed = _cfb_team_points(cfb_data._get_cached("/games", {"year": year, "seasonType": "regular"}) or [])
+        if parsed:
+            break
     if parsed:
         _cfb_points_cache[year] = (parsed, time.time() + 900)
     return parsed

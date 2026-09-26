@@ -230,6 +230,7 @@ export interface EngineLeg {
   l5: number;
   odds: number;
   photoUrl?: string | null;
+  sport?: string;
   correlationNote: string;
 }
 

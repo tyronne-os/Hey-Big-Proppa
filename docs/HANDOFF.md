@@ -462,6 +462,72 @@ statistically correct read this early in a season, not a bug).
   player name instead. Do not assume this bridge is usable until it's
   actually built.
 
+### 5.9 Jimmy, BPL mode — the new cognitive approach (built 2026-09-26)
+
+**What changed.** Jimmy used to be an LLM that hunted for picks and argued for them.
+That is paused (not deleted). Jimmy now works like a pricing desk: the lake sets its
+own line, FanDuel is only the price, and a ticket exists only where the two disagree
+by enough to beat the vig. No LLM touches a number, a leg or a ticket.
+
+```
+lake (nflverse + CFBD)  ->  BIG PROPPA LINE (backend/bpl.py)      "what should this be?"
+FanDuel (Odds API/lake) ->  price + FanDuel's own probability     "what do they charge?"
+                            backend/jimmy_bpl.py (+ jimmy_cfb_bpl.py for college)
+                            -> BPL_EDGE tickets (conservative) + SPY BOY tickets (aggressive)
+                            -> /api/parlays/engine -> Big Proppa page (EngineTab)
+                            -> log_to_myboo() -> MY BOO SIM ledger (once per ticket id)
+```
+
+**Why two series.** The first engine only certified 85%+ confidence legs, so most weeks
+there was nothing to bet. Now:
+
+| series | legs | leg rules | ticket rules |
+|---|---|---|---|
+| BPL_EDGE (safe) | 2-5 | BPL hit chance 40-75%, EV vs FanDuel price +5% to +25%, main lines only | best EV per size, quarter-Kelly stake |
+| SPY BOY (aggressive) | 3-5 | three voices agree: BPL >= 75% after a 5-pt haircut, FanDuel's own price >= 60%, cleared in >= 80% of this season's games | must pay +300 or better, stake capped at 2% |
+
+Both: one leg per game, no Out/Doubtful/Questionable, 2+ games of data, FanDuel is the only
+book (`BOOK = "fanduel"`). EV above 25% is held out as probable news the lake has not seen.
+
+**The Big Proppa Line (`backend/bpl.py`).** `BPL = baseline x opponent factor x home
+multiplier`, rounded to 0.5. Baseline is recency-weighted this season, shrunk toward last
+season. Constants are frozen in `PARAMS` and change only by rerunning
+`scripts/build_bpl_calibration.py` (NFL) or `scripts/build_bpl_cfb_calibration.py` (CFB).
+No sportsbook data and no IB multiplier feed it (IB was tested and removed: it added
+nothing to yardage once the opponent adjustment was in). Leaders tab shows it per player
+next to season average, next opponent rank, sportsbook line, diff % and L5 bars.
+
+**Leg probability.** NFL props: `bpl_residual_quantiles.csv` holds the 2024-2025 backtest
+distribution of actual/BPL; P(over L) is read off it. College: normal around the BPL
+points for each team (margin = home - away, total = sum) with sd 16.6, measured in the
+2024-2025 CFB backtest (`jimmy_cfb_bpl.SIGMA`; normal fit checked: 50.3% inside 0.67 sd).
+
+**College (`backend/jimmy_cfb_bpl.py`).** FanDuel NCAAF moneyline, spread and total for
+every game not yet started (3 Odds API credits per pull, cached 30 min, never below a
+150-credit reserve). Names are matched to CFBD by longest prefix ("Georgia Bulldogs" ->
+"Georgia"; "Miami (OH)" stays separate). Neutral sites come from CFBD. Needs 2+ FBS-vs-FBS
+games for both teams. College legs use markets `cfb_total`, `cfb_spread`, `cfb_ml` and
+flow into the same pools, so tickets can mix NFL and college legs. MY BOO records them as
+SIM tickets but has no college grader yet, so they stay PENDING until settled by hand.
+
+**Weekly operations.**
+1. Before NFL game day: `backend/.venv/bin/python scripts/refresh_fanduel_alts.py` (about 60 credits) for alternate ladders. SPY BOY needs them.
+2. After each NFL week: `scripts/check_bpl_live.py`; if the measured shortfall moves, adjust `SPY_HAIRCUT`.
+3. Watch MY BOO's SIM record. It is the only real test of the edge (see limits).
+
+**Honest limits.** The lake has no history of FanDuel prop prices, so the BPL is proven
+for accuracy, not yet for beating the book. Ticket EVs are model credit, not results. Pass
+TDs, interceptions, longest reception, kicker points, TD markets and every "AND" combo need
+data or same-game pricing the lake lacks (`QUESTION_BOARD` in `jimmy_bpl.py`). Legs come
+from FanDuel's main college line only; no alternates.
+
+**Switches.** `JIMMY_LLM_PAUSED` in `jimmy_bpl.py` (True = LLM endpoints answer "paused");
+the old correlation engine is at `/api/parlays/engine-legacy`.
+
+**Deploy gotcha.** `backend/requirements.txt` must list every third-party import. HF crashed
+on boot once because `requests` (used by `tank01.py`, `sportsbook.py`, `jimmy_cfb_bpl.py`)
+was missing. The local venv also lacks it; the dev server runs on system `python3`.
+
 ## 6. What Phase 1 still needs before it's "done" (per the user's own framing)
 
 As of this writing, the user has not yet declared Phase 1 complete. Sections

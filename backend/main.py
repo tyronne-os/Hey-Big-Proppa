@@ -311,7 +311,6 @@ def cfb_overs(date: str | None = None):
     Uses blended offense + defensive leakiness projection vs the line.
     Optional ?date=YYYY-MM-DD to filter to one day. HEURISTIC, NOT BACKTESTED.
     """
-    cfb_jimmy.cfb_big_money_overs.cache_clear()
     return {"overs": cfb_jimmy.cfb_big_money_overs(date)}
 
 
@@ -322,7 +321,6 @@ def cfb_locks(date: str | None = None):
     with favorable ML odds. These can cover AND win outright.
     Optional ?date=YYYY-MM-DD. HEURISTIC, NOT BACKTESTED.
     """
-    cfb_jimmy.cfb_lock_cover_dogs.cache_clear()
     return {"locks": cfb_jimmy.cfb_lock_cover_dogs(date)}
 
 
@@ -332,9 +330,6 @@ def cfb_big_money(date: str | None = None):
     BIG PROPPA BIG MONEY PARLAYS: DOUBLE OVER, UPSET SPECIAL, HOT DOG TRIPLE, DOG FIGHT.
     Optional ?date=YYYY-MM-DD. HEURISTIC, NOT BACKTESTED.
     """
-    cfb_jimmy.cfb_big_money_overs.cache_clear()
-    cfb_jimmy.cfb_lock_cover_dogs.cache_clear()
-    cfb_jimmy.cfb_big_money_parlays.cache_clear()
     return {"parlays": cfb_jimmy.cfb_big_money_parlays(date)}
 
 
@@ -444,9 +439,6 @@ def cfb_crazy_horse_endpoint(date: str | None = None):
       SUPER CRAZY HORSE    — Saturday + Sunday combined
     $5 wager. Optional ?date=YYYY-MM-DD. HEURISTIC, NOT BACKTESTED.
     """
-    cfb_jimmy.cfb_big_money_overs.cache_clear()
-    cfb_jimmy.cfb_lock_cover_dogs.cache_clear()
-    cfb_jimmy.cfb_crazy_horse.cache_clear()
 
     horses: list[dict] = list(cfb_jimmy.cfb_crazy_horse(date))  # CFB Saturday
 
