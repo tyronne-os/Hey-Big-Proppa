@@ -153,6 +153,8 @@ export interface PlayerPropChart {
   splits: PropSplit[];
   sourceStatus: SourceStatus;
   photoUrl: string | null;
+  position?: string;
+  bpl?: BplPlayerLine | null;
   error?: string;
 }
 
@@ -179,6 +181,7 @@ export interface BplPlayerLine {
   books: string[];
   bpl: number | null;
   diffPct: number | null;
+  parts?: { raw: number; baseline: number; oppFactor: number; homeFactor: number; oppAllowed: number } | null;
   version: string;
 }
 

@@ -279,10 +279,14 @@ def player_prop_chart(player_id: str, market_slug: str) -> dict:
     l10 = games_sorted[-10:]
     l20 = games_sorted[-20:]
 
+    import bpl
+    official = bpl.nfl_player_line(player_id, market_slug, name, team) if market_slug in bpl.NFL_MARKETS else None
     return {
         "playerId": player_id,
         "name": name,
         "team": team,
+        "position": player_dimension().get(player_id, {}).get("position", ""),
+        "bpl": official,
         "prop": PROP_LABELS.get(market_slug, market_slug),
         "marketSlug": market_slug,
         "line": line,
