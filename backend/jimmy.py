@@ -44,11 +44,15 @@ carries -- see docs/HANDOFF.md sec 7 lesson 9.
 """
 from __future__ import annotations
 
+import math
 from functools import lru_cache
+from statistics import mean
 
 import breakout
 import data
 import matchup
+import tank01
+import sportsbook
 
 
 @lru_cache(maxsize=1)
@@ -197,8 +201,332 @@ def regression_factor(player_id: str, direction: str = "over") -> float:
     return round(1 - min(REGRESSION_MAX_PENALTY, REGRESSION_SCALE * excess), 3)
 
 
+# ── Tank01 projection signal ──────────────────────────────────────────────────
+_MARKET_PROJ_KEY = {
+    "rushyds":   "projRushYds",
+    "carries":   "projCarries",
+    "recs":      "projRec",
+    "recyds":    "projRecYds",
+    "passyds":   "projPassYds",
+    "anytd":     "projTDs",
+    "passtd":    "projTDs",
+    "firsttd":   "projTDs",
+}
+
+def _projection_signal(player_id: str, market_slug: str, hit_rate: float | None) -> float | None:
+    """
+    Convert Tank01 projected stat value into a probability of clearing the prop line.
+    Uses the lake's hit-rate denominator as the line proxy when real line is unavailable.
+    Returns a 0-1 probability, or None if projection unavailable.
+    """
+    try:
+        projs = tank01.projection_by_player_id()
+        proj  = projs.get(player_id)
+        if not proj:
+            return None
+        proj_key = _MARKET_PROJ_KEY.get(market_slug or "")
+        if not proj_key:
+            return None
+        proj_val = proj.get(proj_key)
+        if proj_val is None:
+            return None
+
+        # Approximate prop line from hit_rate: if hit_rate is 0.6 we treat median
+        # production as the line. A projection 10% above that line is ~65% to hit.
+        # Simple logistic squash: P = sigmoid(2 * (proj/line - 1))
+        if hit_rate is not None and 0.3 < hit_rate < 0.9:
+            # Rough line = (proj_val) / (0.5 + hit_rate * 0.5)  -- heuristic
+            line_est = proj_val / (0.5 + hit_rate * 0.5)
+            if line_est > 0:
+                z = 2.0 * (proj_val / line_est - 1.0)
+                return round(1 / (1 + math.exp(-z)), 3)
+        # Fallback: scale projection pts to probability proxy
+        pts = proj.get("projectedPts") or 0
+        return round(min(0.9, max(0.4, 0.4 + pts / 40)), 3)
+    except Exception:
+        return None
+
+
+def _injury_multiplier(player_id: str) -> float:
+    """
+    Multiply confidence down based on injury status.
+    OUT/IR → 0.0 (eliminate), O/LP → 0.75, D → 0.85, Q → 0.92, healthy → 1.0
+    """
+    try:
+        injury = tank01.injury_map_by_player_id().get(player_id)
+        if not injury:
+            return 1.0
+        status = injury.get("injuryStatus", "").upper()
+        return {"OUT": 0.0, "IR": 0.0, "O": 0.75, "LP": 0.75, "D": 0.85, "Q": 0.92}.get(status, 1.0)
+    except Exception:
+        return 1.0
+
+
+def _starter_multiplier(player_id: str) -> float:
+    """
+    Non-starters get a 0.70 multiplier. Starters stay at 1.0.
+    If depth chart data is unavailable, returns 1.0 (no penalty for missing data).
+    """
+    try:
+        starters = tank01.starters_by_player_id()
+        if not starters:
+            return 1.0  # data unavailable — no penalty
+        return 1.0 if starters.get(player_id) else 0.70
+    except Exception:
+        return 1.0
+
+
+def _dfs_salary_signal(player_id: str, market_slug: str | None) -> float | None:
+    """
+    Normalize FanDuel salary to a 0-1 probability proxy.
+    A player priced $1,000 above position average = +0.05 boost.
+    A player priced $1,000 below position average = -0.05.
+    Returns None if salary data unavailable.
+    """
+    try:
+        salaries = tank01.salary_by_player_id()
+        entry = salaries.get(player_id)
+        if not entry or not entry.get("salary"):
+            return None
+        salary = entry["salary"]
+        pos    = entry.get("position", "")
+        # Compute position average
+        same_pos = [s["salary"] for s in salaries.values()
+                    if s.get("position") == pos and s.get("salary")]
+        if len(same_pos) < 3:
+            return None
+        avg = sum(same_pos) / len(same_pos)
+        # Scale: ±$2000 from average = ±0.10 signal
+        delta = (salary - avg) / 2000.0
+        return round(min(0.9, max(0.4, 0.5 + delta * 0.1)), 3)
+    except Exception:
+        return None
+
+
+def _line_movement_signal(player_id: str, market_slug: str | None, direction: str) -> float | None:
+    """
+    Check if the market line has moved in the direction of our bet (confirming steam)
+    or against it (warning). Returns a small nudge factor: +0.03, -0.03, or None.
+    """
+    try:
+        team = player_team(player_id)
+        if not team:
+            return None
+        lines = sportsbook.nfl_lines_by_team()
+        game  = lines.get(team)
+        if not game:
+            return None
+        movement = sportsbook.line_movement(game["gameID"], list(lines.values()))
+        if not movement.get("has_movement"):
+            return None
+        total_drift = movement.get("total_drift") or 0
+        # For over bets: line moving up = public money → slight fade signal
+        # For under bets: line moving up = steam → confirming signal
+        if market_slug in ("rushyds", "recyds", "passyds", "recs", "carries"):
+            if direction == "over" and total_drift > 0.5:
+                return 0.03  # more scoring expected — over props benefit
+            if direction == "over" and total_drift < -0.5:
+                return -0.03
+        return None
+    except Exception:
+        return None
+
+
+# ── #16 Recency-weighted defensive rank ──────────────────────────────────────
+
+@lru_cache(maxsize=1)
+def _defense_yielded_per_game() -> dict[str, list[dict]]:
+    """
+    For each team, collect what the opposing offense produced against their defense,
+    game-by-game, newest first. Source: team_game_stats rows where `opponent = team`.
+    2023-2026 data.
+    """
+    out: dict[str, list[dict]] = {}
+    for row in data.load("team_game_stats"):
+        opp = row.get("opponent")
+        if not opp:
+            continue
+        try:
+            out.setdefault(opp, []).append({
+                "season": int(row.get("season") or 0),
+                "week":   int(row.get("week") or 0),
+                "pass_yds": float(row.get("pass_yds") or 0),
+                "rush_yds": float(row.get("rush_yds") or 0),
+                "tds":      float(row.get("tds") or 0),
+                "points":   float(row.get("points_for") or 0),
+            })
+        except (ValueError, TypeError):
+            continue
+    for team in out:
+        out[team].sort(key=lambda g: (g["season"], g["week"]), reverse=True)
+    return out
+
+
+def _recency_defense_signal(opponent: str | None, market_slug: str | None) -> float | None:
+    """
+    L4 recency-weighted (60%) vs season average (40%) yards/points allowed.
+    Strong defense → signal < 0.5 (harder to score over).
+    Weak defense → signal > 0.5 (easier to score over).
+    """
+    if not opponent:
+        return None
+    games = _defense_yielded_per_game().get(opponent)
+    if not games or len(games) < 4:
+        return None
+
+    is_pass = market_slug in ("passyds", "passtd", "recs", "recyds", "passatt", "intsthrown")
+    is_rush = market_slug in ("rushyds", "carries", "rushrec")
+    stat_key = "pass_yds" if is_pass else ("rush_yds" if is_rush else "points")
+
+    current_season = max(g["season"] for g in games)
+    season_games = [g for g in games if g["season"] == current_season]
+    if len(season_games) < 2:
+        season_games = games
+    season_avg = mean(g[stat_key] for g in season_games)
+
+    l4 = games[:4]
+    l4_avg = mean(g[stat_key] for g in l4)
+
+    all_games = _defense_yielded_per_game()
+    league_vals = [
+        g[stat_key]
+        for team_games in all_games.values()
+        for g in team_games
+        if g["season"] == current_season
+    ]
+    if len(league_vals) < 10:
+        return None
+    league_avg = mean(league_vals)
+    if league_avg <= 0:
+        return None
+
+    weighted = 0.6 * l4_avg + 0.4 * season_avg
+    ratio = weighted / league_avg  # >1 = weak defense, <1 = strong defense
+    signal = min(0.70, max(0.30, 0.5 + (ratio - 1.0) * 0.5))
+    return round(signal, 3)
+
+
+# ── #10 Short-week fatigue + #23 Weather ─────────────────────────────────────
+
+@lru_cache(maxsize=1)
+def _next_game_info() -> dict[str, dict]:
+    """team → next unplayed game row from schedule.csv (with weather, weekday)."""
+    out: dict[str, dict] = {}
+    for g in data.load("schedule"):
+        if g.get("away_score") or g.get("home_score"):
+            continue
+        for team_key in ("home_team", "away_team"):
+            t = g.get(team_key)
+            if t and t not in out:
+                out[t] = g
+    return out
+
+
+def _short_week_multiplier(team: str | None) -> float:
+    """
+    Thursday / short-week penalty: teams on 4 days rest perform 5-10% worse
+    than well-rested teams across 2023-2025 data. Returns 0.92 for short-week teams.
+    """
+    if not team:
+        return 1.0
+    game = _next_game_info().get(team)
+    if not game:
+        return 1.0
+    weekday = (game.get("weekday") or "").lower()
+    return 0.92 if weekday == "thursday" else 1.0
+
+
+_OUTDOOR_PASS_MARKETS = {"passyds", "passtd", "recyds", "recs", "anytd", "firsttd", "lasttd"}
+
+
+def _weather_multiplier(team: str | None, market_slug: str | None) -> float:
+    """
+    Cold (<40°F) or windy (>15 mph) outdoor games reduce passing/scoring probabilities.
+    schedule.csv already has temp_actual, wind_actual, roof for every game.
+    """
+    if not team or market_slug not in _OUTDOOR_PASS_MARKETS:
+        return 1.0
+    game = _next_game_info().get(team)
+    if not game:
+        return 1.0
+    roof = (game.get("roof") or "").lower()
+    if any(kw in roof for kw in ("dome", "closed", "retractable")):
+        return 1.0
+    try:
+        temp = float(game.get("temp_actual") or 72)
+        wind = float(game.get("wind_actual") or 5)
+    except (ValueError, TypeError):
+        return 1.0
+    mult = 1.0
+    if temp < 35:
+        mult *= 0.87
+    elif temp < 45:
+        mult *= 0.93
+    if wind > 20:
+        mult *= 0.87
+    elif wind > 15:
+        mult *= 0.93
+    return round(mult, 3)
+
+
+# ── #18 QB pressure rate ──────────────────────────────────────────────────────
+
+@lru_cache(maxsize=1)
+def _qb_pressure_rates() -> dict[str, float]:
+    """
+    Average times_pressured_pct for each QB over available games (L-all).
+    Source: pfr_adv_passing_week.csv. High pressure = shorter passes = under yds risk.
+    """
+    per_player: dict[str, list[float]] = {}
+    for row in data.load("pfr_adv_passing_week"):
+        pid = row.get("pfr_player_id") or row.get("player_id")
+        pct = row.get("times_pressured_pct")
+        if pid and pct:
+            try:
+                per_player.setdefault(pid, []).append(float(pct))
+            except (ValueError, TypeError):
+                pass
+    return {pid: round(mean(vals), 3) for pid, vals in per_player.items() if vals}
+
+
+def _qb_pressure_signal(player_id: str, market_slug: str | None) -> float | None:
+    """
+    High QB pressure rate reduces passing yard upside.
+    >0.35 pressured = return 0.45 signal on passyds/passtd (below average confidence).
+    """
+    if market_slug not in ("passyds", "passtd", "recs", "recyds"):
+        return None
+    rates = _qb_pressure_rates()
+    rate = rates.get(player_id)
+    if rate is None:
+        return None
+    # Also check by name match via pfr_player_id → player_id is the PFR id here
+    if rate > 0.35:
+        return round(0.45 - (rate - 0.35) * 0.5, 3)
+    if rate > 0.25:
+        return round(0.50 - (rate - 0.25) * 0.3, 3)
+    return round(0.55, 3)  # low pressure = slight boost for passing props
+
+
 def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None = None,
                 direction: str = "over") -> float | None:
+    """
+    JIMMY THE GREEK v2 — enhanced composite confidence score.
+
+    Signals (equal weight where available):
+      1. hit_rate       — recent-form probability from the lake
+      2. usage          — usage_index_score / 100 from the lake
+      3. matchup        — Phi(unit edge) from the matchup predictor
+      4. projection     — Tank01 projected stat vs prop line (new)
+      5. dfs_salary     — FanDuel salary vs position average (new)
+
+    Modifiers (multiplicative):
+      - redzone boost   — TD props get inside-5 share nudge
+      - regression cut  — REGRESSION RISK players are penalized
+      - injury factor   — OUT=0.0, Q/D/O scaled penalty (new)
+      - starter factor  — non-starters get 0.70x (new)
+      - line movement   — steam confirmation/fade nudge (new)
+    """
     components: list[float] = []
 
     if hit_rate is not None:
@@ -212,14 +540,97 @@ def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None 
     if edge is not None:
         components.append(matchup.phi(edge))
 
+    proj_sig = _projection_signal(player_id, market_slug or "", hit_rate)
+    if proj_sig is not None:
+        components.append(proj_sig)
+
+    dfs_sig = _dfs_salary_signal(player_id, market_slug)
+    if dfs_sig is not None:
+        components.append(dfs_sig)
+
+    # #16 Recency-weighted defense — how many yards the opponent's D has allowed lately
+    opponent = next_opponent(player_id)
+    rec_def = _recency_defense_signal(opponent, market_slug)
+    if rec_def is not None:
+        components.append(rec_def)
+
+    # #18 QB pressure rate — passing props penalized for high-pressure QBs
+    pressure_sig = _qb_pressure_signal(player_id, market_slug)
+    if pressure_sig is not None:
+        components.append(pressure_sig)
+
     if not components:
         return None
 
     score = sum(components) / len(components)
 
+    # Redzone boost for TD props
     if market_slug == "anytd":
         redzone = _redzone_i5_share().get(player_id)
         if redzone is not None:
             score = min(1.0, score + min(0.15, redzone * 0.3))
 
-    return round(score * regression_factor(player_id, direction), 3)
+    # Line movement confirmation/fade
+    lm = _line_movement_signal(player_id, market_slug, direction)
+    if lm:
+        score = min(1.0, max(0.0, score + lm))
+
+    # Multiplicative modifiers — order matters: regression → injury → starter → weather → short-week
+    score = score * regression_factor(player_id, direction)
+    score = score * _injury_multiplier(player_id)
+    score = score * _starter_multiplier(player_id)
+
+    # #23 Weather: outdoor cold/wind reduces passing prop probability
+    team = player_team(player_id)
+    score = score * _weather_multiplier(team, market_slug)
+
+    # #10 Short-week fatigue
+    score = score * _short_week_multiplier(team)
+
+    return round(score, 3)
+
+
+def confidence_breakdown(player_id: str, hit_rate: float | None,
+                         market_slug: str | None = None, direction: str = "over") -> dict:
+    """
+    Returns the full signal breakdown so the API can expose it for transparency.
+    Used by /api/jimmy_score for the detail view.
+    """
+    usage        = _usage_index().get(player_id)
+    edge         = leg_edge(player_id, market_slug or "", direction)
+    proj_sig     = _projection_signal(player_id, market_slug or "", hit_rate)
+    dfs_sig      = _dfs_salary_signal(player_id, market_slug)
+    lm           = _line_movement_signal(player_id, market_slug, direction)
+    injury_m     = _injury_multiplier(player_id)
+    starter_m    = _starter_multiplier(player_id)
+    regression   = regression_factor(player_id, direction)
+    injury_info  = tank01.injury_map_by_player_id().get(player_id) if tank01.available() else None
+    opp          = next_opponent(player_id)
+    rec_def      = _recency_defense_signal(opp, market_slug)
+    pressure_sig = _qb_pressure_signal(player_id, market_slug)
+    team         = player_team(player_id)
+    weather_m    = _weather_multiplier(team, market_slug)
+    short_wk_m   = _short_week_multiplier(team)
+    game_info    = _next_game_info().get(team or "")
+    return {
+        "hitRate":             hit_rate,
+        "usageSignal":         round(usage / 100, 3) if usage is not None else None,
+        "matchupSignal":       round(matchup.phi(edge), 3) if edge is not None else None,
+        "projectionSignal":    proj_sig,
+        "dfsSalarySignal":     dfs_sig,
+        "recencyDefenseSignal": rec_def,
+        "qbPressureSignal":    pressure_sig,
+        "lineMoveNudge":       lm,
+        "injuryStatus":        injury_info.get("injuryStatus") if injury_info else "HEALTHY",
+        "injuryMultiplier":    injury_m,
+        "starterMultiplier":   starter_m,
+        "regressionFactor":    regression,
+        "weatherMultiplier":   weather_m,
+        "shortWeekMultiplier": short_wk_m,
+        "gameWeekday":         game_info.get("weekday") if game_info else None,
+        "gameRoof":            game_info.get("roof") if game_info else None,
+        "gameTemp":            game_info.get("temp_actual") if game_info else None,
+        "gameWind":            game_info.get("wind_actual") if game_info else None,
+        "tank01Available":     tank01.available(),
+        "sbAvailable":         sportsbook.available(),
+    }

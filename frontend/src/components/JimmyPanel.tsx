@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
+import type { CfbBigMoneyParlay, CfbCrazyHorse, CfbGame, CfbHotDog, CfbOver } from "../types";
 
-type PanelTab = "nuggets" | "dive" | "status";
+type PanelTab = "nuggets" | "dive" | "status" | "cfb";
 
 interface AiProvider {
   connected: boolean;
@@ -126,6 +127,17 @@ function NuggetCard({ n }: { n: Nugget }) {
   );
 }
 
+function calcPayout(americanOdds: number, wager: number) {
+  const dec = americanOdds > 0 ? americanOdds / 100 + 1 : 100 / (-americanOdds) + 1;
+  const profit = wager * dec - wager;
+  const fmt = (v: number) => `$${v.toFixed(2)}`;
+  return {
+    base:    fmt(wager + profit),
+    b30:     fmt(wager + profit * 1.30),
+    b50:     fmt(wager + profit * 1.50),
+  };
+}
+
 export default function JimmyPanel({ onClose }: { onClose: () => void }) {
   const [tab, setTab] = useState<PanelTab>("status");
   const [status, setStatus] = useState<AiStatus | null>(null);
@@ -136,6 +148,13 @@ export default function JimmyPanel({ onClose }: { onClose: () => void }) {
   const [diveResult, setDiveResult] = useState<Record<string, unknown> | null>(null);
   const [diveLoading, setDiveLoading] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
+  const [cfbSlate, setCfbSlate] = useState<CfbGame[] | null>(null);
+  const [cfbOvers, setCfbOvers] = useState<CfbOver[] | null>(null);
+  const [cfbLocks, setCfbLocks] = useState<CfbHotDog[] | null>(null);
+  const [cfbParlays, setCfbParlays] = useState<CfbBigMoneyParlay[] | null>(null);
+  const [cfbHorses, setCfbHorses] = useState<CfbCrazyHorse[] | null>(null);
+  const [cfbLoading, setCfbLoading] = useState(false);
+  const TODAY = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     api.jimmyAiStatus().then(s => setStatus(s as unknown as AiStatus)).catch(() => {});
@@ -152,6 +171,25 @@ export default function JimmyPanel({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     if (tab === "nuggets" && nuggets === null) loadNuggets();
+    if (tab === "cfb" && cfbSlate === null) {
+      setCfbLoading(true);
+      Promise.all([
+        api.cfbSlate(),
+        api.cfbOvers(TODAY),
+        api.cfbLocks(TODAY),
+        api.cfbBigMoney(TODAY),
+        api.cfbCrazyHorse(TODAY),
+      ])
+        .then(([s, o, l, p, h]) => {
+          setCfbSlate(s.games);
+          setCfbOvers(o.overs);
+          setCfbLocks(l.locks);
+          setCfbParlays(p.parlays);
+          setCfbHorses(h.horses);
+        })
+        .catch(() => { setCfbSlate([]); setCfbOvers([]); setCfbLocks([]); setCfbParlays([]); setCfbHorses([]); })
+        .finally(() => setCfbLoading(false));
+    }
   }, [tab]);
 
   function runDive() {
@@ -200,7 +238,7 @@ export default function JimmyPanel({ onClose }: { onClose: () => void }) {
 
       {/* Tabs */}
       <div style={{ display: "flex", borderBottom: "1px solid #1e1928", flexShrink: 0 }}>
-        {(["status","nuggets","dive"] as PanelTab[]).map(t => (
+        {(["status","nuggets","cfb","dive"] as PanelTab[]).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             flex: 1, padding: "8px 0", background: "transparent",
             border: 0, borderBottom: `2px solid ${tab === t ? "#c8923f" : "transparent"}`,
@@ -208,7 +246,7 @@ export default function JimmyPanel({ onClose }: { onClose: () => void }) {
             fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase",
             transition: "color 0.15s",
           }}>
-            {t === "status" ? "AI STATUS" : t === "nuggets" ? "NUGGETS" : "DEEP DIVE"}
+            {t === "status" ? "AI STATUS" : t === "nuggets" ? "NUGGETS" : t === "cfb" ? "CFB" : "DEEP DIVE"}
           </button>
         ))}
       </div>
@@ -304,6 +342,380 @@ export default function JimmyPanel({ onClose }: { onClose: () => void }) {
             {!nuggetsLoading && nuggets?.map((n, i) => (
               <NuggetCard key={i} n={n} />
             ))}
+          </div>
+        )}
+
+        {/* CFB TAB */}
+        {tab === "cfb" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: "#c9a54e" }}>
+                  BIG PROPPA BIG MONEY PARLAYS
+                </div>
+                <div style={{ fontSize: 8, color: "#4a4058", marginTop: 2 }}>
+                  CFB · TOP 25 ONLY · NO PLAYER PROPS · HEURISTIC NOT BACKTESTED
+                </div>
+              </div>
+              <span style={{ fontSize: 8, color: "#4a4058" }}>{TODAY}</span>
+            </div>
+
+            {cfbLoading && (
+              <div style={{ color: "#d9b45a", fontSize: 11, textAlign: "center", padding: "20px 0" }}>
+                Loading CFBD · AP rankings · over projections…
+              </div>
+            )}
+
+            {!cfbLoading && !cfbParlays?.length && (
+              <div style={{ color: "#6e6478", fontSize: 11, textAlign: "center", padding: "20px 0" }}>
+                No games qualify today — check CFBD_API_KEY or try on a game day.
+              </div>
+            )}
+
+            {/* CRAZY HORSE mega-parlays — Thu · Sat · Sun · Full Weekend · Mon */}
+            {!cfbLoading && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#f2c94c" }}>
+                  CRAZY HORSE PARLAY OF THE WEEK · $5 TICKET
+                </div>
+                <div style={{ fontSize: 8, color: "#4a4058" }}>
+                  Every pick ≥85% confidence grouped by game day. Thu · Sat · Sun · Mon · Full Weekend.
+                </div>
+                {(["CRAZY HORSE THURSDAY", "CRAZY HORSE SATURDAY", "CRAZY HORSE SUNDAY", "SUPER CRAZY HORSE", "CRAZY HORSE MONDAY"] as const).map((slot) => {
+                  const h = cfbHorses?.find(x => x.type === slot);
+                  const isSuper = slot === "SUPER CRAZY HORSE";
+                  const isThu = slot === "CRAZY HORSE THURSDAY";
+                  const isMon = slot === "CRAZY HORSE MONDAY";
+                  const accent = isSuper ? "#f2c94c" : isThu ? "#ff8c42" : isMon ? "#a78bfa" : "#2ee6a6";
+                  const slotLabelMap: Record<string, string> = {
+                    "CRAZY HORSE THURSDAY": "THURSDAY NIGHT",
+                    "CRAZY HORSE SATURDAY": "SATURDAY",
+                    "CRAZY HORSE SUNDAY": "SUNDAY",
+                    "SUPER CRAZY HORSE": "FULL WEEKEND",
+                    "CRAZY HORSE MONDAY": "MONDAY NIGHT",
+                  };
+                  const slotLabel = slotLabelMap[slot] ?? slot;
+
+                  // S4: compute implied probability from American odds for VALUE EDGE chip
+                  const impliedProb = (odds: number): number => {
+                    if (odds < 0) return Math.abs(odds) / (Math.abs(odds) + 100);
+                    return 100 / (odds + 100);
+                  };
+
+                  if (!h) return (
+                    <div key={slot} style={{
+                      background: "#08060f", border: "1px solid #1a1626",
+                      borderRadius: 12, padding: "12px 14px", opacity: 0.5,
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: accent }}>
+                            {slot}
+                          </div>
+                          <div style={{ fontSize: 8, color: "#3a3040", marginTop: 2 }}>
+                            {slot === "CRAZY HORSE SUNDAY" ? "Awaiting Sunday games (NFL integration)" : "No qualifying picks ≥85% confidence"}
+                          </div>
+                        </div>
+                        <div style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 20, color: "#2a2030" }}>—</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                        {["$5 WINS", "30% BOOST", "50% BOOST"].map(l => (
+                          <div key={l} style={{ flex: 1, background: "#0c0a12",
+                            border: "1px solid #1a1626", borderRadius: 6, padding: "5px 8px", textAlign: "center" }}>
+                            <div style={{ fontSize: 7, color: "#2a2030", letterSpacing: "0.08em" }}>{l}</div>
+                            <div style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--font-mono, monospace)", color: "#2a2030" }}>—</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                  return (
+                  <div key={h.type} style={{
+                    background: isSuper ? "rgba(242,201,76,0.08)" : "rgba(46,230,166,0.05)",
+                    border: `1px solid ${isSuper ? "#f2c94c66" : "#2ee6a644"}`,
+                    borderRadius: 12, padding: "12px 14px",
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                      <div>
+                        <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: accent }}>
+                          {h.type}
+                        </div>
+                        <div style={{ fontSize: 8, color: "#6e6478", marginTop: 1 }}>
+                          {h.legs.length}-leg · ${h.wager} ticket · {slotLabel}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 15, fontWeight: 800, color: accent }}>
+                          {h.parlayOdds != null ? (h.parlayOdds > 0 ? "+" : "") + h.parlayOdds : "—"}
+                        </div>
+                        <div style={{ fontSize: 8, color: "#6e6478" }}>{Math.round(h.confidence * 100)}% conf</div>
+                      </div>
+                    </div>
+                    {h.legs.map((leg, i) => {
+                      const mktImplied = impliedProb(leg.odds ?? -110);
+                      const edge = (leg.prob ?? 0) - mktImplied;
+                      const isValueEdge = edge >= 0.05;
+                      const isFadeRisk  = edge <= -0.05;
+                      return (
+                      <div key={i} style={{ marginBottom: 4 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between",
+                          fontSize: 10, fontWeight: 600, color: "#f2ecf4" }}>
+                          <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {leg.label}
+                          </span>
+                          <span style={{ fontFamily: "var(--font-mono, monospace)", flexShrink: 0, marginLeft: 8,
+                            color: leg.odds > 0 ? "#2ee6a6" : "#9a92a2" }}>
+                            {leg.odds > 0 ? "+" : ""}{leg.odds}
+                          </span>
+                        </div>
+                        {(isValueEdge || isFadeRisk) && (
+                          <div style={{ display: "flex", gap: 4, marginTop: 2 }}>
+                            {isValueEdge && (
+                              <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: "0.1em",
+                                background: "rgba(46,230,166,0.15)", color: "#2ee6a6",
+                                border: "1px solid #2ee6a644", borderRadius: 4, padding: "1px 5px" }}>
+                                VALUE EDGE +{Math.round(edge * 100)}%
+                              </span>
+                            )}
+                            {isFadeRisk && (
+                              <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: "0.1em",
+                                background: "rgba(255,80,80,0.12)", color: "#ff8080",
+                                border: "1px solid #ff808044", borderRadius: 4, padding: "1px 5px" }}>
+                                FADE RISK {Math.round(edge * 100)}%
+                              </span>
+                            )}
+                            <span style={{ fontSize: 7, color: "#4a4058" }}>
+                              Jimmy {Math.round((leg.prob ?? 0) * 100)}% vs mkt {Math.round(mktImplied * 100)}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      );
+                    })}
+                    {h.parlayOdds != null && (() => {
+                      const py = calcPayout(h.parlayOdds, h.wager);
+                      return (
+                        <div style={{ borderTop: "1px solid #1e1928", paddingTop: 8, marginTop: 4 }}>
+                          <div style={{ fontSize: 8, color: "#4a4058", marginBottom: 6 }}>{h.reasoning}</div>
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            <div style={{ flex: 1, minWidth: 80, background: "#0c0a12",
+                              border: "1px solid #1e1928", borderRadius: 6, padding: "5px 8px", textAlign: "center" }}>
+                              <div style={{ fontSize: 7, color: "#6e6478", letterSpacing: "0.08em" }}>
+                                ${h.wager} WINS
+                              </div>
+                              <div style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--font-mono, monospace)",
+                                color: accent }}>{py.base}</div>
+                            </div>
+                            <div style={{ flex: 1, minWidth: 80, background: "#100d1a",
+                              border: `1px solid ${accent}44`, borderRadius: 6, padding: "5px 8px", textAlign: "center" }}>
+                              <div style={{ fontSize: 7, color: "#6e6478", letterSpacing: "0.08em" }}>
+                                30% PROFIT BOOST
+                              </div>
+                              <div style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--font-mono, monospace)",
+                                color: accent }}>{py.b30}</div>
+                            </div>
+                            <div style={{ flex: 1, minWidth: 80, background: "#100d1a",
+                              border: `1px solid ${accent}66`, borderRadius: 6, padding: "5px 8px", textAlign: "center" }}>
+                              <div style={{ fontSize: 7, color: "#6e6478", letterSpacing: "0.08em" }}>
+                                50% PROFIT BOOST
+                              </div>
+                              <div style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--font-mono, monospace)",
+                                color: accent }}>{py.b50}</div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* BIG MONEY PARLAYS */}
+            {!cfbLoading && cfbParlays && cfbParlays.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#c9a54e" }}>
+                  HOT DOG PARLAYS
+                </div>
+                {cfbParlays.map((p) => {
+                  const isBig = p.type === "HOT DOG TRIPLE" || p.type === "DOG FIGHT";
+                  return (
+                    <div key={p.type} style={{
+                      background: isBig ? "rgba(201,165,78,0.08)" : "#0d0b14",
+                      border: `1px solid ${isBig ? "#c9a54e66" : "#2a1e36"}`,
+                      borderRadius: 12, padding: "12px 14px",
+                    }}>
+                      {/* Slip header */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                        <div>
+                          <div style={{ fontSize: 8, fontWeight: 800, letterSpacing: "0.14em", color: "#c9a54e" }}>
+                            HOT DOG
+                          </div>
+                          <div style={{ fontSize: 11, fontWeight: 800, color: "#f2ecf4", letterSpacing: "0.06em" }}>
+                            {p.tag}
+                          </div>
+                          <div style={{ fontSize: 7, color: "#6e6478", marginTop: 1 }}>{p.type}</div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ fontSize: 8, color: "#6e6478" }}>TOTAL ODDS</div>
+                          <div style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 16, fontWeight: 800,
+                            color: "#2ee6a6" }}>
+                            {p.parlayOdds > 0 ? "+" : ""}{p.parlayOdds}
+                          </div>
+                          <div style={{ fontSize: 8, color: "#6e6478" }}>{Math.round(p.confidence * 100)}% conf</div>
+                        </div>
+                      </div>
+                      {/* Legs — "TAKE..." format */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
+                        {p.legs.map((leg, i) => (
+                          <div key={i} style={{ display: "flex", justifyContent: "space-between",
+                            alignItems: "center", borderLeft: "2px solid #c9a54e44", paddingLeft: 8 }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: "#f2ecf4" }}>
+                              {leg.label}
+                            </span>
+                            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, fontWeight: 800,
+                              color: leg.odds > 0 ? "#2ee6a6" : "#9a92a2", flexShrink: 0, marginLeft: 10 }}>
+                              {leg.odds > 0 ? "+" : ""}{leg.odds}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      {(() => {
+                        const py = calcPayout(p.parlayOdds, 5);
+                        return (
+                          <div style={{ borderTop: "1px solid #1e1928", paddingTop: 8 }}>
+                            <div style={{ fontSize: 8, color: "#4a4058", marginBottom: 6, lineHeight: 1.5 }}>
+                              {p.reasoning}
+                            </div>
+                            <div style={{ display: "flex", gap: 6 }}>
+                              <div style={{ flex: 1, background: "#0c0a12",
+                                border: "1px solid #1e1928", borderRadius: 6, padding: "5px 8px", textAlign: "center" }}>
+                                <div style={{ fontSize: 7, color: "#6e6478", letterSpacing: "0.08em" }}>$5 WINS</div>
+                                <div style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--font-mono, monospace)",
+                                  color: "#2ee6a6" }}>{py.base}</div>
+                              </div>
+                              <div style={{ flex: 1, background: "#100d1a",
+                                border: "1px solid #2ee6a644", borderRadius: 6, padding: "5px 8px", textAlign: "center" }}>
+                                <div style={{ fontSize: 7, color: "#6e6478", letterSpacing: "0.08em" }}>30% BOOST</div>
+                                <div style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--font-mono, monospace)",
+                                  color: "#2ee6a6" }}>{py.b30}</div>
+                              </div>
+                              <div style={{ flex: 1, background: "#100d1a",
+                                border: "1px solid #2ee6a666", borderRadius: 6, padding: "5px 8px", textAlign: "center" }}>
+                                <div style={{ fontSize: 7, color: "#6e6478", letterSpacing: "0.08em" }}>50% BOOST</div>
+                                <div style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--font-mono, monospace)",
+                                  color: "#2ee6a6" }}>{py.b50}</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* TOP OVERS table */}
+            {!cfbLoading && cfbOvers && cfbOvers.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#f08a3a" }}>
+                  HIGHEST OVER PROBABILITY TODAY
+                </div>
+                {cfbOvers.slice(0, 6).map((o) => (
+                  <div key={o.gameId} style={{ display: "flex", justifyContent: "space-between",
+                    alignItems: "center", background: "#0c0a12", border: "1px solid #1e1928",
+                    borderRadius: 8, padding: "7px 10px" }}>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#f2ecf4" }}>
+                        {o.fav} vs {o.dog}
+                      </div>
+                      <div style={{ fontSize: 8, color: "#6e6478", fontFamily: "var(--font-mono, monospace)", marginTop: 2 }}>
+                        proj {o.projTotal} pts · off {o.offProj} · def {o.defProj}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 8 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, fontFamily: "var(--font-mono, monospace)",
+                        color: o.overProb >= 0.85 ? "#2ee6a6" : o.overProb >= 0.70 ? "#d9b45a" : "#9a92a2" }}>
+                        O/{o.totalLine}
+                      </div>
+                      <div style={{ fontSize: 9, color: "#6e6478" }}>{Math.round(o.overProb * 100)}% [{o.grade}]</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* LOCK COVER DOGS */}
+            {!cfbLoading && cfbLocks && cfbLocks.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#a084d8" }}>
+                  LOCK COVER DOGS · CAN WIN OUTRIGHT
+                </div>
+                {cfbLocks.map((l) => (
+                  <div key={l.gameId} style={{
+                    background: l.isLocked ? "rgba(160,132,216,0.08)" : "#0c0a12",
+                    border: `1px solid ${l.isLocked ? "#a084d866" : "#1e1928"}`,
+                    borderRadius: 8, padding: "8px 10px",
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: "0.1em",
+                          color: l.isLocked ? "#1a0820" : "#6e6478",
+                          background: l.isLocked ? "#a084d8" : "transparent",
+                          border: l.isLocked ? "none" : "1px solid #3a3340",
+                          borderRadius: 3, padding: "1px 5px", marginRight: 6 }}>
+                          {l.isLocked ? "LOCKED" : "LOCK"}
+                        </span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#f2ecf4" }}>
+                          {l.dog} {l.dogRank ? `(#${l.dogRank})` : "(unranked)"} vs #{l.favRank} {l.fav}
+                        </span>
+                      </div>
+                      <div style={{ textAlign: "right", fontFamily: "var(--font-mono, monospace)", flexShrink: 0, marginLeft: 8 }}>
+                        <div style={{ fontSize: 11, fontWeight: 800,
+                          color: l.legs[0]?.odds != null && l.legs[0].odds > 0 ? "#2ee6a6" : "#9a92a2" }}>
+                          {l.legs[0]?.odds != null ? (l.legs[0].odds > 0 ? "+" : "") + l.legs[0].odds : "—"}
+                        </div>
+                        <div style={{ fontSize: 8, color: "#6e6478" }}>{l.metricsWon}/3 metrics</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+                      {l.stats.map(s => (
+                        <span key={s.key} style={{ fontSize: 8,
+                          color: s.dogWins ? "#2ee6a6" : "#4a4058",
+                          fontFamily: "var(--font-mono, monospace)" }}>
+                          {s.label.split(" ")[0]} {s.dog}{s.dogWins ? "✓" : ""}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Full slate toggle */}
+            {!cfbLoading && cfbSlate && cfbSlate.length > 0 && (
+              <details style={{ background: "#08060f", border: "1px solid #1e1928", borderRadius: 8 }}>
+                <summary style={{ padding: "8px 12px", fontSize: 9, fontWeight: 800,
+                  letterSpacing: "0.1em", color: "#6e6478", cursor: "pointer" }}>
+                  FULL TOP 25 SLATE ({cfbSlate.length} GAMES)
+                </summary>
+                <div style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
+                  {cfbSlate.map((g) => (
+                    <div key={g.gameId} style={{ display: "flex", justifyContent: "space-between",
+                      fontSize: 9, color: "#9a92a2", borderBottom: "1px solid #0e0c18", paddingBottom: 3 }}>
+                      <span>#{g.favRank} {g.favorite} vs {g.dogRank ? `#${g.dogRank} ` : ""}{g.underdog}</span>
+                      <span style={{ fontFamily: "var(--font-mono, monospace)", color: "#6e6478" }}>
+                        O/{g.total} · {g.dogAts} · {g.dogMl != null ? (g.dogMl > 0 ? "+" : "") + g.dogMl + " ML" : "—"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+
           </div>
         )}
 

@@ -3,6 +3,8 @@ import { api } from "../api";
 import SmokeBadge from "./SmokeBadge";
 import type { BacktestRow, HotDogBacktest, HotDogGame, HotDogStat, MatchupGame, MatchupUnit } from "../types";
 
+type TeamLogoMap = Record<string, { team_abbr: string; color1: string; color2: string; logo_espn: string; logo_espn_dark: string }>;
+
 const UNITS: MatchupUnit[] = ["SCORING", "RED ZONE", "GROUND", "AIR", "BALL SECURITY"];
 const GREEN = "46,230,166";
 const RED = "239,68,68";
@@ -33,7 +35,21 @@ function teamHue(team: string): number {
   return h;
 }
 
-function Helmet({ team, size = 48 }: { team: string; size?: number }) {
+function Helmet({ team, size = 48, logos }: { team: string; size?: number; logos?: TeamLogoMap }) {
+  const logo = logos?.[team];
+  if (logo?.logo_espn) {
+    return (
+      <img
+        src={logo.logo_espn}
+        alt={team}
+        title={team}
+        width={size}
+        height={size}
+        style={{ objectFit: "contain", flexShrink: 0, borderRadius: 4 }}
+        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+      />
+    );
+  }
   const hue = teamHue(team);
   return (
     <div
@@ -103,7 +119,7 @@ function RecordLine({ team, record, losing, offenseRank, defenseRank }: { team: 
   );
 }
 
-function GameCard({ game, dog }: { game: MatchupGame; dog?: HotDogGame }) {
+function GameCard({ game, dog, logos }: { game: MatchupGame; dog?: HotDogGame; logos?: TeamLogoMap }) {
   const { home, away } = game;
   const confident = game.winProbability >= 0.75;
 
@@ -111,7 +127,7 @@ function GameCard({ game, dog }: { game: MatchupGame; dog?: HotDogGame }) {
     <div style={{ background: "var(--bp-card-bg)", border: `1px solid ${confident ? "#c9a54e" : "var(--bp-border)"}`, borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-          <Helmet team={away.team} />
+          <Helmet team={away.team} logos={logos} />
           <RecordLine team={away.team} record={away.record} losing={away.losing} offenseRank={away.offenseRank} defenseRank={away.defenseRank} />
           {dog?.underdog === away.team && <DogTag dog={dog} />}
         </div>
@@ -133,7 +149,7 @@ function GameCard({ game, dog }: { game: MatchupGame; dog?: HotDogGame }) {
           )}
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-          <Helmet team={home.team} />
+          <Helmet team={home.team} logos={logos} />
           <RecordLine team={home.team} record={home.record} losing={home.losing} offenseRank={home.offenseRank} defenseRank={home.defenseRank} />
           {dog?.underdog === home.team && <DogTag dog={dog} />}
         </div>
@@ -214,12 +230,51 @@ function StatPill({ label, value, note }: { label: string; value: string; note?:
   );
 }
 
+type TargetSharePlayer = {
+  playerId: string; name: string; position: string;
+  shareOverall: number; usageIndex: number; usageRole: string;
+  games: number; pctI20: number; spineMetric: string;
+};
+
+function TargetShareBar({ players, teamAbbr, color }: { players: TargetSharePlayer[]; teamAbbr: string; color: string }) {
+  const total = players.reduce((s, p) => s + p.shareOverall, 0) || 1;
+  const top5 = players.slice(0, 6);
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bp-muted)", marginBottom: 4 }}>
+        {teamAbbr} TARGET SHARE
+      </div>
+      <div style={{ display: "flex", height: 16, borderRadius: 4, overflow: "hidden", gap: 1 }}>
+        {top5.map((p, i) => {
+          const pct = p.shareOverall / total;
+          const opacity = 0.9 - i * 0.12;
+          return (
+            <div key={p.playerId} style={{ flex: pct, background: color, opacity, minWidth: 2 }}
+              title={`${p.name} (${p.position}) ${Math.round(p.shareOverall * 100)}% share`} />
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
+        {top5.map((p) => (
+          <div key={p.playerId} style={{ fontSize: 8, color: "var(--bp-fg)", display: "flex", gap: 3, alignItems: "center" }}>
+            <span style={{ fontWeight: 700 }}>{p.name.split(" ").pop()}</span>
+            <span style={{ color: "var(--bp-muted)" }}>{Math.round(p.shareOverall * 100)}%</span>
+            {p.pctI20 > 0.15 && <span style={{ color: "#f2c94c", fontSize: 7 }}>RZ</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function MatchupsTab() {
   const [games, setGames] = useState<MatchupGame[] | null>(null);
   const [error, setError] = useState(false);
   const [backtestCaption, setBacktestCaption] = useState<string | null>(null);
   const [dogs, setDogs] = useState<Record<string, HotDogGame>>({});
   const [hotDogBacktest, setHotDogBacktest] = useState<HotDogBacktest | null>(null);
+  const [logos, setLogos] = useState<TeamLogoMap>({});
+  const [targetShare, setTargetShare] = useState<Record<string, TargetSharePlayer[]>>({});
 
   useEffect(() => {
     api.matchups().then((r) => setGames(r.games)).catch(() => setError(true));
@@ -230,6 +285,8 @@ export default function MatchupsTab() {
         setHotDogBacktest(r.backtest);
       })
       .catch(() => { setDogs({}); setHotDogBacktest(null); });
+    api.teamLogos().then(setLogos).catch(() => setLogos({}));
+    api.targetShare().then((r) => setTargetShare(r.teams as Record<string, TargetSharePlayer[]>)).catch(() => setTargetShare({}));
   }, []);
 
   const week = games?.[0]?.week;
@@ -253,13 +310,34 @@ export default function MatchupsTab() {
         {games && games.length === 0 && <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>No games on the slate.</div>}
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 360px), 1fr))", gap: 12 }}>
-          {games?.map((g) => <GameCard key={g.gameId} game={g} dog={dogs[g.gameId]} />)}
+          {games?.map((g) => <GameCard key={g.gameId} game={g} dog={dogs[g.gameId]} logos={logos} />)}
         </div>
 
         <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>
           Pure lake data: TeamRankings team stats, modern era (2023+), no betting lines as inputs.
           {backtestCaption ? ` ${backtestCaption}.` : ""}
         </span>
+
+        {/* #14 Target share concentration by team */}
+        {Object.keys(targetShare).length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.14em", color: "var(--bp-muted)", marginBottom: 10 }}>
+              TARGET SHARE CONCENTRATION · 2026
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 12 }}>
+              {Object.entries(targetShare).sort(([a], [b]) => a.localeCompare(b)).map(([team, players]) => {
+                const logoEntry = logos[team];
+                const color = logoEntry?.color1 ? `#${logoEntry.color1}` : "#2ee6a6";
+                return (
+                  <div key={team} style={{ background: "var(--bp-surface)", border: "1px solid var(--bp-border)",
+                    borderRadius: 10, padding: "10px 12px" }}>
+                    <TargetShareBar players={players as TargetSharePlayer[]} teamAbbr={team} color={color} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

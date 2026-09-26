@@ -20,6 +20,7 @@ from fastapi.staticfiles import StaticFiles
 
 import data
 import jimmy
+import cfb_jimmy
 import leaders as leaders_mod
 import parlays as parlays_mod
 import parlay_engine as engine_mod
@@ -31,6 +32,9 @@ import intelligence
 import matchup as matchup_mod
 import pow_report
 import buddy_cosell as buddy_mod
+import tank01
+import sportsbook
+import grader as grader_mod
 
 app = FastAPI(title="HEY BIG PROPPA! API")
 
@@ -62,37 +66,38 @@ def api_player_props(player_id: str, market: str = "rushyds"):
 @app.get("/api/jimmy_score")
 def api_jimmy_score(player_id: str, market: str = "rushyds"):
     """
-    JIMMY THE GREEK's composite probability for one player+market, with its
-    component breakdown -- the same lake-only scoring parlays.py uses, but
-    exposed directly for transparency (see backend/jimmy.py for the method).
+    JIMMY THE GREEK v2 — composite probability with full signal breakdown.
+    Signals: hit-rate, usage, matchup edge, Tank01 projection, DFS salary.
+    Modifiers: injury gate, starter gate, regression cut, line movement.
+    HEURISTIC, NOT BACKTESTED.
     """
-    hit_rate = data.hit_rate_probability(player_id, market)
-    score = jimmy.jimmy_score(player_id, hit_rate, market_slug=market)
+    hit_rate    = data.hit_rate_probability(player_id, market)
+    score       = jimmy.jimmy_score(player_id, hit_rate, market_slug=market)
     usage_score = jimmy._usage_index().get(player_id)
-    edge = jimmy.leg_edge(player_id, market)
-    opponent = jimmy.next_opponent(player_id)
+    edge        = jimmy.leg_edge(player_id, market)
+    opponent    = jimmy.next_opponent(player_id)
+    breakdown   = jimmy.confidence_breakdown(player_id, hit_rate, market)
     name = data.player_dimension().get(player_id, {}).get("name", player_id)
     team = data.player_dimension().get(player_id, {}).get("team", "")
     jev_prob = (jev.leg_probability(player_id, name, team, market, "over", None, hit_rate,
                                      usage_score, edge, opponent) if jev.available() else None)
     return {
-        "playerId": player_id,
-        "market": market,
-        "hitRate": hit_rate,
+        "playerId":        player_id,
+        "market":          market,
+        "hitRate":         hit_rate,
         "usageIndexScore": usage_score,
-        "opponent": opponent,
-        "matchupEdge": edge,
-        "eligible": jimmy.eligible(player_id),
-        "matchupGate": jimmy.matchup_gate(player_id, market),
+        "opponent":        opponent,
+        "matchupEdge":     edge,
+        "eligible":        jimmy.eligible(player_id),
+        "matchupGate":     jimmy.matchup_gate(player_id, market),
         "regressionFactor": jimmy.regression_factor(player_id),
-        "jevAvailable": jev.available(),
-        "jevProbability": jev_prob,
-        "jimmyScore": score,
-        "method": "average of {hit-rate-vs-line, usage_index/100, Phi(matchup unit edge)}, "
-                  "+ redzone boost for TD props, x regression cut on REGRESSION RISK players; "
-                  "filtered by losing record and matchup direction -- HEURISTIC, not backtested. "
-                  "jevProbability is Jev's independent read (not blended into jimmyScore here; "
-                  "the engine blends it into final leg probabilities separately).",
+        "jevAvailable":    jev.available(),
+        "jevProbability":  jev_prob,
+        "jimmyScore":      score,
+        "breakdown":       breakdown,
+        "method":          "v2: hit-rate + usage + matchup + Tank01-projection + DFS-salary "
+                           "(equal weight); x injury/starter/regression multipliers; "
+                           "+/- line-movement nudge. HEURISTIC, NOT BACKTESTED.",
     }
 
 
@@ -193,6 +198,15 @@ def api_canvas_nodes():
                 "name": "RAMP NFL",
                 "sub": ramp_sub,
                 "chips": [],
+                "store": "lake/gold/nfl",
+            },
+            {
+                "id": "ramp-cfb",
+                "type": "lake",
+                "name": "RAMP CFB",
+                "sub": "great-lake-of-data · CFBD + TR",
+                "chips": [],
+                "store": "great-lake-of-data",
             },
             {
                 "id": "jimmy-the-greek",
@@ -215,6 +229,294 @@ def api_matchups():
 def api_matchups_backtest():
     """How the predictor did on seasons it never saw, next to always-home and the Vegas favorite."""
     return {"sourceStatus": data.chart_status("matchup_backtest"), "rows": data.load("matchup_backtest")}
+
+
+@app.get("/api/cfb/status")
+def cfb_status():
+    """CFB Jimmy connection status: CFBD key, rankings, slate size, hot dogs."""
+    return cfb_jimmy.cfb_status()
+
+
+@app.get("/api/cfb/slate")
+def cfb_slate():
+    """
+    This week's top-25 games with game-level picks.
+    Markets: moneyline, ATS, total. NO player props.
+    HEURISTIC, NOT BACKTESTED.
+    """
+    return {"games": cfb_jimmy.cfb_game_slate()}
+
+
+@app.get("/api/cfb/hot-dogs")
+def cfb_hot_dogs():
+    """
+    2-leg upset alert parlays: unranked or ranked underdog vs ranked favorite
+    where the dog has outperformed the favorite on 2+ of 3 metrics
+    over the last 3 weeks. Both legs on the same game: Dog ML + Total.
+    HEURISTIC, NOT BACKTESTED.
+    """
+    return {"parlays": cfb_jimmy.cfb_hot_dogs()}
+
+
+@app.get("/api/cfb/overs")
+def cfb_overs(date: str | None = None):
+    """
+    Games with highest probability of going OVER the total.
+    Uses blended offense + defensive leakiness projection vs the line.
+    Optional ?date=YYYY-MM-DD to filter to one day. HEURISTIC, NOT BACKTESTED.
+    """
+    cfb_jimmy.cfb_big_money_overs.cache_clear()
+    return {"overs": cfb_jimmy.cfb_big_money_overs(date)}
+
+
+@app.get("/api/cfb/locks")
+def cfb_locks(date: str | None = None):
+    """
+    Lock cover dogs: strong hot dogs within a realistic win spread,
+    with favorable ML odds. These can cover AND win outright.
+    Optional ?date=YYYY-MM-DD. HEURISTIC, NOT BACKTESTED.
+    """
+    cfb_jimmy.cfb_lock_cover_dogs.cache_clear()
+    return {"locks": cfb_jimmy.cfb_lock_cover_dogs(date)}
+
+
+@app.get("/api/cfb/big-money")
+def cfb_big_money(date: str | None = None):
+    """
+    BIG PROPPA BIG MONEY PARLAYS: DOUBLE OVER, UPSET SPECIAL, HOT DOG TRIPLE, DOG FIGHT.
+    Optional ?date=YYYY-MM-DD. HEURISTIC, NOT BACKTESTED.
+    """
+    cfb_jimmy.cfb_big_money_overs.cache_clear()
+    cfb_jimmy.cfb_lock_cover_dogs.cache_clear()
+    cfb_jimmy.cfb_big_money_parlays.cache_clear()
+    return {"parlays": cfb_jimmy.cfb_big_money_parlays(date)}
+
+
+def _build_nfl_slates() -> dict[str, list[dict]]:
+    """
+    Run the parlay engine ONCE and bucket qualifying legs by game weekday.
+    Returns {weekday_lower: [legs]} — reused by Thu/Sun/Mon horse builders.
+    """
+    from datetime import datetime, timedelta, timezone
+
+    try:
+        slips = engine_mod.run_engine()
+    except Exception:
+        return {}
+
+    # Team → weekday for upcoming games
+    team_weekday: dict[str, str] = {}
+    for g in data.load("schedule"):
+        if g.get("away_score") or g.get("home_score"):
+            continue
+        wd = (g.get("weekday") or "").lower()
+        for key in ("home_team", "away_team"):
+            t = g.get(key)
+            if t:
+                team_weekday[t] = wd
+
+    # Game times from Tank01 — fetch Sunday and Thursday dates
+    game_times: dict[str, str] = {}
+    try:
+        now = datetime.now(timezone.utc)
+        weekday_map = {"monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
+                       "friday": 4, "saturday": 5, "sunday": 6}
+        for wd_name, wd_num in weekday_map.items():
+            days_ahead = (wd_num - now.weekday()) % 7
+            target_date = now + timedelta(days=days_ahead)
+            date_str = target_date.strftime("%Y%m%d")
+            for g in tank01.get_games_for_date(date_str):
+                t = g.get("gameTime") or f"NFL {wd_name.upper()}"
+                game_times[g.get("home", "")] = t
+                game_times[g.get("away", "")] = t
+    except Exception:
+        pass
+
+    injury_map: dict[str, str] = {}
+    try:
+        for p in tank01.get_injury_list():
+            if p.get("playerID"):
+                injury_map[p["playerID"]] = p.get("injuryStatus", "")
+    except Exception:
+        pass
+
+    buckets: dict[str, list[dict]] = {}
+    seen: set = set()
+    for slip in slips:
+        for leg in slip.get("legs", []):
+            prob = leg.get("probability", 0)
+            if prob < 0.85:
+                continue
+            team = leg.get("team", "")
+            wd = team_weekday.get(team)
+            if not wd:
+                continue
+            pid = leg.get("playerId")
+            key = (pid, leg.get("market"), wd)
+            if key in seen:
+                continue
+            seen.add(key)
+
+            inj_status = injury_map.get(pid or "", "")
+            if inj_status.upper() in ("OUT", "IR"):
+                continue
+            inj_flag = f" ⚠{inj_status}" if inj_status else ""
+
+            name      = leg.get("name", "")
+            direction = (leg.get("direction") or "OVER").upper()
+            prop      = leg.get("prop", "")
+            line      = leg.get("line")
+            odds      = leg.get("odds", -110)
+            line_str  = f" {line}" if line is not None else ""
+            game_time = game_times.get(team) or f"NFL {wd.upper()}"
+            day_num   = {"thursday": 3, "monday": 0, "sunday": 6}.get(wd, 6)
+            buckets.setdefault(wd, []).append({
+                "label":    f"TAKE {name} {direction}{line_str} {prop} · {team}{inj_flag} ({game_time})",
+                "odds":     int(odds) if odds is not None else -110,
+                "bet":      "player_prop",
+                "gameDate": "",
+                "gameTime": game_time,
+                "day":      day_num,
+                "prob":     prob,
+            })
+
+    for wd in buckets:
+        buckets[wd].sort(key=lambda x: -x["prob"])
+    return buckets
+
+
+def _nfl_sunday_legs() -> list[dict]:
+    return _build_nfl_slates().get("sunday", [])
+
+
+@app.get("/api/cfb/crazy-horse")
+def cfb_crazy_horse_endpoint(date: str | None = None):
+    """
+    CRAZY HORSE mega-parlays: all ≥85% confidence picks grouped by day.
+      CRAZY HORSE SATURDAY — CFB Saturday picks
+      CRAZY HORSE SUNDAY   — NFL Sunday picks (parlay engine ≥85%)
+      SUPER CRAZY HORSE    — Saturday + Sunday combined
+    $5 wager. Optional ?date=YYYY-MM-DD. HEURISTIC, NOT BACKTESTED.
+    """
+    cfb_jimmy.cfb_big_money_overs.cache_clear()
+    cfb_jimmy.cfb_lock_cover_dogs.cache_clear()
+    cfb_jimmy.cfb_crazy_horse.cache_clear()
+
+    horses: list[dict] = list(cfb_jimmy.cfb_crazy_horse(date))  # CFB Saturday
+
+    def _combine(mls: list) -> int | None:
+        return cfb_jimmy._combine_ml(mls)
+
+    def _build_horse(horse_type: str, tag: str, legs: list[dict], reasoning: str = "") -> dict:
+        conf = 1.0
+        for l in legs:
+            conf *= l.get("prob", 0.5)
+        return {
+            "type":       horse_type,
+            "tag":        tag,
+            "legs":       legs,
+            "parlayOdds": _combine([l["odds"] for l in legs]),
+            "confidence": round(conf, 3),
+            "wager":      5,
+            "reasoning":  reasoning or f"{len(legs)}-leg sweep of ≥85% confidence picks — $5 for a big payout.",
+        }
+
+    # ── Run engine ONCE, bucket by weekday ───────────────────────────────────
+    nfl_slates = _build_nfl_slates()
+    thu_legs = nfl_slates.get("thursday", [])
+    nfl_legs = nfl_slates.get("sunday", [])
+    mon_legs = nfl_slates.get("monday", [])
+
+    if len(thu_legs) >= 2:
+        horses.append(_build_horse(
+            "CRAZY HORSE THURSDAY", "THURSDAY NIGHT SWEEP", thu_legs,
+            f"{len(thu_legs)} Thursday Night picks ≥85% confidence. Short-week fatigue already priced in.",
+        ))
+
+    if len(nfl_legs) >= 2:
+        horses.append(_build_horse("CRAZY HORSE SUNDAY", "SUNDAY SWEEP", nfl_legs))
+
+        sat_horse = next((h for h in horses if h["type"] == "CRAZY HORSE SATURDAY"), None)
+        if sat_horse:
+            super_legs = list(sat_horse["legs"]) + nfl_legs
+            horses = [h for h in horses if h["type"] != "SUPER CRAZY HORSE"]
+            h = _build_horse(
+                "SUPER CRAZY HORSE", "FULL WEEKEND SWEEP", super_legs,
+                f"All weekend: {len(sat_horse['legs'])} Saturday CFB + {len(nfl_legs)} Sunday NFL picks.",
+            )
+            horses.append(h)
+
+    if len(mon_legs) >= 2:
+        horses.append(_build_horse(
+            "CRAZY HORSE MONDAY", "MONDAY NIGHT SWEEP", mon_legs,
+            f"{len(mon_legs)} Monday Night Football picks ≥85% confidence.",
+        ))
+
+    return {"horses": horses}
+
+
+@app.get("/api/team-logos")
+def api_team_logos():
+    """Team logos (ESPN CDN), colors, and wordmarks from nflverse."""
+    rows = data.load("team_logos")
+    return {r["team_abbr"]: r for r in rows}
+
+
+# ── #15 Post-game grader + #25 Season hit-rate dashboard ─────────────────────
+
+@app.get("/api/grader/picks")
+def api_grader_picks():
+    """All CRAZY HORSE picks stored this season with their grade (HIT/MISS/PENDING)."""
+    return grader_mod.season_stats()
+
+
+@app.get("/api/grader/season-stats")
+def api_grader_season_stats():
+    """Season hit-rate summary by horse type + HOT DOG backtest 2023-2026."""
+    return {
+        "crazyHorse": grader_mod.season_stats(),
+        "hotDog":     grader_mod.hot_dog_season_stats(),
+    }
+
+
+@app.post("/api/grader/grade")
+def api_grader_grade(week: int):
+    """Grade all PENDING picks for weeks <= week-1 against actual stat results."""
+    return grader_mod.grade_pending(week)
+
+
+@app.get("/api/target-share")
+def api_target_share(team: str | None = None):
+    """
+    #14 Target share concentration for receiving corps, grouped by team.
+    Returns players sorted by share_overall descending. Source: player_usage.csv.
+    """
+    rows = data.load("player_usage")
+    result: dict[str, list[dict]] = {}
+    for row in rows:
+        pos = row.get("position", "")
+        if pos not in ("WR", "TE", "RB"):
+            continue
+        t = row.get("team", "")
+        if team and t != team:
+            continue
+        try:
+            result.setdefault(t, []).append({
+                "playerId":    row.get("player_id", ""),
+                "name":        row.get("player_name", ""),
+                "position":    pos,
+                "shareOverall": float(row.get("share_overall") or 0),
+                "usageIndex":  float(row.get("usage_index_score") or 0),
+                "usageRole":   row.get("usage_role", ""),
+                "games":       int(row.get("games") or 0),
+                "pctI20":      float(row.get("pct_i20_shrunk") or 0),
+                "spineMetric": row.get("spine_metric", "targets"),
+            })
+        except (ValueError, TypeError):
+            continue
+    for t in result:
+        result[t].sort(key=lambda r: r["shareOverall"], reverse=True)
+    return {"teams": result, "season": 2026}
 
 
 @app.get("/api/hotdogs")
@@ -315,6 +617,191 @@ async def jimmy_deep_dive(body: dict):
     if not query:
         return {"error": "query is required"}
     return intelligence.deep_dive(query)
+
+
+# ── Tank01 endpoints ─────────────────────────────────────────────────────────
+
+@app.get("/api/nfl/standings")
+def api_nfl_standings():
+    """NFL standings by division from Tank01. Falls back to {} if API unavailable."""
+    return {"standings": tank01.get_nfl_standings(), "tank01Available": tank01.available()}
+
+
+@app.get("/api/nfl/games")
+def api_nfl_games(date: str | None = None):
+    """
+    NFL games for a given date (YYYYMMDD, default today) with real kickoff times in CST.
+    Used to wire actual game times into CRAZY HORSE SUNDAY legs.
+    """
+    games = tank01.get_games_for_date(date)
+    return {"games": games, "date": date or "today", "tank01Available": tank01.available()}
+
+
+@app.get("/api/nfl/schedule")
+def api_nfl_schedule():
+    """Full weekly schedule with kickoff times in CST."""
+    return {"games": tank01.get_weekly_schedule(), "tank01Available": tank01.available()}
+
+
+@app.get("/api/nfl/injuries")
+def api_nfl_injuries():
+    """
+    Current injury list: OUT / IR / Q / D / O / LP designations.
+    Refreshed every 5 minutes. Essential for pre-game parlay validation.
+    """
+    injuries = tank01.get_injury_list()
+    return {"injuries": injuries, "count": len(injuries), "tank01Available": tank01.available()}
+
+
+@app.get("/api/nfl/inactives")
+def api_nfl_inactives(week: int | None = None):
+    """Official inactives (posted ~90 min before kickoff). Triggers SCRATCHED badge on legs."""
+    inactives = tank01.get_inactive_players(week)
+    return {"inactives": inactives, "count": len(inactives), "tank01Available": tank01.available()}
+
+
+@app.get("/api/nfl/depth-charts")
+def api_nfl_depth_charts(team: str | None = None):
+    """
+    NFL depth charts by team and position. Starters are rank=1.
+    Optional ?team=BUF to filter to one team.
+    """
+    charts = tank01.get_depth_charts(team)
+    return {"charts": charts, "tank01Available": tank01.available()}
+
+
+@app.get("/api/nfl/scoreboard")
+def api_nfl_scoreboard(date: str | None = None):
+    """Live in-game scores (refreshed every 2 min on game days)."""
+    scores = tank01.get_daily_scoreboard(date)
+    return {"games": scores, "tank01Available": tank01.available()}
+
+
+@app.get("/api/nfl/projections")
+def api_nfl_projections(week: int | None = None):
+    """Tank01 fantasy point projections — projected stats by player for the current week."""
+    projs = tank01.get_fantasy_projections(week)
+    return {"projections": projs, "count": len(projs), "tank01Available": tank01.available()}
+
+
+@app.get("/api/player/{player_id}/info")
+def api_player_info(player_id: str):
+    """
+    Player info from Tank01 including espnID for headshot URL.
+    photoUrl is the ESPN CDN headshot (96x70 px).
+    """
+    info = tank01.get_player_info(player_id)
+    return {"info": info, "tank01Available": tank01.available()}
+
+
+# ── Sportsbook / Odds API endpoints ──────────────────────────────────────────
+
+@app.get("/api/odds/nfl")
+def api_odds_nfl():
+    """
+    Live NFL lines (spread, total, ML) across major US books.
+    Consensus median price. Cached 10 min. Deducts Odds API quota per call.
+    """
+    lines = sportsbook.get_nfl_lines()
+    return {"lines": lines, "count": len(lines), "sbAvailable": sportsbook.available()}
+
+
+@app.get("/api/odds/cfb")
+def api_odds_cfb():
+    """Live CFB lines (spread, total, ML). Same structure as /api/odds/nfl."""
+    lines = sportsbook.get_cfb_lines()
+    return {"lines": lines, "count": len(lines), "sbAvailable": sportsbook.available()}
+
+
+@app.get("/api/odds/nfl/props")
+def api_odds_nfl_props(event_id: str):
+    """
+    Player prop lines for one NFL event from The Odds API.
+    event_id: the game ID returned by /api/odds/nfl.
+    """
+    props = sportsbook.get_nfl_props(event_id)
+    return {"props": props, "count": len(props), "sbAvailable": sportsbook.available()}
+
+
+@app.get("/api/odds/nfl/movement")
+def api_odds_nfl_movement():
+    """
+    Line movement for all current NFL games vs opening line.
+    Returns {gameID: {total_drift, spread_drift, has_movement}} per game.
+    """
+    lines = sportsbook.get_nfl_lines()
+    movement = {g["gameID"]: sportsbook.line_movement(g["gameID"], lines) for g in lines}
+    return {"movement": movement, "sbAvailable": sportsbook.available()}
+
+
+@app.get("/api/odds/best-line")
+def api_odds_best_line(team: str, market: str = "h2h"):
+    """
+    Best available price across all books for one team.
+    Returns: {bookmaker, price, eventID}
+    """
+    result = sportsbook.best_line(team, market)
+    return {"result": result, "sbAvailable": sportsbook.available()}
+
+
+# ── Combined pre-game intelligence for RAMP INDEX ────────────────────────────
+
+@app.get("/api/ramp/gameday")
+def api_ramp_gameday(date: str | None = None):
+    """
+    All-in-one game-day intelligence for the RAMP index page.
+    Combines: schedule, live lines, scoreboard, standings, injuries.
+    One call powers the full RAMP index view.
+    """
+    games_t01    = tank01.get_games_for_date(date)
+    scoreboard   = tank01.get_daily_scoreboard(date)
+    standings    = tank01.get_nfl_standings()
+    injuries     = tank01.get_injury_list()
+    nfl_lines    = sportsbook.get_nfl_lines()
+
+    # Merge live lines into game entries by home team name
+    lines_by_home = {g["home"]: g for g in nfl_lines}
+
+    # Build injury count per team for quick display
+    injury_count: dict[str, int] = {}
+    for p in injuries:
+        t = p.get("team", "")
+        if t:
+            injury_count[t] = injury_count.get(t, 0) + 1
+
+    # Merge scoreboard into games
+    score_by_id = {g["gameID"]: g for g in scoreboard}
+
+    enriched = []
+    for g in games_t01:
+        live    = score_by_id.get(g["gameID"], {})
+        line    = lines_by_home.get(g["home"]) or lines_by_home.get(g["away"])
+        home_inj = injury_count.get(g["home"], 0)
+        away_inj  = injury_count.get(g["away"], 0)
+        enriched.append({
+            **g,
+            "homeScore":    live.get("homeScore") or g.get("homeScore"),
+            "awayScore":    live.get("awayScore") or g.get("awayScore"),
+            "quarter":      live.get("quarter"),
+            "clock":        live.get("clock"),
+            "liveStatus":   live.get("status") or g.get("gameStatus"),
+            "totalLine":    line.get("total_line") if line else None,
+            "spread":       line.get("spread_home") if line else None,
+            "mlHome":       line.get("ml_home") if line else None,
+            "mlAway":       line.get("ml_away") if line else None,
+            "overOdds":     line.get("over_odds") if line else None,
+            "underOdds":    line.get("under_odds") if line else None,
+            "homeInjuries": home_inj,
+            "awayInjuries": away_inj,
+        })
+
+    return {
+        "games":     enriched,
+        "standings": standings,
+        "injuryCount": injury_count,
+        "tank01Available": tank01.available(),
+        "sbAvailable":     sportsbook.available(),
+    }
 
 
 # Serves the built React app (frontend/dist, produced by the Dockerfile's node stage) for the

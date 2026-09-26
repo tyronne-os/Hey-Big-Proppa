@@ -8,6 +8,7 @@ export interface CanvasNode {
   name: string;
   sub: string;
   chips?: string[];
+  store?: string;
 }
 
 export interface GameBar {
@@ -17,6 +18,123 @@ export interface GameBar {
 }
 
 export type SourceStatus = "ok" | "stale" | "empty" | "error";
+
+export interface CfbGame {
+  gameId: number;
+  week: number;
+  home: string;
+  away: string;
+  homeRank: number | null;
+  awayRank: number | null;
+  favorite: string;
+  favRank: number;
+  underdog: string;
+  dogRank: number | null;
+  spread: number;
+  dogAts: string;
+  total: number;
+  dogMl: number | null;
+  favMl: number | null;
+  provider: string;
+  markets: string[];
+}
+
+export interface CfbHotDogLeg {
+  label: string;
+  market: string;
+  team?: string;
+  odds: number | null;
+  direction?: string;
+  line?: number;
+  gameTime?: string;
+}
+
+export interface CfbHotDogStat {
+  key: string;
+  label: string;
+  dog: number;
+  fav: number;
+  dogWins: boolean;
+}
+
+export interface CfbOver {
+  gameId: number;
+  gameDate: string;
+  gameTime: string;
+  fav: string;
+  favRank: number;
+  dog: string;
+  dogRank: number | null;
+  totalLine: number;
+  projTotal: number;
+  overMargin: number;
+  overProb: number;
+  grade: "A" | "B" | "C" | "D";
+  offProj: number;
+  defProj: number;
+  favAvgScored: number;
+  dogAvgScored: number;
+  favAvgAllowed: number;
+  dogAvgAllowed: number;
+  bothOffensesHot: boolean;
+  bothDefensesLeaky: boolean;
+  dogMl: number | null;
+  spread: number;
+}
+
+export interface CfbBigMoneyLeg {
+  label: string;
+  odds: number;
+  bet: string;
+  gameTime?: string;
+}
+
+export interface CfbBigMoneyParlay {
+  type: "DOUBLE OVER" | "UPSET SPECIAL" | "HOT DOG TRIPLE" | "DOG FIGHT";
+  tag: string;
+  legs: CfbBigMoneyLeg[];
+  parlayOdds: number;
+  confidence: number;
+  reasoning: string;
+}
+
+export interface CfbCrazyHorseLeg {
+  label: string;
+  odds: number;
+  bet: string;
+  gameDate?: string;
+  gameTime?: string;
+  day?: number;
+  prob?: number;
+}
+
+export interface CfbCrazyHorse {
+  type: "CRAZY HORSE SATURDAY" | "CRAZY HORSE SUNDAY" | "SUPER CRAZY HORSE";
+  tag: string;
+  legs: CfbCrazyHorseLeg[];
+  parlayOdds: number | null;
+  confidence: number;
+  wager: number;
+  reasoning: string;
+}
+
+export interface CfbHotDog {
+  gameId: number;
+  week: number;
+  dog: string;
+  fav: string;
+  favRank: number;
+  dogRank: number | null;
+  certified: boolean;
+  isLocked?: boolean;
+  metricsWon: number;
+  stats: CfbHotDogStat[];
+  dogPerf: { avg_scored: number; avg_allowed: number; avg_margin: number; wins: number; games: number };
+  favPerf: { avg_scored: number; avg_allowed: number; avg_margin: number; wins: number; games: number };
+  legs: CfbHotDogLeg[];
+  parlayOdds: number | null;
+  type: "UPSET ALERT" | "RANKED DOG";
+}
 
 export interface PropSplit {
   label: "H2H" | "L5" | "L10" | "L20";
@@ -246,4 +364,134 @@ export interface HotDogBacktest {
   ledRate?: number | null;
   cover3Rate?: number | null;
   cover7Rate?: number | null;
+}
+
+// ── Tank01 / Sportsbook types ─────────────────────────────────────────────
+
+export interface NflGame {
+  gameID: string;
+  home: string;
+  away: string;
+  gameDate: string;
+  gameTime: string;
+  gameTimeEpoch?: number;
+  gameStatus: string;
+  homeScore?: number | null;
+  awayScore?: number | null;
+  // enriched fields from /api/ramp/gameday
+  quarter?: string | null;
+  clock?: string | null;
+  liveStatus?: string;
+  totalLine?: number | null;
+  spread?: number | null;
+  mlHome?: number | null;
+  mlAway?: number | null;
+  overOdds?: number | null;
+  underOdds?: number | null;
+  homeInjuries?: number;
+  awayInjuries?: number;
+}
+
+export interface NflStandingTeam {
+  team: string;
+  name: string;
+  city: string;
+  wins: number;
+  losses: number;
+  ties: number;
+  pct: number;
+  divW: number;
+  divL: number;
+  confW: number;
+  confL: number;
+  streak: string;
+  color1: string;
+  logo: string;
+}
+
+export interface NflInjury {
+  playerID: string;
+  espnID: string;
+  name: string;
+  team: string;
+  position: string;
+  injuryStatus: string;
+  injuryDescription: string;
+}
+
+export interface NflDepthPlayer {
+  rank: number;
+  playerID: string;
+  espnID: string;
+  name: string;
+}
+
+export interface NflDepthChart {
+  [team: string]: {
+    [position: string]: NflDepthPlayer[];
+  };
+}
+
+export interface PlayerInfo {
+  playerID: string;
+  espnID: string;
+  name: string;
+  team: string;
+  position: string;
+  photoUrl: string | null;
+  jerseyNum: string;
+  height: string;
+  weight: string;
+  college: string;
+  exp: string;
+}
+
+export interface NflLine {
+  gameID: string;
+  commence: string;
+  home: string;
+  away: string;
+  ml_home: number | null;
+  ml_away: number | null;
+  spread_home: number | null;
+  spread_home_odds: number | null;
+  spread_away: number | null;
+  spread_away_odds: number | null;
+  total_line: number | null;
+  over_odds: number | null;
+  under_odds: number | null;
+  books: string[];
+}
+
+export interface LineMovement {
+  has_movement: boolean;
+  total_open?: number | null;
+  total_current?: number | null;
+  total_drift?: number | null;
+  spread_open?: number | null;
+  spread_current?: number | null;
+  spread_drift?: number | null;
+}
+
+export interface RampGamedayResponse {
+  games: NflGame[];
+  standings: Record<string, NflStandingTeam[]>;
+  injuryCount: Record<string, number>;
+  tank01Available: boolean;
+  sbAvailable: boolean;
+}
+
+export interface JimmyBreakdown {
+  hitRate: number | null;
+  usageSignal: number | null;
+  matchupSignal: number | null;
+  projectionSignal: number | null;
+  dfsSalarySignal: number | null;
+  lineMoveNudge: number | null;
+  injuryStatus: string;
+  injuryMultiplier: number;
+  starterMultiplier: number;
+  regressionFactor: number;
+  tank01Available: boolean;
+  sbAvailable: boolean;
 }

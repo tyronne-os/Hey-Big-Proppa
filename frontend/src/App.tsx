@@ -15,10 +15,11 @@ import EngineTab from "./components/EngineTab";
 import NewsTab from "./components/NewsTab";
 import MatchupsTab from "./components/MatchupsTab";
 import JimmyPanel from "./components/JimmyPanel";
+import RampIndex from "./components/RampIndex";
 import { api } from "./api";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
-const VIEW_TABS = ["player", "leaders", "matchups", "parlay", "charts", "engine", "news", "queries"] as const;
+const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "parlay", "charts", "engine", "news", "queries"] as const;
 type ViewTab = (typeof VIEW_TABS)[number];
 
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
@@ -53,29 +54,41 @@ export default function App() {
     api.index().then(setChartIndex).catch(() => setChartIndex([]));
   }, []);
 
-  // Data-driven nodes, per HANDOFF_CLAUDE_CODE.md sec 3.3 -- no hardcoded
-  // two-node layout, sourced from the backend so future nodes need no
-  // frontend code change.
+  // Data-driven nodes — fan-in topology: both RAMPs feed Jimmy at the bottom.
+  // NFL RAMP top-left, CFB RAMP top-right (offset right by ~Jimmy's node width
+  // to spread the converging edges), Jimmy centered below both.
   useEffect(() => {
     api.canvasNodes().then(({ nodes }) => {
+      const NODE_W = 210;
+      const positions: Record<string, { x: number; y: number }> = {
+        "ramp-nfl":        { x: 40,           y: 60  },
+        "ramp-cfb":        { x: 40 + NODE_W + NODE_W + 30, y: 60  },
+        "jimmy-the-greek": { x: 40 + NODE_W + 15, y: 390 },
+      };
+
+      // edges: every lake node feeds into every expert node
+      const lakeIds  = nodes.filter((n) => n.type === "lake").map((n) => n.id);
+      const expertIds = nodes.filter((n) => n.type === "expert").map((n) => n.id);
+      const fanEdges: Edge[] = [];
+      for (const src of lakeIds) {
+        for (const tgt of expertIds) {
+          fanEdges.push({ id: `${src}->${tgt}`, source: src, target: tgt, type: "animatedPulse" });
+        }
+      }
+
       const built = nodes.map((n, i) => ({
         id: n.id,
         type: "canvasNode",
-        position: { x: 40, y: 40 + i * 340 },
+        position: positions[n.id] ?? { x: 40, y: 40 + i * 340 },
         data: {
           type: n.type, name: n.name, sub: n.sub, chips: n.chips,
+          ...(n.store ? { store: n.store } : {}),
           ...(n.type === "expert" ? { onSettings: () => setJimmyPanelOpen(true) } : {}),
         },
       }));
+
       setRfNodes(built);
-      setRfEdges(
-        built.slice(1).map((n, i) => ({
-          id: `${built[i].id}-${n.id}`,
-          source: built[i].id,
-          target: n.id,
-          type: "animatedPulse",
-        }))
-      );
+      setRfEdges(fanEdges);
       setNextNodeCount(built.length);
     });
   }, []);
@@ -161,7 +174,7 @@ export default function App() {
       <Header isDark={isDark} onToggleTheme={() => setIsDark((v) => !v)} onToggleAdmin={() => setAdminOpen((v) => !v)} />
 
       <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
-        {tab !== "leaders" && tab !== "matchups" && (
+        {tab !== "leaders" && tab !== "matchups" && tab !== "ramp" && (
           <>
             <div style={{ width: `${leftPct}%`, flex: `0 0 ${leftPct}%`, display: "flex", flexDirection: "column", minWidth: 0 }}>
               <div
@@ -214,6 +227,7 @@ export default function App() {
           </div>
 
           <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px 20px", minHeight: 0 }}>
+            {tab === "ramp" && <RampIndex />}
             {tab === "player" && (
               <PlayerTab
                 playerId={selectedPlayerId}
