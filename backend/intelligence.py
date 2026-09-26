@@ -55,15 +55,15 @@ def nvidia_available() -> bool:
     return bool(os.environ.get("NVIDIA_API_KEY"))
 
 
-_GEMMA_SPACE_URL = "https://aibruh-jimmy-gemma-analyst.hf.space/run/predict"
+_GEMMA_LOCAL_URL = "http://127.0.0.1:8765"
 
 
 def gemma_available() -> bool:
-    """Gemma runs on HF ZeroGPU — always reachable if the Space is awake."""
+    """Gemma runs locally via Ollama on port 8765."""
     try:
         import httpx
-        r = httpx.get("https://aibruh-jimmy-gemma-analyst.hf.space", timeout=5.0)
-        return r.status_code < 500
+        r = httpx.get(f"{_GEMMA_LOCAL_URL}/health", timeout=3.0)
+        return r.status_code == 200
     except Exception:
         return False
 
@@ -89,8 +89,8 @@ def ai_status() -> dict:
         },
         "gemma": {
             "connected": gemma_available(),
-            "model": "google/gemma-3-4b-it",
-            "keyVar": "HF_TOKEN (ZeroGPU)",
+            "model": "gemma3:4b Q4 (local)",
+            "keyVar": "Ollama :8765",
         },
     }
 
@@ -281,14 +281,14 @@ def _ask_nvidia(nuggets: list[dict], lake_ctx: str) -> dict[int, str]:
 # Gemma 3 ZeroGPU analysis (HF Space)
 # ---------------------------------------------------------------------------
 def _ask_gemma(lake_ctx: str) -> list[dict]:
-    """Call the AIBRUH/jimmy-gemma-analyst Space for a Gemma 3 prop nugget set."""
+    """Call local Gemma 3 server (Ollama Q4, port 8765)."""
     try:
         import httpx
         resp = httpx.post(
-            _GEMMA_SPACE_URL,
+            f"{_GEMMA_LOCAL_URL}/predict",
             json={"data": [lake_ctx[:4000]]},
             headers={"Content-Type": "application/json"},
-            timeout=90.0,  # ZeroGPU cold-start can take 60s
+            timeout=120.0,  # CPU inference on 4B Q4 can take 60-90s
         )
         resp.raise_for_status()
         raw = resp.json().get("data", ["[]"])[0]
