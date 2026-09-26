@@ -164,6 +164,21 @@ export interface LeaderRow {
   gp: number;
   value: number;
   role?: string;
+  bpl?: BplPlayerLine;
+}
+
+export interface BplPlayerLine {
+  market: string;
+  seasonAvg: number | null;
+  l5: { week: number; opp: string; value: number }[];
+  nextOpp: string | null;
+  nextOppHome: boolean | null;
+  nextOppRank: number | null;
+  sportsbookLine: number | null;
+  books: string[];
+  bpl: number | null;
+  diffPct: number | null;
+  version: string;
 }
 
 export interface DivisionStanding {
@@ -176,6 +191,7 @@ export interface LeadersResponse {
   category: string;
   sourceStatus: SourceStatus;
   rows?: LeaderRow[];
+  bplVersion?: string | null;
   divisions?: { division: string; standings: DivisionStanding[] }[];
 }
 
@@ -220,7 +236,10 @@ export interface EngineLeg {
 export interface EngineSlip {
   id: string;
   title: string;
-  correlationType: "COACHES_SON" | "IB_CASCADE" | "VOLUME_STACK" | "SINGLE_HERO";
+  correlationType: "COACHES_SON" | "IB_CASCADE" | "VOLUME_STACK" | "SINGLE_HERO" | "BPL_EDGE";
+  hitProbability?: number;
+  expectedValue?: number;
+  kellyPct?: number;
   insight: string;
   legs: EngineLeg[];
   wager: number;

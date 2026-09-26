@@ -22,6 +22,8 @@ import data
 import jimmy
 import cfb_jimmy
 import leaders as leaders_mod
+import bpl as bpl_mod
+import jimmy_bpl
 import parlays as parlays_mod
 import parlay_engine as engine_mod
 import breakout as breakout_mod
@@ -107,6 +109,24 @@ def api_leaders(category: str = "RUSHING"):
     return leaders_mod.leaders(category)
 
 
+@app.get("/api/bpl/nfl-games")
+def api_bpl_nfl_games():
+    """BIG PROPPA LINE combined-score totals for the next unplayed NFL games."""
+    return {"version": bpl_mod.BPL_VERSION, "games": bpl_mod.nfl_game_totals()}
+
+
+@app.get("/api/bpl/nfl-player")
+def api_bpl_nfl_player(player_id: str, market: str = "rushyds"):
+    if market not in bpl_mod.NFL_MARKETS:
+        return {"error": f"market must be one of {sorted(bpl_mod.NFL_MARKETS)}"}
+    return bpl_mod.nfl_player_line(player_id, market, data.player_name(player_id))
+
+
+@app.get("/api/bpl/cfb-game")
+def api_bpl_cfb_game(home: str, away: str, neutral: bool = False):
+    return bpl_mod.cfb_game_total(home, away, neutral) or {"error": "no lake data for this matchup"}
+
+
 @app.get("/api/chart/parlays")
 def api_parlays(slip: str = "hot_dogs"):
     fn = parlays_mod.SLIPS.get(slip)
@@ -123,12 +143,31 @@ def api_parlays_all():
 @app.get("/api/parlays/engine")
 def api_parlays_engine():
     """
-    Correlation-based parlay engine: finds COACHES SON, IB CASCADE,
-    VOLUME STACK, and SINGLE HERO slips from the lake's ponds.
-    All legs carry FanDuel prices and >= 85% Jimmy probability.
-    Min 30% profit boost on combined odds (HEURISTIC, NOT BACKTESTED).
+    Jimmy BPL mode: 2-5 leg FanDuel tickets built from Big Proppa Line edges.
+    Every ticket is noted by MY BOO as a SIM order (deduplicated).
     """
-    return {"slips": engine_mod.run_engine()}
+    slips = jimmy_bpl.build_parlays()
+    jimmy_bpl.log_to_myboo(slips)
+    return {"slips": slips, "mode": "BPL", "version": bpl_mod.BPL_VERSION}
+
+
+@app.get("/api/parlays/engine-legacy")
+def api_parlays_engine_legacy():
+    """
+    PAUSED previous engine (COACHES SON, IB CASCADE, VOLUME STACK, SINGLE HERO).
+    Kept intact for comparison; not shown on the Big Proppa page.
+    """
+    return {"slips": engine_mod.run_engine(), "paused": True}
+
+
+@app.get("/api/jimmy/bpl-legs")
+def api_jimmy_bpl_legs():
+    """Every FanDuel prop that beats the Big Proppa Line by the value threshold."""
+    return {"legs": jimmy_bpl.candidate_legs(), "book": jimmy_bpl.BOOK, "minLegEv": jimmy_bpl.MIN_LEG_EV}
+
+
+_PAUSED = {"paused": True, "message": "Jimmy's LLM mode is paused. Jimmy now runs on the Big Proppa Line (see /api/parlays/engine).",
+           "questions": [], "parlays": [], "exploitParlays": [], "nuggets": []}
 
 
 @app.get("/api/chart/team_ats_heatmap")
@@ -667,12 +706,16 @@ def jimmy_hunt_endpoint():
       - exploitParlays:  same, but all legs must face a notably weak defense (defWeakness >= 0.55)
     Refreshes once per UTC calendar day; subsequent calls within the day are cached.
     """
+    if jimmy_bpl.JIMMY_LLM_PAUSED:
+        return _PAUSED
     return jimmy_hunt.hunt()
 
 
 @app.post("/api/jimmy/hunt/refresh")
 def jimmy_hunt_refresh():
     """Force a fresh hunt run (ignores the daily cache)."""
+    if jimmy_bpl.JIMMY_LLM_PAUSED:
+        return _PAUSED
     jimmy_hunt.invalidate_cache()
     return jimmy_hunt.hunt()
 
@@ -690,12 +733,16 @@ def jimmy_nuggets():
     JEV scores each claim as a Noul probability, NVIDIA independently validates.
     Ranked by consensus score. Cached until midnight UTC.
     """
+    if jimmy_bpl.JIMMY_LLM_PAUSED:
+        return _PAUSED
     return intelligence.nuggets()
 
 
 @app.post("/api/jimmy/nuggets/refresh")
 def jimmy_nuggets_refresh():
     """Force a fresh nuggets run (ignores daily cache)."""
+    if jimmy_bpl.JIMMY_LLM_PAUSED:
+        return _PAUSED
     intelligence.invalidate_cache()
     return intelligence.nuggets(force=True)
 
@@ -707,6 +754,8 @@ async def jimmy_deep_dive(body: dict):
     NVIDIA cross-validates, JEV scores any specific claims found.
     Body: {"query": "Which RBs have the best spot this week?"}
     """
+    if jimmy_bpl.JIMMY_LLM_PAUSED:
+        return {"error": _PAUSED["message"], "paused": True}
     query = (body.get("query") or "").strip()
     if not query:
         return {"error": "query is required"}

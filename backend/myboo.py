@@ -81,6 +81,10 @@ def create_ticket(
       player_name, team, market, direction, line, odds, probability, game_date
     """
     _ensure_files()
+    with open(_TICKETS_FILE, newline="") as f:
+        for t in csv.DictReader(f):
+            if (t["order_type"], t["name"], str(t["season"]), str(t["week"])) == (order_type, name, str(season), str(week)):
+                return t["ticket_id"]
     ticket_id = _next_ticket_id(order_type, week, season)
     now = datetime.now(timezone.utc).isoformat()
 

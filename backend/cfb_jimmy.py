@@ -48,6 +48,7 @@ def _to_cst(iso_str: str) -> str:
         return ""
 
 
+import bpl
 import cfb_data
 
 
@@ -520,8 +521,13 @@ def cfb_big_money_overs(date_filter: str | None = None) -> list[dict]:
 
         grade = "A" if prob >= 0.68 else "B" if prob >= 0.58 else "C" if prob >= 0.50 else "D"
 
+        official = bpl.cfb_game_total(g["home"], g["away"])
+        bpl_total = official["bpl"] if official else None
+
         out.append({
             "gameId":            g["gameId"],
+            "bplTotal":          bpl_total,
+            "bplDiffPct":        bpl.diff_pct(bpl_total, g["total"]),
             "gameDate":          g.get("startDate", ""),
             "gameTime":          g.get("gameTime", ""),
             "fav":               g["favorite"],

@@ -11,6 +11,7 @@ data, so it is not something any pond generates.
 """
 from __future__ import annotations
 
+import bpl
 import breakout
 import data
 import matchup
@@ -59,6 +60,8 @@ def _rank(totals: dict[str, dict]) -> list[dict]:
         })
     return out
 
+
+BPL_ROWS = 75
 
 CATEGORY_SOURCES = {
     "RUSHING": ("player_rushing_week", "rushing_yards"),
@@ -162,8 +165,15 @@ def leaders(category: str) -> dict:
     src, stat_col = CATEGORY_SOURCES.get(category, (None, None))
     if src is None:
         return {"category": category, "sourceStatus": "error", "rows": [], "error": "unknown category"}
+    rows = _rank(_sum_by_player(src, stat_col))
+    market = bpl.LEADER_MARKET.get(category)
+    if market:
+        rows = [r for r in rows if r["value"] > 0][:BPL_ROWS]
+        for r in rows:
+            r["bpl"] = bpl.nfl_player_line(r["playerId"], market, r["name"], r["team"])
     return {
         "category": category,
         "sourceStatus": data.chart_status(src),
-        "rows": _rank(_sum_by_player(src, stat_col)),
+        "rows": rows,
+        "bplVersion": bpl.BPL_VERSION if market else None,
     }

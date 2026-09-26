@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { LeaderRow, LeadersResponse } from "../types";
+import type { BplPlayerLine, LeaderRow, LeadersResponse } from "../types";
 
 const CATEGORIES = ["USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RECEIVING", "PASSING", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
 const SCORE_LABEL: Record<string, string> = {
@@ -22,7 +22,7 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
   }, [category]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 900 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 1100 }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 2, borderBottom: "1px solid var(--bp-border)" }}>
         {CATEGORIES.map((c) => (
           <button
@@ -68,7 +68,11 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
         </div>
       )}
 
-      {data && data.sourceStatus === "ok" && data.rows && (
+      {data && data.sourceStatus === "ok" && data.rows && data.bplVersion && (
+        <BplTable rows={data.rows} version={data.bplVersion} onOpenPlayer={onOpenPlayer} />
+      )}
+
+      {data && data.sourceStatus === "ok" && data.rows && !data.bplVersion && (
         <RowsView rows={data.rows} onOpenPlayer={onOpenPlayer} scoreLabel={SCORE_LABEL[category]} isTeam={category === "DEFENSE TOXICITY"} />
       )}
     </div>
@@ -135,5 +139,95 @@ function RowsView({ rows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: Le
         ))}
       </div>
     </>
+  );
+}
+
+const BPL_COLS = "28px minmax(150px,1.6fr) 58px 84px 58px 76px 64px minmax(110px,1fr)";
+const MONO = "var(--font-mono, monospace)";
+
+function fmt(v: number | null | undefined, digits = 1): string {
+  return v === null || v === undefined ? "—" : v.toFixed(digits).replace(/\.0$/, "");
+}
+
+function BplCell({ b }: { b: BplPlayerLine }) {
+  if (b.bpl === null) return <span style={{ textAlign: "center", color: "var(--bp-muted)", fontFamily: MONO }}>—</span>;
+  const sl = b.sportsbookLine;
+  const bg = sl === null || b.bpl === sl ? "var(--bp-border)" : b.bpl > sl ? "#15803d" : "#b91c1c";
+  return (
+    <span style={{ textAlign: "center", fontFamily: MONO, fontSize: 13, fontWeight: 800, color: "#fff", background: bg, borderRadius: 6, padding: "4px 0" }}>
+      {fmt(b.bpl)}
+    </span>
+  );
+}
+
+function L5Bars({ b }: { b: BplPlayerLine }) {
+  const games = b.l5;
+  if (!games.length) return <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>no games</span>;
+  const ref = b.bpl ?? b.sportsbookLine;
+  const max = Math.max(...games.map((g) => g.value), ref ?? 0, 1);
+  const H = 30;
+  return (
+    <span style={{ position: "relative", display: "flex", alignItems: "flex-end", gap: 3, height: H }} title={ref !== null ? `dashed line = BPL ${fmt(ref)}` : undefined}>
+      {ref !== null && (
+        <span style={{ position: "absolute", left: 0, right: 0, bottom: (ref / max) * H, borderTop: "1px dashed #d9b45a" }} />
+      )}
+      {games.map((g) => {
+        const color = ref === null ? "#64748b" : g.value > ref ? "#22c55e" : "#ef4444";
+        return (
+          <span key={g.week} title={`Wk ${g.week} vs ${g.opp}: ${g.value}`} style={{ flex: 1, maxWidth: 16, height: Math.max(2, (g.value / max) * H), background: color, borderRadius: "2px 2px 0 0" }} />
+        );
+      })}
+    </span>
+  );
+}
+
+function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version: string; onOpenPlayer: (playerId: string) => void }) {
+  const head = { fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", color: "var(--bp-muted)", textAlign: "center" as const };
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>
+        <b style={{ color: "#d9b45a" }}>BIG PROPPA LINE</b> · {version} · built from the lake only, never from a sportsbook · green = BPL above the book, red = below
+      </span>
+      <div style={{ background: "var(--bp-card-bg)", border: "1px solid var(--bp-border)", borderRadius: 14, overflowX: "auto" }}>
+        <div style={{ minWidth: 760 }}>
+          <div style={{ display: "grid", gridTemplateColumns: BPL_COLS, gap: 10, alignItems: "center", padding: "8px 14px", borderBottom: "1px solid var(--bp-border)" }}>
+            <span style={{ ...head, textAlign: "left" }}>RK</span>
+            <span style={{ ...head, textAlign: "left" }}>PLAYER</span>
+            <span style={head} title="Season average per game">SA</span>
+            <span style={head} title="Next opponent and its defense rank in this stat (1 = stingiest)">NOR</span>
+            <span style={head} title="Sportsbook line (median across books)">SL</span>
+            <span style={head}>BIG PROPPA</span>
+            <span style={head} title="(BPL - SL) / SL">DIFF</span>
+            <span style={{ ...head, textAlign: "left" }}>L5</span>
+          </div>
+          {rows.map((r) => {
+            const b = r.bpl;
+            if (!b) return null;
+            const d = b.diffPct;
+            return (
+              <div key={r.playerId} onClick={() => onOpenPlayer(r.playerId)} title="Open player research"
+                style={{ display: "grid", gridTemplateColumns: BPL_COLS, gap: 10, alignItems: "center", padding: "8px 14px", borderBottom: "1px solid var(--bp-border)", cursor: "pointer" }}>
+                <span style={{ fontFamily: MONO, fontSize: 11, color: "var(--bp-muted)" }}>{r.rank}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {r.name} <span style={{ color: "var(--bp-muted)", fontWeight: 400 }}>({r.team})</span>
+                </span>
+                <span style={{ textAlign: "center", fontFamily: MONO, fontSize: 12 }}>{fmt(b.seasonAvg)}</span>
+                <span style={{ textAlign: "center", fontFamily: MONO, fontSize: 12 }}>
+                  {b.nextOpp ? <>{b.nextOppHome ? "" : "@"}{b.nextOpp} <span style={{ color: "var(--bp-muted)" }}>#{b.nextOppRank ?? "—"}</span></> : "—"}
+                </span>
+                <span style={{ textAlign: "center", fontFamily: MONO, fontSize: 12, color: b.sportsbookLine === null ? "var(--bp-muted)" : "var(--bp-fg)" }} title={b.books.join(", ")}>
+                  {fmt(b.sportsbookLine)}
+                </span>
+                <BplCell b={b} />
+                <span style={{ textAlign: "center", fontFamily: MONO, fontSize: 12, fontWeight: 700, color: d === null ? "var(--bp-muted)" : d > 0 ? "#22c55e" : d < 0 ? "#ef4444" : "var(--bp-fg)" }}>
+                  {d === null ? "—" : `${d > 0 ? "+" : ""}${d.toFixed(1)}%`}
+                </span>
+                <L5Bars b={b} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -18,6 +18,11 @@ const TYPE_META: Record<string, { label: string; color: string; desc: string }> 
     color: "#2ee6a6",
     desc: "Same-offense positively correlated props — what goes up, goes up together",
   },
+  BPL_EDGE: {
+    label: "BPL EDGE",
+    color: "#22c55e",
+    desc: "Legs where the Big Proppa Line beats FanDuel's price · one leg per game",
+  },
   SINGLE_HERO: {
     label: "SINGLE HERO",
     color: "#a78bfa",
@@ -100,7 +105,7 @@ function TakeItFakeIt({ slip }: { slip: EngineSlip }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           order_type: orderType,
-          name: slip.title,
+          name: `${slip.title} · ${slip.id}`,
           legs,
           season: 2026,
           week,
@@ -283,7 +288,7 @@ function EngineCard({ slip }: { slip: EngineSlip }) {
   );
 }
 
-const TYPE_ORDER = ["COACHES_SON", "IB_CASCADE", "VOLUME_STACK", "SINGLE_HERO"];
+const TYPE_ORDER = ["BPL_EDGE"];
 
 function PowLine({ pow }: { pow: PowSummary | null }) {
   if (!pow) return null;
@@ -326,7 +331,7 @@ export default function EngineTab() {
           PROPPA ENGINE · CORRELATED FINDS
         </span>
         <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>
-          Lake-only · FanDuel prices · Jimmy filters: no losing teams, every leg wins its matchup · Min 30% profit boost
+          Jimmy BPL mode · Big Proppa Line vs FanDuel only · each leg must beat FanDuel's price by 5%+ · one leg per game · every ticket logged to MY BOO
         </span>
         <PowLine pow={pow} />
       </div>
@@ -354,7 +359,7 @@ export default function EngineTab() {
 
       {error && (
         <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>
-          Engine unavailable — backend may be offline or no legs cleared 85% this week.
+          Engine unavailable — backend may be offline.
         </div>
       )}
 
@@ -364,7 +369,7 @@ export default function EngineTab() {
 
       {slips && visible.length === 0 && (
         <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>
-          No {filter !== "ALL" ? filter + " " : ""}slips found this week — no legs cleared 85% probability with FanDuel prices available.
+          No {filter !== "ALL" ? filter + " " : ""}tickets this week — no FanDuel prop beat the Big Proppa Line by 5%+ in value.
         </div>
       )}
 
