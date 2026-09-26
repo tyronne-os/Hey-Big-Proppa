@@ -102,6 +102,7 @@ export const api = {
   myBooLedger: () => get<{ ledger: MyBooWeek[] }>("/api/myboo/ledger"),
   myBooTrainingLog: () => get<MyBooTrainingLog>("/api/myboo/training-log"),
   myBooPostMortem: () => get<MyBooPostMortem>("/api/myboo/post-mortem"),
+  myBooReports: (limit?: number) => get<{ reports: MyBooReport[] }>(`/api/myboo/reports${limit ? `?limit=${limit}` : ""}`),
 };
 
 export interface MyBooLeg {
@@ -155,6 +156,40 @@ export interface MyBooTrainingLog {
   failure_modes: Array<{ market: string; direction: string; total: number; hits: number; misses: number; hit_rate: number; avg_margin: number; failure_type: string }>;
   scale_recommendations: Array<{ market: string; direction: string; recommendation: string; confidence: string; hit_rate: number; total: number }>;
   training_payload: Record<string, { weight_adjustment: number; sample_size: number }>;
+}
+
+export interface MyBooPickBar {
+  line: number; actual: number; avg_l4: number; max: number;
+  line_raw: number | null; actual_raw: number | null; avg_l4_raw: number | null;
+}
+
+export interface MyBooFactor {
+  type: string; severity: "positive" | "negative" | "warning" | "info" | "neutral";
+  label: string; detail: string;
+}
+
+export interface MyBooPickDetail {
+  pick_id: string; player: string; team: string; market: string; direction: string;
+  line: number | null; odds: string; probability: number | null;
+  actual: number | null; avg_last4: number | null;
+  result: string; horse_type: string; week: string; game_date: string;
+  bar: MyBooPickBar; factors: MyBooFactor[];
+}
+
+export interface MyBooGap {
+  player_id: string; market: string; week: string;
+  actual: number; avg_last4: number; gap_pct: number; note: string;
+}
+
+export interface MyBooReport {
+  date: string; week: string;
+  total_picks: number; graded: number; hits: number; misses: number; pending: number;
+  hit_rate: number | null;
+  pow_tickets: number; sim_tickets: number;
+  pick_details: MyBooPickDetail[];
+  gaps: MyBooGap[];
+  adjustment_note: string;
+  headline: string;
 }
 
 export interface MyBooPostMortem {

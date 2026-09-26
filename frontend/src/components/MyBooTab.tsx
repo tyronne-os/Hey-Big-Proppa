@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem } from "../api";
+import type { MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem, MyBooReport, MyBooPickDetail, MyBooFactor } from "../api";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -627,6 +627,270 @@ function Section({ title, accent, children }: { title: string; accent: string; c
   );
 }
 
+// ─── daily report panel ──────────────────────────────────────────────────────
+
+const FACTOR_COLOR: Record<string, string> = {
+  positive: "#22c55e",
+  negative: "#ef4444",
+  warning:  "#eab308",
+  info:     "#a78bfa",
+  neutral:  "var(--bp-muted)",
+};
+
+const FACTOR_ICON: Record<string, string> = {
+  NEAR_MISS:      "⚠",
+  LEFT_ON_TABLE:  "💡",
+  LINE_VALUE:     "📊",
+  INJURY:         "🩹",
+  WEATHER:        "🌬",
+};
+
+function FactorChip({ f }: { f: MyBooFactor }) {
+  const [exp, setExp] = useState(false);
+  const color = FACTOR_COLOR[f.severity] ?? "var(--bp-muted)";
+  return (
+    <div
+      onClick={() => setExp(v => !v)}
+      style={{ cursor: "pointer", marginTop: 4 }}
+    >
+      <div style={{
+        display: "inline-flex", alignItems: "center", gap: 5,
+        padding: "3px 8px", borderRadius: 5,
+        background: `${color}18`, border: `1px solid ${color}44`,
+        fontSize: 10, color,
+      }}>
+        <span>{FACTOR_ICON[f.type] ?? "·"}</span>
+        <span style={{ fontWeight: 700 }}>{f.label}</span>
+        <span style={{ opacity: 0.6 }}>{exp ? "▲" : "▼"}</span>
+      </div>
+      {exp && (
+        <div style={{ fontSize: 11, color: "var(--bp-muted)", marginTop: 3, paddingLeft: 4, lineHeight: 1.5 }}>
+          {f.detail}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PickDetailRow({ pick }: { pick: MyBooPickDetail }) {
+  const [exp, setExp] = useState(false);
+  const result = pick.result;
+  const resultColor = result === "HIT" ? "#22c55e" : result === "MISS" ? "#ef4444" : "#eab308";
+  const bar = pick.bar;
+  const prob = pick.probability ? Math.round(pick.probability * 100) : null;
+  const marketLabel = fmt(pick.market);
+
+  return (
+    <div style={{ borderBottom: "1px solid var(--bp-border)", paddingBottom: 8, marginBottom: 8 }}>
+      {/* pick header row */}
+      <div
+        onClick={() => setExp(v => !v)}
+        style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", paddingTop: 6 }}
+      >
+        <div style={{
+          width: 44, textAlign: "center", flexShrink: 0,
+          fontSize: 10, fontWeight: 800, color: resultColor,
+          padding: "2px 0", borderRadius: 4,
+          background: `${resultColor}18`,
+        }}>
+          {result}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {pick.player} <span style={{ color: "var(--bp-muted)", fontWeight: 400 }}>{pick.team}</span>
+          </div>
+          <div style={{ fontSize: 10, color: "var(--bp-muted)" }}>
+            {marketLabel} {pick.direction.toUpperCase()} {pick.line ?? "—"}
+            {pick.actual !== null && pick.actual !== undefined
+              ? <span style={{ color: resultColor, marginLeft: 6 }}>→ {pick.actual}</span>
+              : null}
+          </div>
+        </div>
+        {prob !== null && (
+          <span style={{
+            fontSize: 9, fontWeight: 800, padding: "2px 5px", borderRadius: 3,
+            color: prob >= 85 ? "#22c55e" : prob >= 70 ? "#d9b45a" : "var(--bp-muted)",
+            border: `1px solid ${prob >= 85 ? "#22c55e44" : "#4a4058"}`,
+            fontFamily: "monospace",
+          }}>
+            {prob}% J
+          </span>
+        )}
+        <span style={{ fontSize: 12, color: "var(--bp-muted)", flexShrink: 0 }}>{exp ? "▲" : "▼"}</span>
+      </div>
+
+      {/* mini bar chart — always visible */}
+      {bar.max > 0 && (
+        <div style={{ display: "flex", gap: 4, alignItems: "flex-end", marginTop: 6, height: 36 }}>
+          {[
+            { pct: bar.line,   raw: bar.line_raw,   label: "LINE",   color: "#6a5acd" },
+            { pct: bar.actual, raw: bar.actual_raw, label: "ACTUAL", color: resultColor },
+            { pct: bar.avg_l4, raw: bar.avg_l4_raw, label: "L4 AVG", color: "#d9b45a" },
+          ].filter(b => b.raw !== null).map(b => (
+            <div key={b.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+              <div style={{ fontSize: 9, fontFamily: "monospace", color: b.color, marginBottom: 2 }}>{b.raw}</div>
+              <div style={{
+                width: "100%",
+                height: `${Math.min(24, Math.max(4, Math.round((b.pct / 100) * 24)))}px`,
+                background: b.color, borderRadius: "2px 2px 0 0", opacity: 0.85,
+              }} />
+              <div style={{ fontSize: 8, color: "var(--bp-muted)", marginTop: 1, letterSpacing: "0.06em" }}>{b.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* expanded: factors */}
+      {exp && pick.factors.length > 0 && (
+        <div style={{ marginTop: 6 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: "var(--bp-muted)", letterSpacing: "0.1em", marginBottom: 4 }}>AFFECTING FACTORS</div>
+          {pick.factors.map((f, i) => <FactorChip key={i} f={f} />)}
+        </div>
+      )}
+      {exp && pick.factors.length === 0 && (
+        <div style={{ fontSize: 10, color: "var(--bp-muted)", marginTop: 4 }}>No anomalous factors detected.</div>
+      )}
+    </div>
+  );
+}
+
+function ReportCard({ report, defaultOpen }: { report: MyBooReport; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen ?? false);
+  const hr = report.hit_rate;
+  const hrColor = hr === null ? "var(--bp-muted)" : hr >= 0.6 ? "#22c55e" : hr >= 0.4 ? "#eab308" : "#ef4444";
+
+  return (
+    <div style={{
+      border: "1px solid var(--bp-border)", borderRadius: 10,
+      background: "var(--bp-card-bg)", marginBottom: 10, overflow: "hidden",
+    }}>
+      {/* report header */}
+      <div
+        onClick={() => setOpen(v => !v)}
+        style={{ cursor: "pointer", padding: "10px 14px", display: "flex", flexDirection: "column", gap: 4 }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700, color: "var(--bp-muted)" }}>
+            {report.date}
+          </span>
+          {report.week && (
+            <span style={{
+              fontSize: 9, padding: "1px 6px", borderRadius: 4,
+              background: "rgba(201,165,78,0.14)", color: "#d9b45a", fontWeight: 800,
+            }}>WK {report.week}</span>
+          )}
+          <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: "var(--bp-fg)" }}>{report.headline}</span>
+          <span style={{ fontSize: 16, color: "var(--bp-muted)" }}>{open ? "▲" : "▼"}</span>
+        </div>
+
+        {/* quick stat row */}
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          {[
+            { label: "PICKS", val: report.total_picks, color: "var(--bp-fg)" },
+            { label: "HITS",  val: report.hits,         color: "#22c55e" },
+            { label: "MISS",  val: report.misses,       color: "#ef4444" },
+            { label: "HIT%",  val: hr !== null ? `${Math.round(hr * 100)}%` : "—", color: hrColor },
+            { label: "POW",   val: report.pow_tickets,  color: "#d9b45a" },
+            { label: "SIM",   val: report.sim_tickets,  color: "#a78bfa" },
+          ].map(s => (
+            <div key={s.label} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: s.color }}>{s.val}</span>
+              <span style={{ fontSize: 8, color: "var(--bp-muted)", letterSpacing: "0.1em" }}>{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {open && (
+        <div style={{ borderTop: "1px solid var(--bp-border)" }}>
+          {/* pick-by-pick */}
+          {report.pick_details.length > 0 && (
+            <div style={{ padding: "4px 14px 0" }}>
+              <div style={{ fontSize: 10, fontWeight: 800, color: "var(--bp-muted)", letterSpacing: "0.1em", padding: "8px 0 4px" }}>
+                PICK BREAKDOWN
+              </div>
+              {report.pick_details.map((p, i) => <PickDetailRow key={p.pick_id || i} pick={p} />)}
+            </div>
+          )}
+
+          {/* gap analysis */}
+          {report.gaps.length > 0 && (
+            <div style={{ padding: "0 14px 8px" }}>
+              <div style={{ fontSize: 10, fontWeight: 800, color: "#a78bfa", letterSpacing: "0.1em", padding: "8px 0 4px" }}>
+                GAP ANALYSIS — SIGNALS MISSED
+              </div>
+              {report.gaps.map((g, i) => (
+                <div key={i} style={{ fontSize: 11, padding: "4px 0", borderBottom: "1px solid var(--bp-border)", display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "var(--bp-muted)" }}>{fmt(g.market)} WK{g.week}</span>
+                  <span style={{ color: "#a78bfa", fontFamily: "monospace" }}>+{g.gap_pct}% above L4</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Jimmy adjustment note */}
+          <div style={{ margin: "0 14px 12px", padding: "8px 12px", borderRadius: 7, background: "rgba(201,165,78,0.08)", border: "1px solid #4a3010" }}>
+            <div style={{ fontSize: 9, fontWeight: 800, color: "#d9b45a", letterSpacing: "0.1em", marginBottom: 3 }}>JIMMY ADJUSTMENT NOTE</div>
+            <div style={{ fontSize: 11, color: "var(--bp-fg)", lineHeight: 1.5 }}>{report.adjustment_note}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReportsPanel() {
+  const [reports, setReports] = useState<MyBooReport[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.myBooReports(10).then(r => setReports(r.reports)).catch(() => setReports([])).finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", minWidth: 0 }}>
+      {/* panel header */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8, padding: "0 0 10px",
+        borderBottom: "1px solid var(--bp-border)", marginBottom: 12, flexShrink: 0,
+      }}>
+        <span style={{
+          fontSize: 11, fontWeight: 900, letterSpacing: "0.1em",
+          background: "linear-gradient(90deg,#a78bfa,#d9b45a)",
+          WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+        }}>
+          RECENT REPORTS
+        </span>
+        <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>— daily bet analysis</span>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+        {loading && (
+          <div style={{ color: "var(--bp-muted)", fontSize: 12, padding: "20px 0" }}>Generating reports…</div>
+        )}
+
+        {!loading && reports.length === 0 && (
+          <div style={{ padding: "20px 0", color: "var(--bp-muted)", fontSize: 12 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>No reports yet.</div>
+            <div>Reports generate automatically each day picks are logged. Log your first ticket using the ENGINE tab's TAKE IT / FAKE IT toggle, or the + NEW TICKET button above.</div>
+          </div>
+        )}
+
+        {reports.map((r, i) => (
+          <ReportCard key={r.date} report={r} defaultOpen={i === 0} />
+        ))}
+
+        {/* live data note */}
+        {!loading && reports.length > 0 && (
+          <div style={{ fontSize: 10, color: "var(--bp-muted)", padding: "8px 0", borderTop: "1px solid var(--bp-border)", lineHeight: 1.5 }}>
+            Reports pull from graded pick history in the data lake. Re-grade picks via the Season Stats grader to update outcomes. Factors (injury, weather, IB) read live lake files.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── main MY BOO component ───────────────────────────────────────────────────
 
 const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM"] as const;
@@ -657,11 +921,7 @@ export default function MyBooTab() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%" }}>
       {/* MY BOO header */}
-      <div style={{
-        padding: "16px 0 12px",
-        borderBottom: "1px solid var(--bp-border)",
-        marginBottom: 14,
-      }}>
+      <div style={{ padding: "16px 0 12px", borderBottom: "1px solid var(--bp-border)", marginBottom: 14, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
           <div>
             <div style={{
@@ -672,95 +932,89 @@ export default function MyBooTab() {
               MY BOO
             </div>
             <div style={{ fontSize: 11, color: "var(--bp-muted)", marginTop: 2 }}>
-              Data Scientist & Sportsbook Analytics Engine · Tue 6AM – Tue 6AM settlement window
+              Data Scientist &amp; Sportsbook Analytics Engine · Tue 6AM – Tue 6AM settlement window
             </div>
           </div>
-
-          {/* KPI chips */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {[
               { label: "ACTIVE TICKETS", value: activeCount, color: "#eab308" },
-              { label: "POW WIN RATE", value: hitRate ? `${hitRate}%` : "—", color: hitRate && Number(hitRate) >= 55 ? "#22c55e" : "var(--bp-fg)" },
-              { label: "POW SETTLED", value: powTotal, color: "var(--bp-fg)" },
+              { label: "POW WIN RATE",   value: hitRate ? `${hitRate}%` : "—", color: hitRate && Number(hitRate) >= 55 ? "#22c55e" : "var(--bp-fg)" },
+              { label: "POW SETTLED",    value: powTotal, color: "var(--bp-fg)" },
             ].map(chip => (
-              <div key={chip.label} style={{
-                padding: "6px 12px", borderRadius: 8,
-                background: "var(--bp-card-bg)", border: "1px solid var(--bp-border)",
-                display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80,
-              }}>
+              <div key={chip.label} style={{ padding: "6px 12px", borderRadius: 8, background: "var(--bp-card-bg)", border: "1px solid var(--bp-border)", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80 }}>
                 <span style={{ fontSize: 18, fontWeight: 900, color: chip.color }}>{chip.value}</span>
                 <span style={{ fontSize: 9, fontWeight: 700, color: "var(--bp-muted)", letterSpacing: "0.1em" }}>{chip.label}</span>
               </div>
             ))}
-            <button
-              onClick={() => setShowModal(true)}
-              style={{
-                height: 48, padding: "0 16px", borderRadius: 8, cursor: "pointer",
-                border: "1px solid #d9b45a", background: "rgba(201,165,78,0.14)",
-                color: "#d9b45a", fontWeight: 900, fontSize: 12, letterSpacing: "0.08em",
-              }}
-            >
+            <button onClick={() => setShowModal(true)} style={{ height: 48, padding: "0 16px", borderRadius: 8, cursor: "pointer", border: "1px solid #d9b45a", background: "rgba(201,165,78,0.14)", color: "#d9b45a", fontWeight: 900, fontSize: 12, letterSpacing: "0.08em" }}>
               + NEW TICKET
             </button>
           </div>
         </div>
       </div>
 
-      {/* inner tabs */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 14, flexWrap: "wrap" }}>
-        {BOO_TABS.map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            style={{
-              height: 28, padding: "0 12px", borderRadius: 999, cursor: "pointer",
-              border: `1px solid ${t === tab ? "#d9b45a" : "var(--bp-border)"}`,
-              background: t === tab ? "rgba(201,165,78,0.14)" : "var(--bp-card-bg)",
-              color: t === tab ? "#d9b45a" : "var(--bp-muted)",
-              fontSize: 11, fontWeight: 700,
-            }}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+      {/* two-column body: left = tabs, right = reports */}
+      <div style={{ flex: 1, display: "flex", gap: 16, minHeight: 0 }}>
 
-      {/* tab content */}
-      <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
-        {tab === "POW ORDERS" && (
-          <>
-            {loadingPow ? (
-              <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>Loading POW orders…</div>
-            ) : powTickets.length === 0 ? (
-              <div style={{ padding: 24, textAlign: "center", color: "var(--bp-muted)", fontSize: 13 }}>
-                No POW tickets yet. Click <strong style={{ color: "#d9b45a" }}>+ NEW TICKET</strong> and select POW to log your first high-conviction order.
-              </div>
-            ) : (
-              powTickets.map(t => <TicketCard key={t.ticket_id} ticket={t} />)
+        {/* ── left panel ── */}
+        <div style={{ flex: "0 0 58%", minWidth: 0, display: "flex", flexDirection: "column" }}>
+          {/* inner tabs */}
+          <div style={{ display: "flex", gap: 4, marginBottom: 12, flexWrap: "wrap", flexShrink: 0 }}>
+            {BOO_TABS.map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                height: 28, padding: "0 10px", borderRadius: 999, cursor: "pointer",
+                border: `1px solid ${t === tab ? "#d9b45a" : "var(--bp-border)"}`,
+                background: t === tab ? "rgba(201,165,78,0.14)" : "var(--bp-card-bg)",
+                color: t === tab ? "#d9b45a" : "var(--bp-muted)",
+                fontSize: 10, fontWeight: 700,
+              }}>
+                {t}
+              </button>
+            ))}
+          </div>
+
+          {/* tab content */}
+          <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+            {tab === "POW ORDERS" && (
+              <>
+                {loadingPow ? (
+                  <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>Loading POW orders…</div>
+                ) : powTickets.length === 0 ? (
+                  <div style={{ padding: 24, textAlign: "center", color: "var(--bp-muted)", fontSize: 13 }}>
+                    No POW tickets yet. Click <strong style={{ color: "#d9b45a" }}>+ NEW TICKET</strong> or use <strong style={{ color: "#d9b45a" }}>TAKE IT</strong> on an engine slip.
+                  </div>
+                ) : powTickets.map(t => <TicketCard key={t.ticket_id} ticket={t} />)}
+              </>
             )}
-          </>
-        )}
-
-        {tab === "SIM LAB" && (
-          <>
-            <div style={{ marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.3)", fontSize: 12, color: "#c4b5fd" }}>
-              SIM orders test new statistical correlations and aggressive payout structures without risking real capital. They must hit a 72% rate over 5+ games before graduating to POW clearance.
-            </div>
-            {loadingSim ? (
-              <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>Loading SIM orders…</div>
-            ) : simTickets.length === 0 ? (
-              <div style={{ padding: 24, textAlign: "center", color: "var(--bp-muted)", fontSize: 13 }}>
-                No SIM tickets yet. Use SIM orders to backtest ideas before going POW.
-              </div>
-            ) : (
-              simTickets.map(t => <TicketCard key={t.ticket_id} ticket={t} />)
+            {tab === "SIM LAB" && (
+              <>
+                <div style={{ marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.3)", fontSize: 12, color: "#c4b5fd" }}>
+                  SIM orders test correlations without committing capital. Must hit 72%+ over 5+ games before POW clearance.
+                </div>
+                {loadingSim ? (
+                  <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>Loading SIM orders…</div>
+                ) : simTickets.length === 0 ? (
+                  <div style={{ padding: 24, textAlign: "center", color: "var(--bp-muted)", fontSize: 13 }}>
+                    No SIM tickets yet. Use <strong style={{ color: "#a78bfa" }}>FAKE IT</strong> on an engine slip.
+                  </div>
+                ) : simTickets.map(t => <TicketCard key={t.ticket_id} ticket={t} />)}
+              </>
             )}
-          </>
-        )}
+            {tab === "WEEKLY LEDGER" && <LedgerTab />}
+            {tab === "TRAINING LOGS" && <TrainingLogTab />}
+            {tab === "WEAPON ROOM" && <PostMortemTab />}
+          </div>
+        </div>
 
-        {tab === "WEEKLY LEDGER" && <LedgerTab />}
-        {tab === "TRAINING LOGS" && <TrainingLogTab />}
-        {tab === "WEAPON ROOM" && <PostMortemTab />}
+        {/* ── right panel: recent reports ── */}
+        <div style={{
+          flex: "0 0 40%", minWidth: 0,
+          borderLeft: "1px solid var(--bp-border)",
+          paddingLeft: 16,
+          display: "flex", flexDirection: "column",
+        }}>
+          <ReportsPanel />
+        </div>
       </div>
 
       {showModal && <NewTicketModal onClose={() => setShowModal(false)} onCreated={loadTickets} />}

@@ -603,6 +603,16 @@ def api_myboo_post_mortem():
     return myboo_mod.post_mortem()
 
 
+@app.get("/api/myboo/reports")
+def api_myboo_reports(limit: int = 10):
+    """
+    Daily verbose reports — one per day picks were logged.
+    Each includes per-pick breakdown, affecting factors (injury/weather/IB/line value),
+    visual bar data (actual vs line vs L4 avg), gap analysis, and Jimmy adjustment note.
+    """
+    return {"reports": myboo_mod.daily_reports(limit)}
+
+
 @app.get("/api/hotdogs")
 def api_hotdogs():
     """This week's underdogs through the Hot Dog indicator, plus the 2023-2025 backtest."""
