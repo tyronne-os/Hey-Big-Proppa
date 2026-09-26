@@ -84,7 +84,7 @@ def ai_status() -> dict:
         },
         "nvidia": {
             "connected": nvidia_available(),
-            "model": "nvidia/llama-3.1-nemotron-70b-instruct",
+            "model": "meta/llama-3.2-11b-vision-instruct",
             "keyVar": "NVIDIA_API_KEY",
         },
         "gemma": {
@@ -229,10 +229,42 @@ def _ask_claude(lake_ctx: str, query: str | None = None) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# NVIDIA NIM validation
+# NVIDIA NIM — primary generation (when Claude absent) + validation
 # ---------------------------------------------------------------------------
 _NVIDIA_BASE = "https://integrate.api.nvidia.com/v1"
-_NVIDIA_MODEL = "nvidia/llama-3.1-nemotron-70b-instruct"
+_NVIDIA_MODEL = "meta/llama-3.2-11b-vision-instruct"
+
+
+def _nvidia_generate(lake_ctx: str) -> list[dict]:
+    """Use NVIDIA as primary nugget generator when Claude is unavailable."""
+    key = os.environ.get("NVIDIA_API_KEY")
+    if not key:
+        return []
+    try:
+        import httpx
+        resp = httpx.post(
+            f"{_NVIDIA_BASE}/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={
+                "model": _NVIDIA_MODEL,
+                "messages": [
+                    {"role": "system", "content": _CLAUDE_SYSTEM},
+                    {"role": "user", "content": lake_ctx},
+                ],
+                "max_tokens": 1500,
+                "temperature": 0.4,
+            },
+            timeout=90.0,
+        )
+        resp.raise_for_status()
+        raw = resp.json()["choices"][0]["message"]["content"].strip()
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        return json.loads(raw)
+    except Exception as e:
+        return [{"error": str(e), "rank": 0}]
 
 
 def _ask_nvidia(nuggets: list[dict], lake_ctx: str) -> dict[int, str]:
@@ -261,7 +293,7 @@ def _ask_nvidia(nuggets: list[dict], lake_ctx: str) -> dict[int, str]:
                 "max_tokens": 600,
                 "temperature": 0.3,
             },
-            timeout=20.0,
+            timeout=60.0,
         )
         resp.raise_for_status()
         text = resp.json()["choices"][0]["message"]["content"]
@@ -361,20 +393,28 @@ def nuggets(force: bool = False) -> dict:
 def _build_nuggets(today: str) -> dict:
     lake_ctx = _lake_snapshot()
 
-    # Claude: strategic analysis
+    # Primary nugget generation — Claude preferred, NVIDIA fallback
     claude_nuggets = _ask_claude(lake_ctx)
+    claude_ok = bool(claude_nuggets and not any("error" in n for n in claude_nuggets))
 
-    # Gemma: independent open-weight perspective (concurrent would be ideal but
-    # ZeroGPU cold starts are slow — run after Claude so we don't block the main path)
+    if not claude_ok:
+        # Claude unavailable — NVIDIA generates the nuggets
+        nvidia_primary = _nvidia_generate(lake_ctx)
+        primary_nuggets = nvidia_primary if nvidia_primary and not any("error" in n for n in nvidia_primary) else []
+        primary_source = "nvidia"
+    else:
+        primary_nuggets = claude_nuggets
+        primary_source = "claude"
+
+    # Gemma: independent open-weight perspective
     gemma_nuggets = _ask_gemma(lake_ctx)
-    gemma_ok = gemma_nuggets and not any("error" in n for n in gemma_nuggets)
+    gemma_ok = bool(gemma_nuggets and not any("error" in n for n in gemma_nuggets))
 
-    # Merge Claude + Gemma before JEV scoring — tag source
+    # Merge primary + Gemma before JEV scoring — tag source
     combined: list[dict] = []
-    for n in claude_nuggets:
-        combined.append({**n, "source": "claude"})
+    for n in primary_nuggets:
+        combined.append({**n, "source": primary_source})
     for n in (gemma_nuggets if gemma_ok else []):
-        # Offset rank so Gemma doesn't collide with Claude rank numbers
         combined.append({**n, "rank": n.get("rank", 0) + 100, "source": "gemma"})
 
     # JEV: probability scores on each claim
