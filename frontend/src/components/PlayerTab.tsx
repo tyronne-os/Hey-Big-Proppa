@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { PlayerPropChart, PlayerSearchResult } from "../types";
+import type { PlayerPropChart, PlayerSearchResult, PlayerTrust } from "../types";
 
 const PROP_CHIPS: { label: string; market: string }[] = [
   { label: "Rush Yds", market: "rushyds" },
@@ -65,13 +65,86 @@ function Stat({ label, children, tone }: { label: string; children: React.ReactN
   );
 }
 
+function pct(v: number | null | undefined): string {
+  return v === null || v === undefined ? "—" : `${Math.round(v * 100)}%`;
+}
+
+function Tile({ label, value, tone }: { label: string; value: React.ReactNode; tone?: string }) {
+  return (
+    <div style={{ background: INK.card, border: `1px solid ${INK.edge}`, borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: INK.mute }}>{label}</span>
+      <span style={{ fontFamily: MONO, fontSize: 22, fontWeight: 800, color: tone ?? INK.text }}>{value}</span>
+    </div>
+  );
+}
+
+function TrustSection({ t }: { t: PlayerTrust }) {
+  const n = (v: number | null | undefined) => (v === null || v === undefined ? "—" : String(v));
+  const delta = t.confidenceDelta;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: "0.12em", color: GOLD }}>USAGE &amp; RED ZONE</span>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>
+        <Tile label="USAGE INDEX" value={n(t.usageIndex)} tone={GOLD} />
+        <Tile label="OVERALL SHARE" value={pct(t.shareOverall)} />
+        <Tile label="SHARE (CALM)" value={pct(t.shareCalm)} />
+        <Tile label="SHARE (PRESSURE)" value={pct(t.shareStress)} />
+        <Tile label="PRESSURE BOOST" value={delta === null ? "—" : `${delta > 0 ? "+" : ""}${(delta * 100).toFixed(1)}%`} tone={delta === null ? undefined : delta >= 0 ? MINT : RED} />
+      </div>
+      {t.role && <span style={{ fontSize: 14, color: INK.mute }}>{t.role}</span>}
+
+      {t.redZone.map((rz) => (
+        <div key={rz.type} style={{ background: INK.card, border: `1px solid ${INK.edge}`, borderRadius: 14, overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(110px,1.2fr) 70px 70px minmax(120px,2fr)", gap: 12, padding: "10px 16px", borderBottom: `1px solid ${INK.edge}`, fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: INK.mute }}>
+            <span>{rz.type === "carry" ? "CARRIES" : rz.type === "target" ? "TARGETS" : rz.type.toUpperCase()}</span>
+            <span style={{ textAlign: "right" }}>OPPS</span><span style={{ textAlign: "right" }}>TDS</span><span>SHARE OF TEAM</span>
+          </div>
+          {rz.tiers.map((tier) => (
+            <div key={tier.label} style={{ display: "grid", gridTemplateColumns: "minmax(110px,1.2fr) 70px 70px minmax(120px,2fr)", gap: 12, alignItems: "center", padding: "10px 16px", borderBottom: `1px solid ${INK.edge}` }}>
+              <span style={{ fontSize: 15, fontWeight: 700 }}>{tier.label}</span>
+              <span style={{ textAlign: "right", fontFamily: MONO, fontSize: 16 }}>{n(tier.opps)}</span>
+              <span style={{ textAlign: "right", fontFamily: MONO, fontSize: 16, color: (tier.tds ?? 0) > 0 ? MINT : INK.mute }}>{n(tier.tds)}</span>
+              {tier.share === null ? <span style={{ color: INK.mute, fontFamily: MONO }}>—</span> : (
+                <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ flex: 1, height: 8, borderRadius: 4, background: INK.edge, overflow: "hidden" }}>
+                    <span style={{ display: "block", height: "100%", width: `${Math.min(100, Math.round(tier.share * 100))}%`, background: MINT }} />
+                  </span>
+                  <span style={{ width: 44, textAlign: "right", fontFamily: MONO, fontSize: 15, fontWeight: 700 }}>{pct(tier.share)}</span>
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+
+      {t.td && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10 }}>
+            <Tile label="TOTAL TDS" value={n(t.td.total)} />
+            <Tile label="RED ZONE TDS" value={n(t.td.redZone)} />
+            <Tile label="GOAL-TO-GO TDS" value={n(t.td.goalToGo)} />
+            <Tile label="RUSH TDS" value={n(t.td.rushing)} />
+            <Tile label="REC TDS" value={n(t.td.receiving)} />
+            <Tile label="GAMES WITH TD" value={n(t.td.gamesWithTd)} />
+            <Tile label="TD PER RZ OPP" value={t.td.perRedZoneOpp === null ? "—" : t.td.perRedZoneOpp.toFixed(2)} tone={GOLD} />
+          </div>
+          {t.td.flag && <span style={{ fontSize: 14, color: INK.mute }}>{t.td.flag}</span>}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function PlayerTab({
   playerId,
+  initialMarket,
   onSelectPlayer,
   onSlipAdd,
   inSlip,
 }: {
   playerId: string;
+  initialMarket?: string;
   onSelectPlayer: (playerId: string) => void;
   onSlipAdd: (chart: PlayerPropChart) => void;
   inSlip: boolean;
@@ -82,6 +155,10 @@ export default function PlayerTab({
   const [chart, setChart] = useState<PlayerPropChart | null>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PlayerSearchResult[]>([]);
+
+  useEffect(() => {
+    if (initialMarket) setMarket(initialMarket);
+  }, [playerId, initialMarket]);
 
   useEffect(() => {
     setPhotoBroken(false);
@@ -325,6 +402,8 @@ export default function PlayerTab({
             );
           })}
         </div>
+
+        {chart.trust && <TrustSection t={chart.trust} />}
       </div>
     </div>
   );

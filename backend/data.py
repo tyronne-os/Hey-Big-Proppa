@@ -247,6 +247,49 @@ def fanduel_line_for(player_name_str: str, market_slug: str) -> dict | None:
 # Weekly game log for a player + prop, with hit-rate vs the current line
 # ---------------------------------------------------------------------------
 
+def _num(v, digits: int = 3):
+    try:
+        return round(float(v), digits)
+    except (TypeError, ValueError):
+        return None
+
+
+def player_trust(player_id: str) -> dict | None:
+    """Usage trust, red-zone tiers and TD conversion for one player (three gold tables)."""
+    usage = next((r for r in load("player_usage") if r.get("player_id") == player_id), None)
+    corr = next((r for r in load("player_usage_td_correlation") if r.get("player_id") == player_id), None)
+    tiers = [r for r in load("redzone_tiers") if r.get("player_id") == player_id]
+    if not (usage or corr or tiers):
+        return None
+    row = usage or corr or {}
+    return {
+        "usageIndex": _num(row.get("usage_index_score"), 1),
+        "role": row.get("usage_role", ""),
+        "shareOverall": _num(row.get("share_overall")),
+        "shareCalm": _num(row.get("share_calm")),
+        "shareStress": _num(row.get("share_stress")),
+        "confidenceDelta": _num(row.get("confidence_delta")),
+        "redZone": [
+            {
+                "type": t.get("opportunity_type", ""),
+                "tiers": [
+                    {"label": label, "opps": _num(t.get(f"opp_{k}"), 0), "tds": _num(t.get(f"td_{k}"), 0),
+                     "share": _num(t.get(f"pct_{k}_intra"))}
+                    for label, k in (("INSIDE 20", "i20"), ("INSIDE 10", "i10"), ("INSIDE 5", "i5"), ("GOAL TO GO", "g2g"))
+                    if t.get(f"opp_{k}") not in (None, "")
+                ],
+            }
+            for t in tiers
+        ],
+        "td": {
+            "total": _num(corr.get("tds"), 0), "redZone": _num(corr.get("tds_red_zone"), 0),
+            "goalToGo": _num(corr.get("tds_goal_to_go"), 0), "rushing": _num(corr.get("tds_rush"), 0),
+            "receiving": _num(corr.get("tds_rec"), 0), "gamesWithTd": _num(corr.get("games_with_td"), 0),
+            "perRedZoneOpp": _num(corr.get("td_per_redzone_opp")), "flag": corr.get("correlation_flag", ""),
+        } if corr else None,
+    }
+
+
 def player_prop_chart(player_id: str, market_slug: str) -> dict:
     name = player_name(player_id)
     team = player_team(player_id)
@@ -287,6 +330,7 @@ def player_prop_chart(player_id: str, market_slug: str) -> dict:
         "team": team,
         "position": player_dimension().get(player_id, {}).get("position", ""),
         "bpl": official,
+        "trust": player_trust(player_id),
         "prop": PROP_LABELS.get(market_slug, market_slug),
         "marketSlug": market_slug,
         "line": line,

@@ -37,6 +37,7 @@ export default function App() {
 
   const [tab, setTab] = useState<ViewTab>("player");
   const [selectedPlayerId, setSelectedPlayerId] = useState(DEFAULT_PLAYER_ID);
+  const [playerMarket, setPlayerMarket] = useState<string | undefined>(undefined);
   const [currentPlayerChart, setCurrentPlayerChart] = useState<PlayerPropChart | null>(null);
   const [slip, setSlip] = useState<PlayerPropChart[]>([]);
   const [target, setTarget] = useState("all");
@@ -239,14 +240,16 @@ export default function App() {
             {tab === "player" && (
               <PlayerTab
                 playerId={selectedPlayerId}
-                onSelectPlayer={setSelectedPlayerId}
+                initialMarket={playerMarket}
+                onSelectPlayer={(id) => { setPlayerMarket(undefined); setSelectedPlayerId(id); }}
                 onSlipAdd={addToSlip}
                 inSlip={slipIds.has(selectedPlayerId)}
               />
             )}
             {tab === "leaders" && (
               <LeadersTab
-                onOpenPlayer={(id) => {
+                onOpenPlayer={(id, market) => {
+                  setPlayerMarket(market);
                   setSelectedPlayerId(id);
                   setTab("player");
                 }}

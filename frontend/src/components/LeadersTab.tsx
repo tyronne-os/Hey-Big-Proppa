@@ -12,7 +12,7 @@ const SCORE_LABEL: Record<string, string> = {
 // Deep violet ground, purple for interaction, gold for emphasis. Green/red stay reserved
 // for good/bad signals (BPL above/below the book, bars over/under).
 const C = {
-  bg: "#07030d", card: "#0f0819", card2: "#150c24", edge: "#2b1d45", hover: "rgba(139,92,246,0.12)",
+  bg: "#000000", card: "#070707", card2: "#111111", edge: "#26232b", hover: "rgba(139,92,246,0.14)",
   purple: "#8b5cf6", purpleSoft: "#b79cff", gold: "#d9b45a", goldHi: "#f1dc92", goldDeep: "#8a6224",
   text: "#f1ecf8", mute: "#9a8fb0", green: "#22c55e", red: "#ef4444",
 };
@@ -38,7 +38,7 @@ function Photo({ url, name, size }: { url?: string | null; name: string; size: n
   return <span style={{ ...box, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: MONO, fontSize: size * 0.34, fontWeight: 700, color: C.mute }}>{initials(name)}</span>;
 }
 
-export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: string) => void }) {
+export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: string, market?: string) => void }) {
   const [category, setCategory] = useState("RUSHING");
   const [data, setData] = useState<LeadersResponse | null>(null);
 
@@ -48,7 +48,7 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
 
   return (
     <div className="ld-wrap" style={{ fontFamily: SANS, color: C.text, background: C.bg, border: `1px solid ${C.edge}`, borderRadius: 20, padding: "16px 18px 22px", display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
-      <style>{`.ld-wrap button{font-family:inherit}.ld-row:hover{background:${C.hover}}`}</style>
+      <style>{`.ld-wrap button{font-family:inherit}.ld-row:hover{background:${C.hover}}.ld-row:hover .ld-name{color:${C.goldHi};text-decoration:underline}`}</style>
 
       <div style={{ display: "flex", gap: 4, padding: 4, background: C.card, border: `1px solid ${C.edge}`, borderRadius: 14, overflowX: "auto" }}>
         {CATEGORIES.map((c) => {
@@ -106,7 +106,7 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
 
 const ROW_COLS = "44px minmax(0,1fr) 64px 90px minmax(90px,240px)";
 
-function RowsView({ rows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string) => void; scoreLabel?: string; isTeam?: boolean }) {
+function RowsView({ rows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string, market?: string) => void; scoreLabel?: string; isTeam?: boolean }) {
   const top = rows[0];
   const showRole = Boolean(scoreLabel);
   return (
@@ -141,7 +141,7 @@ function RowsView({ rows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: Le
             <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
               <Photo url={r.photoUrl} name={r.name} size={44} />
               <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                <span style={{ fontSize: 17, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <span className="ld-name" style={{ fontSize: 17, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {r.name}{!isTeam && <span style={{ color: C.mute, fontWeight: 400 }}> {r.team}</span>}
                 </span>
                 {showRole && r.role && (
@@ -161,7 +161,7 @@ function RowsView({ rows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: Le
   );
 }
 
-const BPL_COLS = "44px minmax(260px,3fr) minmax(80px,1fr) minmax(120px,1.3fr) minmax(80px,1fr) minmax(110px,1.2fr) minmax(90px,1fr) minmax(160px,2fr)";
+const BPL_COLS = "44px minmax(260px,3fr) minmax(84px,1fr) minmax(130px,1.4fr) minmax(96px,1fr) minmax(110px,1.2fr) minmax(90px,1fr) minmax(160px,2fr)";
 
 type SortMode = "rank" | "reverse" | "greens" | "reds";
 const SORTS: { id: SortMode; label: string; hint: string }[] = [
@@ -218,10 +218,10 @@ function L5Bars({ b }: { b: BplPlayerLine }) {
   );
 }
 
-function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version: string; onOpenPlayer: (playerId: string) => void }) {
+function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version: string; onOpenPlayer: (playerId: string, market?: string) => void }) {
   const [mode, setMode] = useState<SortMode>("rank");
   const shown = sortRows(rows, mode);
-  const head = { fontSize: 12, fontWeight: 800, letterSpacing: "0.08em", color: C.gold, textAlign: "center" as const };
+  const head = { fontSize: 12, fontWeight: 800, letterSpacing: "0.06em", lineHeight: 1.25, color: C.gold, textAlign: "center" as const };
   const cell = { textAlign: "center" as const, fontFamily: MONO, fontSize: 16 };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -249,9 +249,9 @@ function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version:
           <div style={{ display: "grid", gridTemplateColumns: BPL_COLS, gap: 14, alignItems: "center", padding: "12px 18px", borderBottom: `1px solid ${C.edge}` }}>
             <span style={{ ...head, textAlign: "left" }}>RK</span>
             <span style={{ ...head, textAlign: "left" }}>PLAYER</span>
-            <span style={head} title="Season average per game">SA</span>
-            <span style={head} title="Next opponent and its defense rank in this stat (1 = stingiest)">NOR</span>
-            <span style={head} title="Sportsbook line (median across books)">SL</span>
+            <span style={head} title="Season average per game">SEASON AVG</span>
+            <span style={head} title="Next opponent and its defense rank in this stat (1 = stingiest)">NEXT DEF [NFL RANK]</span>
+            <span style={head} title="Sportsbook line (median across books)">SPORTSBOOK LINE</span>
             <span style={head}>BIG PROPPA</span>
             <span style={head} title="(BPL - SL) / SL">DIFF</span>
             <span style={{ ...head, textAlign: "left" }}>L5</span>
@@ -260,12 +260,12 @@ function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version:
             const b = r.bpl!;
             const d = b.diffPct;
             return (
-              <div key={r.playerId} className="ld-row" onClick={() => onOpenPlayer(r.playerId)} title="Open player research"
+              <div key={r.playerId} className="ld-row" onClick={() => onOpenPlayer(r.playerId, b.market)} title="Open player page"
                 style={{ display: "grid", gridTemplateColumns: BPL_COLS, gap: 14, alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.edge}`, cursor: "pointer" }}>
                 <span style={{ fontFamily: MONO, fontSize: 14, color: r.rank <= 3 ? C.gold : C.mute, fontWeight: r.rank <= 3 ? 800 : 400 }}>{r.rank}</span>
                 <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                   <Photo url={r.photoUrl} name={r.name} size={48} />
-                  <span style={{ fontSize: 17, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <span className="ld-name" style={{ fontSize: 17, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {r.name} <span style={{ color: C.mute, fontWeight: 400 }}>({r.team})</span>
                   </span>
                 </span>

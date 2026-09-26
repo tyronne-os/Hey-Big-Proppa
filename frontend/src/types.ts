@@ -155,6 +155,7 @@ export interface PlayerPropChart {
   photoUrl: string | null;
   position?: string;
   bpl?: BplPlayerLine | null;
+  trust?: PlayerTrust | null;
   error?: string;
 }
 
@@ -168,6 +169,20 @@ export interface LeaderRow {
   role?: string;
   photoUrl?: string | null;
   bpl?: BplPlayerLine;
+}
+
+export interface PlayerTrust {
+  usageIndex: number | null;
+  role: string;
+  shareOverall: number | null;
+  shareCalm: number | null;
+  shareStress: number | null;
+  confidenceDelta: number | null;
+  redZone: { type: string; tiers: { label: string; opps: number | null; tds: number | null; share: number | null }[] }[];
+  td: {
+    total: number | null; redZone: number | null; goalToGo: number | null; rushing: number | null; receiving: number | null;
+    gamesWithTd: number | null; perRedZoneOpp: number | null; flag: string;
+  } | null;
 }
 
 export interface BplPlayerLine {
