@@ -51,25 +51,24 @@ def available() -> bool:
 
 def diagnose() -> dict:
     """
-    Real diagnostic, never the value: which env var name is set (catches a
-    JEV_API_KEY / TYPESAFE_API_KEY mix-up), whether the SDK is installed,
-    and -- if a key is present -- an actual trivial API call so a wrong or
-    revoked key shows up as an auth error instead of a silent "present".
+    Real diagnostic, never the value: which env var(s) are set, whether the
+    SDK is installed, and -- if a key is available -- an actual trivial API
+    call so a wrong or revoked key shows up as an auth error.
     """
     jev_key = os.environ.get("JEV_API_KEY")
     typesafe_key = os.environ.get("TYPESAFE_API_KEY")
+    active_key = jev_key or typesafe_key
     out = {
-        "jevApiKeyPresent": bool(jev_key), "jevApiKeyLength": len(jev_key) if jev_key else 0,
+        "jevApiKeyPresent": bool(jev_key),
         "typesafeApiKeyPresent": bool(typesafe_key),
-        "note_typesafe_key": ("TYPESAFE_API_KEY is set but this app reads JEV_API_KEY -- "
-                              "that's likely the mismatch." if typesafe_key and not jev_key else None),
+        "activeKeyVar": "JEV_API_KEY" if jev_key else ("TYPESAFE_API_KEY" if typesafe_key else None),
         "sdkInstalled": TypeSafeClient is not None,
         "callTest": None,
     }
-    if not jev_key or TypeSafeClient is None:
+    if not active_key or TypeSafeClient is None:
         return out
     try:
-        client = TypeSafeClient(api_key=jev_key, model="jev-latest", timeout=8.0)
+        client = TypeSafeClient(api_key=active_key, model="jev-latest", timeout=8.0)
         with client:
             response = client.system_one(
                 state="ping",
