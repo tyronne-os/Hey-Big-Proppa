@@ -41,6 +41,23 @@ import myboo as myboo_mod
 
 app = FastAPI(title="HEY BIG PROPPA! API")
 
+
+def _warm_caches() -> None:
+    """Build the slow first-call caches (lake CSVs, BPL history, photo index) off the request path."""
+    import threading
+
+    def run() -> None:
+        for cat in ("RUSHING", "RECEIVING", "PASSING"):
+            try:
+                leaders_mod.leaders(cat)
+            except Exception:
+                pass
+
+    threading.Thread(target=run, daemon=True).start()
+
+
+_warm_caches()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # dev only -- local Vite dev server + this API

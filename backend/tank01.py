@@ -292,8 +292,15 @@ def get_player_info(player_id: str) -> dict:
     }
 
 
+_photo_index: tuple[dict[str, list[tuple[str, str]]], float] | None = None
+
+
 def player_photos() -> dict[str, list[tuple[str, str]]]:
-    """normalized player name -> [(team, ESPN headshot url)] from one getNFLPlayerList call (cached 24h)."""
+    """normalized player name -> [(team, ESPN headshot url)] from one getNFLPlayerList call.
+    The built index is memoized for an hour (rebuilding it per player made the leaders API crawl)."""
+    global _photo_index
+    if _photo_index and time.time() < _photo_index[1]:
+        return _photo_index[0]
     import data
     raw = _get("getNFLPlayerList", ttl=86400)
     body = (raw or {}).get("body") if isinstance(raw, dict) else None
@@ -301,6 +308,8 @@ def player_photos() -> dict[str, list[tuple[str, str]]]:
     for p in body or []:
         if p.get("espnHeadshot") and p.get("longName"):
             out.setdefault(data.normalize_name(p["longName"]), []).append((p.get("team", ""), p["espnHeadshot"]))
+    if out:
+        _photo_index = (out, time.time() + 3600)
     return out
 
 

@@ -73,6 +73,16 @@ CATEGORY_SOURCES = {
 
 
 def leaders(category: str) -> dict:
+    out = _leaders(category)
+    dim = data.player_dimension()
+    for r in out.get("rows") or []:
+        if str(r.get("playerId", "")).startswith("00-"):
+            r["name"] = dim.get(r["playerId"], {}).get("name") or r["name"]
+            r.setdefault("photoUrl", data.photo_url(r["playerId"]))
+    return out
+
+
+def _leaders(category: str) -> dict:
     category = category.upper()
 
     if category == "BREAKOUT":
@@ -166,8 +176,6 @@ def leaders(category: str) -> dict:
     if src is None:
         return {"category": category, "sourceStatus": "error", "rows": [], "error": "unknown category"}
     rows = _rank(_sum_by_player(src, stat_col))
-    for r in rows:
-        r["photoUrl"] = data.photo_url(r["playerId"])
     market = bpl.LEADER_MARKET.get(category)
     if market:
         rows = [r for r in rows if r["value"] > 0][:BPL_ROWS]
