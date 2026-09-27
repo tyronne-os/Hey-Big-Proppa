@@ -26,7 +26,7 @@ export function toAmerican(decimal: number): string {
 export function fromThemed(s: ParlaySlip): EngineSlip {
   return {
     id: `SLIP-${s.id}`, title: s.title, correlationType: "THEMED", badge: s.title, insight: "",
-    confidence: s.confidence, wager: s.wager, boost: s.boost,
+    wager: s.wager, boost: s.boost,
     combinedDecimalOdds: s.combinedDecimalOdds, payout: s.payout, boostedPayout: s.boostedPayout, boostedAmericanOdds: s.boostedAmericanOdds,
     legs: s.legs.map((l) => ({
       playerId: l.playerId ?? l.teamId ?? l.name, name: l.name, team: l.team ?? "", market: l.market ?? "", direction: l.direction ?? "over",
@@ -54,24 +54,6 @@ export function Avatar({ leg, size, ring = "#c9a54e" }: { leg: Pick<EngineLeg, "
   );
 }
 
-export function ConfidenceRing({ value, size = 64, light = false }: { value: number; size?: number; light?: boolean }) {
-  const color = value >= 75 ? "#16a34a" : value >= 62 ? "#c9a54e" : "#e0782f";
-  const r = size / 2 - 5;
-  const c = 2 * Math.PI * r;
-  return (
-    <span title="Confidence: the average hit probability of the legs on this ticket" style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, flex: "0 0 auto" }}>
-      <span style={{ position: "relative", width: size, height: size }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: "rotate(-90deg)" }}>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={light ? "#e8e2d0" : "rgba(255,255,255,0.12)"} strokeWidth="5" />
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(100, value) / 100)} />
-        </svg>
-        <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: MONO, fontSize: size * 0.34, fontWeight: 800, color: light ? "#1a1a1a" : color }}>{value}</span>
-      </span>
-      <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: "0.12em", color: light ? "#6b6553" : "var(--bp-muted)" }}>CONFIDENCE</span>
-    </span>
-  );
-}
-
 export function LegLine({ leg }: { leg: EngineLeg }) {
   const pct = Math.round(leg.probability * 100);
   const pc = pct >= 75 ? "#2ee6a6" : pct >= 60 ? "#d9b45a" : "#e0782f";
@@ -92,7 +74,6 @@ export default function TicketCard({ slip }: { slip: EngineSlip }) {
   const meta = TYPE_META[slip.correlationType] ?? { label: slip.correlationType, color: "#d9b45a" };
   const label = slip.badge ?? meta.label;
   const bigPayout = slip.combinedDecimalOdds >= BIG_PAYOUT_DECIMAL;
-  const conf = slip.confidence ?? 0;
   return (
     <div style={{ background: "var(--bp-card-bg)", border: `1px solid ${meta.color}55`, borderLeft: `4px solid ${meta.color}`, borderRadius: 16, overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "14px 16px 12px", display: "flex", gap: 14, alignItems: "flex-start" }}>
@@ -114,7 +95,6 @@ export default function TicketCard({ slip }: { slip: EngineSlip }) {
             <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>{(slip.hitProbability * 100).toFixed(1)}% to hit every leg</span>
           )}
         </div>
-        <ConfidenceRing value={conf} />
       </div>
 
       {bigPayout && (

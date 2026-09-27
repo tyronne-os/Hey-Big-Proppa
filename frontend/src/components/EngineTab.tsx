@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { EngineSlip, PowSummary } from "../types";
 import TakeItFakeIt from "./TakeItFakeIt";
-import TicketCard, { ConfidenceRing, LegLine, TYPE_META, american } from "./TicketCard";
+import TicketCard, { LegLine, TYPE_META, american } from "./TicketCard";
 import { useEngine } from "./useEngine";
 
 const TYPE_ORDER = ["BPL_EDGE", "SPY_BOY"];
@@ -32,7 +32,6 @@ export function CrazyHorseHero({ slip }: { slip: EngineSlip }) {
               {american(slip.boostedAmericanOdds)} · {slip.hitProbability !== undefined ? `${(slip.hitProbability * 100).toFixed(1)}%` : "—"} to hit all {slip.legs.length}
             </span>
           </div>
-          <ConfidenceRing value={slip.confidence ?? 0} size={78} />
         </div>
       </div>
 
@@ -63,7 +62,7 @@ function PowLine({ pow }: { pow: PowSummary | null }) {
   );
 }
 
-export default function EngineTab() {
+export default function EngineTab({ showHorse = true }: { showHorse?: boolean }) {
   const { data, error } = useEngine();
   const [filter, setFilter] = useState<string>("ALL");
   const [pow, setPow] = useState<PowSummary | null>(null);
@@ -75,10 +74,11 @@ export default function EngineTab() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 1100, width: "100%", margin: "0 auto" }}>
+      {showHorse && data?.crazyHorse && <CrazyHorseHero slip={data.crazyHorse} />}
       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.14em", color: "var(--bp-muted)" }}>PROPPA ENGINE · EVERY TICKET SCORED</span>
+        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.14em", color: "var(--bp-muted)" }}>PROPPA ENGINE · EVERY TICKET PRICED</span>
         <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>
-          Big Proppa Line vs FanDuel · player props, NFL games and college · one leg per game · confidence = average leg probability · every ticket defaults to FAKE IT in MY BOO
+          Big Proppa Line vs FanDuel · player props, NFL games and college · one leg per game · every ticket defaults to FAKE IT in MY BOO
         </span>
         <PowLine pow={pow} />
       </div>
@@ -108,7 +108,6 @@ export default function EngineTab() {
 
       {visible.map((slip) => <TicketCard key={slip.id} slip={slip} />)}
 
-      {slips && slips.length > 0 && data?.crazyHorse && <CrazyHorseHero slip={data.crazyHorse} />}
     </div>
   );
 }

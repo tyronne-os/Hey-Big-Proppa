@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { EngineSlip } from "../types";
 import TakeItFakeIt from "./TakeItFakeIt";
-import { ConfidenceRing, american } from "./TicketCard";
+import { american } from "./TicketCard";
 
 const MONO = "var(--font-mono, monospace)";
 
@@ -30,7 +30,6 @@ export default function FeaturedPlayer({ slip }: { slip: EngineSlip }) {
                 <span style={{ fontSize: 40, fontWeight: 900, lineHeight: 1, letterSpacing: "-0.01em" }}>{p.name}</span>
                 <span style={{ fontSize: 15, color: "#6b6553", fontWeight: 600 }}>{p.team} · {p.position}</span>
               </div>
-              <ConfidenceRing value={slip.confidence ?? 0} size={72} light />
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>

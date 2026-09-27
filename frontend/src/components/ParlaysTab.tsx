@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { ParlaySlip, PlayerPropChart } from "../types";
-import EngineTab from "./EngineTab";
+import EngineTab, { CrazyHorseHero } from "./EngineTab";
+import MascotRail from "./MascotRail";
 import FeaturedPlayer from "./FeaturedPlayer";
 import TicketCard, { fromThemed } from "./TicketCard";
 import { useEngine } from "./useEngine";
@@ -42,7 +43,10 @@ export default function ParlaysTab({
 }) {
   const { data } = useEngine();
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 1100, width: "100%", margin: "0 auto" }}>
+    <div style={{ display: "flex", gap: 22, alignItems: "flex-start", justifyContent: "center", width: "100%" }}>
+    <MascotRail />
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 1100, flex: "1 1 0", minWidth: 0 }}>
+      {data?.crazyHorse && <CrazyHorseHero slip={data.crazyHorse} />}
       {data?.featured && <FeaturedPlayer slip={data.featured} />}
       <a
         href="/parlays"
@@ -86,7 +90,8 @@ export default function ParlaysTab({
       </div>
 
       <TonightsSlips />
-      <EngineTab />
+      <EngineTab showHorse={false} />
+    </div>
     </div>
   );
 }
