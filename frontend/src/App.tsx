@@ -17,10 +17,11 @@ import MatchupsTab from "./components/MatchupsTab";
 import JimmyPanel from "./components/JimmyPanel";
 import RampIndex from "./components/RampIndex";
 import MyBooTab from "./components/MyBooTab";
+import OddsTab from "./components/OddsTab";
 import { api } from "./api";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
-const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "parlay", "charts", "engine", "news", "queries", "myboo"] as const;
+const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "parlay", "charts", "engine", "news", "queries", "myboo", "odds"] as const;
 type ViewTab = (typeof VIEW_TABS)[number];
 
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
@@ -176,7 +177,7 @@ export default function App() {
       <Header isDark={isDark} onToggleTheme={() => setIsDark((v) => !v)} onToggleAdmin={() => setAdminOpen((v) => !v)} />
 
       <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
-        {tab !== "leaders" && tab !== "matchups" && tab !== "ramp" && tab !== "myboo" && (
+        {tab !== "leaders" && tab !== "matchups" && tab !== "ramp" && tab !== "myboo" && tab !== "odds" && (
           <>
             <div style={{ width: `${leftPct}%`, flex: `0 0 ${leftPct}%`, display: "flex", flexDirection: "column", minWidth: 0 }}>
               <div
@@ -229,7 +230,7 @@ export default function App() {
                     letterSpacing: isBoo ? "0.06em" : undefined,
                   }}
                 >
-                  {isBoo ? "MY BOO" : vt.toUpperCase()}
+                  {isBoo ? "MY BOO" : vt === "odds" ? "THE ODDS" : vt.toUpperCase()}
                 </button>
               );
             })}
@@ -262,6 +263,7 @@ export default function App() {
             {tab === "matchups" && <MatchupsTab />}
             {tab === "queries" && (cleared && results.length === 0 ? <QueriesTab results={[]} /> : <QueriesTab results={results} />)}
             {tab === "myboo" && <MyBooTab />}
+            {tab === "odds" && <OddsTab />}
           </div>
 
           <Composer

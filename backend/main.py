@@ -22,6 +22,7 @@ import data
 import jimmy
 import cfb_jimmy
 import leaders as leaders_mod
+import odds_pond
 import bpl as bpl_mod
 import jimmy_bpl
 import parlays as parlays_mod
@@ -234,6 +235,16 @@ def api_dvp():
             for r in rows[:10]
         ],
     }
+
+
+@app.get("/api/odds")
+def api_odds(league: str = "nfl", refresh: bool = False):
+    """THE ODDS page: board + sidebar lists + Smoke Proppa watch, from the odds pond (refreshed lazily from Tank01 / CFBD)."""
+    if league not in ("nfl", "cfb"):
+        raise HTTPException(400, "league must be nfl or cfb")
+    if refresh:
+        odds_pond.refresh(league, force=True)
+    return odds_pond.board(league)
 
 
 @app.get("/api/canvas/nodes")

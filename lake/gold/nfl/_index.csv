@@ -55,3 +55,5 @@ ib2_matchups_current,scripts/build_ib2.py,one row per defense vs offense on the 
 ib2_qb_pressure_profile,scripts/ib_deep_dive.py,one row per QB per season (200+ dropbacks),113,2026-09-26T19:11:18.364752+00:00,nflverse pbp + participation + FTN,ok
 ib2_int_conditions,scripts/ib_deep_dive.py,"one row per condition bucket, 2023-2025 dropbacks",43,2026-09-26T19:11:18.364752+00:00,nflverse pbp + participation + FTN,ok
 ib2_defense_game_backtest,scripts/ib_deep_dive.py,"one row per defense per game, 2023-2025, pre-game scores",1632,2026-09-26T19:11:18.364752+00:00,nflverse pbp + participation + FTN,ok
+odds_board,gold.odds_board,one row per game on the slate: consensus + FanDuel lines; open and moves since open,22,2026-09-27T00:24:31+00:00,tank01 (NFL) / cfbd (CFB Top 25),ok
+odds_line_history,gold.odds_line_history,append-only: one row per game/book each time spread total or moneyline changed,37,2026-09-27T00:24:31+00:00,tank01 (NFL) / cfbd (CFB Top 25),ok

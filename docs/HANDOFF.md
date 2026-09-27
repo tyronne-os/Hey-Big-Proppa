@@ -528,6 +528,15 @@ the old correlation engine is at `/api/parlays/engine-legacy`.
 on boot once because `requests` (used by `tank01.py`, `sportsbook.py`, `jimmy_cfb_bpl.py`)
 was missing. The local venv also lacks it; the dev server runs on system `python3`.
 
+### 5.10 THE ODDS pond and page (built 2026-09-26)
+
+New pond `odds_board` + `odds_line_history` (Vegas lines, Tank01 for NFL, CFBD for the college
+Top 25) and the THE ODDS tab, with a Smoke Proppa watch that flags games where the Big Proppa
+Line splits from Vegas. Full write-up: `docs/THE_ODDS.md`. Code: `backend/odds_pond.py`,
+`GET /api/odds`, `frontend/src/components/OddsTab.tsx`. "Open" lines are the first snapshot the
+lake saw (Tank01 has no opens), so line-move lists fill in over time. HF needs `TANK01_API_KEY`
+as a Space secret for live refresh; without it the page shows the last committed pond.
+
 ## 6. What Phase 1 still needs before it's "done" (per the user's own framing)
 
 As of this writing, the user has not yet declared Phase 1 complete. Sections

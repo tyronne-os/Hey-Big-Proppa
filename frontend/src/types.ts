@@ -534,3 +534,51 @@ export interface JimmyBreakdown {
   tank01Available: boolean;
   sbAvailable: boolean;
 }
+
+export interface OddsWatch {
+  level: "money" | "watch" | null;
+  pick: string | null;
+  probability: number | null;
+  reasons: string[];
+}
+
+export interface OddsGame {
+  id: string;
+  date: string;
+  time: string;
+  epoch: number | null;
+  started: boolean;
+  away: string;
+  home: string;
+  awayName: string;
+  homeName: string;
+  awayRank: number | null;
+  homeRank: number | null;
+  books: number | null;
+  spreadHome: number | null;
+  total: number | null;
+  mlHome: number | null;
+  mlAway: number | null;
+  fd: { spreadHome: number | null; total: number | null; mlHome: number | null; mlAway: number | null };
+  spreadMove: number;
+  totalMove: number;
+  source: string;
+  watch: OddsWatch;
+}
+
+export interface OddsSidebar {
+  moves: { game: string; market: string; value: number; signed: number }[];
+  recent: { game: string; market: string; at: string; from: number | null; to: number | null }[];
+  biggestSpreads: { game: string; value: number }[];
+  smallestSpreads: { game: string; value: number }[];
+  highestTotals: { game: string; value: number }[];
+  lowestTotals: { game: string; value: number }[];
+}
+
+export interface OddsResponse {
+  league: string;
+  games: OddsGame[];
+  sidebar: OddsSidebar;
+  updatedAt: string | null;
+  trackingSince: string | null;
+}

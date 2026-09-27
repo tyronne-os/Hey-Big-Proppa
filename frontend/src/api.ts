@@ -4,6 +4,7 @@ import type {
   LeadersResponse,
   NflLine,
   NflInjury,
+  OddsResponse,
   NflDepthChart,
   NflGame,
   NflStandingTeam,
@@ -28,6 +29,7 @@ export const api = {
   searchPlayers: (q: string) => get<PlayerSearchResult[]>(`/api/players/search?q=${encodeURIComponent(q)}`),
   playerProps: (playerId: string, market: string) =>
     get<PlayerPropChart>(`/api/chart/player_props?player_id=${encodeURIComponent(playerId)}&market=${market}`),
+  odds: (league: string, refresh = false) => get<OddsResponse>(`/api/odds?league=${league}${refresh ? "&refresh=true" : ""}`),
   leaders: (category: string) => get<LeadersResponse>(`/api/chart/leaders?category=${encodeURIComponent(category)}`),
   parlay: (slip: string) => get<ParlaySlip>(`/api/chart/parlays?slip=${slip}`),
   parlaysAll: () => get<Record<string, ParlaySlip>>("/api/chart/parlays/all"),
