@@ -70,7 +70,7 @@ function GameCard({ g, t }: { g: OddsGame; t: (typeof THEMES)[ThemeId] }) {
       boxShadow: w.level === "money" ? "0 0 0 1px rgba(224,120,47,0.35)" : "none" }}>
       <div style={{ display: "grid", gridTemplateColumns: cols, gap: 12, alignItems: "center", paddingBottom: 8, borderBottom: `1px solid ${t.edge}` }}>
         <span style={{ fontSize: 13, fontWeight: 800, color: t.text, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          {g.time ? `${g.time} ET` : "TBD"}
+          {g.time ? `${g.time} CT` : "TBD"}
           {g.started && <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: t.mute, border: `1px solid ${t.edge}`, borderRadius: 4, padding: "1px 6px" }}>STARTED</span>}
           <Smoke w={w} t={t} />
         </span>
@@ -197,7 +197,7 @@ export default function OddsTab() {
                 <div key={g.id} style={{ padding: "10px 14px", borderBottom: `1px solid ${t.edge}`, display: "flex", flexDirection: "column", gap: 4 }}>
                   <Smoke w={g.watch} t={t} size={26} />
                   <span style={{ fontSize: 14, fontWeight: 700 }}>{g.awayName} at {g.homeName}</span>
-                  <span style={{ fontSize: 13, color: t.mute }}>{g.watch.pick}{g.watch.probability ? ` · ${Math.round(g.watch.probability * 100)}%` : ""}{g.time ? ` · ${g.time} ET` : ""}</span>
+                  <span style={{ fontSize: 13, color: t.mute }}>{g.watch.pick}{g.watch.probability ? ` · ${Math.round(g.watch.probability * 100)}%` : ""}{g.time ? ` · ${g.time} CT` : ""}</span>
                 </div>
               ))}
             </Panel>

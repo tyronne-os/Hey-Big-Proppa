@@ -74,18 +74,21 @@ def _get(endpoint: str, params: dict | None = None, ttl: int = _TTL) -> Any:
 
 
 # ── CST helper ───────────────────────────────────────────────────────────────
-_CST = timezone(timedelta(hours=-6))
+from zoneinfo import ZoneInfo
+
+_CST = ZoneInfo("America/Chicago")  # New Orleans: Central time, daylight saving handled
 
 
 def _to_cst(iso_or_epoch: str | int | None) -> str:
     if not iso_or_epoch:
         return ""
     try:
-        if isinstance(iso_or_epoch, int):
-            dt = datetime.fromtimestamp(iso_or_epoch, tz=timezone.utc)
-        else:
-            dt = datetime.fromisoformat(str(iso_or_epoch).replace("Z", "+00:00"))
-        return dt.astimezone(_CST).strftime("%-I:%M %p CST")
+        text = str(iso_or_epoch)
+        try:
+            dt = datetime.fromtimestamp(float(text), tz=timezone.utc)
+        except ValueError:
+            dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        return dt.astimezone(_CST).strftime("%-I:%M %p CT")
     except Exception:
         return ""
 
@@ -117,8 +120,8 @@ def get_games_for_date(date_str: str | None = None) -> list[dict]:
             "home":        g.get("home", ""),
             "away":        g.get("away", ""),
             "gameDate":    g.get("gameDate", ""),
-            "gameTime":    _to_cst(g.get("gameTime") or g.get("gameTimeEpoch")),
-            "gameTimeEpoch": g.get("gameTimeEpoch"),
+            "gameTime":    _to_cst(g.get("gameTime_epoch") or g.get("gameTimeEpoch") or g.get("gameTime")),
+            "gameTimeEpoch": g.get("gameTime_epoch") or g.get("gameTimeEpoch"),
             "gameStatus":  g.get("gameStatus", ""),
             "homeScore":   g.get("homeScore"),
             "awayScore":   g.get("awayScore"),
@@ -145,7 +148,7 @@ def get_weekly_schedule(season: int | None = None, season_type: str = "reg") -> 
                     "home":      g.get("home", ""),
                     "away":      g.get("away", ""),
                     "gameDate":  g.get("gameDate", ""),
-                    "gameTime":  _to_cst(g.get("gameTime") or g.get("gameTimeEpoch")),
+                    "gameTime":  _to_cst(g.get("gameTime_epoch") or g.get("gameTimeEpoch") or g.get("gameTime")),
                     "gameStatus": g.get("gameStatus", ""),
                 })
     return out

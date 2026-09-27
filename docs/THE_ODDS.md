@@ -30,7 +30,7 @@ the first pull). It is exact from the day tracking starts, not from when Vegas p
 
 ## The page (`frontend/src/components/OddsTab.tsx`)
 - Center nav: NFL / COLLEGE TOP 25. Add a league by adding it to `LEAGUES` and to `odds_pond.refresh`.
-- 75% games grouped by day (spread, total, moneyline, ET kickoff, move arrows), 25% right column:
+- 75% games grouped by day (spread, total, moneyline, CT kickoff (Central, New Orleans), move arrows), 25% right column:
   Smoke Proppa Watch, Biggest Line Moves From Open, Most Recent Line Changes, Biggest / Smallest
   Spreads, Highest / Lowest Totals (upcoming games only).
 - Theme: white by default; the round icon bottom-left switches White / Dark / Tan (remembered in

@@ -35,7 +35,9 @@ from __future__ import annotations
 import math
 from datetime import datetime, timezone, timedelta
 
-_CST = timezone(timedelta(hours=-6))
+from zoneinfo import ZoneInfo
+
+_CST = ZoneInfo("America/Chicago")  # New Orleans: Central time, daylight saving handled
 
 
 def _to_cst(iso_str: str) -> str:
@@ -43,7 +45,7 @@ def _to_cst(iso_str: str) -> str:
         return ""
     try:
         dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
-        return dt.astimezone(_CST).strftime("%-I:%M %p CST")
+        return dt.astimezone(_CST).strftime("%-I:%M %p CT")
     except Exception:
         return ""
 
@@ -369,6 +371,7 @@ def cfb_game_slate() -> list[dict]:
             "provider":        line["provider"],
             "startDate":       raw_start[:10],
             "gameTime":        _to_cst(raw_start),
+            "startIso":        raw_start,
             "favWp":           round(fav_wp, 3) if fav_wp is not None else None,
             "favSpOverall":    fav_sp.get("overall"),
             "dogSpOverall":    dog_sp.get("overall"),

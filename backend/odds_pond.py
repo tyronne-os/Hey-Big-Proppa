@@ -26,7 +26,7 @@ import math
 import statistics
 import threading
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -39,10 +39,10 @@ GOLD = data.GOLD
 BOARD = GOLD / "odds_board.csv"
 HISTORY = GOLD / "odds_line_history.csv"
 INDEX = GOLD / "_index.csv"
-ET = ZoneInfo("America/New_York")
+CT = ZoneInfo("America/Chicago")  # New Orleans
 TTL_SECONDS = 600
 
-BOARD_COLS = ["league", "game_id", "game_date", "game_time_et", "kickoff_epoch", "away", "home", "away_name", "home_name",
+BOARD_COLS = ["league", "game_id", "game_date", "game_time_ct", "kickoff_epoch", "away", "home", "away_name", "home_name",
               "away_rank", "home_rank", "books", "spread_home", "total", "ml_home", "ml_away",
               "fd_spread_home", "fd_total", "fd_ml_home", "fd_ml_away",
               "open_spread_home", "open_total", "open_ml_home", "spread_move", "total_move",
@@ -110,8 +110,8 @@ def _canon(abbr: str) -> str:
     return _ALIAS.get(abbr, abbr)
 
 
-def _et_time(epoch: float) -> str:
-    return datetime.fromtimestamp(epoch, ET).strftime("%-I:%M %p")
+def _ct_time(epoch: float) -> str:
+    return datetime.fromtimestamp(epoch, CT).strftime("%-I:%M %p")
 
 
 def _now_utc() -> str:
@@ -124,7 +124,7 @@ def _now_utc() -> str:
 
 def _nfl_dates() -> list[str]:
     """Game dates (YYYYMMDD) of the next slate still to be played, from the lake schedule."""
-    today = datetime.now(ET).date().isoformat()
+    today = datetime.now(CT).date().isoformat()
     rows = [r for r in data.load("schedule") if r.get("game_type") == "REG" and r.get("game_date", "") >= today
             and r.get("home_score") in ("", None)]
     if not rows:
@@ -167,7 +167,7 @@ def _nfl_snapshots() -> list[dict]:
             epoch = _f((games.get(f"{d}_{_canon(g.get('awayTeam', ''))}@{_canon(g.get('homeTeam', ''))}") or {}).get("gameTime_epoch"))
             out.append({
                 "league": "nfl", "game_id": gid, "game_date": f"{d[:4]}-{d[4:6]}-{d[6:]}",
-                "kickoff_epoch": epoch, "game_time_et": _et_time(epoch) if epoch else "",
+                "kickoff_epoch": epoch, "game_time_ct": _ct_time(epoch) if epoch else "",
                 "away": _canon(g.get("awayTeam", "")), "home": _canon(g.get("homeTeam", "")),
                 "away_name": away.get("name", g.get("awayTeam", "")), "home_name": home.get("name", g.get("homeTeam", "")),
                 "away_rank": None, "home_rank": None, "books": len(books),
@@ -181,14 +181,12 @@ def _nfl_snapshots() -> list[dict]:
 # refresh -- College Top 25 (CFBD lines)
 # ---------------------------------------------------------------------------
 
-def _cfb_time_et(start_date: str, cst_text: str) -> tuple[float | None, str]:
-    """cfb_jimmy times are fixed CST (UTC-6, no daylight saving), e.g. '5:00 PM CST' -> epoch + ET label."""
+def _cfb_time_ct(start_iso: str) -> tuple[float | None, str]:
     try:
-        naive = datetime.strptime(f"{start_date} {cst_text.replace(' CST', '').strip()}", "%Y-%m-%d %I:%M %p")
+        epoch = datetime.fromisoformat(start_iso.replace("Z", "+00:00")).timestamp()
     except ValueError:
-        return None, cst_text
-    epoch = naive.replace(tzinfo=timezone(timedelta(hours=-6))).timestamp()
-    return epoch, _et_time(epoch)
+        return None, ""
+    return epoch, _ct_time(epoch)
 
 
 def _cfb_snapshots() -> list[dict]:
@@ -202,11 +200,12 @@ def _cfb_snapshots() -> list[dict]:
         spread_home = g["spread"] if home_fav else (-g["spread"] if g["spread"] is not None else None)
         fav_ml, dog_ml = g.get("favMl"), g.get("dogMl")
         ml_home, ml_away = (fav_ml, dog_ml) if home_fav else (dog_ml, fav_ml)
-        epoch, label = _cfb_time_et(g.get("startDate", ""), g.get("gameTime", ""))
+        epoch, label = _cfb_time_ct(g.get("startIso", ""))
         line = {"spread_home": spread_home, "total": g.get("total"), "ml_home": ml_home, "ml_away": ml_away}
         out.append({
-            "league": "cfb", "game_id": str(g["gameId"]), "game_date": g.get("startDate", ""),
-            "kickoff_epoch": epoch, "game_time_et": label, "away": g["away"], "home": g["home"],
+            "league": "cfb", "game_id": str(g["gameId"]),
+            "game_date": datetime.fromtimestamp(epoch, CT).date().isoformat() if epoch else g.get("startDate", ""),
+            "kickoff_epoch": epoch, "game_time_ct": label, "away": g["away"], "home": g["home"],
             "away_name": g["away"], "home_name": g["home"], "away_rank": g.get("awayRank"), "home_rank": g.get("homeRank"),
             "books": 1, "consensus": line, "fanduel": {k: None for k in MARKETS},
             "source": f"cfbd/{g.get('provider', '')}".rstrip("/"), "updated_epoch": None,
@@ -252,7 +251,7 @@ def _apply(league: str, snaps: list[dict]) -> None:
         c, fd, op = s["consensus"], s["fanduel"], opens.get(s["game_id"], {})
         o_spread, o_total, o_ml = _f(op.get("spread_home")), _f(op.get("total")), _f(op.get("ml_home"))
         board.append({
-            "league": league, "game_id": s["game_id"], "game_date": s["game_date"], "game_time_et": s["game_time_et"],
+            "league": league, "game_id": s["game_id"], "game_date": s["game_date"], "game_time_ct": s["game_time_ct"],
             "kickoff_epoch": "" if s["kickoff_epoch"] is None else int(s["kickoff_epoch"]),
             "away": s["away"], "home": s["home"], "away_name": s["away_name"], "home_name": s["home_name"],
             "away_rank": s["away_rank"] or "", "home_rank": s["home_rank"] or "", "books": s["books"],
@@ -366,7 +365,7 @@ def board(league: str) -> dict:
     for r in sorted(rows, key=lambda r: (_f(r["kickoff_epoch"]) or 9e12, r["game_id"])):
         epoch = _f(r["kickoff_epoch"])
         g = {
-            "id": r["game_id"], "date": r["game_date"], "time": r["game_time_et"], "epoch": epoch,
+            "id": r["game_id"], "date": r["game_date"], "time": r["game_time_ct"], "epoch": epoch,
             "started": bool(epoch and epoch < now),
             "away": r["away"], "home": r["home"], "awayName": r["away_name"], "homeName": r["home_name"],
             "awayRank": int(_f(r["away_rank"])) if _f(r["away_rank"]) else None, "homeRank": int(_f(r["home_rank"])) if _f(r["home_rank"]) else None, "books": _num(r["books"]),
@@ -425,7 +424,7 @@ def _recent_changes(games: list[dict]) -> list[dict]:
             continue
         p = prev.get(h["game_id"])
         if p:
-            when = datetime.fromisoformat(h["snapshot_at_utc"]).astimezone(ET).strftime("%-I:%M%p")
+            when = datetime.fromisoformat(h["snapshot_at_utc"]).astimezone(CT).strftime("%-I:%M%p")
             for key, name in (("spread_home", "Spread"), ("total", "Total")):
                 if p[key] != h[key]:
                     out.append({"game": _label(by_id[h["game_id"]]), "market": name, "at": when, "epoch": h["snapshot_at_utc"],
