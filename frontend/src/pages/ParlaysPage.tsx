@@ -92,7 +92,7 @@ function Ticket({ slip }: { slip: ParlaySlip }) {
         <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 6, background: "var(--bp-wordmark-gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
           {slip.title}
         </div>
-        No legs currently clear the 85% probability bar with a real FanDuel price.
+        No legs on the board yet. Lines refresh every few minutes; try again shortly.
       </div>
     );
   }
@@ -121,7 +121,7 @@ function Ticket({ slip }: { slip: ParlaySlip }) {
             <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
               <div style={{ width: 38, height: 38, flex: "0 0 38px", borderRadius: "50%", padding: 1.5, boxSizing: "border-box", background: "linear-gradient(145deg,#f1dc92,#8a6224 50%,#c9a54e)" }}>
                 <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#1e1628", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono, monospace)", fontSize: 11, fontWeight: 700, color: "#b8b0c0" }}>
-                  {initials(leg.name)}
+                  {leg.photoUrl ? <img src={leg.photoUrl} alt={leg.name} referrerPolicy="no-referrer" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} /> : initials(leg.name)}
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>

@@ -20,6 +20,7 @@ from __future__ import annotations
 import data
 import hot_dog
 import jimmy
+import jimmy_bpl
 from odds import compute_parlay
 
 WAGER = 5.0
@@ -227,10 +228,93 @@ def _slip(slip_id: str, title: str, legs: list[dict]) -> dict:
     }
 
 
-SLIPS = {
+# ---------------------------------------------------------------------------
+# Big Proppa Line versions of the five themed slips.
+#
+# The functions above gate every leg on Jimmy's old 85% composite and came back empty most
+# weeks. They are kept for reference (LEGACY_SLIPS). The live slips keep the same five themes but
+# read the scored FanDuel legs (jimmy_bpl.cached_sides) and always return the best legs available,
+# each on a different game, ranked by the Big Proppa Line hit chance.
+# ---------------------------------------------------------------------------
+
+def _p_used(leg: dict) -> float:
+    """Game legs already carry their own calibration (college sd measured, NFL trusted half);
+    player props get the same 5-pt haircut and FanDuel-credit cap SPY BOY uses."""
+    if leg.get("sport"):
+        return leg["modelP"]
+    return min(leg["modelP"] - jimmy_bpl.SPY_HAIRCUT, leg["bookP"] + jimmy_bpl.SPY_MAX_CREDIT)
+
+
+def _themed_leg(leg: dict) -> dict:
+    p = _p_used(leg)
+    is_game = bool(leg.get("sport"))
+    return {
+        "playerId": leg["playerId"], "teamId": leg["playerId"], "name": leg["name"],
+        "prop": leg["prop"],
+        "market": leg["market"], "line": leg["line"], "gameId": leg["gameId"],
+        "l5": round(leg["recentHits"] / leg["recentGames"], 3) if leg["recentGames"] else p,
+        "probability": round(p, 3), "odds": leg["odds"],
+        "photoUrl": None if is_game else data.photo_url(leg["playerId"]),
+    }
+
+
+def _pick(sides: list[dict], keep, score, n: int = 3) -> list[dict]:
+    """Best `n` legs matching `keep`, one per game and one per player, highest score first."""
+    pool = sorted((l for l in sides if not l["alt"] and keep(l)), key=score, reverse=True)
+    out, games, players = [], set(), set()
+    for l in pool:
+        if l["gameId"] in games or l["playerId"] in players:
+            continue
+        games.add(l["gameId"])
+        players.add(l["playerId"])
+        out.append(_themed_leg(l))
+        if len(out) == n:
+            break
+    return out
+
+
+def _bpl_slip(slip_id: str, title: str, keep, score) -> dict:
+    return _slip(slip_id, title, _pick(jimmy_bpl.cached_sides(), keep, score))
+
+
+def bpl_hot_dogs() -> dict:
+    """Underdogs the Big Proppa Line likes: moneyline legs paying plus money, best expected value first."""
+    return _bpl_slip("hot-dogs", "HOT DOGS!", lambda l: l["market"] in ("nfl_ml", "cfb_ml") and l["odds"] > 0,
+                     lambda l: l["modelP"] * l["decimal"])
+
+
+def bpl_totals() -> dict:
+    """Game totals (NFL and college): the likeliest side of each total."""
+    return _bpl_slip("totals", "TOTALS!", lambda l: l["market"] in ("nfl_total", "cfb_total"), _p_used)
+
+
+def bpl_beast_mode() -> dict:
+    """Running backs: rushing-yard overs the model likes most."""
+    return _bpl_slip("beast-mode", "BEAST MODE", lambda l: l["market"] == "rushyds" and l["direction"] == "over", _p_used)
+
+
+def bpl_hot_boys() -> dict:
+    """Receivers: reception overs the model likes most."""
+    return _bpl_slip("hot-boys", "HOT BOYS", lambda l: l["market"] == "recs" and l["direction"] == "over", _p_used)
+
+
+def bpl_top_gun() -> dict:
+    """Quarterbacks: passing-yard overs the model likes most."""
+    return _bpl_slip("top-gun", "TOP GUN", lambda l: l["market"] == "passyds" and l["direction"] == "over", _p_used)
+
+
+LEGACY_SLIPS = {
     "hot_dogs": hot_dogs,
     "totals": totals,
     "beast_mode": beast_mode,
     "hot_boys": hot_boys,
     "top_gun": top_gun,
+}
+
+SLIPS = {
+    "hot_dogs": bpl_hot_dogs,
+    "totals": bpl_totals,
+    "beast_mode": bpl_beast_mode,
+    "hot_boys": bpl_hot_boys,
+    "top_gun": bpl_top_gun,
 }

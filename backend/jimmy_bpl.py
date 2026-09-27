@@ -33,6 +33,8 @@ import bisect
 import hashlib
 import itertools
 import math
+import threading
+import time
 from functools import lru_cache
 
 import bpl
@@ -430,11 +432,33 @@ def scan(sides: list[dict], slips: list[dict], horse: dict | None) -> dict:
     }
 
 
-def build_all() -> dict:
-    sides = _scored_sides()
+_cache: dict = {"sides": None, "sides_at": 0.0, "all": None, "all_at": 0.0}
+_cache_lock = threading.Lock()
+CACHE_SECONDS = 300
+
+
+def cached_sides(force: bool = False) -> list[dict]:
+    """Scored legs for the whole slate, rebuilt at most every 5 minutes (scoring reads big tables)."""
+    with _cache_lock:
+        if force or _cache["sides"] is None or time.time() - _cache["sides_at"] > CACHE_SECONDS:
+            sides = _scored_sides()
+            if sides or _cache["sides"] is None:
+                _cache["sides"], _cache["sides_at"] = sides, time.time()
+        return _cache["sides"]
+
+
+def build_all(force: bool = False) -> dict:
+    with _cache_lock:
+        fresh = _cache["all"] is not None and time.time() - _cache["all_at"] <= CACHE_SECONDS
+    if fresh and not force:
+        return _cache["all"]
+    sides = cached_sides(force)
     slips = build_parlays(sides) + build_spy_boy(sides)
     horse = crazy_horse(sides)
-    return {"slips": slips, "crazyHorse": horse, "scan": scan(sides, slips, horse)}
+    built = {"slips": slips, "crazyHorse": horse, "scan": scan(sides, slips, horse)}
+    with _cache_lock:
+        _cache["all"], _cache["all_at"] = built, time.time()
+    return built
 
 
 # The weekly question board: which bet types Jimmy can price from FanDuel data in the lake.

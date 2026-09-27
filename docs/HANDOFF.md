@@ -550,6 +550,10 @@ haircut) is returned as `crazyHorse` and shown as the hero at the bottom of the 
 `GET /api/jimmy/scan` is the deep-scan funnel (sides scored, legs per tier, tickets built).
 NFL game legs trust only half of the model's gap from 50% (Vegas is sharper than a 2-game model).
 The CHARTS tab was removed from the nav.
+The five themed dashboard slips (HOT DOGS, TOTALS, BEAST MODE, HOT BOYS, TOP GUN; `/api/chart/parlays/all`,
+`/parlays`, and the top of the PARLAY tab) now come from the same scored legs (`parlays.bpl_*`,
+`jimmy_bpl.cached_sides`, cached 5 minutes, warmed at startup). The old versions gated every leg on
+Jimmy's 85% composite and returned zero legs; they are kept as `parlays.LEGACY_SLIPS`.
 
 ## 6. What Phase 1 still needs before it's "done" (per the user's own framing)
 

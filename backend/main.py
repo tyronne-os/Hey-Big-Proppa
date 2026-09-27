@@ -53,6 +53,12 @@ def _warm_caches() -> None:
                 leaders_mod.leaders(cat)
             except Exception:
                 pass
+        try:
+            jimmy_bpl.build_all()  # scored legs, engine board and the five themed slips all share this cache
+            for fn in parlays_mod.SLIPS.values():
+                fn()
+        except Exception:
+            pass
 
     threading.Thread(target=run, daemon=True).start()
 
