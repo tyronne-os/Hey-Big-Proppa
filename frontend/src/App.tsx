@@ -9,7 +9,6 @@ import AdminPanel from "./components/AdminPanel";
 import PlayerTab from "./components/PlayerTab";
 import LeadersTab from "./components/LeadersTab";
 import ParlaysTab from "./components/ParlaysTab";
-import ChartsTab from "./components/ChartsTab";
 import QueriesTab, { type QueryResult } from "./components/QueriesTab";
 import EngineTab from "./components/EngineTab";
 import NewsTab from "./components/NewsTab";
@@ -21,7 +20,7 @@ import OddsTab from "./components/OddsTab";
 import { api } from "./api";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
-const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "parlay", "charts", "engine", "news", "queries", "myboo", "odds"] as const;
+const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "parlay", "engine", "news", "queries", "myboo", "odds"] as const;
 type ViewTab = (typeof VIEW_TABS)[number];
 
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
@@ -39,7 +38,6 @@ export default function App() {
   const [tab, setTab] = useState<ViewTab>("player");
   const [selectedPlayerId, setSelectedPlayerId] = useState(DEFAULT_PLAYER_ID);
   const [playerMarket, setPlayerMarket] = useState<string | undefined>(undefined);
-  const [currentPlayerChart, setCurrentPlayerChart] = useState<PlayerPropChart | null>(null);
   const [slip, setSlip] = useState<PlayerPropChart[]>([]);
   const [target, setTarget] = useState("all");
   const [adminOpen, setAdminOpen] = useState(false);
@@ -95,13 +93,6 @@ export default function App() {
       setNextNodeCount(built.length);
     });
   }, []);
-
-  useEffect(() => {
-    api
-      .playerProps(selectedPlayerId, "rushyds")
-      .then(setCurrentPlayerChart)
-      .catch(() => setCurrentPlayerChart(null));
-  }, [selectedPlayerId]);
 
   function log(msg: string) {
     setLogs((l) => [...l, { t: now(), msg }]);
@@ -257,7 +248,6 @@ export default function App() {
               />
             )}
             {tab === "parlay" && <ParlaysTab slip={slip} onRemove={removeFromSlip} />}
-            {tab === "charts" && <ChartsTab playerChart={currentPlayerChart} slip={slip} />}
             {tab === "engine" && <EngineTab />}
             {tab === "news" && <NewsTab />}
             {tab === "matchups" && <MatchupsTab />}

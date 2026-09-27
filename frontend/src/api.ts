@@ -1,6 +1,6 @@
 import type {
   ChartIndexRow,
-  EngineSlip,
+  EngineResponse,
   LeadersResponse,
   NflLine,
   NflInjury,
@@ -17,6 +17,7 @@ import type {
 import type { BacktestRow, CfbBigMoneyParlay, CfbCrazyHorse, CfbGame, CfbHotDog, CfbOver, HotDogBacktest, HotDogGame, MatchupGame, NewsArticle, PowSummary, SourceStatus } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
+export const API_BASE = BASE;
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);
@@ -41,7 +42,7 @@ export const api = {
       "/api/chart/team_ats_heatmap"
     ),
   dvp: () => get<{ sourceStatus: string; rows: { team: string; toxicity: number; category: string }[] }>("/api/chart/dvp"),
-  parlaysEngine: () => get<{ slips: EngineSlip[] }>("/api/parlays/engine"),
+  parlaysEngine: () => get<EngineResponse>("/api/parlays/engine"),
   newsArticles: () => get<{ articles: NewsArticle[] }>("/api/news/articles"),
   pow: () => get<PowSummary>("/api/pow"),
   matchups: () => get<{ sourceStatus: SourceStatus; games: MatchupGame[] }>("/api/matchups"),

@@ -206,6 +206,8 @@ def _scored_sides() -> list[dict]:
                 break
 
     import jimmy_cfb_bpl
+    import jimmy_nfl_games
+    out += jimmy_nfl_games.nfl_sides()
     out += jimmy_cfb_bpl.cfb_sides(next(iter(nxt.values()))["week"] if nxt else 0)
     return out
 
@@ -228,19 +230,49 @@ def _best_per_market(legs: list[dict]) -> list[dict]:
     return sorted(best.values(), key=lambda l: (-l["ev"], -l["modelP"]))
 
 
-def candidate_legs() -> list[dict]:
-    """Value legs: FanDuel price beaten by 5-25% on the BPL hit probability."""
+# Leg tiers. The board must never be empty: the strict tier is tried first, and each looser
+# tier only fills the ticket sizes that are still missing. Every ticket says which tier it came from.
+TIERS = (
+    {"name": "VALUE", "min_ev": MIN_LEG_EV, "max_ev": MAX_LEG_EV, "p": (MIN_LEG_P, MAX_LEG_P), "note": None},
+    {"name": "LEAN", "min_ev": 0.0, "max_ev": 0.35, "p": (0.35, 0.85),
+     "note": "LEAN: not enough legs cleared a full 5% price edge, so any positive-edge leg fills the board."},
+    {"name": "BEST AVAILABLE", "min_ev": -0.10, "max_ev": 0.60, "p": (0.30, 0.90),
+     "note": "BEST AVAILABLE: no price edge is left on this slate. These are the most likely legs, not value plays."},
+)
+SPY_RELAXED = {"min_p": 0.70, "min_book": 0.55, "min_recent": 0.67, "min_decimal": 3.0}
+CRAZY_STAKE = 5.0
+CRAZY_MIN_LEGS, CRAZY_MAX_LEGS = 5, 8
+CRAZY_KELLY_CAP = 0.005
+
+
+def _tier_legs(sides: list[dict], tier: dict) -> list[dict]:
+    lo, hi = tier["p"]
     legs = []
-    for l in _scored_sides():
+    for l in sides:
         if l["alt"]:
             continue
         leg = _finish_leg(dict(l), l["modelP"])
-        if MIN_LEG_EV <= leg["ev"] <= MAX_LEG_EV and MIN_LEG_P <= l["modelP"] <= MAX_LEG_P:
+        if tier["min_ev"] <= leg["ev"] <= tier["max_ev"] and lo <= l["modelP"] <= hi:
             legs.append(leg)
     return _best_per_market(legs)
 
 
-def spy_boy_legs() -> list[dict]:
+def candidate_legs(sides: list[dict] | None = None) -> list[dict]:
+    """Value legs: FanDuel price beaten by 5-25% on the BPL hit probability."""
+    return _tier_legs(sides if sides is not None else _scored_sides(), TIERS[0])
+
+
+def _spy_legs(sides: list[dict], min_p: float, min_book: float, min_recent: float) -> list[dict]:
+    legs = []
+    for l in sides:
+        p_used = min(l["modelP"] - SPY_HAIRCUT, l["bookP"] + SPY_MAX_CREDIT)
+        recent_ok = l["recentGames"] >= MIN_GAMES_THIS_SEASON and l["recentHits"] / l["recentGames"] >= min_recent
+        if p_used >= min_p and l["bookP"] >= min_book and recent_ok:
+            legs.append(_finish_leg(dict(l), p_used))
+    return _best_per_market(legs)
+
+
+def spy_boy_legs(sides: list[dict] | None = None) -> list[dict]:
     """
     SPY BOY legs need three voices to agree: the BPL says 75%+, FanDuel's own price
     says 60%+, and the leg cleared in at least 80% of the player's games this season
@@ -249,16 +281,11 @@ def spy_boy_legs() -> list[dict]:
     Main lines and FanDuel alternate rungs both qualify; the best rung per
     player-market wins.
     """
-    legs = []
-    for l in _scored_sides():
-        p_used = min(l["modelP"] - SPY_HAIRCUT, l["bookP"] + SPY_MAX_CREDIT)
-        recent_ok = l["recentGames"] >= MIN_GAMES_THIS_SEASON and l["recentHits"] / l["recentGames"] >= SPY_MIN_RECENT
-        if p_used >= SPY_MIN_P and l["bookP"] >= SPY_MIN_BOOK and recent_ok:
-            legs.append(_finish_leg(dict(l), p_used))
-    return _best_per_market(legs)
+    return _spy_legs(sides if sides is not None else _scored_sides(), SPY_MIN_P, SPY_MIN_BOOK, SPY_MIN_RECENT)
 
 
-def _ticket(legs: tuple[dict, ...], series: str = "BPL_EDGE", kelly_cap: float | None = None) -> dict:
+def _ticket(legs: tuple[dict, ...], series: str = "BPL_EDGE", kelly_cap: float | None = None,
+            stake: float = STAKE, tier: dict | None = None) -> dict:
     dec = 1.0
     p = 1.0
     for leg in legs:
@@ -270,18 +297,25 @@ def _ticket(legs: tuple[dict, ...], series: str = "BPL_EDGE", kelly_cap: float |
         kelly = min(kelly, kelly_cap)
     sig = "|".join(sorted(f"{l['playerId']}:{l['market']}:{l['direction']}:{l['line']}" for l in legs))
     tid = hashlib.sha1(sig.encode()).hexdigest()[:8].upper()
-    payout = round(STAKE * dec, 2)
+    payout = round(stake * dec, 2)
     american = _american(dec)
-    spy = series == "SPY_BOY"
+    prefix = {"SPY_BOY": "SPY", "CRAZY_HORSE": "CRZ"}.get(series, "BPL")
+    label = {"SPY_BOY": "SPY BOY", "CRAZY_HORSE": "CRAZY HORSE"}.get(series, "BPL")
+    sports = {l.get("sport") for l in legs}
+    tag = " CFB" if sports == {"CFB"} else " GAMES" if sports == {"NFL"} else ""
+    sign = "+" if american > 0 else ""
+    title = (f"CRAZY HORSE WEEK {legs[0]['week']} · {len(legs)}-LEG {sign}{american}" if series == "CRAZY_HORSE"
+             else f"{label}{tag} {len(legs)}-LEG {sign}{american}")
+    insight = (f"Hit chance {p:.1%} vs FanDuel implied {1 / dec:.1%} · ticket EV {ev:+.0%} · "
+               f"stake {kelly:.1%} of bankroll{' (capped)' if kelly_cap is not None else ''}. One leg per game."
+               + (" Every leg: BPL 75%+ after a 5-pt haircut, FanDuel price 60%+, cleared in 80%+ of recent games." if series == "SPY_BOY" else ""))
+    if tier and tier.get("note"):
+        insight = f"{tier['note']} {insight}"
     return {
-        "id": f"{'SPY' if spy else 'BPL'}-{tid}",
-        "title": f"{'SPY BOY' if spy else 'BPL'}{' CFB' if all(l.get('sport') == 'CFB' for l in legs) else ''} {len(legs)}-LEG {'+' if american > 0 else ''}{american}",
-        "correlationType": series,
-        "insight": (f"Hit chance {p:.1%} vs FanDuel implied {1 / dec:.1%} · ticket EV {ev:+.0%} · "
-                    f"stake {kelly:.1%} of bankroll{' (capped)' if kelly_cap is not None else ''}. One leg per game."
-                    + (" Every leg: BPL 75%+ after a 5-pt haircut, FanDuel price 60%+, cleared in 80%+ of recent games." if spy else "")),
+        "id": f"{prefix}-{tid}", "title": title, "correlationType": series, "insight": insight,
+        "tier": tier["name"] if tier else "VALUE",
         "legs": [{k: v for k, v in l.items() if k != "decimal"} for l in legs],
-        "wager": STAKE, "boost": 0.0,
+        "wager": stake, "boost": 0.0,
         "combinedDecimalOdds": round(dec, 4), "payout": payout, "boostedPayout": payout,
         "boostedAmericanOdds": american,
         "hitProbability": round(p, 4), "expectedValue": round(ev, 4), "kellyPct": round(kelly * 100, 2),
@@ -289,28 +323,118 @@ def _ticket(legs: tuple[dict, ...], series: str = "BPL_EDGE", kelly_cap: float |
     }
 
 
-def _tickets(pool: list[dict], sizes, per_size: int, series: str, min_dec: float = 0.0, kelly_cap: float | None = None) -> list[dict]:
+def _tickets(pool: list[dict], sizes, per_size: int, series: str, min_dec: float = 0.0, kelly_cap: float | None = None,
+             tier: dict | None = None) -> list[dict]:
     out: list[dict] = []
     for size in sizes:
         combos = [c for c in itertools.combinations(pool, size) if len({l["gameId"] for l in c}) == size]
-        ranked = sorted((_ticket(c, series, kelly_cap) for c in combos if math.prod(l["decimal"] for l in c) >= min_dec),
+        ranked = sorted((_ticket(c, series, kelly_cap, tier=tier) for c in combos if math.prod(l["decimal"] for l in c) >= min_dec),
                         key=lambda t: -t["expectedValue"])
         out.extend(ranked[:per_size])
     return out
 
 
-def build_parlays() -> list[dict]:
-    """Mixed NFL+college tickets, plus college-only tickets so the college slate is always represented."""
-    legs = candidate_legs()
-    mixed = _tickets(legs[:MAX_CANDIDATES], TICKET_SIZES, TICKETS_PER_SIZE, "BPL_EDGE")
-    college = _tickets([l for l in legs if l.get("sport") == "CFB"][:MAX_CANDIDATES], (2, 3, 4), 1, "BPL_EDGE")
-    seen = {t["id"] for t in mixed}
-    return mixed + [t for t in college if t["id"] not in seen]
+def build_parlays(sides: list[dict] | None = None) -> list[dict]:
+    """
+    Conservative series. Tiers fill in order until every ticket size (2-5 legs) has its tickets,
+    then college-only and NFL-game-only tickets are added so each slate is always represented.
+    """
+    sides = sides if sides is not None else _scored_sides()
+    out: list[dict] = []
+    ids: set[str] = set()
+    have = {n: 0 for n in TICKET_SIZES}
+
+    def take(tickets: list[dict], cap: dict[int, int]) -> None:
+        for t in tickets:
+            n = len(t["legs"])
+            if t["id"] in ids or cap.get(n, 0) <= 0:
+                continue
+            cap[n] -= 1
+            ids.add(t["id"])
+            out.append(t)
+
+    room = {n: TICKETS_PER_SIZE for n in TICKET_SIZES}
+    for tier in TIERS:
+        pool = _tier_legs(sides, tier)[:MAX_CANDIDATES]
+        take(_tickets(pool, TICKET_SIZES, TICKETS_PER_SIZE * 4, "BPL_EDGE", tier=tier), room)
+        if not any(room.values()):
+            break
+
+    for sport in ("CFB", "NFL"):
+        for tier in TIERS[:2]:
+            pool = [l for l in _tier_legs(sides, tier) if l.get("sport") == sport][:MAX_CANDIDATES]
+            before = len(out)
+            take(_tickets(pool, (2, 3, 4), 3, "BPL_EDGE", tier=tier), {2: 1, 3: 1, 4: 1})
+            if len(out) > before:
+                break
+    return out
 
 
-def build_spy_boy() -> list[dict]:
-    """The aggressive series: 3-5 high-probability legs stacked for a +300 or better payout."""
-    return _tickets(spy_boy_legs()[:MAX_CANDIDATES], SPY_SIZES, 1, "SPY_BOY", SPY_MIN_DECIMAL, SPY_KELLY_CAP)
+def build_spy_boy(sides: list[dict] | None = None) -> list[dict]:
+    """The aggressive series: 3-5 high-probability legs stacked for a +300 or better payout (relaxed if the strict gate finds none)."""
+    sides = sides if sides is not None else _scored_sides()
+    strict = _tickets(_spy_legs(sides, SPY_MIN_P, SPY_MIN_BOOK, SPY_MIN_RECENT)[:MAX_CANDIDATES], SPY_SIZES, 1, "SPY_BOY", SPY_MIN_DECIMAL, SPY_KELLY_CAP)
+    if strict:
+        return strict
+    r = SPY_RELAXED
+    tier = {"name": "RELAXED", "note": "RELAXED SPY BOY: no leg met all three strict voices this week, so the bar drops to BPL 70%, FanDuel 55%, 2 of 3 recent games."}
+    return _tickets(_spy_legs(sides, r["min_p"], r["min_book"], r["min_recent"])[:MAX_CANDIDATES], SPY_SIZES, 1, "SPY_BOY", r["min_decimal"], SPY_KELLY_CAP, tier)
+
+
+def crazy_horse(sides: list[dict] | None = None) -> dict | None:
+    """
+    The featured long shot: the likeliest leg of each game, stacked 5-8 deep, $5 to win big.
+    One leg per game, best-EV leg per game among those the model gives at least the floor
+    (60%, then 55%, then 50% if the slate is thin), then the eight likeliest. It is a lottery
+    ticket, not a value play: the hit chance is small and the ticket says so. Leg probabilities
+    get the same 5-point haircut and FanDuel-credit cap as SPY BOY, because the raw model runs
+    optimistic on the tails and eight optimistic legs compound.
+    """
+    sides = sides if sides is not None else _scored_sides()
+    for floor in (0.60, 0.55, 0.50, 0.45):
+        best: dict[str, dict] = {}
+        for l in sides:
+            p_used = min(l["modelP"] - SPY_HAIRCUT, l["bookP"] + SPY_MAX_CREDIT)
+            if l["alt"] or p_used < floor:
+                continue
+            leg = _finish_leg(dict(l), p_used)
+            if leg["ev"] < -0.15:
+                continue
+            if l["gameId"] not in best or leg["ev"] > best[l["gameId"]]["ev"]:
+                best[l["gameId"]] = leg
+        if len(best) >= CRAZY_MIN_LEGS:
+            legs = tuple(sorted(best.values(), key=lambda l: -l["probability"])[:CRAZY_MAX_LEGS])
+            t = _ticket(legs, "CRAZY_HORSE", CRAZY_KELLY_CAP, stake=CRAZY_STAKE)
+            t["floor"] = floor
+            t["insight"] = (f"The likeliest leg of {len(legs)} different games, every one rated {floor:.0%}+ by the Big Proppa Line after a 5-point haircut. "
+                            f"Model hit chance {t['hitProbability']:.1%}: ${CRAZY_STAKE:g} pays ${t['payout']:,.2f} if every leg lands. "
+                            "A lottery ticket, not a value play. The model's leg odds compound their errors, so the payout is the point, not the edge.")
+            return t
+    return None
+
+
+def scan(sides: list[dict], slips: list[dict], horse: dict | None) -> dict:
+    """Deep-scan funnel: what was read, what each gate kept, and what the board ended up with."""
+    from collections import Counter
+    games = lambda ls: len({l["gameId"] for l in ls})  # noqa: E731
+    kind = Counter("college game" if l.get("sport") == "CFB" else "NFL game" if l.get("sport") == "NFL"
+                   else "player prop (FanDuel alt ladder)" if l["alt"] else "player prop (main line)" for l in sides)
+    return {
+        "week": sides[0]["week"] if sides else None,
+        "sidesScored": len(sides), "byKind": dict(kind), "gamesCovered": games(sides),
+        "tiers": [{"tier": t["name"], "legs": len(ls), "games": games(ls)} for t in TIERS for ls in [_tier_legs(sides, t)]],
+        "spyLegsStrict": len(_spy_legs(sides, SPY_MIN_P, SPY_MIN_BOOK, SPY_MIN_RECENT)),
+        "spyLegsRelaxed": len(_spy_legs(sides, SPY_RELAXED["min_p"], SPY_RELAXED["min_book"], SPY_RELAXED["min_recent"])),
+        "tickets": dict(Counter(f"{s['correlationType']} / {s.get('tier', 'VALUE')}" for s in slips)),
+        "crazyHorseLegs": len(horse["legs"]) if horse else 0,
+    }
+
+
+def build_all() -> dict:
+    sides = _scored_sides()
+    slips = build_parlays(sides) + build_spy_boy(sides)
+    horse = crazy_horse(sides)
+    return {"slips": slips, "crazyHorse": horse, "scan": scan(sides, slips, horse)}
 
 
 # The weekly question board: which bet types Jimmy can price from FanDuel data in the lake.
@@ -342,5 +466,5 @@ def log_to_myboo(slips: list[dict]) -> None:
             "SIM", s["title"] + f" · {s['id']}",
             [{"player_name": l["name"], "team": l["team"], "market": l["market"], "direction": l["direction"],
               "line": l["line"], "odds": l["odds"], "probability": l["probability"], "game_date": ""} for l in s["legs"]],
-            season, s["week"], s["boostedAmericanOdds"], s["wager"], f"JIMMY {'SPY BOY' if s['correlationType'] == 'SPY_BOY' else 'BPL'} · EV {s['expectedValue']:+.0%}",
+            season, s["week"], s["boostedAmericanOdds"], s["wager"], f"JIMMY {({'SPY_BOY': 'SPY BOY', 'CRAZY_HORSE': 'CRAZY HORSE'}).get(s['correlationType'], 'BPL')} · EV {s['expectedValue']:+.0%}",
         )

@@ -537,6 +537,20 @@ Line splits from Vegas. Full write-up: `docs/THE_ODDS.md`. Code: `backend/odds_p
 lake saw (Tank01 has no opens), so line-move lists fill in over time. HF needs `TANK01_API_KEY`
 as a Space secret for live refresh; without it the page shows the last committed pond.
 
+### 5.11 Engine: tiers, NFL game legs, Crazy Horse (built 2026-09-26)
+
+`jimmy_bpl.build_all()` scores every FanDuel side once (player props main + alt ladders, NFL
+game total/spread/moneyline from the odds pond via `jimmy_nfl_games.py`, college Top 25 via
+`jimmy_cfb_bpl.py`) and builds the board. The board must never be empty: leg **tiers** VALUE
+(5%+ edge) -> LEAN (any positive edge) -> BEST AVAILABLE (no edge, likeliest legs) fill each
+ticket size in turn and every ticket carries its `tier` (badge in the UI). SPY BOY drops to a
+RELAXED bar if the strict gate finds nothing. College-only and NFL-games-only tickets are always
+added. The **CRAZY HORSE** ticket (`crazy_horse()`, $5, likeliest leg of 5-8 different games, 5-pt
+haircut) is returned as `crazyHorse` and shown as the hero at the bottom of the Engine tab.
+`GET /api/jimmy/scan` is the deep-scan funnel (sides scored, legs per tier, tickets built).
+NFL game legs trust only half of the model's gap from 50% (Vegas is sharper than a 2-game model).
+The CHARTS tab was removed from the nav.
+
 ## 6. What Phase 1 still needs before it's "done" (per the user's own framing)
 
 As of this writing, the user has not yet declared Phase 1 complete. Sections

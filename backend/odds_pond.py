@@ -150,8 +150,8 @@ def _book_line(b: dict | None) -> dict:
             "ml_home": _f(b.get("homeTeamML")), "ml_away": _f(b.get("awayTeamML"))}
 
 
-def _nfl_snapshots() -> list[dict]:
-    teams = _teams()
+def nfl_raw_games() -> list[dict]:
+    """Tank01 odds for the next slate: [{date, gid, epoch, away, home, books: {book: {...}}}]. Cached by tank01._get."""
     out = []
     for d in _nfl_dates():
         odds = (tank01._get("getNFLBettingOdds", {"gameDate": d}, ttl=TTL_SECONDS) or {}).get("body") or {}
@@ -163,17 +163,28 @@ def _nfl_snapshots() -> list[dict]:
             books = {k: v for k, v in g.items() if isinstance(v, dict)}
             if not books:
                 continue
-            away, home = teams.get(g.get("awayTeam"), {}), teams.get(g.get("homeTeam"), {})
-            epoch = _f((games.get(f"{d}_{_canon(g.get('awayTeam', ''))}@{_canon(g.get('homeTeam', ''))}") or {}).get("gameTime_epoch"))
-            out.append({
-                "league": "nfl", "game_id": gid, "game_date": f"{d[:4]}-{d[4:6]}-{d[6:]}",
-                "kickoff_epoch": epoch, "game_time_ct": _ct_time(epoch) if epoch else "",
-                "away": _canon(g.get("awayTeam", "")), "home": _canon(g.get("homeTeam", "")),
-                "away_name": away.get("name", g.get("awayTeam", "")), "home_name": home.get("name", g.get("homeTeam", "")),
-                "away_rank": None, "home_rank": None, "books": len(books),
-                "consensus": _consensus(books), "fanduel": _book_line(books.get("fanduel")),
-                "source": "tank01", "updated_epoch": _f(g.get("last_updated_e_time")),
-            })
+            away, home = _canon(g.get("awayTeam", "")), _canon(g.get("homeTeam", ""))
+            epoch = _f((games.get(f"{d}_{away}@{home}") or {}).get("gameTime_epoch"))
+            out.append({"date": d, "gid": gid, "epoch": epoch, "away": away, "home": home, "books": books,
+                        "updated_epoch": _f(g.get("last_updated_e_time"))})
+    return out
+
+
+def _nfl_snapshots() -> list[dict]:
+    teams = _teams()
+    out = []
+    for r in nfl_raw_games():
+        d, epoch = r["date"], r["epoch"]
+        away, home = teams.get(r["away"], {}), teams.get(r["home"], {})
+        out.append({
+            "league": "nfl", "game_id": r["gid"], "game_date": f"{d[:4]}-{d[4:6]}-{d[6:]}",
+            "kickoff_epoch": epoch, "game_time_ct": _ct_time(epoch) if epoch else "",
+            "away": r["away"], "home": r["home"],
+            "away_name": away.get("name", r["away"]), "home_name": home.get("name", r["home"]),
+            "away_rank": None, "home_rank": None, "books": len(r["books"]),
+            "consensus": _consensus(r["books"]), "fanduel": _book_line(r["books"].get("fanduel")),
+            "source": "tank01", "updated_epoch": r["updated_epoch"],
+        })
     return out
 
 

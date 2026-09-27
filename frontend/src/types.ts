@@ -256,7 +256,10 @@ export interface EngineLeg {
 export interface EngineSlip {
   id: string;
   title: string;
-  correlationType: "COACHES_SON" | "IB_CASCADE" | "VOLUME_STACK" | "SINGLE_HERO" | "BPL_EDGE" | "SPY_BOY";
+  correlationType: "COACHES_SON" | "IB_CASCADE" | "VOLUME_STACK" | "SINGLE_HERO" | "BPL_EDGE" | "SPY_BOY" | "CRAZY_HORSE";
+  tier?: string;
+  floor?: number;
+  week?: number;
   hitProbability?: number;
   expectedValue?: number;
   kellyPct?: number;
@@ -581,4 +584,24 @@ export interface OddsResponse {
   sidebar: OddsSidebar;
   updatedAt: string | null;
   trackingSince: string | null;
+}
+
+export interface EngineScan {
+  week: number | null;
+  sidesScored: number;
+  byKind: Record<string, number>;
+  gamesCovered: number;
+  tiers: { tier: string; legs: number; games: number }[];
+  spyLegsStrict: number;
+  spyLegsRelaxed: number;
+  tickets: Record<string, number>;
+  crazyHorseLegs: number;
+}
+
+export interface EngineResponse {
+  slips: EngineSlip[];
+  crazyHorse: EngineSlip | null;
+  scan?: EngineScan;
+  mode?: string;
+  version?: string;
 }

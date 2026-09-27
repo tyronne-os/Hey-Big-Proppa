@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api";
+import { api, API_BASE } from "../api";
 import type { EngineSlip, EngineLeg, PowSummary } from "../types";
 
 const TYPE_META: Record<string, { label: string; color: string; desc: string }> = {
@@ -27,6 +27,11 @@ const TYPE_META: Record<string, { label: string; color: string; desc: string }> 
     label: "SPY BOY",
     color: "#f97316",
     desc: "Aggressive series · every leg BPL 75%+, FanDuel 60%+ and confirmed by recent games · +300 or better",
+  },
+  CRAZY_HORSE: {
+    label: "CRAZY HORSE",
+    color: "#e0782f",
+    desc: "The week's featured long shot",
   },
   SINGLE_HERO: {
     label: "SINGLE HERO",
@@ -105,7 +110,7 @@ function TakeItFakeIt({ slip }: { slip: EngineSlip }) {
         probability: lg.probability,
         game_date: "",
       }));
-      const res = await fetch("http://localhost:8000/api/myboo/tickets", {
+      const res = await fetch(`${API_BASE}/api/myboo/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -244,6 +249,11 @@ function EngineCard({ slip }: { slip: EngineSlip }) {
           }}>
             {meta.label}
           </span>
+          {slip.tier && slip.tier !== "VALUE" && (
+            <span title={slip.insight} style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#a78bfa", border: "1px solid #a78bfa55", borderRadius: 4, padding: "2px 7px" }}>
+              {slip.tier}
+            </span>
+          )}
           <span style={{ flex: 1, fontSize: 15, fontWeight: 800, background: "var(--bp-wordmark-gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
             {slip.title}
           </span>
@@ -293,6 +303,40 @@ function EngineCard({ slip }: { slip: EngineSlip }) {
   );
 }
 
+function CrazyHorseHero({ slip }: { slip: EngineSlip }) {
+  const american = toAmerican(slip.combinedDecimalOdds);
+  return (
+    <div style={{ marginTop: 10, borderRadius: 20, border: "1px solid #b8862b", overflow: "hidden",
+      background: "linear-gradient(135deg, rgba(139,92,246,0.22), #0c0710 45%, rgba(224,120,47,0.16))", boxShadow: "0 0 28px rgba(224,120,47,0.18)" }}>
+      <div style={{ padding: "22px 24px 8px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", color: "#e0782f" }}>FEATURED TICKET · WEEK {slip.week}</span>
+          <span style={{ fontSize: 40, fontWeight: 900, lineHeight: 1, letterSpacing: "0.02em", background: "linear-gradient(90deg,#f1dc92,#d9b45a 45%,#e0782f)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+            CRAZY HORSE
+          </span>
+          <span style={{ fontSize: 12, color: "var(--bp-muted)" }}>{slip.legs.length} legs · one per game · FanDuel prices</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+          <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 13, color: "var(--bp-muted)" }}>${slip.wager} pays</span>
+          <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 40, fontWeight: 900, color: "#2ee6a6", lineHeight: 1 }}>
+            ${slip.payout.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+          <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 14, fontWeight: 800, color: "#d9b45a" }}>
+            {american} · model hit chance {slip.hitProbability !== undefined ? `${(slip.hitProbability * 100).toFixed(1)}%` : "—"}
+          </span>
+        </div>
+      </div>
+
+      <p style={{ margin: 0, padding: "6px 24px 12px", fontSize: 12, color: "var(--bp-muted)", lineHeight: 1.55 }}>{slip.insight}</p>
+
+      <div style={{ borderTop: "1px solid rgba(217,180,90,0.25)" }}>
+        {slip.legs.map((lg) => <LegRow key={lg.playerId + lg.market} leg={lg} />)}
+      </div>
+      <TakeItFakeIt slip={slip} />
+    </div>
+  );
+}
+
 const TYPE_ORDER = ["BPL_EDGE", "SPY_BOY"];
 
 function PowLine({ pow }: { pow: PowSummary | null }) {
@@ -314,15 +358,26 @@ function PowLine({ pow }: { pow: PowSummary | null }) {
 
 export default function EngineTab() {
   const [slips, setSlips] = useState<EngineSlip[] | null>(null);
+  const [horse, setHorse] = useState<EngineSlip | null>(null);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState<string>("ALL");
   const [pow, setPow] = useState<PowSummary | null>(null);
 
   useEffect(() => {
-    api.parlaysEngine()
-      .then((r) => setSlips(r.slips))
-      .catch(() => setError(true));
+    let alive = true;
+    let tries = 0;
+    const load = () => {
+      api.parlaysEngine()
+        .then((r) => { if (alive) { setSlips(r.slips); setHorse(r.crazyHorse ?? null); setError(false); } })
+        .catch(() => {
+          if (!alive) return;
+          setError(true);
+          if (++tries < 6) setTimeout(load, 8000);
+        });
+    };
+    load();
     api.pow().then(setPow).catch(() => setPow(null));
+    return () => { alive = false; };
   }, []);
 
   const visible = slips
@@ -336,7 +391,7 @@ export default function EngineTab() {
           PROPPA ENGINE · CORRELATED FINDS
         </span>
         <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>
-          Jimmy BPL mode · Big Proppa Line vs FanDuel only · each leg must beat FanDuel's price by 5%+ · one leg per game · every ticket logged to MY BOO
+          Jimmy BPL mode · Big Proppa Line vs FanDuel only · player props, NFL games and college · one leg per game · every ticket logged to MY BOO
         </span>
         <PowLine pow={pow} />
       </div>
@@ -364,7 +419,7 @@ export default function EngineTab() {
 
       {error && (
         <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>
-          Engine unavailable — backend may be offline.
+          The engine is slow to answer or offline. Retrying automatically...
         </div>
       )}
 
@@ -374,11 +429,13 @@ export default function EngineTab() {
 
       {slips && visible.length === 0 && (
         <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>
-          No {filter !== "ALL" ? filter + " " : ""}tickets this week — no FanDuel prop beat the Big Proppa Line by 5%+ in value.
+          No {filter !== "ALL" ? filter + " " : ""}tickets on this slate yet. FanDuel lines refresh every few minutes; the engine widens its bar automatically before it ever shows an empty board.
         </div>
       )}
 
       {visible.map((slip) => <EngineCard key={slip.id} slip={slip} />)}
+
+      {slips && slips.length > 0 && horse && <CrazyHorseHero slip={horse} />}
     </div>
   );
 }

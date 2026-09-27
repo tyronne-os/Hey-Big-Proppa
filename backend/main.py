@@ -164,9 +164,15 @@ def api_parlays_engine():
     Jimmy BPL mode: 2-5 leg FanDuel tickets built from Big Proppa Line edges.
     Every ticket is noted by MY BOO as a SIM order (deduplicated).
     """
-    slips = jimmy_bpl.build_parlays() + jimmy_bpl.build_spy_boy()
-    jimmy_bpl.log_to_myboo(slips)
-    return {"slips": slips, "mode": "BPL", "version": bpl_mod.BPL_VERSION}
+    built = jimmy_bpl.build_all()
+    jimmy_bpl.log_to_myboo(built["slips"] + ([built["crazyHorse"]] if built["crazyHorse"] else []))
+    return {**built, "mode": "BPL", "version": bpl_mod.BPL_VERSION}
+
+
+@app.get("/api/jimmy/scan")
+def api_jimmy_scan():
+    """Deep-scan funnel for the current slate: sides scored, legs kept per tier, tickets built."""
+    return jimmy_bpl.build_all()["scan"]
 
 
 @app.get("/api/parlays/engine-legacy")
