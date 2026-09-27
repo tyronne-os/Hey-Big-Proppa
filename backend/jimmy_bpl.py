@@ -243,7 +243,6 @@ TIERS = (
 )
 SPY_RELAXED = {"min_p": 0.70, "min_book": 0.55, "min_recent": 0.67, "min_decimal": 3.0}
 CRAZY_STAKE = 5.0
-CRAZY_MIN_LEGS, CRAZY_MAX_LEGS = 5, 8
 CRAZY_KELLY_CAP = 0.005
 
 
@@ -321,8 +320,23 @@ def _ticket(legs: tuple[dict, ...], series: str = "BPL_EDGE", kelly_cap: float |
         "combinedDecimalOdds": round(dec, 4), "payout": payout, "boostedPayout": payout,
         "boostedAmericanOdds": american,
         "hitProbability": round(p, 4), "expectedValue": round(ev, 4), "kellyPct": round(kelly * 100, 2),
+        "confidence": confidence(legs),
         "week": legs[0]["week"], "book": BOOK, "version": bpl.BPL_VERSION,
     }
+
+
+def confidence(legs) -> int:
+    """Confidence score 0-100: the average per-leg hit probability. (Hit chance is the product of the legs
+    and shrinks fast with every leg added; this is how sure the model is of a typical leg on the ticket.)"""
+    ps = [l["probability"] for l in legs]
+    return round(100 * sum(ps) / len(ps)) if ps else 0
+
+
+def add_photos(slip: dict | None) -> dict | None:
+    if slip:
+        for l in slip["legs"]:
+            l["photoUrl"] = None if l.get("sport") else data.photo_url(l["playerId"])
+    return slip
 
 
 def _tickets(pool: list[dict], sizes, per_size: int, series: str, min_dec: float = 0.0, kelly_cap: float | None = None,
@@ -372,45 +386,72 @@ def build_parlays(sides: list[dict] | None = None) -> list[dict]:
     return out
 
 
+SPY_TICKET_LEGS = 5   # never more than five legs on a SPY BOY ticket
+
+
+def _group_spy(pool: list[dict], min_dec: float, kelly_cap: float | None, tier: dict | None) -> list[dict]:
+    """
+    Group the qualifying SPY BOY legs into up to three tickets of at most five legs (A, B, C), biggest payouts first.
+    Each game keeps its qualifying legs ranked by price; ticket A takes the best-paying leg from each game (five
+    best-paying games), B takes each game's second-best leg, C its third. One leg per game on any ticket, so a
+    ticket never stacks two legs from the same game. A ticket with under three legs or under the payout floor is dropped.
+    """
+    per_game: dict[str, list[dict]] = {}
+    for l in sorted(pool, key=lambda l: -l["decimal"]):
+        per_game.setdefault(l["gameId"], []).append(l)
+    out = []
+    for layer, letter in enumerate("ABC"):
+        legs = sorted((g[layer] for g in per_game.values() if len(g) > layer), key=lambda l: -l["decimal"])
+        chunk = tuple(legs[:SPY_TICKET_LEGS])
+        if len(chunk) < 3 or math.prod(l["decimal"] for l in chunk) < min_dec:
+            continue
+        t = _ticket(chunk, "SPY_BOY", kelly_cap, tier=tier)
+        t["title"] = f"SPY BOY {letter} · {len(chunk)}-LEG {'+' if t['boostedAmericanOdds'] > 0 else ''}{t['boostedAmericanOdds']}"
+        t["group"] = letter
+        out.append(t)
+    return out
+
+
 def build_spy_boy(sides: list[dict] | None = None) -> list[dict]:
-    """The aggressive series: 3-5 high-probability legs stacked for a +300 or better payout (relaxed if the strict gate finds none)."""
+    """The aggressive series: qualifying legs grouped five to a ticket for the biggest payouts (relaxed if the strict gate finds none)."""
     sides = sides if sides is not None else _scored_sides()
-    strict = _tickets(_spy_legs(sides, SPY_MIN_P, SPY_MIN_BOOK, SPY_MIN_RECENT)[:MAX_CANDIDATES], SPY_SIZES, 1, "SPY_BOY", SPY_MIN_DECIMAL, SPY_KELLY_CAP)
+    strict = _group_spy(_spy_legs(sides, SPY_MIN_P, SPY_MIN_BOOK, SPY_MIN_RECENT), SPY_MIN_DECIMAL, SPY_KELLY_CAP, None)
     if strict:
         return strict
     r = SPY_RELAXED
     tier = {"name": "RELAXED", "note": "RELAXED SPY BOY: no leg met all three strict voices this week, so the bar drops to BPL 70%, FanDuel 55%, 2 of 3 recent games."}
-    return _tickets(_spy_legs(sides, r["min_p"], r["min_book"], r["min_recent"])[:MAX_CANDIDATES], SPY_SIZES, 1, "SPY_BOY", r["min_decimal"], SPY_KELLY_CAP, tier)
+    return _group_spy(_spy_legs(sides, r["min_p"], r["min_book"], r["min_recent"]), r["min_decimal"], SPY_KELLY_CAP, tier)
+
+
+CRAZY_LEGS = 10
 
 
 def crazy_horse(sides: list[dict] | None = None) -> dict | None:
     """
-    The featured long shot: the likeliest leg of each game, stacked 5-8 deep, $5 to win big.
-    One leg per game, best-EV leg per game among those the model gives at least the floor
-    (60%, then 55%, then 50% if the slate is thin), then the eight likeliest. It is a lottery
-    ticket, not a value play: the hit chance is small and the ticket says so. Leg probabilities
-    get the same 5-point haircut and FanDuel-credit cap as SPY BOY, because the raw model runs
-    optimistic on the tails and eight optimistic legs compound.
+    The featured long shot: the likeliest leg of ten different games, every leg high probability, $5 to win big.
+    One leg per game (the leg with the highest probability after the same 5-point haircut and FanDuel-credit
+    cap SPY BOY uses), at the highest floor that still leaves ten games (75%, 70%, 65%, 60%, then 55%).
+    A lottery ticket, not a value play: ten legs multiply, so the hit chance is small however good each leg is.
     """
     sides = sides if sides is not None else _scored_sides()
-    for floor in (0.60, 0.55, 0.50, 0.45):
+    for floor in (0.75, 0.70, 0.65, 0.60, 0.55):
         best: dict[str, dict] = {}
         for l in sides:
-            p_used = min(l["modelP"] - SPY_HAIRCUT, l["bookP"] + SPY_MAX_CREDIT)
+            p_used = min(l["modelP"] - SPY_HAIRCUT, l["bookP"] + SPY_MAX_CREDIT) if not l.get("sport") else l["modelP"]
             if l["alt"] or p_used < floor:
                 continue
             leg = _finish_leg(dict(l), p_used)
             if leg["ev"] < -0.15:
                 continue
-            if l["gameId"] not in best or leg["ev"] > best[l["gameId"]]["ev"]:
+            if l["gameId"] not in best or leg["probability"] > best[l["gameId"]]["probability"]:
                 best[l["gameId"]] = leg
-        if len(best) >= CRAZY_MIN_LEGS:
-            legs = tuple(sorted(best.values(), key=lambda l: -l["probability"])[:CRAZY_MAX_LEGS])
+        if len(best) >= CRAZY_LEGS:
+            legs = tuple(sorted(best.values(), key=lambda l: -l["probability"])[:CRAZY_LEGS])
             t = _ticket(legs, "CRAZY_HORSE", CRAZY_KELLY_CAP, stake=CRAZY_STAKE)
             t["floor"] = floor
-            t["insight"] = (f"The likeliest leg of {len(legs)} different games, every one rated {floor:.0%}+ by the Big Proppa Line after a 5-point haircut. "
+            t["insight"] = (f"The likeliest leg of {CRAZY_LEGS} different games, every one rated {floor:.0%}+ by the Big Proppa Line after a 5-point haircut. "
                             f"Model hit chance {t['hitProbability']:.1%}: ${CRAZY_STAKE:g} pays ${t['payout']:,.2f} if every leg lands. "
-                            "A lottery ticket, not a value play. The model's leg odds compound their errors, so the payout is the point, not the edge.")
+                            "A lottery ticket, not a value play. Ten legs multiply, so the payout is the point, not the edge.")
             return t
     return None
 
@@ -455,7 +496,11 @@ def build_all(force: bool = False) -> dict:
     sides = cached_sides(force)
     slips = build_parlays(sides) + build_spy_boy(sides)
     horse = crazy_horse(sides)
-    built = {"slips": slips, "crazyHorse": horse, "scan": scan(sides, slips, horse)}
+    import jimmy_featured
+    for t in slips:
+        add_photos(t)
+    add_photos(horse)
+    built = {"slips": slips, "crazyHorse": horse, "featured": jimmy_featured.featured(sides), "scan": scan(sides, slips, horse)}
     with _cache_lock:
         _cache["all"], _cache["all_at"] = built, time.time()
     return built

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SmokeBadge from "../components/SmokeBadge";
+import TicketCard, { fromThemed } from "../components/TicketCard";
 import { api } from "../api";
 import type { ParlaySlip } from "../types";
 
@@ -60,7 +61,7 @@ export default function ParlaysPage() {
         {slips && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(380px,1fr))", gap: 18, alignItems: "start" }}>
             {Object.values(slips).map((s) => (
-              <Ticket key={s.id} slip={s} />
+              s.legs.length > 0 ? <TicketCard key={s.id} slip={fromThemed(s)} /> : <Ticket key={s.id} slip={s} />
             ))}
           </div>
         )}

@@ -215,6 +215,10 @@ export interface LeadersResponse {
 }
 
 export interface ParlayLeg {
+  team?: string;
+  direction?: string;
+  market?: string;
+  line?: number | null;
   playerId?: string;
   teamId?: string;
   name: string;
@@ -226,6 +230,7 @@ export interface ParlayLeg {
 }
 
 export interface ParlaySlip {
+  confidence?: number;
   id: string;
   title: "HOT DOGS!" | "TOTALS!" | "BEAST MODE" | "HOT BOYS" | "TOP GUN";
   legs: ParlayLeg[];
@@ -256,10 +261,14 @@ export interface EngineLeg {
 export interface EngineSlip {
   id: string;
   title: string;
-  correlationType: "COACHES_SON" | "IB_CASCADE" | "VOLUME_STACK" | "SINGLE_HERO" | "BPL_EDGE" | "SPY_BOY" | "CRAZY_HORSE";
+  correlationType: "COACHES_SON" | "IB_CASCADE" | "VOLUME_STACK" | "SINGLE_HERO" | "BPL_EDGE" | "SPY_BOY" | "CRAZY_HORSE" | "FEATURED" | "THEMED";
   tier?: string;
   floor?: number;
   week?: number;
+  confidence?: number;
+  badge?: string;
+  group?: string;
+  player?: { name: string; team: string; position: string; photoUrl: string | null };
   hitProbability?: number;
   expectedValue?: number;
   kellyPct?: number;
@@ -601,6 +610,7 @@ export interface EngineScan {
 export interface EngineResponse {
   slips: EngineSlip[];
   crazyHorse: EngineSlip | null;
+  featured?: EngineSlip | null;
   scan?: EngineScan;
   mode?: string;
   version?: string;

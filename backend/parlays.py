@@ -225,6 +225,7 @@ def _slip(slip_id: str, title: str, legs: list[dict]) -> dict:
         "payout": math_result.payout,
         "boostedPayout": math_result.boosted_payout,
         "boostedAmericanOdds": math_result.boosted_american,
+        "confidence": round(100 * sum(l["probability"] for l in legs) / len(legs)) if legs else 0,
     }
 
 
@@ -249,7 +250,8 @@ def _themed_leg(leg: dict) -> dict:
     p = _p_used(leg)
     is_game = bool(leg.get("sport"))
     return {
-        "playerId": leg["playerId"], "teamId": leg["playerId"], "name": leg["name"],
+        "playerId": leg["playerId"], "teamId": leg["playerId"], "name": leg["name"], "team": leg.get("team", ""),
+        "direction": leg.get("direction", "over"),
         "prop": leg["prop"],
         "market": leg["market"], "line": leg["line"], "gameId": leg["gameId"],
         "l5": round(leg["recentHits"] / leg["recentGames"], 3) if leg["recentGames"] else p,

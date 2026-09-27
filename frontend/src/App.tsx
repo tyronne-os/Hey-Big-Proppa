@@ -35,7 +35,8 @@ export default function App() {
   const [rfEdges, setRfEdges] = useState<Edge[]>([]);
   const [nextNodeCount, setNextNodeCount] = useState(2);
 
-  const [tab, setTab] = useState<ViewTab>("player");
+  const [tab, setTab] = useState<ViewTab>("parlay");
+  const [canvasOpen, setCanvasOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState(DEFAULT_PLAYER_ID);
   const [playerMarket, setPlayerMarket] = useState<string | undefined>(undefined);
   const [slip, setSlip] = useState<PlayerPropChart[]>([]);
@@ -163,12 +164,22 @@ export default function App() {
     log("Display cleared");
   }
 
+  const canvasCapable = tab !== "leaders" && tab !== "matchups" && tab !== "ramp" && tab !== "myboo" && tab !== "odds";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100vw", height: "100vh", background: "var(--bp-page-bg)", color: "var(--bp-fg)" }}>
       <Header isDark={isDark} onToggleTheme={() => setIsDark((v) => !v)} onToggleAdmin={() => setAdminOpen((v) => !v)} />
 
       <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
-        {tab !== "leaders" && tab !== "matchups" && tab !== "ramp" && tab !== "myboo" && tab !== "odds" && (
+        {canvasCapable && !canvasOpen && (
+          <button onClick={() => setCanvasOpen(true)} title="Show the node canvas"
+            style={{ position: "absolute", left: 0, top: "40%", zIndex: 20, writingMode: "vertical-rl", padding: "14px 6px", cursor: "pointer",
+              border: "1px solid #6b4a1c", borderLeft: 0, borderRadius: "0 10px 10px 0", background: "var(--bp-card-bg)", color: "#d9b45a",
+              fontSize: 11, fontWeight: 800, letterSpacing: "0.2em" }}>
+            NODES &#9656;
+          </button>
+        )}
+        {canvasOpen && canvasCapable && (
           <>
             <div style={{ width: `${leftPct}%`, flex: `0 0 ${leftPct}%`, display: "flex", flexDirection: "column", minWidth: 0 }}>
               <div
@@ -180,6 +191,11 @@ export default function App() {
                     "radial-gradient(ellipse 70% 55% at 28% 30%, var(--bp-canvas-glow-orange), transparent 70%), radial-gradient(ellipse 80% 60% at 70% 78%, var(--bp-canvas-glow-purple), transparent 70%), var(--bp-canvas-bg)",
                 }}
               >
+                <button onClick={() => setCanvasOpen(false)} title="Hide the node canvas"
+                  style={{ position: "absolute", left: 10, top: 10, zIndex: 20, height: 28, padding: "0 12px", cursor: "pointer", borderRadius: 999,
+                    border: "1px solid #6b4a1c", background: "var(--bp-card-bg)", color: "#d9b45a", fontSize: 11, fontWeight: 800, letterSpacing: "0.12em" }}>
+                  &#9666; HIDE NODES
+                </button>
                 <ReactFlow nodes={rfNodes} edges={rfEdges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} fitView minZoom={0.2} maxZoom={1.2}>
                   <Background color="#2a1e36" gap={24} />
                   <Controls position="bottom-right" style={{ marginBottom: 100 }} />
@@ -203,7 +219,7 @@ export default function App() {
           <div style={{ height: 8, flex: "0 0 8px" }} />
 
           <div style={{ display: "flex", gap: 6, padding: "0 20px 10px", flexWrap: "wrap", flex: "0 0 auto" }}>
-            {VIEW_TABS.map((vt) => {
+            {VIEW_TABS.filter((vt) => vt !== "player").map((vt) => {
               const isBoo = vt === "myboo";
               const isActive = vt === tab;
               return (

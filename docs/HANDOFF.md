@@ -549,6 +549,13 @@ added. The **CRAZY HORSE** ticket (`crazy_horse()`, $5, likeliest leg of 5-8 dif
 haircut) is returned as `crazyHorse` and shown as the hero at the bottom of the Engine tab.
 `GET /api/jimmy/scan` is the deep-scan funnel (sides scored, legs per tier, tickets built).
 NFL game legs trust only half of the model's gap from 50% (Vegas is sharper than a 2-game model).
+The CHARTS and PLAYER tabs are hidden from the nav (the player page still opens from a leaders click); the
+default view is PARLAY and the node canvas is hidden behind a NODES tab. Every ticket carries a `confidence`
+(average leg probability), a photo strip when it pays +800 or more, and a FAKE IT (default) / TAKE IT control
+(`TicketCard.tsx`, `TakeItFakeIt.tsx`). SPY BOY is grouped into tickets A and B (up to C), five legs max, best
+payouts first; CRAZY HORSE is 10 high-probability legs; `jimmy_featured.py` builds the featured single-player RB
+parlay (anytime TD + 70+ rush yds + 3+ rec) shown in the white panel at the top of PARLAY. The lake has no
+2+ TD price, and same-player legs are correlated, so its payout is an upper estimate.
 The CHARTS tab was removed from the nav.
 The five themed dashboard slips (HOT DOGS, TOTALS, BEAST MODE, HOT BOYS, TOP GUN; `/api/chart/parlays/all`,
 `/parlays`, and the top of the PARLAY tab) now come from the same scored legs (`parlays.bpl_*`,
