@@ -4,7 +4,7 @@ const TABS = [
   { id: "leaders",  label: "LEADERS",  href: "/leaders" },
   { id: "matchups", label: "MATCHUPS", href: "/?tab=matchups" },
   { id: "ramp",     label: "RAMP",     href: "/?tab=ramp" },
-  { id: "parlay",   label: "PARLAY",   href: "/parlays" },
+  { id: "parlay",   label: "THROWDOWN THURSDAY",   href: "/parlays" },
   { id: "engine",   label: "ENGINE",   href: "/?tab=engine" },
   { id: "news",     label: "NEWS",     href: "/?tab=news" },
   { id: "queries",  label: "QUERIES",  href: "/?tab=queries" },

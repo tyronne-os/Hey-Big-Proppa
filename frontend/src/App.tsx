@@ -244,7 +244,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
                     letterSpacing: isBoo ? "0.06em" : undefined,
                   }}
                 >
-                  {isBoo ? "MY BOO" : vt === "odds" ? "THE ODDS" : vt.toUpperCase()}
+                  {isBoo ? "MY BOO" : vt === "odds" ? "THE ODDS" : vt === "parlay" ? "THROWDOWN THURSDAY" : vt.toUpperCase()}
                 </button>
               );
             })}
