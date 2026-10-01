@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/colors.css">
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/typography.css">
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/styles.css">
+<script src="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<style>
+@keyframes bpEmber{0%{opacity:.5;transform:scale(1)}6%{opacity:1;transform:scale(1.8)}14%{opacity:.95;transform:scale(1.4)}40%{opacity:.6;transform:scale(1.05)}100%{opacity:.5;transform:scale(1)}}
+@keyframes bpCore{0%{opacity:.35}6%{opacity:1}20%{opacity:.7}100%{opacity:.35}}
+@keyframes bpPuffA{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:1}45%{transform:translate(-1.8em,-8em) scale(1.8);opacity:.67}100%{transform:translate(.8em,-20em) scale(3.6);opacity:0}}
+@keyframes bpPuffB{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:1}45%{transform:translate(1.6em,-8em) scale(1.7);opacity:.6}100%{transform:translate(-1.6em,-20em) scale(3.5);opacity:0}}
+@keyframes bpPuffC{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:.93}45%{transform:translate(-2.8em,-7em) scale(1.9);opacity:.53}100%{transform:translate(-5em,-17em) scale(4);opacity:0}}
+@keyframes bpWisp{0%{transform:translate(0,0) scale(.4);opacity:0}20%{opacity:.47}100%{transform:translate(-.6em,-24em) scale(2.8);opacity:0}}
+@keyframes bpSmokeD{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:.67}60%{transform:translate(2.2em,-11em) scale(2.7);opacity:.37}100%{transform:translate(4em,-26em) scale(4.8);opacity:0}}
+@keyframes bpSmokeE{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:.6}60%{transform:translate(-2.8em,-10em) scale(2.9);opacity:.33}100%{transform:translate(-4.4em,-27em) scale(5);opacity:0}}
+@keyframes bpWave{0%,100%{transform:scaleY(.2)}50%{transform:scaleY(1)}}
+@keyframes bpNod{0%,100%{transform:translateY(0) scale(1.02)}50%{transform:translateY(-4px) scale(1.03)}}
+@keyframes bpTalk{0%,100%{transform:scale(1.02) translateY(0)}25%{transform:scale(1.035) translateY(-3px)}50%{transform:scale(1.025) translateY(1px)}75%{transform:scale(1.04) translateY(-2px)}}
+@keyframes bpHand{0%{transform:translate(0,0) rotate(0) scale(1.06)}20%{transform:translate(-3px,2px) rotate(-.3deg) scale(1.065)}40%{transform:translate(2px,-2px) rotate(.2deg) scale(1.07)}60%{transform:translate(-1px,3px) rotate(-.15deg) scale(1.065)}80%{transform:translate(3px,1px) rotate(.25deg) scale(1.06)}100%{transform:translate(0,0) rotate(0) scale(1.06)}}
+@keyframes bpGrain{0%{transform:translate(0,0)}25%{transform:translate(-8%,4%)}50%{transform:translate(5%,-6%)}75%{transform:translate(-4%,-3%)}100%{transform:translate(0,0)}}
+@keyframes bpFlicker{0%,100%{opacity:.08}50%{opacity:.14}}
+@keyframes bpSlide{0%{left:0%}50%{left:100%}100%{left:0%}}
+@keyframes bpMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+html,body{margin:0;height:100%;background:#0b0512;overflow:hidden}
+a{color:#d9b45a;text-decoration:none}
+a:hover{color:#f1dc92}
+*{scrollbar-width:thin;scrollbar-color:#2a1e36 transparent;box-sizing:border-box}
+.bp-shell{display:flex;flex-direction:column;width:100vw;height:100vh;overflow:hidden}
+.bp-row{flex:1;min-height:0;display:flex}
+.bp-rail{width:30%;min-width:280px;max-width:520px;flex:0 0 auto;position:relative;overflow:hidden;background:#0b0512}
+.bp-main{flex:1;min-width:0;overflow-y:auto}
+@media (max-width: 760px){
+  html,body{overflow:auto}
+  .bp-shell{height:auto;overflow:visible}
+  .bp-row{flex-direction:column}
+  .bp-rail{width:100%;max-width:none;height:300px;flex:0 0 300px}
+  .bp-mascot{height:300px !important;width:305px !important;left:-20px !important;font-size:10px !important}
+  .bp-main{overflow-y:visible}
+}
+</style>
+</helmet>
+
+<div class="bp-shell">
+  <div style="flex:0 0 36px;height:36px;background:#d9b45a;overflow:hidden;display:flex;align-items:center">
+    <div style="display:flex;width:max-content;animation:bpMarquee 50s linear infinite">
+      <sc-for list="{{ ticker }}" as="t" hint-placeholder-count="8">
+        <div style="padding:0 28px;white-space:nowrap;font-size:13px;font-weight:800;letter-spacing:0.04em;color:#0b0512">{{ t }}</div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div class="bp-row">
+    <div class="bp-rail">
+      <div class="bp-mascot" style="position:absolute;top:0;height:calc(100vh - 36px);width:calc((100vh - 36px) * 1.016);left:calc((100vh - 36px) * -0.11);font-size:calc((100vh - 36px) / 30);filter:contrast(1.12) brightness(1.06)">
+        <image-slot id="mascot" shape="rect" fit="cover" src="https://media.githubusercontent.com/media/tyronne-os/Hey-Big-Proppa/main/frontend/design/assets/big-proppa.png" placeholder="Drop the Big Proppa art" style="width:100%;height:100%"></image-slot>
+        <div style="position:absolute;left:21.5%;top:61%;width:0;height:0;pointer-events:none"><div style="position:absolute;left:-1.6em;top:-1.6em;width:3.2em;height:3.2em;border-radius:50%;background:radial-gradient(circle,rgba(255,110,40,0.28),rgba(255,60,10,0) 70%);mix-blend-mode:screen;animation:bpEmber 3.6s ease-out infinite"></div><div style="position:absolute;left:-.4em;top:-.5em;width:.8em;height:1em;border-radius:50%;background:radial-gradient(circle,rgba(255,235,170,0.95),rgba(255,130,50,0.6) 50%,rgba(220,30,10,0) 80%);animation:bpCore 3.6s ease-out infinite"></div><div style="position:absolute;left:-1.7em;top:-3.74em;width:3.4em;height:3.4em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.5),rgba(232,230,238,0) 70%);filter:blur(0.6em);opacity:0;animation:bpPuffA 4.2s ease-out 0.2s infinite"></div><div style="position:absolute;left:-1.9em;top:-4.18em;width:3.8em;height:3.8em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.45),rgba(232,230,238,0) 70%);filter:blur(0.7em);opacity:0;animation:bpPuffB 4.8s ease-out 0.7s infinite"></div><div style="position:absolute;left:-2em;top:-4.4em;width:4em;height:4em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.4),rgba(232,230,238,0) 70%);filter:blur(0.8em);opacity:0;animation:bpPuffC 5.2s ease-out 1.2s infinite"></div><div style="position:absolute;left:-1.8em;top:-3.9600000000000004em;width:3.6em;height:3.6em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.38),rgba(232,230,238,0) 70%);filter:blur(0.7em);opacity:0;animation:bpSmokeD 5.6s ease-out 0.4s infinite"></div><div style="position:absolute;left:-2.1em;top:-4.620000000000001em;width:4.2em;height:4.2em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.34),rgba(232,230,238,0) 70%);filter:blur(0.9em);opacity:0;animation:bpSmokeE 6.2s ease-out 1.6s infinite"></div><div style="position:absolute;left:-2.3em;top:-5.06em;width:4.6em;height:4.6em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.3),rgba(232,230,238,0) 70%);filter:blur(1em);opacity:0;animation:bpSmokeD 6.8s ease-out 2.4s infinite"></div><div style="position:absolute;left:-1.5em;top:-3.3000000000000003em;width:3em;height:3em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.3),rgba(232,230,238,0) 70%);filter:blur(0.6em);opacity:0;animation:bpWisp 6s ease-out 0s infinite"></div><div style="position:absolute;left:-1.7em;top:-3.74em;width:3.4em;height:3.4em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.26),rgba(232,230,238,0) 70%);filter:blur(0.7em);opacity:0;animation:bpWisp 6s ease-out 2s infinite"></div><div style="position:absolute;left:-2.5em;top:-5.5em;width:5em;height:5em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.26),rgba(232,230,238,0) 70%);filter:blur(1.1em);opacity:0;animation:bpSmokeE 7.2s ease-out 3.2s infinite"></div><div style="position:absolute;left:-1.8em;top:-3.9600000000000004em;width:3.6em;height:3.6em;border-radius:50%;background:radial-gradient(circle,rgba(232,230,238,0.22),rgba(232,230,238,0) 70%);filter:blur(0.8em);opacity:0;animation:bpWisp 6s ease-out 4s infinite"></div></div>
+      </div>
+      <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg, transparent 72%, #0b0512 100%), linear-gradient(0deg, #0b0512 0%, transparent 18%)"></div>
+    </div>
+
+    <div class="bp-main" id="bpmain">
+      <div style="position:sticky;top:16px;z-index:50;margin:16px 24px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 16px 12px 22px;background:rgba(20,10,32,0.82);backdrop-filter:blur(16px);border:1px solid #2a1e36;border-radius:16px;flex-wrap:wrap">
+        <span style="font-size:17px;font-weight:900;letter-spacing:0.01em;white-space:nowrap;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 55%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">HEY BIG PROPPA!</span>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="padding:5px 12px;border:1px solid #3a2a48;border-radius:999px;font-size:12px;font-weight:700;color:#ece6f2">NFL</span>
+          <span style="padding:5px 12px;border:1px solid #3a2a48;border-radius:999px;font-size:12px;font-weight:700;color:#ece6f2">SEC FOOTBALL</span>
+          <span style="padding:5px 12px;border:1px solid #3a2a48;border-radius:999px;font-size:12px;font-weight:700;color:#ece6f2">NBA</span>
+          <span style="padding:5px 12px;border:1px solid #3a2a48;border-radius:999px;font-size:12px;font-weight:700;color:#ece6f2">WNBA</span>
+          <span style="padding:5px 12px;border:1px solid #3a2a48;border-radius:999px;font-size:12px;font-weight:700;color:#ece6f2">NHL</span>
+          <span style="padding:5px 12px;border:1px solid #3a2a48;border-radius:999px;font-size:12px;font-weight:700;color:#ece6f2">MLB</span>
+        </div>
+      </div>
+
+      <div style="max-width:1120px;margin:0 auto;padding:clamp(48px,7vw,96px) 32px 80px;display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:56px;align-items:center">
+        <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
+          <h1 style="margin:0;display:flex;flex-direction:column;font-size:clamp(46px,5.6vw,84px);line-height:0.92;font-weight:900;letter-spacing:-0.035em;text-transform:uppercase">
+            <span style="color:#ece6f2">Big Proppa lines</span>
+            <span style="background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 38%,#8a6224 56%,#c9a54e 74%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #2a1a08)">are the real lines.</span>
+          </h1>
+          <p style="margin:0;font-size:clamp(18px,1.8vw,22px);line-height:1.4;font-weight:700;color:#ece6f2;text-wrap:pretty;max-width:520px">Big Proppa is the only sports performance predictive model where you can speak directly to Big Proppa for real-time strategy and sports data analytics for parlays.</p>
+          <p style="margin:0;font-size:16px;line-height:1.6;color:#b8b0c0;text-wrap:pretty;max-width:480px">The real predictive parlay analytics for professional sports bettors. Stop guessing and start knowing.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+            <button style="display:flex;align-items:center;gap:8px;height:48px;padding:0 24px;border:0;border-radius:999px;font-family:inherit;font-size:15px;font-weight:800;color:#0b0512;background:#d9b45a;cursor:pointer">Join the Waitlist</button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:center;min-width:0">
+          <div style="width:340px;max-width:100%;border-radius:46px;border:1px solid #3a2a48;background:#0e0714;padding:10px;box-shadow:0 40px 90px rgba(0,0,0,0.6)">
+            <div style="border-radius:36px;background:#120818;overflow:hidden;display:flex;flex-direction:column">
+              <div style="display:flex;justify-content:center;padding:12px 0 6px"><div style="width:90px;height:24px;border-radius:999px;background:#05020a"></div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px">
+                <span style="display:flex;align-items:center;height:30px;padding:0 12px;border:1px solid #3a2a48;border-radius:999px;font-size:12px;font-weight:600;color:#ece6f2">NFL</span>
+                <span style="font-size:14px;font-weight:900;background:linear-gradient(180deg,#f7e7a6,#c9a54e 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent">HEY BIG PROPPA!</span>
+                <span style="width:30px;height:30px"></span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin:0 16px 10px;padding:10px 14px;border:1px solid #3a2610;border-radius:14px;background:#160c22">
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;color:#8a8290">WEEK 4 · 4-LEG PARLAY</span>
+                  <span style="font-size:15px;font-weight:900;color:#ece6f2">KICKER <span style="color:#d9b45a">BOOMS</span></span>
+                </div>
+                <span style="padding:5px 10px;border-radius:999px;background:#2ee6a6;font-size:10px;font-weight:900;color:#0b0512">+50% PROFIT BOOST</span>
+              </div>
+              <div style="display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 16px;border-top:1px solid #241e2c">
+                <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:2px solid #d9b45a;background-color:#D50A0A;background-image:url('https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3150744.png&w=200&h=146');background-size:150%;background-position:center 15%;background-repeat:no-repeat"></div>
+                <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                  <span style="font-size:13px;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:#ece6f2">Chase</span> <span style="color:#d9b45a">McLaughlin</span></span>
+                  <span style="font-size:11px;color:#b8b0c0">TB · 3+ FG Made</span>
+                  <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:#6e6878">9/9 FG · 2026</span>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:#2ee6a6">+260</span>
+              </div>
+              <div style="display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 16px;border-top:1px solid #241e2c">
+                <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:2px solid #d9b45a;background-color:#FB4F14;background-image:url('https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4360234.png&w=200&h=146');background-size:150%;background-position:center 15%;background-repeat:no-repeat"></div>
+                <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                  <span style="font-size:13px;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:#ece6f2">Evan</span> <span style="color:#d9b45a">McPherson</span></span>
+                  <span style="font-size:11px;color:#b8b0c0">CIN · 3+ FG Made</span>
+                  <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:#6e6878">8/8 FG · 2026</span>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:#2ee6a6">+300</span>
+              </div>
+              <div style="display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 16px;border-top:1px solid #241e2c">
+                <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:2px solid #d9b45a;background-color:#002C5F;background-image:url('https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4571557.png&w=200&h=146');background-size:150%;background-position:center 15%;background-repeat:no-repeat"></div>
+                <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                  <span style="font-size:13px;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:#ece6f2">Spencer</span> <span style="color:#d9b45a">Shrader</span></span>
+                  <span style="font-size:11px;color:#b8b0c0">IND · 3+ FG Made</span>
+                  <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:#6e6878">8/8 FG · 2026</span>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:#2ee6a6">+320</span>
+              </div>
+              <div style="display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 16px;border-top:1px solid #241e2c">
+                <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:2px solid #d9b45a;background-color:#4F2683;background-image:url('https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4566192.png&w=200&h=146');background-size:150%;background-position:center 15%;background-repeat:no-repeat"></div>
+                <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                  <span style="font-size:13px;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:#ece6f2">Will</span> <span style="color:#d9b45a">Reichard</span></span>
+                  <span style="font-size:11px;color:#b8b0c0">MIN · 3+ FG Made</span>
+                  <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:#6e6878">7/7 FG · 2026</span>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:#2ee6a6">+340</span>
+              </div>
+              <div style="margin:4px 16px 0;padding:14px 0 6px;border-top:2px dashed #3a2610;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-family:var(--font-mono);font-size:10px;color:#8a8290">PARLAY ODDS</span>
+                <span style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:#d9b45a">+26,511</span>
+              </div>
+              <div style="margin:0 16px;display:flex;justify-content:space-between;align-items:center;padding:4px 0">
+                <span style="font-family:var(--font-mono);font-size:10px;color:#8a8290">PROFIT · BOOSTED 50%</span>
+                <span style="font-family:var(--font-mono);font-size:12px;color:#b8b0c0"><span style="text-decoration:line-through;color:#6e6878">$2,651.12</span>  $3,976.68</span>
+              </div>
+              <div style="margin:10px 12px 12px;padding:16px;border-radius:18px;background:linear-gradient(180deg,#1a2a1f,#0f1a14);border:1px solid #1f6b4e;display:flex;justify-content:space-between;align-items:flex-end">
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#8a8290">$10 WAGER PAYS</span>
+                  <span style="font-size:11px;color:#b8b0c0">Show me the money</span>
+                </div>
+                <span style="font-size:34px;line-height:1;font-weight:900;color:#2ee6a6">$3,986.68</span>
+              </div>
+              <div style="padding:6px 14px 16px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:#6e6878;text-align:center">FG MADE THRU WK 3 · SAMPLE ODDS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="topgun" style="max-width:1120px;margin:0 auto;padding:24px 32px 96px;display:flex;flex-direction:column;gap:36px">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <h2 style="margin:0;display:flex;flex-direction:column;font-size:clamp(36px,4.4vw,60px);line-height:0.92;font-weight:900;letter-spacing:-0.03em;text-transform:uppercase">
+            <span style="color:#ece6f2">Top</span>
+            <span style="background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 58%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">Gun.</span>
+          </h2>
+          <p style="margin:0;font-size:17px;line-height:1.6;color:#b8b0c0;max-width:520px;text-wrap:pretty">Three QBs. Each one needs 300 passing yards and 3 touchdown passes. All three hit — you cash.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
+          <div style="background:#140a20;border:1px solid #2a1e36;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+            <div style="aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(160deg,#241773 0%,#241773 45%,#0e0714 100%)">
+                <span style="position:absolute;right:-6px;bottom:-14px;font-size:120px;font-weight:900;line-height:1;letter-spacing:-0.05em;color:rgba(255,255,255,0.08)">BAL</span>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:#d9b45a;z-index:2"></div>
+                <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3916387.png&h=420&w=420" alt="Lamar Jackson" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:96%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))">
+              </div>
+            <div style="padding:18px;display:flex;flex-direction:column;gap:10px">
+              <div><span style="font-size:17px;font-weight:800;color:#ece6f2">Lamar Jackson</span> <span style="font-family:var(--font-mono);font-size:11px;color:#8a8290">BAL</span></div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#0e0714;border:1px solid #241e2c;border-radius:10px">
+                  <span style="font-size:12px;color:#b8b0c0">O 299.5 Pass Yds</span>
+                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#2ee6a6">+210</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#0e0714;border:1px solid #241e2c;border-radius:10px">
+                  <span style="font-size:12px;color:#b8b0c0">O 2.5 Pass TD</span>
+                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#2ee6a6">+240</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="background:#140a20;border:1px solid #2a1e36;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+            <div style="aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(160deg,#00338D 0%,#00338D 45%,#0e0714 100%)">
+                <span style="position:absolute;right:-6px;bottom:-14px;font-size:120px;font-weight:900;line-height:1;letter-spacing:-0.05em;color:rgba(255,255,255,0.08)">BUF</span>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:#d9b45a;z-index:2"></div>
+                <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3918298.png&h=420&w=420" alt="Josh Allen" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:96%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))">
+              </div>
+            <div style="padding:18px;display:flex;flex-direction:column;gap:10px">
+              <div><span style="font-size:17px;font-weight:800;color:#ece6f2">Josh Allen</span> <span style="font-family:var(--font-mono);font-size:11px;color:#8a8290">BUF</span></div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#0e0714;border:1px solid #241e2c;border-radius:10px">
+                  <span style="font-size:12px;color:#b8b0c0">O 299.5 Pass Yds</span>
+                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#2ee6a6">+190</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#0e0714;border:1px solid #241e2c;border-radius:10px">
+                  <span style="font-size:12px;color:#b8b0c0">O 2.5 Pass TD</span>
+                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#2ee6a6">+220</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="background:#140a20;border:1px solid #2a1e36;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+            <div style="aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(160deg,#E31837 0%,#E31837 45%,#0e0714 100%)">
+                <span style="position:absolute;right:-6px;bottom:-14px;font-size:120px;font-weight:900;line-height:1;letter-spacing:-0.05em;color:rgba(255,255,255,0.08)">KC</span>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:#d9b45a;z-index:2"></div>
+                <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3139477.png&h=420&w=420" alt="Patrick Mahomes" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:96%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))">
+              </div>
+            <div style="padding:18px;display:flex;flex-direction:column;gap:10px">
+              <div><span style="font-size:17px;font-weight:800;color:#ece6f2">Patrick Mahomes</span> <span style="font-family:var(--font-mono);font-size:11px;color:#8a8290">KC</span></div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#0e0714;border:1px solid #241e2c;border-radius:10px">
+                  <span style="font-size:12px;color:#b8b0c0">O 299.5 Pass Yds</span>
+                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#2ee6a6">+230</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#0e0714;border:1px solid #241e2c;border-radius:10px">
+                  <span style="font-size:12px;color:#b8b0c0">O 2.5 Pass TD</span>
+                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#2ee6a6">+250</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(180deg,#160c22,#110818);border:1px solid #3a2610;border-radius:20px;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.16em;color:#6e6878">6-LEG PARLAY · SAMPLE ODDS</span>
+            <span style="font-size:28px;font-weight:900;background:linear-gradient(180deg,#f7e7a6,#d9b45a 45%,#8a6224 62%,#f1dc92);-webkit-background-clip:text;background-clip:text;color:transparent">{{ tgOdds }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+            <span style="font-family:var(--font-mono);font-size:10px;color:#6e6878">$5 WAGER PAYS</span>
+            <span style="font-size:32px;font-weight:900;color:#2ee6a6">{{ tgPayout }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="gibs" style="border-top:1px solid #2a1e36;padding:80px 32px;background:#0a040f">
+        <div style="max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+          <div style="text-align:center;display:flex;flex-direction:column;gap:8px">
+            <h2 style="margin:0;font-size:clamp(52px,7vw,110px);line-height:0.88;font-weight:900;letter-spacing:-0.04em;text-transform:uppercase;color:#ece6f2">Stop Guessing</h2>
+            <h2 style="margin:0;font-size:clamp(52px,7vw,110px);line-height:0.88;font-weight:900;letter-spacing:-0.04em;text-transform:uppercase;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 58%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">And Start Knowing.</h2>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:28px;font-weight:900;text-transform:uppercase;color:#ece6f2">Anytime TD <span style="color:#d9b45a">Leaders</span></span>
+              <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:#6e6878">2026 SEASON · THROUGH WEEK 2 · SAMPLE ODDS</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:4px;background:#d9b45a;border-radius:2px"></span><span style="font-size:11px;color:#b8b0c0">Season TDs</span><span style="width:8px;height:8px;border-radius:50%;background:#2ee6a6;margin-left:8px"></span><span style="font-size:11px;color:#b8b0c0">Big Proppa edge</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
+            <div style="background:#140a20;border:1px solid #3a2610;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(160deg,#002244 0%,#002244 45%,#0e0714 100%)">
+                <span style="position:absolute;right:-6px;bottom:-14px;font-size:120px;font-weight:900;line-height:1;letter-spacing:-0.05em;color:rgba(255,255,255,0.08)">SEA</span>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:#d9b45a;z-index:2"></div>
+                <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4426388.png&h=420&w=420" alt="Jaxon Smith-Njigba" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:96%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))">
+                <span style="z-index:3;position:absolute;top:12px;left:12px;padding:4px 10px;border-radius:999px;background:rgba(11,5,18,.75);border:1px solid #8a6224;font-family:var(--font-mono);font-size:11px;font-weight:800;color:#d9b45a">SEA</span>
+                <span style="position:absolute;top:12px;right:12px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:#ece6f2;z-index:3">#1</span>
+              </div>
+              <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-size:18px;font-weight:900;line-height:1.05;text-transform:uppercase"><span style="color:#ece6f2">Jaxon</span> <span style="background:linear-gradient(180deg,#f7e7a6,#d9b45a 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent">Smith-Njigba</span></div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between">
+                  <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:40px;font-weight:900;line-height:1;color:#d9b45a">4</span><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:#8a8290">TD</span></div>
+                  <div style="text-align:right"><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#6e6878">ANYTIME TD</div><div style="font-family:var(--font-mono);font-size:15px;font-weight:800;color:#2ee6a6">+110</div></div>
+                </div>
+                <div style="position:relative;height:10px">
+                  <div style="position:absolute;left:0;right:0;top:3px;height:4px;border-radius:2px;background:#241e2c"></div>
+                  <div style="position:absolute;left:0;top:2px;height:6px;width:100%;border-radius:3px;background:linear-gradient(90deg,#8a6224,#d9b45a)"></div>
+                  <div style="position:absolute;left:0;top:0;width:100%;height:10px"><span style="position:absolute;top:0;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:#2ee6a6;box-shadow:0 0 10px #2ee6a6;animation:bpSlide 4s ease-in-out infinite"></span></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:#140a20;border:1px solid #3a2610;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(160deg,#241773 0%,#241773 45%,#0e0714 100%)">
+                <span style="position:absolute;right:-6px;bottom:-14px;font-size:120px;font-weight:900;line-height:1;letter-spacing:-0.05em;color:rgba(255,255,255,0.08)">BAL</span>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:#d9b45a;z-index:2"></div>
+                <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3043078.png&h=420&w=420" alt="Derrick Henry" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:96%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))">
+                <span style="z-index:3;position:absolute;top:12px;left:12px;padding:4px 10px;border-radius:999px;background:rgba(11,5,18,.75);border:1px solid #8a6224;font-family:var(--font-mono);font-size:11px;font-weight:800;color:#d9b45a">BAL</span>
+                <span style="position:absolute;top:12px;right:12px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:#ece6f2;z-index:3">#2</span>
+              </div>
+              <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-size:18px;font-weight:900;line-height:1.05;text-transform:uppercase"><span style="color:#ece6f2">Derrick</span> <span style="background:linear-gradient(180deg,#f7e7a6,#d9b45a 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent">Henry</span></div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between">
+                  <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:40px;font-weight:900;line-height:1;color:#d9b45a">4</span><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:#8a8290">TD</span></div>
+                  <div style="text-align:right"><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#6e6878">ANYTIME TD</div><div style="font-family:var(--font-mono);font-size:15px;font-weight:800;color:#2ee6a6">-120</div></div>
+                </div>
+                <div style="position:relative;height:10px">
+                  <div style="position:absolute;left:0;right:0;top:3px;height:4px;border-radius:2px;background:#241e2c"></div>
+                  <div style="position:absolute;left:0;top:2px;height:6px;width:100%;border-radius:3px;background:linear-gradient(90deg,#8a6224,#d9b45a)"></div>
+                  <div style="position:absolute;left:0;top:0;width:100%;height:10px"><span style="position:absolute;top:0;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:#2ee6a6;box-shadow:0 0 10px #2ee6a6;animation:bpSlide 4.4s ease-in-out infinite"></span></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:#140a20;border:1px solid #3a2610;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(160deg,#0076B6 0%,#0076B6 45%,#0e0714 100%)">
+                <span style="position:absolute;right:-6px;bottom:-14px;font-size:120px;font-weight:900;line-height:1;letter-spacing:-0.05em;color:rgba(255,255,255,0.08)">DET</span>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:#d9b45a;z-index:2"></div>
+                <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4262921.png&h=420&w=420" alt="Amon-Ra St. Brown" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:96%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))">
+                <span style="z-index:3;position:absolute;top:12px;left:12px;padding:4px 10px;border-radius:999px;background:rgba(11,5,18,.75);border:1px solid #8a6224;font-family:var(--font-mono);font-size:11px;font-weight:800;color:#d9b45a">DET</span>
+                <span style="position:absolute;top:12px;right:12px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:#ece6f2;z-index:3">#3</span>
+              </div>
+              <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-size:18px;font-weight:900;line-height:1.05;text-transform:uppercase"><span style="color:#ece6f2">Amon-Ra</span> <span style="background:linear-gradient(180deg,#f7e7a6,#d9b45a 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent">St. Brown</span></div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between">
+                  <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:40px;font-weight:900;line-height:1;color:#d9b45a">4</span><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:#8a8290">TD</span></div>
+                  <div style="text-align:right"><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#6e6878">ANYTIME TD</div><div style="font-family:var(--font-mono);font-size:15px;font-weight:800;color:#2ee6a6">+100</div></div>
+                </div>
+                <div style="position:relative;height:10px">
+                  <div style="position:absolute;left:0;right:0;top:3px;height:4px;border-radius:2px;background:#241e2c"></div>
+                  <div style="position:absolute;left:0;top:2px;height:6px;width:100%;border-radius:3px;background:linear-gradient(90deg,#8a6224,#d9b45a)"></div>
+                  <div style="position:absolute;left:0;top:0;width:100%;height:10px"><span style="position:absolute;top:0;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:#2ee6a6;box-shadow:0 0 10px #2ee6a6;animation:bpSlide 4.8s ease-in-out infinite"></span></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:#140a20;border:1px solid #3a2610;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(160deg,#00338D 0%,#00338D 45%,#0e0714 100%)">
+                <span style="position:absolute;right:-6px;bottom:-14px;font-size:120px;font-weight:900;line-height:1;letter-spacing:-0.05em;color:rgba(255,255,255,0.08)">BUF</span>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:#d9b45a;z-index:2"></div>
+                <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3918298.png&h=420&w=420" alt="Josh Allen" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:96%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))">
+                <span style="z-index:3;position:absolute;top:12px;left:12px;padding:4px 10px;border-radius:999px;background:rgba(11,5,18,.75);border:1px solid #8a6224;font-family:var(--font-mono);font-size:11px;font-weight:800;color:#d9b45a">BUF</span>
+                <span style="position:absolute;top:12px;right:12px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:#ece6f2;z-index:3">#4</span>
+              </div>
+              <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-size:18px;font-weight:900;line-height:1.05;text-transform:uppercase"><span style="color:#ece6f2">Josh</span> <span style="background:linear-gradient(180deg,#f7e7a6,#d9b45a 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent">Allen</span></div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between">
+                  <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:40px;font-weight:900;line-height:1;color:#d9b45a">4</span><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:#8a8290">TD</span></div>
+                  <div style="text-align:right"><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#6e6878">ANYTIME TD</div><div style="font-family:var(--font-mono);font-size:15px;font-weight:800;color:#2ee6a6">+105</div></div>
+                </div>
+                <div style="position:relative;height:10px">
+                  <div style="position:absolute;left:0;right:0;top:3px;height:4px;border-radius:2px;background:#241e2c"></div>
+                  <div style="position:absolute;left:0;top:2px;height:6px;width:100%;border-radius:3px;background:linear-gradient(90deg,#8a6224,#d9b45a)"></div>
+                  <div style="position:absolute;left:0;top:0;width:100%;height:10px"><span style="position:absolute;top:0;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:#2ee6a6;box-shadow:0 0 10px #2ee6a6;animation:bpSlide 5.2s ease-in-out infinite"></span></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:#140a20;border:1px solid #3a2610;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(160deg,#002C5F 0%,#002C5F 45%,#0e0714 100%)">
+                <span style="position:absolute;right:-6px;bottom:-14px;font-size:120px;font-weight:900;line-height:1;letter-spacing:-0.05em;color:rgba(255,255,255,0.08)">IND</span>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:#d9b45a;z-index:2"></div>
+                <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4242335.png&h=420&w=420" alt="Jonathan Taylor" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:96%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))">
+                <span style="z-index:3;position:absolute;top:12px;left:12px;padding:4px 10px;border-radius:999px;background:rgba(11,5,18,.75);border:1px solid #8a6224;font-family:var(--font-mono);font-size:11px;font-weight:800;color:#d9b45a">IND</span>
+                <span style="position:absolute;top:12px;right:12px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:#ece6f2;z-index:3">#5</span>
+              </div>
+              <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-size:18px;font-weight:900;line-height:1.05;text-transform:uppercase"><span style="color:#ece6f2">Jonathan</span> <span style="background:linear-gradient(180deg,#f7e7a6,#d9b45a 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent">Taylor</span></div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between">
+                  <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:40px;font-weight:900;line-height:1;color:#d9b45a">4</span><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:#8a8290">TD</span></div>
+                  <div style="text-align:right"><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#6e6878">ANYTIME TD</div><div style="font-family:var(--font-mono);font-size:15px;font-weight:800;color:#2ee6a6">-135</div></div>
+                </div>
+                <div style="position:relative;height:10px">
+                  <div style="position:absolute;left:0;right:0;top:3px;height:4px;border-radius:2px;background:#241e2c"></div>
+                  <div style="position:absolute;left:0;top:2px;height:6px;width:100%;border-radius:3px;background:linear-gradient(90deg,#8a6224,#d9b45a)"></div>
+                  <div style="position:absolute;left:0;top:0;width:100%;height:10px"><span style="position:absolute;top:0;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:#2ee6a6;box-shadow:0 0 10px #2ee6a6;animation:bpSlide 5.6s ease-in-out infinite"></span></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:#140a20;border:1px solid #2a1e36;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="aspect-ratio:4/3;position:relative;overflow:hidden;background:linear-gradient(160deg,#0076B6 0%,#0076B6 45%,#0e0714 100%)">
+                <span style="position:absolute;right:-6px;bottom:-14px;font-size:120px;font-weight:900;line-height:1;letter-spacing:-0.05em;color:rgba(255,255,255,0.08)">DET</span>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:3px;background:#d9b45a;z-index:2"></div>
+                <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4429795.png&h=420&w=420" alt="Jahmyr Gibbs" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:96%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))">
+                <span style="z-index:3;position:absolute;top:12px;left:12px;padding:4px 10px;border-radius:999px;background:rgba(11,5,18,.75);border:1px solid #8a6224;font-family:var(--font-mono);font-size:11px;font-weight:800;color:#d9b45a">DET</span>
+                <span style="position:absolute;top:12px;right:12px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:#ece6f2;z-index:3">#6</span>
+              </div>
+              <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-size:18px;font-weight:900;line-height:1.05;text-transform:uppercase"><span style="color:#ece6f2">Jahmyr</span> <span style="background:linear-gradient(180deg,#f7e7a6,#d9b45a 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent">Gibbs</span></div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between">
+                  <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:40px;font-weight:900;line-height:1;color:#d9b45a">3</span><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:#8a8290">TD</span></div>
+                  <div style="text-align:right"><div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#6e6878">ANYTIME TD</div><div style="font-family:var(--font-mono);font-size:15px;font-weight:800;color:#2ee6a6">+115</div></div>
+                </div>
+                <div style="position:relative;height:10px">
+                  <div style="position:absolute;left:0;right:0;top:3px;height:4px;border-radius:2px;background:#241e2c"></div>
+                  <div style="position:absolute;left:0;top:2px;height:6px;width:75%;border-radius:3px;background:linear-gradient(90deg,#8a6224,#d9b45a)"></div>
+                  <div style="position:absolute;left:0;top:0;width:75%;height:10px"><span style="position:absolute;top:0;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:#2ee6a6;box-shadow:0 0 10px #2ee6a6;animation:bpSlide 6s ease-in-out infinite"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #2a1e36;padding:28px 32px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+        <span style="font-size:14px;font-weight:900;background:linear-gradient(180deg,#f7e7a6,#c9a54e 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent">HEY BIG PROPPA!</span>
+        <span style="font-size:11px;color:#6e6878;max-width:620px;text-wrap:pretty">For informational purposes only. 21+. Wager responsibly where legal. Gambling problem? Call 1-800-GAMBLER.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { i: 0, sec: 0 };
+  TICKER = ['BIG PROPPA LINES ARE THE REAL LINES', 'SPEAK DIRECTLY TO BIG PROPPA', 'REAL-TIME STRATEGY FOR PARLAYS', 'PREDICTIVE PARLAY ANALYTICS FOR PROFESSIONAL SPORTS BETTORS'];
+  SCRIPT = [
+    { who: 'user', text: "Big Proppa, I keep seeing the Jets and the Saints on your board. Why are those two dangerous?" },
+    { who: 'bp', text: "Because the books are pricing the name on the jersey, not the last five games. Both clubs are getting points, and getting points is where I start looking." },
+    { who: 'bp', text: "Jets: the line leans on a bad record. I check how they have actually played, scoring, giving up points, protecting the ball. Saints: same story, a defense that holds up better than the number says." },
+    { who: 'user', text: "So you are saying they cover?" },
+    { who: 'bp', text: "I am saying the gap between the price and the play is where the money lives. Only legs over 85% make my slip. Stop guessing, start knowing." }
+  ];
+  BOARD = [
+    { name: 'L. Jackson', team: 'BAL', prop: '224.5 Pass Yds', prob: '91%', line: 224.5, max: 300, games: [241,198,262,230,275,188,251,236,290,247] },
+    { name: 'S. Barkley', team: 'PHI', prop: '84.5 Rush Yds', prob: '89%', line: 84.5, max: 140, games: [102,91,77,133,88,95,64,110,121,97] },
+    { name: 'J. Allen', team: 'BUF', prop: '1.5 Pass TD', prob: '88%', line: 1.5, max: 3, games: [2,3,1,2,2,3,2,1,3,2] },
+    { name: 'C. Lamb', team: 'DAL', prop: '6.5 Receptions', prob: '87%', line: 6.5, max: 10, games: [8,7,9,5,7,10,8,6,9,7] },
+    { name: 'B. Robinson', team: 'ATL', prop: '99.5 Rush+Rec', prob: '86%', line: 99.5, max: 150, games: [121,104,88,143,115,109,97,132,118,126] },
+    { name: 'P. Nacua', team: 'LA', prop: '79.5 Rec Yds', prob: '85%', line: 79.5, max: 130, games: [96,88,71,124,83,102,90,66,111,94] }
+  ];
+  componentDidMount() { this.tick = setInterval(() => this.setState(s => ({ sec: s.sec + 1 })), 1000); this.timer = setInterval(() => this.setState(s => ({ i: (s.i + 1) % this.SCRIPT.length })), 6500); }
+  componentWillUnmount() { clearInterval(this.timer); clearInterval(this.tick); }
+  goSpeak = () => { const el = document.getElementById('speak'); const main = document.getElementById('bpmain'); if (el && main) main.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' }); };
+  topGun() {
+    const dec = o => o > 0 ? 1 + o / 100 : 1 + 100 / -o;
+    const am = d => { const v = Math.round((d - 1) * 100); return v >= 0 ? '+' + v : String(v); };
+    const qbs = [{ name: 'Lamar Jackson', team: 'BAL', y: 210, t: 240 }, { name: 'Josh Allen', team: 'BUF', y: 190, t: 220 }, { name: 'Patrick Mahomes', team: 'KC', y: 230, t: 250 }];
+    let all = 1;
+    const tgLegs = qbs.map(q => { const d = dec(q.y) * dec(q.t); all *= d; return { name: q.name, team: q.team, ydsOdds: '+' + q.y, tdOdds: '+' + q.t, legOdds: am(d) }; });
+    return { tgLegs, tgOdds: am(all), tgPayout: '$' + (5 * all).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') };
+  }
+  bars(p) { return p.games.map(v => ({ h: Math.min(100, Math.round((v / p.max) * 100)), color: v > p.line ? '#2ee6a6' : '#ef4444' })); }
+  renderVals() {
+    const t = this.TICKER; const cur = this.SCRIPT[this.state.i]; const bp = cur.who === 'bp';
+    return {
+      ticker: [...t, ...t, ...t, ...t],
+      board: this.BOARD.map(r => ({ ...r, bars: this.bars(r) })),
+      goSpeak: this.goSpeak, ...this.topGun(),
+      bpBorder: bp ? '#d9b45a' : '#2a1e36', userBorder: bp ? '#2a1e36' : '#2ee6a6',
+      bpAnim: bp ? 'bpTalk 1.1s ease-in-out infinite' : 'none',
+      userAnim: bp ? 'bpNod 2.6s ease-in-out infinite' : 'bpTalk 1.1s ease-in-out infinite',
+      bpWaveOpacity: bp ? 1 : 0, userWaveOpacity: bp ? 0 : 1,
+      clock: `${String(Math.floor(this.state.sec/60)).padStart(2,'0')}:${String(this.state.sec%60).padStart(2,'0')}`, capWho: bp ? 'BIG PROPPA' : 'TONY', capColor: bp ? '#d9b45a' : '#2ee6a6', capText: cur.text
+    };
+  }
+}
+</script>
+</body>
+</html>
+ + (5 * all).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') };
+  }
+  bars(p) { return p.games.map(v => ({ h: Math.min(100, Math.round((v / p.max) * 100)), color: v > p.line ? '#2ee6a6' : '#ef4444' })); }
+  renderVals() {
+    const t = this.TICKER; const cur = this.SCRIPT[this.state.i]; const bp = cur.who === 'bp';
+    return {
+      ticker: [...t, ...t, ...t, ...t],
+      board: this.BOARD.map(r => ({ ...r, bars: this.bars(r) })),
+      goSpeak: this.goSpeak, ...this.topGun(),
+      bpBorder: bp ? '#d9b45a' : '#2a1e36', userBorder: bp ? '#2a1e36' : '#2ee6a6',
+      bpAnim: bp ? 'bpTalk 1.1s ease-in-out infinite' : 'none',
+      userAnim: bp ? 'bpNod 2.6s ease-in-out infinite' : 'bpTalk 1.1s ease-in-out infinite',
+      bpWaveOpacity: bp ? 1 : 0, userWaveOpacity: bp ? 0 : 1,
+      clock: `${String(Math.floor(this.state.sec/60)).padStart(2,'0')}:${String(this.state.sec%60).padStart(2,'0')}`, capWho: bp ? 'BIG PROPPA' : 'TONY', capColor: bp ? '#d9b45a' : '#2ee6a6', capText: cur.text
+    };
+  }
+}
+</script>
+</body>
+</html>

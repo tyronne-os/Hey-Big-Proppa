@@ -985,6 +985,24 @@ def api_ramp_gameday(date: str | None = None):
     }
 
 
+# ── Landing page root ──────────────────────────────────────────────────────────
+# Serves the designer landing page at / (Space homepage).
+# React app still accessible at /app/* via the StaticFiles mount below.
+from fastapi.responses import FileResponse as _FileResponse
+
+_LANDING = Path(__file__).resolve().parent.parent / "landing" / "index.html"
+
+@app.get("/")
+def root_landing():
+    if _LANDING.exists():
+        return _FileResponse(str(_LANDING), media_type="text/html")
+    # fallback: SPA index if landing not present
+    _idx = Path(__file__).resolve().parent.parent / "frontend" / "dist" / "index.html"
+    if _idx.exists():
+        return _FileResponse(str(_idx), media_type="text/html")
+    return {"ok": True, "message": "HEY BIG PROPPA!"}
+
+
 # Serves the built React app (frontend/dist, produced by the Dockerfile's node stage) for the
 # single-container Hugging Face Space deployment -- same-origin, so the frontend's VITE_API_BASE
 # is built empty and every /api/* call above already works with no CORS involved. Local dev keeps
