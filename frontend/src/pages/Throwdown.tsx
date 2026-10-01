@@ -28,14 +28,8 @@ const money = (n: number) => "$" + n.toLocaleString(undefined, { maximumFraction
 const am = (n: number) => (n > 0 ? `+${n}` : `${n}`);
 const gold = { background: "var(--bp-wordmark-gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" } as const;
 
-function stakeFor1000(s: Slip) {
-  const mult = s.boostedPayout / s.wager;
-  return mult > 0 ? Math.max(1, Math.ceil(1000 / mult)) : 0;
-}
-
 function SlipCard({ slip, id, hero }: { slip: Slip; id: string; hero?: boolean }) {
   const [open, setOpen] = useState(true);
-  const stake = stakeFor1000(slip);
   return (
     <div style={{ background: "linear-gradient(180deg,#160c22,#110818)", border: `1px solid ${hero ? "#d9b45a" : "#3a2610"}`, borderRadius: 20, padding: 20, display: "flex", flexDirection: "column", gap: 12, boxShadow: hero ? "0 0 40px rgba(217,180,90,0.18)" : "0 20px 50px rgba(0,0,0,0.45)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, cursor: "pointer" }} onClick={() => setOpen((v) => !v)}>
@@ -67,10 +61,10 @@ function SlipCard({ slip, id, hero }: { slip: Slip; id: string; hero?: boolean }
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, borderTop: "2px dashed #3a2610", paddingTop: 12 }}>
           <div>
             <span style={{ fontFamily: "monospace", fontSize: 10, fontWeight: 800, color: "#06140e", background: "#2ee6a6", borderRadius: 6, padding: "3px 8px" }}>+50% PROFIT BOOST</span>
-            <div style={{ fontSize: 11, color: "#b8b0c0", marginTop: 8 }}>Bet <b style={{ color: "#f1dc92" }}>{money(stake)}</b> to win $1,000</div>
+            <div style={{ fontSize: 11, color: "#b8b0c0", marginTop: 8 }}>Flat <b style={{ color: "#f1dc92" }}>$5</b> bet</div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontFamily: "monospace", fontSize: 10, color: "#6e6878" }}>${slip.wager} WINS</div>
+            <div style={{ fontFamily: "monospace", fontSize: 10, color: "#6e6878" }}>$5 PAYS</div>
             <div style={{ fontSize: 28, fontWeight: 900, lineHeight: 1, ...gold }}>{money(slip.boostedPayout)}</div>
           </div>
         </div>
@@ -98,7 +92,7 @@ export default function Throwdown({ data }: { data: ThrowdownData }) {
             +{Math.round(data.boost * 100)}% PROFIT BOOST ON EVERY SLIP. LOG IN AND CLAIM IT.
           </span>
         </div>
-        <div style={{ fontSize: 12, color: "#8a8290", marginTop: 10 }}>One game, every angle. Underdog tonight: {dog}.</div>
+        <div style={{ fontSize: 12, color: "#8a8290", marginTop: 10 }}>One game, every angle. Underdog tonight: {dog}. Stake stays $5 until we bank $500 in wins.</div>
       </div>
 
       {horse && horse.legs.length > 0 && (
