@@ -1044,7 +1044,7 @@ def api_throwdown(game_id: str | None = None):
 
 @app.get("/api/matchup")
 def api_matchup(game_id: str | None = None):
-    import matchup as matchup_mod
+    import heatmap as matchup_mod
     gid = game_id or throwdown_mod.detect_throwdown_game()
     info = throwdown_mod._game_info(gid) if gid else None
     if not info:
