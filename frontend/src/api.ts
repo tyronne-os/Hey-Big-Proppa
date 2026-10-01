@@ -34,6 +34,7 @@ export const api = {
   leaders: (category: string) => get<LeadersResponse>(`/api/chart/leaders?category=${encodeURIComponent(category)}`),
   parlay: (slip: string) => get<ParlaySlip>(`/api/chart/parlays?slip=${slip}`),
   throwdown: () => get<any>("/api/throwdown"),
+  matchup: () => get<any>("/api/matchup"),
   parlaysAll: () => get<Record<string, ParlaySlip>>("/api/chart/parlays/all"),
   canvasNodes: () => get<{ nodes: { id: string; type: "lake" | "expert"; name: string; sub: string; chips?: string[]; store?: string }[] }>(
     "/api/canvas/nodes"

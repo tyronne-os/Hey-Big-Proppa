@@ -1042,6 +1042,17 @@ def api_throwdown(game_id: str | None = None):
     return throwdown_mod.build(game_id)
 
 
+@app.get("/api/matchup")
+def api_matchup(game_id: str | None = None):
+    import matchup as matchup_mod
+    gid = game_id or throwdown_mod.detect_throwdown_game()
+    info = throwdown_mod._game_info(gid) if gid else None
+    if not info:
+        return {"active": False}
+    return {"active": True, **matchup_mod.build(info["away_team"], info["home_team"],
+                                                info.get("away_qb_name", ""), info.get("home_qb_name", ""))}
+
+
 # React app still accessible at /app/* via the StaticFiles mount below.
 from fastapi.responses import FileResponse as _FileResponse
 

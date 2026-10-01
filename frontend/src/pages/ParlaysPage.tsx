@@ -4,6 +4,7 @@ import SmokeBadge from "../components/SmokeBadge";
 import TicketCard, { fromThemed } from "../components/TicketCard";
 import { api } from "../api";
 import Throwdown, { type ThrowdownData } from "./Throwdown";
+import MatchupHeatMap, { type MatchupData } from "./MatchupHeatMap";
 import type { ParlaySlip } from "../types";
 
 const PASSCODE = "7779311baby";
@@ -97,11 +98,13 @@ export default function ParlaysPage() {
   const [unlocked, setUnlocked] = useState(getUnlocked);
   const [td, setTd] = useState<ThrowdownData | null>(null);
   const [showRegular, setShowRegular] = useState(false);
+  const [mu, setMu] = useState<MatchupData | null>(null);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");
     if (unlocked) {
       api.parlaysAll().then(setSlips).catch(() => setSlips(null));
+      api.matchup().then((d: MatchupData) => setMu(d?.active ? d : null)).catch(() => setMu(null));
       api.throwdown().then((d: ThrowdownData) => setTd(d?.active ? d : null)).catch(() => setTd(null));
     }
   }, [unlocked]);
@@ -151,6 +154,7 @@ export default function ParlaysPage() {
         {/* Passcode gate — only blocks the bets section */}
         {!unlocked && <PasscodeGate onUnlock={() => setUnlocked(true)} />}
 
+        {unlocked && td && !showRegular && mu && <MatchupHeatMap data={mu} />}
         {unlocked && td && !showRegular && <Throwdown data={td} />}
         {unlocked && td && (
           <button onClick={() => setShowRegular((v) => !v)} style={{ alignSelf: "center", height: 34, padding: "0 16px", borderRadius: 999, border: "1px solid #6b4a1c", background: "transparent", color: "#d9b45a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
