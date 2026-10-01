@@ -1,4 +1,5 @@
 import { useState } from "react";
+import MatchupHeatMap, { type MatchupData } from "./MatchupHeatMap";
 
 type Leg = {
   name: string; team: string; prop: string; market: string;
@@ -225,7 +226,7 @@ function SlipCard({ slip, id, hero }: { slip: Slip; id: string; hero?: boolean }
   );
 }
 
-export default function Throwdown({ data }: { data: ThrowdownData }) {
+export default function Throwdown({ data, matchup }: { data: ThrowdownData; matchup?: MatchupData | null }) {
   const g = data.game;
   const horse = data.slips.crazy_horse;
   const awayN = Number(g.awayML || "0");
@@ -258,6 +259,8 @@ export default function Throwdown({ data }: { data: ThrowdownData }) {
           Stake stays <b style={{ color: "#f1dc92" }}>$5</b> until we bank $500.
         </div>
       </div>
+
+      {matchup && <MatchupHeatMap data={matchup} />}
 
       {/* Crazy Horse hero */}
       {horse && horse.legs.length > 0 && (
