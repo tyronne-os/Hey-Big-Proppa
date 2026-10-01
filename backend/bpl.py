@@ -32,6 +32,7 @@ Change a constant only by rerunning the calibration.
 """
 from __future__ import annotations
 
+import datetime as dt
 import statistics
 from functools import lru_cache
 
@@ -189,6 +190,8 @@ def next_games() -> dict[str, dict]:
     out: dict[str, dict] = {}
     for g in sorted(data.load("schedule"), key=lambda r: (int(r["week"]), r.get("game_date", ""))):
         if g.get("game_type") != "REG" or g.get("home_score") not in ("", None):
+            continue
+        if g.get("game_date", "9999") < dt.date.today().isoformat():
             continue
         if int(g["week"]) <= max(played.get(g["home_team"], 0), played.get(g["away_team"], 0)):
             continue

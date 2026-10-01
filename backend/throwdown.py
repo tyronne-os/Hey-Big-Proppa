@@ -55,13 +55,14 @@ def _prop_rows_for_game(game_id: str, market: str, book: str = "fanduel") -> lis
     """All prop rows for a market in a specific game (matching via team membership)."""
     nxt = bpl.next_games()
     game_teams = {t for t, g in nxt.items() if g["gameId"] == game_id}
-    rows = data.load("prop_line_rotowire")
-    return [
-        r for r in rows
-        if r.get("market_slug") == market
-        and r.get("book_slug") == book
-        and r.get("team") in game_teams
-    ]
+    latest: dict[tuple, dict] = {}
+    for r in data.load("prop_line_rotowire"):
+        if r.get("market_slug") != market or r.get("book_slug") != book or r.get("team") not in game_teams:
+            continue
+        k = (r.get("player_name"), r.get("line"))
+        if k not in latest or r["pull_id"] > latest[k]["pull_id"]:
+            latest[k] = r
+    return list(latest.values())
 
 
 def _kicker_history(pid: str) -> list[int]:
@@ -129,7 +130,7 @@ def _first_td(game_id: str) -> dict:
             "photoUrl": data.photo_url(pid) if hasattr(data, "photo_url") else None,
         })
     legs.sort(key=lambda l: -l["probability"])
-    return _slip("first-td", "FIRST TD SCORER", legs[:3])
+    return _slip("first-td", "FIRST TD SCORER", legs[:1], "Only one player scores first, so this is a single-leg shot.")
 
 
 def _qb_passing_td(game_id: str) -> dict:
@@ -246,9 +247,7 @@ def _qb_combo(game_id: str) -> dict:
             combined_dec = d_pass * rush_side["decimal"]
             combo_payout = round(5 * combined_dec, 2)
         else:
-            p_combo = p_pass
-            combined_dec = d_pass
-            combo_payout = round(5 * d_pass, 2)
+            continue
         pid = data.normalize_name(r["player_name"])
         legs.append({
             "playerId": pid,
@@ -262,7 +261,7 @@ def _qb_combo(game_id: str) -> dict:
             "photoUrl": data.photo_url(pid) if hasattr(data, "photo_url") else None,
         })
     legs.sort(key=lambda l: -l["probability"])
-    return _slip("qb-combo", "QB COMBO ALERT", legs[:2])
+    return _slip("qb-combo", "QB COMBO ALERT", legs[:2], "" if legs else "No QB has a posted rushing-yards line to price the 15-yard leg tonight.")
 
 
 def _rb_trifecta(game_id: str) -> dict:
@@ -320,81 +319,53 @@ def _rb_trifecta(game_id: str) -> dict:
 
 
 def _wr_jackpot(game_id: str) -> dict:
-    """WR with TD, 80+ rec yards, 7+ targets."""
-    dim = data.player_dimension()
-    wr_ids = {pid for pid, row in dim.items() if row.get("position") in ("WR", "TE")}
-    scored_sides = cached_sides()
-    anytd_rows = {data.normalize_name(r["player_name"]) + "_" + r["team"]: r
-                  for r in _prop_rows_for_game(game_id, "anytd")}
-
+    """Best receiving-yards overs among WR/TE tonight, paired with their anytime-TD price."""
+    nxt = bpl.next_games()
+    teams = {t for t, g in nxt.items() if g["gameId"] == game_id}
+    td = {r["player_name"]: r for r in _prop_rows_for_game(game_id, "anytd")}
     legs = []
-    for side in scored_sides:
-        if side.get("gameId") != game_id:
+    for s_ in cached_sides():
+        if s_.get("team") not in teams or s_["market"] != "recyds" or s_["direction"] != "over" or s_.get("alt"):
             continue
-        if side.get("market") != "recyds" or side.get("alt"):
+        if s_["line"] < 40:
             continue
-        gsis = side["playerId"]
-        if gsis not in wr_ids:
+        t = td.get(s_["name"])
+        d_td = _dec_price(t["moneyline_american"]) if t else None
+        if not d_td:
             continue
-        if side["line"] < 75:
-            continue  # want 80+
-
-        key = data.normalize_name(side["name"]) + "_" + side["team"]
-        td_row = anytd_rows.get(key)
-        td_dec = _dec_price(td_row["moneyline_american"]) if td_row else None
-        p_td = round(1 / td_dec, 4) if td_dec else 0.20
-
-        p_yds = min(side["modelP"] - SPY_HAIRCUT, side["bookP"] + SPY_MAX_CREDIT)
-        p_combo = round(p_yds * p_td, 4)
-        combined_dec = side["decimal"] * (td_dec or 4.0)
-
+        p = round(s_["modelP"] * (1 / d_td), 4)
         legs.append({
-            "playerId": gsis,
-            "name": side["name"],
-            "team": side["team"],
-            "prop": f"{side['line']:g}+ rec yds + TD",
-            "market": "wr-jackpot",
-            "odds": _am(combined_dec),
-            "probability": p_combo,
-            "l5": p_combo,
-            "photoUrl": data.photo_url(gsis) if hasattr(data, "photo_url") else None,
+            "playerId": s_["playerId"], "name": s_["name"], "team": s_["team"],
+            "prop": f"Over {s_['line']:g} rec yds + anytime TD", "market": "wr-jackpot",
+            "odds": _am(s_["decimal"] * d_td), "probability": p, "l5": round(s_["l5"], 3) if isinstance(s_.get("l5"), float) else p,
+            "photoUrl": data.photo_url(s_["playerId"]),
         })
     legs.sort(key=lambda l: -l["probability"])
-    return _slip("wr-jackpot", "WR JACKPOT", legs[:2])
+    return _slip("wr-jackpot", "RECEIVER JACKPOT", legs[:3])
 
 
 def _kicker_triple(game_id: str) -> dict:
-    """Which kicker hits 3+ field goals tonight."""
-    nxt = bpl.next_games()
-    game_teams = {t for t, g in nxt.items() if g["gameId"] == game_id}
-    dim = data.player_dimension()
-    k_ids = {pid: row for pid, row in dim.items()
-             if row.get("position") == "K" and row.get("team") in game_teams}
-
+    """Kicker over on kicking points (9+ points = three field goals) from live FanDuel/DK/Caesars lines."""
     legs = []
-    for pid, row in k_ids.items():
-        history = _kicker_history(pid)
-        if not history:
-            continue
-        rate_3plus = sum(1 for fg in history if fg >= 3) / len(history)
-        # Simple approximation: 3+ FG hit rate from history
-        if rate_3plus < 0.10:
-            continue
-        # Approximate implied odds (+200 to +400 range for 3+ FGs)
-        implied_dec = 1 / max(rate_3plus, 0.10)
-        legs.append({
-            "playerId": pid,
-            "name": row.get("name", pid),
-            "team": row.get("team", ""),
-            "prop": "3+ field goals",
-            "market": "kicker",
-            "odds": _am(implied_dec),
-            "probability": round(rate_3plus, 4),
-            "l5": round(statistics.mean(history), 1),
-            "photoUrl": data.photo_url(pid) if hasattr(data, "photo_url") else None,
-        })
-    legs.sort(key=lambda l: -l["probability"])
-    return _slip("kicker-triple", "KICKER GOES 3-FOR-3", legs[:2])
+    for book in ("fanduel", "draftkings", "caesars"):
+        for r in _prop_rows_for_game(game_id, "kickpts", book):
+            if not r.get("line") or not r.get("over_price_american"):
+                continue
+            line = float(r["line"])
+            d = _dec_price(r["over_price_american"])
+            if not d or line < 7.5:
+                continue
+            legs.append({
+                "playerId": data.normalize_name(r["player_name"]), "name": r["player_name"], "team": r["team"],
+                "prop": f"Over {line:g} kicking pts ({book})", "market": "kickpts",
+                "odds": int(float(r["over_price_american"])), "probability": round(1 / d, 4), "l5": round(1 / d, 4),
+                "photoUrl": None,
+            })
+    legs.sort(key=lambda l: (-l["probability"]))
+    best: dict[str, dict] = {}
+    for l in legs:
+        best.setdefault(l["name"], l)
+    return _slip("kicker-triple", "KICKER GOES 3-FOR-3", list(best.values())[:2])
 
 
 def _game_total(game_id: str) -> dict:
@@ -407,6 +378,9 @@ def _game_total(game_id: str) -> dict:
         return _slip("game-total", "FINAL SCORE TOTAL", [])
 
     # Pick the more likely side
+    sides = [s for s in sides if s["direction"] == "over"]
+    if not sides:
+        return _slip("game-total", "FINAL SCORE PREDICTION", [], "No model edge on the over tonight.")
     best = max(sides, key=lambda s: s["modelP"])
     label = "OVER" if best["direction"] == "over" else "UNDER"
     leg = {
@@ -426,84 +400,31 @@ def _game_total(game_id: str) -> dict:
 
 
 def _upset_potential(game_id: str) -> dict:
-    """Underdog moneyline — the upset that pays."""
-    sides = [s for s in cached_sides()
-             if s.get("gameId") == game_id and s.get("market") == "nfl_ml"]
-    if not sides:
+    """Underdog moneyline straight from the schedule's market price."""
+    info = _game_info(game_id)
+    if not info:
         return _slip("upset", "UPSET POTENTIAL", [])
-
-    # Pick the underdog (positive odds side)
-    underdogs = [s for s in sides if s["odds"] > 0]
-    if not underdogs:
-        underdogs = sorted(sides, key=lambda s: s["odds"])[:1]
-
-    legs = []
-    for s in underdogs[:1]:
-        p = round(s["modelP"], 4)
-        legs.append({
-            "playerId": game_id,
-            "name": s["name"],
-            "team": s.get("team", ""),
-            "prop": f"{s['name']} MONEYLINE",
-            "market": "nfl_ml",
-            "odds": s["odds"],
-            "probability": p,
-            "l5": p,
-            "photoUrl": None,
-        })
-    return _slip("upset", "UPSET POTENTIAL", legs)
+    try:
+        a, h = float(info["away_moneyline"]), float(info["home_moneyline"])
+    except (ValueError, TypeError):
+        return _slip("upset", "UPSET POTENTIAL", [], "No moneyline posted yet.")
+    team, ml = (info["away_team"], a) if a > h else (info["home_team"], h)
+    p = round(1 / _dec(ml), 4)
+    leg = {"playerId": team, "name": f"{team} to win outright", "team": team, "prop": f"{team} MONEYLINE",
+           "market": "nfl_ml", "odds": int(ml), "probability": p, "l5": p, "photoUrl": None}
+    return _slip("upset", "UPSET POTENTIAL", [leg])
 
 
 def _alt_line(game_id: str) -> dict:
-    """Alternate spread reducing the underdog's number."""
-    rows = data.load("fanduel_alt_lines")
-    nxt = bpl.next_games()
-    game_teams = {t for t, g in nxt.items() if g["gameId"] == game_id}
-
-    # Get game spread to find underdog
-    info = _game_info(game_id)
-    if not info:
-        return _slip("alt-line", "ALTERNATIVE LINE", [])
-
-    away, home = info["away_team"], info["home_team"]
-    away_ml = float(info.get("away_moneyline") or 0)
-    underdog_team = away if away_ml > 0 else home
-
-    # Find alt lines for underdog reducing their spread
-    alt_rows = [r for r in rows
-                if r.get("market_slug") in ("nfl_spread", "cfb_spread")
-                and (r.get("home") == underdog_team or r.get("away") == underdog_team)
-                and r.get("side") == "over"]
-    if not alt_rows:
-        return _slip("alt-line", "ALTERNATIVE LINE", [])
-
-    # Pick the line closest to -3 (giving fewer points to the underdog)
-    alt_rows.sort(key=lambda r: abs(float(r.get("line", 0)) + 3))
-    best = alt_rows[0]
-    d = _dec_price(best.get("price_american"))
-    if not d:
-        return _slip("alt-line", "ALTERNATIVE LINE", [])
-
-    leg = {
-        "playerId": game_id,
-        "name": f"{underdog_team} covers {float(best['line']):+.1f}",
-        "team": underdog_team,
-        "prop": f"ALT SPREAD: {underdog_team} {float(best['line']):+.1f}",
-        "market": "nfl_spread",
-        "line": float(best["line"]),
-        "odds": int(float(best["price_american"])),
-        "probability": round(1 / d, 4),
-        "l5": round(1 / d, 4),
-        "photoUrl": None,
-    }
-    return _slip("alt-line", "ALTERNATIVE LINE — REDUCE THE SPOT", [leg])
+    return _slip("alt-line", "ALTERNATIVE LINE", [],
+                 "Alt-spread prices are not in the lake yet. Wire a spread-ladder source to price this.")
 
 
 def _crazy_horse(game_id: str) -> dict:
     """The Crazy Horse pick for tonight — highest EV leg from this game."""
     from jimmy_bpl import candidate_legs
     sides = cached_sides()
-    game_sides = [s for s in sides if s.get("gameId") == game_id and not s.get("alt")]
+    game_sides = [s for s in sides if s.get("gameId") == game_id and not s.get("alt") and s.get("direction") == "over"]
     if not game_sides:
         return _slip("crazy-horse", "THE CRAZY HORSE", [])
 
@@ -536,8 +457,10 @@ def _crazy_horse(game_id: str) -> dict:
 
 # ── Slip formatter ────────────────────────────────────────────────────────
 
-def _slip(slip_id: str, title: str, legs: list[dict]) -> dict:
+def _slip(slip_id: str, title: str, legs: list[dict], note: str = "") -> dict:
     from odds import compute_parlay
+    seen: set = set()
+    legs = [l for l in legs if not ((l["name"], l["prop"]) in seen or seen.add((l["name"], l["prop"])))]
     if legs:
         try:
             math = compute_parlay([l["odds"] for l in legs], wager=WAGER, boost=BOOST)
@@ -561,6 +484,7 @@ def _slip(slip_id: str, title: str, legs: list[dict]) -> dict:
         "boostedPayout": boosted,
         "boostedAmericanOdds": boosted_am,
         "confidence": round(100 * sum(l["probability"] for l in legs) / len(legs)) if legs else 0,
+        "note": note,
     }
 
 

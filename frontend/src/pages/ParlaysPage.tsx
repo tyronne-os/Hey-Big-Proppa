@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import SmokeBadge from "../components/SmokeBadge";
 import TicketCard, { fromThemed } from "../components/TicketCard";
 import { api } from "../api";
+import Throwdown, { type ThrowdownData } from "./Throwdown";
 import type { ParlaySlip } from "../types";
 
 const PASSCODE = "7779311baby";
@@ -94,11 +95,14 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
 export default function ParlaysPage() {
   const [slips, setSlips] = useState<Record<string, ParlaySlip> | null>(null);
   const [unlocked, setUnlocked] = useState(getUnlocked);
+  const [td, setTd] = useState<ThrowdownData | null>(null);
+  const [showRegular, setShowRegular] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");
     if (unlocked) {
       api.parlaysAll().then(setSlips).catch(() => setSlips(null));
+      api.throwdown().then((d: ThrowdownData) => setTd(d?.active ? d : null)).catch(() => setTd(null));
     }
   }, [unlocked]);
 
@@ -147,9 +151,16 @@ export default function ParlaysPage() {
         {/* Passcode gate — only blocks the bets section */}
         {!unlocked && <PasscodeGate onUnlock={() => setUnlocked(true)} />}
 
+        {unlocked && td && !showRegular && <Throwdown data={td} />}
+        {unlocked && td && (
+          <button onClick={() => setShowRegular((v) => !v)} style={{ alignSelf: "center", height: 34, padding: "0 16px", borderRadius: 999, border: "1px solid #6b4a1c", background: "transparent", color: "#d9b45a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            {showRegular ? "BACK TO THE THROWDOWN" : "SEE THE FULL-WEEK SLIPS"}
+          </button>
+        )}
+
         {unlocked && !slips && <div style={{ color: "var(--bp-muted)" }}>Loading slips from RAMP NFL...</div>}
 
-        {unlocked && slips && (
+        {unlocked && slips && (!td || showRegular) && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(380px,1fr))", gap: 18, alignItems: "start" }}>
             {Object.values(slips).map((s) => (
               s.legs.length > 0 ? <TicketCard key={s.id} slip={fromThemed(s)} /> : <Ticket key={s.id} slip={s} />
