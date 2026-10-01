@@ -480,23 +480,16 @@ def _defense_wins(game_id: str) -> dict:
     for s in unders:
         s["_p"] = min(s["modelP"] - SPY_HAIRCUT, s["bookP"] + SPY_MAX_CREDIT)
 
-    unders.sort(key=lambda s: -s["_p"])
+    label_map = {"recyds": "rec yds", "recs": "recs", "rushyds": "rush yds", "passyds": "pass yds"}
 
-    # One per player, top 3
-    seen_p: set[str] = set()
-    legs: list[dict] = []
-    for s in unders:
-        if s["name"] in seen_p:
-            continue
-        seen_p.add(s["name"])
-        label = {"recyds": "rec yds", "recs": "recs", "rushyds": "rush yds", "passyds": "pass yds"}
+    def _make_leg(s: dict) -> dict:
         pid = s["playerId"]
-        legs.append({
+        return {
             "playerId": pid,
             "name": s["name"],
             "team": s["team"],
             "pos": "",
-            "prop": f"Under {s['line']:g} {label.get(s['market'], s['market'])}",
+            "prop": f"Under {s['line']:g} {label_map.get(s['market'], s['market'])}",
             "market": s["market"],
             "line": s["line"],
             "direction": "under",
@@ -504,14 +497,37 @@ def _defense_wins(game_id: str) -> dict:
             "probability": round(s["_p"], 4),
             "l5": round(s["_p"], 4),
             "photoUrl": data.photo_url(pid),
-        })
+        }
+
+    # Force the QB passing-yards under as the anchor leg (adds the big-number swing)
+    dim = data.player_dimension()
+    qb_ids = {pid for pid, r in dim.items() if r.get("position") == "QB"}
+    qb_passyds_under = next(
+        (s for s in sorted(unders, key=lambda x: x["_p"])   # take any QB passyds under
+         if s["market"] == "passyds" and s["playerId"] in qb_ids), None
+    )
+
+    # Top 3 non-QB unders, one per player
+    unders.sort(key=lambda s: -s["_p"])
+    seen_p: set[str] = set()
+    legs: list[dict] = []
+    for s in unders:
+        if s["market"] == "passyds" and s["playerId"] in qb_ids:
+            continue  # QB passyds handled separately
+        if s["name"] in seen_p:
+            continue
+        seen_p.add(s["name"])
+        legs.append(_make_leg(s))
         if len(legs) == 3:
             break
 
+    # Append QB passyds under at the end (so it shows as the 4th leg)
+    if qb_passyds_under:
+        legs.append(_make_leg(qb_passyds_under))
+
     note = (
         f"{better_def} ranks #{def_rank} in scoring defense this season. "
-        f"{target_offense} faces the wall tonight — these props are priced to go over, "
-        "our model says under."
+        f"{target_offense} faces the wall — book prices the over, our model and that defense say under."
     ) if legs else "Not enough defensive data to price unders tonight."
 
     return _slip("defense-wins", "DEFENSE WINS TONIGHT", legs, note)
