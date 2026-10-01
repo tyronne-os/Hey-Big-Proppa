@@ -1008,5 +1008,21 @@ def root_landing():
 # is built empty and every /api/* call above already works with no CORS involved. Local dev keeps
 # using the Vite dev server directly, so this mount is a no-op unless dist/ actually exists.
 _DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
-if _DIST.is_dir():
-    app.mount("/", StaticFiles(directory=_DIST, html=True), name="frontend")
+_LANDING_DIR = _LANDING.parent
+
+# Catch-all: landing assets → dist assets → SPA fallback for BrowserRouter routes
+@app.get("/{full_path:path}")
+def _spa_fallback(full_path: str):
+    # Landing page assets (support.js, image-slot.js, _ds/*, big-proppa.png, etc.)
+    landing_file = _LANDING_DIR / full_path
+    if landing_file.exists() and landing_file.is_file():
+        return _FileResponse(str(landing_file))
+    # Built React SPA assets
+    if _DIST.is_dir():
+        candidate = _DIST / full_path
+        if candidate.exists() and candidate.is_file():
+            return _FileResponse(str(candidate))
+        idx = _DIST / "index.html"
+        if idx.exists():
+            return _FileResponse(str(idx), media_type="text/html")
+    raise HTTPException(404)
