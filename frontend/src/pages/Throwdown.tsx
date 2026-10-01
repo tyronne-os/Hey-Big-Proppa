@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MatchupHeatMap, { type MatchupData } from "./MatchupHeatMap";
 
 type Leg = {
@@ -20,6 +20,7 @@ export type ThrowdownData = {
     gameId: string; away: string; home: string;
     awayML: string; homeML: string; totalLine: string;
     awayQB: string; homeQB: string; week: number;
+    gameTimeUTC?: string | null;
   };
   slips: Record<string, Slip>;
   boost: number;
@@ -57,6 +58,67 @@ const mono   = { fontFamily: "var(--font-mono, monospace)" } as const;
 const POS_COLORS: Record<string, string> = {
   QB: "#f1dc92", RB: "#2ee6a6", WR: "#74b3ff", TE: "#c084fc", K: "#fb923c",
 };
+
+// ── Countdown clock ─────────────────────────────────────────────────────────
+function useCountdown(targetUTC: string | null | undefined) {
+  const [diff, setDiff] = useState<number | null>(null);
+  useEffect(() => {
+    if (!targetUTC) return;
+    const target = new Date(targetUTC).getTime();
+    const tick = () => setDiff(target - Date.now());
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [targetUTC]);
+  return diff;
+}
+
+function Countdown({ gameTimeUTC }: { gameTimeUTC?: string | null }) {
+  const diff = useCountdown(gameTimeUTC);
+  if (!gameTimeUTC) return null;
+
+  // Kickoff time in CST for display
+  const kickoffCST = new Date(gameTimeUTC).toLocaleTimeString("en-US", {
+    timeZone: "America/Chicago",
+    hour: "numeric", minute: "2-digit", hour12: true,
+  });
+
+  if (diff === null) return null;
+
+  if (diff <= 0) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+        <span style={{ fontFamily: "var(--font-mono,monospace)", fontSize: 11, letterSpacing: "0.2em", color: "#4ade80" }}>LIVE</span>
+        <span style={{ fontFamily: "var(--font-mono,monospace)", fontSize: 11, color: "#6e6878" }}>{kickoffCST} CST</span>
+      </div>
+    );
+  }
+
+  const totalSec = Math.floor(diff / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  const urgent = h === 0 && m < 30;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+      <span style={{ fontFamily: "var(--font-mono,monospace)", fontSize: 9, letterSpacing: "0.22em", color: "#6e6878" }}>
+        KICKOFF {kickoffCST} CST
+      </span>
+      <div style={{
+        fontFamily: "var(--font-mono,monospace)",
+        fontSize: 22, fontWeight: 900, lineHeight: 1,
+        color: urgent ? "#ef4444" : "#f1dc92",
+        letterSpacing: "0.04em",
+        textShadow: urgent ? "0 0 12px rgba(239,68,68,0.6)" : "none",
+      }}>
+        {h > 0 && <>{pad(h)}:</>}{pad(m)}:{pad(s)}
+      </div>
+    </div>
+  );
+}
 
 function Avatar({ leg }: { leg: Leg }) {
   const initials = leg.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -234,29 +296,36 @@ export default function Throwdown({ data, matchup }: { data: ThrowdownData; matc
   const dog = awayN > homeN ? g.away : g.home;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-      {/* Hero banner */}
-      <div style={{ textAlign: "center", padding: "10px 0 4px" }}>
-        <div style={{ ...mono, fontSize: 11, letterSpacing: "0.32em", color: "#6e6878" }}>{data.brand.subtitle}</div>
-        <div style={{ fontSize: "clamp(34px,7vw,72px)", fontWeight: 900, lineHeight: 0.95, ...gold, filter: "drop-shadow(0 2px 0 #2a1a08)" }}>
-          {data.brand.title}
+      {/* Hero banner — clock upper right */}
+      <div style={{ position: "relative", padding: "10px 0 4px" }}>
+        {/* Countdown upper-right */}
+        <div style={{ position: "absolute", top: 0, right: 0 }}>
+          <Countdown gameTimeUTC={g.gameTimeUTC} />
         </div>
-        <div style={{ display: "inline-flex", gap: 14, flexWrap: "wrap", justifyContent: "center", marginTop: 14, ...mono, fontSize: 13, color: "#ece6f2" }}>
-          <span>{g.away} {awayN ? am(awayN) : ""}</span>
-          <span style={{ color: "#6e6878" }}>@</span>
-          <span>{g.home} {homeN ? am(homeN) : ""}</span>
-          {g.totalLine && <span style={{ color: "#6e6878" }}>O/U {g.totalLine}</span>}
-          {(g.awayQB || g.homeQB) && (
-            <span style={{ color: "#6e6878" }}>{g.awayQB} vs {g.homeQB}</span>
-          )}
-        </div>
-        <div style={{ marginTop: 14 }}>
-          <span style={{ ...mono, fontSize: 12, fontWeight: 800, color: "#06140e", background: "#2ee6a6", borderRadius: 999, padding: "6px 16px" }}>
-            +{Math.round(data.boost * 100)}% PROFIT BOOST ON EVERY SLIP
-          </span>
-        </div>
-        <div style={{ fontSize: 12, color: "#8a8290", marginTop: 10 }}>
-          One game, every angle. Underdog tonight: <b style={{ color: "#f1dc92" }}>{dog}</b>.
-          Stake stays <b style={{ color: "#f1dc92" }}>$5</b> until we bank $500.
+
+        <div style={{ textAlign: "center" }}>
+          <div style={{ ...mono, fontSize: 11, letterSpacing: "0.32em", color: "#6e6878" }}>{data.brand.subtitle}</div>
+          <div style={{ fontSize: "clamp(34px,7vw,72px)", fontWeight: 900, lineHeight: 0.95, ...gold, filter: "drop-shadow(0 2px 0 #2a1a08)" }}>
+            {data.brand.title}
+          </div>
+          <div style={{ display: "inline-flex", gap: 14, flexWrap: "wrap", justifyContent: "center", marginTop: 14, ...mono, fontSize: 13, color: "#ece6f2" }}>
+            <span>{g.away} {awayN ? am(awayN) : ""}</span>
+            <span style={{ color: "#6e6878" }}>@</span>
+            <span>{g.home} {homeN ? am(homeN) : ""}</span>
+            {g.totalLine && <span style={{ color: "#6e6878" }}>O/U {g.totalLine}</span>}
+            {(g.awayQB || g.homeQB) && (
+              <span style={{ color: "#6e6878" }}>{g.awayQB} vs {g.homeQB}</span>
+            )}
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <span style={{ ...mono, fontSize: 12, fontWeight: 800, color: "#06140e", background: "#2ee6a6", borderRadius: 999, padding: "6px 16px" }}>
+              +{Math.round(data.boost * 100)}% PROFIT BOOST ON EVERY SLIP
+            </span>
+          </div>
+          <div style={{ fontSize: 12, color: "#8a8290", marginTop: 10 }}>
+            One game, every angle. Underdog tonight: <b style={{ color: "#f1dc92" }}>{dog}</b>.
+            Stake stays <b style={{ color: "#f1dc92" }}>$5</b> until we bank $500.
+          </div>
         </div>
       </div>
 

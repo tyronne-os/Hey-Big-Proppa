@@ -51,6 +51,22 @@ def _prob_from_american(american: str | float | None) -> float | None:
     return round(1 / d, 4) if d and d > 0 else None
 
 
+def _game_time_utc(info: dict | None) -> str | None:
+    """Return kickoff as UTC ISO string. game_time_local is Eastern (EDT=UTC-4 in Oct)."""
+    if not info:
+        return None
+    gd = info.get("game_date", "")
+    gt = info.get("game_time_local", "")
+    if not gd or not gt:
+        return None
+    try:
+        naive = datetime.datetime.fromisoformat(f"{gd}T{gt}:00")
+        utc = naive + datetime.timedelta(hours=4)   # EDT = UTC-4
+        return utc.isoformat() + "Z"
+    except Exception:
+        return None
+
+
 def _prop_rows_for_game(game_id: str, market: str, book: str = "fanduel") -> list[dict]:
     """All prop rows for a market in a specific game (matching via team membership)."""
     nxt = bpl.next_games()
@@ -805,6 +821,7 @@ def build(game_id: Optional[str] = None) -> dict:
             "homeQB": home_qb,
             "weekday": weekday,
             "week": week,
+            "gameTimeUTC": _game_time_utc(info),
         },
         "slips": slips,
         "boost": BOOST,
