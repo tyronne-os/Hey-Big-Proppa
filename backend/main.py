@@ -161,7 +161,15 @@ def api_parlays(slip: str = "hot_dogs"):
 
 @app.get("/api/chart/parlays/all")
 def api_parlays_all():
-    return {slip_id: fn() for slip_id, fn in parlays_mod.SLIPS.items()}
+    slips = {slip_id: fn() for slip_id, fn in parlays_mod.SLIPS.items()}
+    try:
+        week = next((bpl_mod.next_games().get(l.get("team"), {}).get("week") for s_ in slips.values() for l in s_["legs"] if l.get("team") in bpl_mod.next_games()), 0) or 0
+        meta = myboo_mod.track_slips([{**s_, "id": k} for k, s_ in slips.items()], 2026, int(week), "BOARD")
+        for k, s_ in slips.items():
+            s_.update(meta.get(k, {}))
+    except Exception:
+        pass
+    return slips
 
 
 @app.get("/api/parlays/engine")
@@ -171,7 +179,13 @@ def api_parlays_engine():
     Every ticket is noted by MY BOO as a SIM order (deduplicated).
     """
     built = jimmy_bpl.build_all()
-    jimmy_bpl.log_to_myboo(built["slips"] + ([built["crazyHorse"]] if built["crazyHorse"] else []))
+    eng = built["slips"] + ([built["crazyHorse"]] if built["crazyHorse"] else [])
+    try:
+        meta = myboo_mod.track_slips(eng, 2026, int(eng[0]["week"]) if eng else 0, "JIMMY BPL")
+        for s_ in eng:
+            s_.update(meta.get(str(s_["id"]), {}))
+    except Exception:
+        jimmy_bpl.log_to_myboo(eng)
     return {**built, "mode": "BPL", "version": bpl_mod.BPL_VERSION}
 
 
@@ -630,7 +644,35 @@ def api_target_share(team: str | None = None):
 @app.get("/api/myboo/tickets")
 def api_myboo_tickets(order_type: str | None = None):
     """All MY BOO tickets (POW + SIM) with embedded legs and live progress."""
+    try:
+        myboo_mod.settle()
+    except Exception:
+        pass
     return {"tickets": myboo_mod.load_tickets(order_type)}
+
+
+@app.post("/api/myboo/tickets/{ticket_id}/take")
+def api_myboo_take(ticket_id: str, payload: dict):
+    """TAKE IT (real money placed) or FAKE IT (paper). Body: {taken: bool}."""
+    try:
+        return myboo_mod.set_taken(ticket_id, bool(payload.get("taken")))
+    except KeyError:
+        raise HTTPException(status_code=404, detail="ticket not found")
+
+
+@app.post("/api/myboo/settle")
+def api_myboo_settle():
+    return myboo_mod.settle()
+
+
+@app.get("/api/myboo/summary")
+def api_myboo_summary():
+    """Win/loss tracking across every slip on the board: FAKE IT vs TAKE IT, by slip and market, $500 stake-rule progress."""
+    try:
+        myboo_mod.settle()
+    except Exception:
+        pass
+    return myboo_mod.tracking_summary()
 
 
 @app.post("/api/myboo/tickets")

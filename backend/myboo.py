@@ -38,7 +38,7 @@ _LEG_COLS = [
     "leg_id", "ticket_id", "player_name", "team",
     "market", "direction", "line", "odds", "probability",
     "game_date", "actual_value", "pct_complete", "status",
-    "graded_at",
+    "graded_at", "game_id",
 ]
 
 _TICKET_COUNTER_FILE = _GOLD / "myboo_counter.txt"
@@ -50,6 +50,16 @@ def _ensure_files():
         if not path.exists():
             with open(path, "w", newline="") as f:
                 csv.writer(f).writerow(cols)
+        else:
+            with open(path, newline="") as f:
+                reader = csv.DictReader(f)
+                have = set(reader.fieldnames or [])
+                rows = list(reader)
+            if not set(cols) <= have:
+                with open(path, "w", newline="") as f:
+                    w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore", restval="")
+                    w.writeheader()
+                    w.writerows(rows)
 
 
 def _next_ticket_id(order_type: str, week: int, season: int) -> str:
@@ -83,7 +93,7 @@ def create_ticket(
     _ensure_files()
     with open(_TICKETS_FILE, newline="") as f:
         for t in csv.DictReader(f):
-            if (t["order_type"], t["name"], str(t["season"]), str(t["week"])) == (order_type, name, str(season), str(week)):
+            if (t["name"], str(t["season"]), str(t["week"])) == (name, str(season), str(week)):
                 return t["ticket_id"]
     ticket_id = _next_ticket_id(order_type, week, season)
     now = datetime.now(timezone.utc).isoformat()
@@ -123,6 +133,7 @@ def create_ticket(
                 "pct_complete": "",
                 "status":       "PENDING",
                 "graded_at":    "",
+                "game_id":      leg.get("game_id", ""),
             }
             w.writerow(leg_row)
 
@@ -798,3 +809,255 @@ def _report_headline(day: str, hits: int, misses: int, hit_rate: float | None, p
     if hit_rate is None or hit_rate == 0:
         return f"{horse_str} — {len(picks)} picks logged, awaiting results"
     return f"{horse_str} — {hits}W/{misses}L ({rate_str} hit rate)"
+
+
+
+# ── automatic tracking, take/fake, settlement ────────────────────────────────
+
+import hashlib as _hashlib
+import threading as _threading
+
+_LOCK = _threading.RLock()
+STAKE = 5.0
+WIN_GOAL = 500.0
+
+
+def _fingerprint(legs: list[dict]) -> str:
+    key = "|".join(f"{l.get('name')}:{l.get('prop', l.get('market'))}" for l in legs)
+    return _hashlib.sha1(key.encode()).hexdigest()[:6]
+
+
+def _expand(leg: dict) -> list[dict]:
+    """A composite leg (e.g. RB 3+ catches, 75+ rush yds and a TD) is tracked as its gradable parts."""
+    base = {"player_name": leg.get("name", ""), "team": leg.get("team", ""), "odds": leg.get("odds", -110),
+            "probability": leg.get("probability", ""), "game_id": leg.get("gameId", ""), "game_date": ""}
+    comps = leg.get("components")
+    if comps:
+        return [{**base, "market": c["market"], "direction": c.get("direction", "over"), "line": c.get("line", 0.5)} for c in comps]
+    return [{**base, "market": leg.get("market", ""), "direction": leg.get("direction", "over"), "line": leg.get("line") or 0.5}]
+
+
+def track_slips(slips: list[dict], season: int, week: int, source: str = "BOARD") -> dict[str, dict]:
+    """Everything that hits the board is logged once as a FAKE IT (SIM) ticket. Returns slip id -> {ticketId, taken}."""
+    out: dict[str, dict] = {}
+    with _LOCK:
+        for sl in slips:
+            if not sl.get("legs"):
+                continue
+            legs = [p for l in sl["legs"] for p in _expand(l)]
+            name = f"{sl.get('title', 'SLIP')} · {sl.get('id', '')} · {_fingerprint(sl['legs'])}"
+            tid = create_ticket("SIM", name, legs, season, week, sl.get("boostedAmericanOdds", 0), STAKE, f"{source}")
+            order = next((t["order_type"] for t in load_tickets_raw() if t["ticket_id"] == tid), "SIM")
+            out[str(sl.get("id"))] = {"ticketId": tid, "taken": order == "POW"}
+    return out
+
+
+def load_tickets_raw() -> list[dict]:
+    _ensure_files()
+    with open(_TICKETS_FILE, newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def set_taken(ticket_id: str, taken: bool) -> dict:
+    """TAKE IT = real money placed (POW). FAKE IT = paper (SIM). Same ticket either way."""
+    with _LOCK:
+        rows = load_tickets_raw()
+        hit = None
+        for r in rows:
+            if r["ticket_id"] == ticket_id:
+                r["order_type"] = "POW" if taken else "SIM"
+                hit = r
+        if not hit:
+            raise KeyError(ticket_id)
+        with open(_TICKETS_FILE, "w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=_TICKET_COLS)
+            w.writeheader()
+            w.writerows(rows)
+    return {"ticket_id": ticket_id, "order_type": hit["order_type"], "taken": taken}
+
+
+def _norm(name: str) -> str:
+    import data
+    return data.normalize_name(name or "")
+
+
+def _stat_tables():
+    """(player_id, week) -> {market: value} from the gold lake, plus first-TD and game results."""
+    lake = _GOLD
+    st: dict[tuple[str, str], dict[str, float]] = {}
+
+    def put(fname, mapping):
+        p = lake / fname
+        if not p.exists():
+            return
+        with open(p, newline="") as f:
+            for r in csv.DictReader(f):
+                if r.get("season_type", "REG") != "REG":
+                    continue
+                d = st.setdefault((r["player_id"], r["week"]), {})
+                for mk, fn in mapping.items():
+                    try:
+                        d[mk] = fn(r)
+                    except (ValueError, TypeError):
+                        pass
+
+    fl = lambda c: (lambda r: float(r[c]))
+    put("player_receiving_week.csv", {"recyds": fl("receiving_yards"), "recs": fl("receptions")})
+    put("player_rushing_week.csv", {"rushyds": fl("rushing_yards"), "carries": fl("carries")})
+    put("player_passing_week.csv", {"passyds": fl("passing_yards"), "passtd": fl("passing_tds")})
+    put("player_scoring_week.csv", {
+        "anytd": lambda r: float(r["rushing_tds"] or 0) + float(r["receiving_tds"] or 0) + float(r["special_teams_tds"] or 0),
+        "kickpts": lambda r: 3 * float(r["fg_made"] or 0) + float(r["pat_made"] or 0),
+    })
+
+    first_td: dict[str, str] = {}
+    p = lake / "td_log.csv"
+    if p.exists():
+        best: dict[str, int] = {}
+        with open(p, newline="") as f:
+            for r in csv.DictReader(f):
+                try:
+                    pid = int(r["play_id"])
+                except ValueError:
+                    continue
+                if r["game_id"] not in best or pid < best[r["game_id"]]:
+                    best[r["game_id"]] = pid
+                    first_td[r["game_id"]] = r["scorer_player_id"]
+
+    games = {}
+    with open(lake / "schedule.csv", newline="") as f:
+        for r in csv.DictReader(f):
+            games[r["game_id"]] = r
+    return st, first_td, games
+
+
+def _grade_leg(leg, week, ids, st, first_td, games):
+    """Returns (actual, 'HIT'|'MISS') or None when the result is not in the lake yet."""
+    mk, direction = leg["market"], leg.get("direction") or "over"
+    try:
+        line = float(leg.get("line") or 0.5)
+    except ValueError:
+        line = 0.5
+    pid = ids.get((_norm(leg["player_name"]), leg["team"])) or ids.get((_norm(leg["player_name"]), ""))
+
+    if mk in ("recyds", "recs", "rushyds", "passyds", "passtd", "anytd", "kickpts", "carries"):
+        d = st.get((pid, str(week))) if pid else None
+        if not d or mk not in d:
+            return None
+        a = d[mk]
+        return a, ("HIT" if (a > line if direction == "over" else a < line) else "MISS")
+
+    if mk == "firsttd":
+        g = leg.get("game_id")
+        if not g or g not in first_td or not pid:
+            return None
+        return 1.0, ("HIT" if first_td[g] == pid else "MISS")
+
+    if mk in ("nfl_total", "nfl_ml"):
+        g = games.get(leg.get("game_id") or "")
+        if not g:
+            g = next((x for x in games.values() if str(x["week"]) == str(week) and leg["team"] in (x["home_team"], x["away_team"])), None)
+        if not g or g.get("home_score") in ("", None):
+            return None
+        hs, as_ = float(g["home_score"]), float(g["away_score"])
+        if mk == "nfl_total":
+            a = hs + as_
+            return a, ("HIT" if (a > line if direction == "over" else a < line) else "MISS")
+        mine, theirs = (hs, as_) if leg["team"] == g["home_team"] else (as_, hs)
+        return mine - theirs, ("HIT" if mine > theirs else "MISS")
+    return None
+
+
+def _gross(stake: float, american: float) -> float:
+    if not american:
+        return 0.0
+    return round(stake * (1 + (american / 100 if american > 0 else 100 / abs(american))), 2)
+
+
+def settle() -> dict:
+    """Grade every pending leg the lake has results for, then settle tickets. Idempotent."""
+    import data
+    with _LOCK:
+        _ensure_files()
+        with open(_LEGS_FILE, newline="") as f:
+            legs = list(csv.DictReader(f))
+        with open(_TICKETS_FILE, newline="") as f:
+            tickets = list(csv.DictReader(f))
+        week_of = {t["ticket_id"]: t["week"] for t in tickets}
+        pending = [l for l in legs if l["status"] == "PENDING"]
+        if not pending:
+            return {"graded": 0}
+        ids: dict[tuple[str, str], str] = {}
+        for pid, r in data.player_dimension().items():
+            ids[(data.normalize_name(r.get("name", "")), r.get("team", ""))] = pid
+            ids.setdefault((data.normalize_name(r.get("name", "")), ""), pid)
+        st, first_td, games = _stat_tables()
+        n = 0
+        for l in pending:
+            res = _grade_leg(l, week_of.get(l["ticket_id"], 0), ids, st, first_td, games)
+            if res:
+                l["actual_value"], l["status"] = res[0], res[1]
+                l["graded_at"] = datetime.now(timezone.utc).isoformat()
+                n += 1
+        if not n:
+            return {"graded": 0}
+        by_t: dict[str, list[dict]] = {}
+        for l in legs:
+            by_t.setdefault(l["ticket_id"], []).append(l)
+        for t in tickets:
+            ls = by_t.get(t["ticket_id"], [])
+            if not ls or t["status"] in ("SETTLED_WIN", "SETTLED_LOSS"):
+                continue
+            if any(x["status"] == "MISS" for x in ls):
+                t["status"], t["result_units"] = "SETTLED_LOSS", "0"
+                t["settled_at"] = datetime.now(timezone.utc).isoformat()
+            elif all(x["status"] == "HIT" for x in ls):
+                t["status"] = "SETTLED_WIN"
+                t["result_units"] = str(_gross(float(t["stake_units"] or STAKE), float(t["payout_odds"] or 0)))
+                t["settled_at"] = datetime.now(timezone.utc).isoformat()
+            elif any(x["status"] == "HIT" for x in ls):
+                t["status"] = "IN_PROGRESS"
+        with open(_LEGS_FILE, "w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=_LEG_COLS, extrasaction="ignore", restval="")
+            w.writeheader(); w.writerows(legs)
+        with open(_TICKETS_FILE, "w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=_TICKET_COLS)
+            w.writeheader(); w.writerows(tickets)
+        return {"graded": n}
+
+
+def tracking_summary() -> dict:
+    """Everything on the board, FAKE IT vs TAKE IT, by slip type and market, plus the $500 stake-rule progress."""
+    _ensure_files()
+    tickets = load_tickets_raw()
+    with open(_LEGS_FILE, newline="") as f:
+        legs = list(csv.DictReader(f))
+
+    def block(rows):
+        win = sum(1 for t in rows if t["status"] == "SETTLED_WIN")
+        loss = sum(1 for t in rows if t["status"] == "SETTLED_LOSS")
+        return {"tickets": len(rows), "wins": win, "losses": loss, "pending": len(rows) - win - loss,
+                "hit_rate": round(win / (win + loss), 3) if win + loss else None}
+
+    pow_t = [t for t in tickets if t["order_type"] == "POW"]
+    sim_t = [t for t in tickets if t["order_type"] != "POW"]
+    staked = sum(float(t["stake_units"] or 0) for t in pow_t if t["status"] in ("SETTLED_WIN", "SETTLED_LOSS"))
+    returned = sum(float(t["result_units"] or 0) for t in pow_t if t["status"] == "SETTLED_WIN")
+    net = round(returned - staked, 2)
+
+    by_slip: dict[str, list[dict]] = {}
+    for t in tickets:
+        by_slip.setdefault(t["name"].split(" · ")[0], []).append(t)
+    by_market: dict[str, dict] = {}
+    for l in legs:
+        if l["status"] in ("HIT", "MISS"):
+            m = by_market.setdefault(l["market"], {"hit": 0, "miss": 0})
+            m["hit" if l["status"] == "HIT" else "miss"] += 1
+    return {
+        "all": block(tickets), "take_it": block(pow_t), "fake_it": block(sim_t),
+        "by_slip": {k: block(v) for k, v in sorted(by_slip.items())},
+        "by_market": {k: {**v, "hit_rate": round(v["hit"] / (v["hit"] + v["miss"]), 3)} for k, v in sorted(by_market.items())},
+        "legs": {"graded": sum(1 for l in legs if l["status"] in ("HIT", "MISS")), "pending": sum(1 for l in legs if l["status"] == "PENDING")},
+        "bankroll": {"stake": STAKE, "goal": WIN_GOAL, "net_wins": net, "staked": round(staked, 2),
+                     "progress": round(min(1.0, max(0.0, net / WIN_GOAL)), 3)},
+    }

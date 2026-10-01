@@ -108,8 +108,13 @@ def _anytime_scorers(game_id: str) -> dict:
     return _slip("anytime-td", "ANYTIME TD SCORERS", legs[:4])
 
 
-def _first_td(game_id: str) -> dict:
-    """Who scores FIRST tonight."""
+def _first_td_raw(game_id: str) -> list[dict]:
+    """Raw first-TD-scorer legs (not wrapped in a slip — for use inside multi-leg combos)."""
+    dim = data.player_dimension()
+    name_to_gsis = {
+        (data.normalize_name(r.get("name", "")), r.get("team", "")): (pid, r.get("position", ""))
+        for pid, r in dim.items()
+    }
     legs = []
     for r in _prop_rows_for_game(game_id, "firsttd"):
         ml = r.get("moneyline_american")
@@ -117,19 +122,27 @@ def _first_td(game_id: str) -> dict:
         if not d:
             continue
         prob = round(1 / d, 4)
-        pid = data.normalize_name(r["player_name"])
+        norm = data.normalize_name(r["player_name"])
+        gsis, pos = name_to_gsis.get((norm, r.get("team", "")), (norm, ""))
         legs.append({
-            "playerId": pid,
+            "playerId": gsis,
             "name": r["player_name"],
             "team": r["team"],
+            "pos": pos,
             "prop": "First TD scorer",
             "market": "firsttd",
             "odds": int(float(ml)),
             "probability": prob,
             "l5": prob,
-            "photoUrl": data.photo_url(pid) if hasattr(data, "photo_url") else None,
+            "photoUrl": data.photo_url(gsis),
         })
     legs.sort(key=lambda l: -l["probability"])
+    return legs
+
+
+def _first_td(game_id: str) -> dict:
+    """Legacy wrapper kept for callers that expect a slip dict."""
+    legs = _first_td_raw(game_id)
     return _slip("first-td", "FIRST TD SCORER", legs[:1], "Only one player scores first, so this is a single-leg shot.")
 
 
@@ -255,6 +268,8 @@ def _qb_combo(game_id: str) -> dict:
             "team": r["team"],
             "prop": f"2+ pass TDs + 15+ rush yds",
             "market": "combo",
+            "components": [{"market": "passtd", "direction": "over", "line": line_f - 0.0},
+                           {"market": "rushyds", "direction": "over", "line": (rush_side or {}).get("line", 15)}],
             "odds": _am(combined_dec),
             "probability": p_combo,
             "l5": p_combo,
@@ -309,6 +324,9 @@ def _rb_trifecta(game_id: str) -> dict:
             "team": side["team"],
             "prop": f"{side['line']:g}+ recs, {rush_side['line']:g}+ rush yds, TD",
             "market": "rb-trifecta",
+            "components": [{"market": "recs", "direction": "over", "line": side["line"]},
+                           {"market": "rushyds", "direction": "over", "line": rush_side["line"]},
+                           {"market": "anytd", "direction": "over", "line": 0.5}],
             "odds": _am(combined_dec),
             "probability": p_combo,
             "l5": p_combo,
@@ -337,6 +355,8 @@ def _wr_jackpot(game_id: str) -> dict:
         legs.append({
             "playerId": s_["playerId"], "name": s_["name"], "team": s_["team"],
             "prop": f"Over {s_['line']:g} rec yds + anytime TD", "market": "wr-jackpot",
+            "components": [{"market": "recyds", "direction": "over", "line": s_["line"]},
+                           {"market": "anytd", "direction": "over", "line": 0.5}],
             "odds": _am(s_["decimal"] * d_td), "probability": p, "l5": round(s_["l5"], 3) if isinstance(s_.get("l5"), float) else p,
             "photoUrl": data.photo_url(s_["playerId"]),
         })
@@ -357,7 +377,7 @@ def _kicker_triple(game_id: str) -> dict:
                 continue
             legs.append({
                 "playerId": data.normalize_name(r["player_name"]), "name": r["player_name"], "team": r["team"],
-                "prop": f"Over {line:g} kicking pts ({book})", "market": "kickpts",
+                "prop": f"Over {line:g} kicking pts ({book})", "market": "kickpts", "line": line, "direction": "over",
                 "odds": int(float(r["over_price_american"])), "probability": round(1 / d, 4), "l5": round(1 / d, 4),
                 "photoUrl": None,
             })
@@ -420,6 +440,83 @@ def _alt_line(game_id: str) -> dict:
                  "Alt-spread prices are not in the lake yet. Wire a spread-ladder source to price this.")
 
 
+def _defense_wins(game_id: str) -> dict:
+    """3-leg UNDER parlay: players facing the game's stronger defense expected to fall short.
+
+    Strategy: find the defense with the better rank (lower rank_scoring_defense), then
+    pick the 3 highest-probability UNDER props for players on the opposing offense.
+    """
+    # Find both teams
+    nxt = bpl.next_games()
+    game_teams = [t for t, g in nxt.items() if g["gameId"] == game_id]
+    if len(game_teams) < 2:
+        return _slip("defense-wins", "DEFENSE WINS TONIGHT", [])
+
+    # Load season-level defensive rankings (lower rank = better defense)
+    def_rows = {r["team"]: r for r in data.load("team_defense_season")}
+    ranks = {}
+    for t in game_teams:
+        row = def_rows.get(t, {})
+        try:
+            ranks[t] = int(row.get("rank_scoring_defense", 99))
+        except (ValueError, TypeError):
+            ranks[t] = 99
+
+    # Better defense = lower rank_scoring_defense
+    better_def = min(ranks, key=lambda t: ranks[t])
+    target_offense = [t for t in game_teams if t != better_def][0]
+    def_rank = ranks[better_def]
+
+    # Pull UNDER props for the target_offense players from scored_sides
+    sides = cached_sides()
+    unders = [s for s in sides
+              if s.get("gameId") == game_id
+              and s.get("direction") == "under"
+              and s.get("team") == target_offense
+              and not s.get("alt")
+              and s["market"] in ("recyds", "recs", "rushyds", "passyds")]
+
+    # Score each: use model probability
+    for s in unders:
+        s["_p"] = min(s["modelP"] - SPY_HAIRCUT, s["bookP"] + SPY_MAX_CREDIT)
+
+    unders.sort(key=lambda s: -s["_p"])
+
+    # One per player, top 3
+    seen_p: set[str] = set()
+    legs: list[dict] = []
+    for s in unders:
+        if s["name"] in seen_p:
+            continue
+        seen_p.add(s["name"])
+        label = {"recyds": "rec yds", "recs": "recs", "rushyds": "rush yds", "passyds": "pass yds"}
+        pid = s["playerId"]
+        legs.append({
+            "playerId": pid,
+            "name": s["name"],
+            "team": s["team"],
+            "pos": "",
+            "prop": f"Under {s['line']:g} {label.get(s['market'], s['market'])}",
+            "market": s["market"],
+            "line": s["line"],
+            "direction": "under",
+            "odds": s["odds"],
+            "probability": round(s["_p"], 4),
+            "l5": round(s["_p"], 4),
+            "photoUrl": data.photo_url(pid),
+        })
+        if len(legs) == 3:
+            break
+
+    note = (
+        f"{better_def} ranks #{def_rank} in scoring defense this season. "
+        f"{target_offense} faces the wall tonight — these props are priced to go over, "
+        "our model says under."
+    ) if legs else "Not enough defensive data to price unders tonight."
+
+    return _slip("defense-wins", "DEFENSE WINS TONIGHT", legs, note)
+
+
 def _crazy_horse(game_id: str) -> dict:
     """The Crazy Horse pick for tonight — highest EV leg from this game."""
     from jimmy_bpl import candidate_legs
@@ -457,10 +554,59 @@ def _crazy_horse(game_id: str) -> dict:
 
 # ── Slip formatter ────────────────────────────────────────────────────────
 
+def _td_legs(game_id: str, market: str) -> list[dict]:
+    # Build lookup: (normalized_name, team) → (gsis_id, position)
+    dim = data.player_dimension()
+    name_to_gsis: dict[tuple, tuple] = {
+        (data.normalize_name(r.get("name", "")), r.get("team", "")): (pid, r.get("position", ""))
+        for pid, r in dim.items()
+    }
+    out = []
+    for r in _prop_rows_for_game(game_id, market):
+        d = _dec_price(r.get("moneyline_american"))
+        if not d:
+            continue
+        norm = data.normalize_name(r["player_name"])
+        gsis, position = name_to_gsis.get((norm, r.get("team", "")), (norm, ""))
+        out.append({
+            "playerId": gsis,
+            "name": r["player_name"],
+            "team": r["team"],
+            "pos": position,
+            "prop": "Anytime TD scorer",
+            "market": market,
+            "line": 0.5,
+            "direction": "over",
+            "odds": int(float(r["moneyline_american"])),
+            "probability": round(1 / d, 4),
+            "l5": round(1 / d, 4),
+            "photoUrl": data.photo_url(gsis),
+        })
+    return out
+
+
+def _pool(game_id: str) -> list[dict]:
+    teams = {t for t, g in bpl.next_games().items() if g["gameId"] == game_id}
+    pos = {pid: r.get("position", "") for pid, r in data.player_dimension().items()}
+    label = {"recyds": "rec yds", "recs": "receptions", "rushyds": "rush yds", "passyds": "pass yds"}
+    out = []
+    for s_ in cached_sides():
+        if s_.get("team") not in teams or s_["direction"] != "over" or s_.get("alt") or s_["market"] not in label:
+            continue
+        p = min(s_["modelP"] - SPY_HAIRCUT, s_["bookP"] + SPY_MAX_CREDIT)
+        out.append({"playerId": s_["playerId"], "name": s_["name"], "team": s_["team"], "pos": pos.get(s_["playerId"], ""),
+                    "prop": f"Over {s_['line']:g} {label[s_['market']]}", "market": s_["market"], "line": s_["line"],
+                    "direction": "over", "odds": s_["odds"], "probability": round(p, 4), "l5": round(p, 4),
+                    "photoUrl": data.photo_url(s_["playerId"])})
+    return out
+
+
 def _slip(slip_id: str, title: str, legs: list[dict], note: str = "") -> dict:
     from odds import compute_parlay
     seen: set = set()
     legs = [l for l in legs if not ((l["name"], l["prop"]) in seen or seen.add((l["name"], l["prop"])))]
+    if len(legs) < 2:
+        legs, note = [], note or "Not enough high-probability legs to build a parlay yet."
     if legs:
         try:
             math = compute_parlay([l["odds"] for l in legs], wager=WAGER, boost=BOOST)
@@ -485,6 +631,7 @@ def _slip(slip_id: str, title: str, legs: list[dict], note: str = "") -> dict:
         "boostedAmericanOdds": boosted_am,
         "confidence": round(100 * sum(l["probability"] for l in legs) / len(legs)) if legs else 0,
         "note": note,
+        "hitProbability": round(__import__("math").prod(l["probability"] for l in legs), 4) if legs else 0,
     }
 
 
@@ -538,21 +685,96 @@ def build(game_id: Optional[str] = None) -> dict:
     away_qb = info.get("away_qb_name", "") if info else ""
     home_qb = info.get("home_qb_name", "") if info else ""
 
+    pool = _pool(game_id)
+    td_legs = _td_legs(game_id, "anytd")
+    ft = _first_td_raw(game_id)          # raw legs list — use directly in combos
+    kick = _kicker_triple(game_id)["legs"]
+    dog = _upset_potential(game_id)["legs"]
+
+    # Raw game-total-over leg (single leg, for combining into multi-leg slips)
+    _gt_sides = [s for s in cached_sides() if s.get("gameId") == game_id and s.get("market") == "nfl_total" and s["direction"] == "over"]
+    if _gt_sides:
+        _gt = max(_gt_sides, key=lambda s: s["modelP"])
+        _total_leg: list[dict] = [{
+            "playerId": game_id, "name": _gt["name"], "team": "TOTAL",
+            "prop": f"OVER {_gt['line']:g} total points", "market": "nfl_total",
+            "line": _gt["line"], "direction": "over",
+            "odds": _gt["odds"], "probability": round(_gt["modelP"], 4),
+            "l5": round(_gt["modelP"], 4), "photoUrl": None,
+        }]
+    else:
+        _total_leg = []
+    total = _total_leg
+    spec = [x for k in (_rb_trifecta, _wr_jackpot, _qb_combo) for x in k(game_id)["legs"][:1]]
+    allp = sorted(pool + td_legs, key=lambda l: -l["probability"])
+
+    def top(src, n, per=2, **kw):
+        out, count = [], {}
+        for l in src:
+            if kw.get("pos") and l.get("pos") not in kw["pos"]:
+                continue
+            if kw.get("mk") and l["market"] not in kw["mk"]:
+                continue
+            if kw.get("team") and l["team"] != kw["team"]:
+                continue
+            if count.get(l["name"], 0) >= per:
+                continue
+            count[l["name"]] = count.get(l["name"], 0) + 1
+            out.append(l)
+            if len(out) == n:
+                break
+        return out
+
+    underdog = dog[0]["team"] if dog else None
     slips = {
-        "anytime_td":    _anytime_scorers(game_id),
-        "first_td":      _first_td(game_id),
-        "qb_pass_td":    _qb_passing_td(game_id),
-        "qb_rush_td":    _qb_rush_td(game_id),
-        "qb_combo":      _qb_combo(game_id),
-        "rb_trifecta":   _rb_trifecta(game_id),
-        "wr_jackpot":    _wr_jackpot(game_id),
-        "kicker_triple": _kicker_triple(game_id),
-        "game_total":    _game_total(game_id),
-        "upset":         _upset_potential(game_id),
-        "alt_line":      _alt_line(game_id),
-        "crazy_horse":   _crazy_horse(game_id),
+        "ladder_3":    _slip("ladder-3",    "SAFE 3",            top(allp, 3, per=1),  "Highest-probability legs on the board."),
+        "ladder_5":    _slip("ladder-5",    "STACKED 5",         top(allp, 5, per=2)),
+        "ladder_7":    _slip("ladder-7",    "LOADED 7",          top(allp, 7, per=2)),
+        "ladder_9":    _slip("ladder-9",    "THE MONEY 9",       top(allp, 9, per=2),  "Same high-probability pool, more legs, bigger payout."),
+        "anytime_td":  _slip("anytime-td",  "ANYTIME TD STACK",  top(td_legs, 5, per=1)),
+        # First TD scorer + game going OVER = 2-leg combo
+        "first_td":    _slip("first-td",    "FIRST SCORE + OVER", ft[:1] + total,
+                             "If they score first the game tends to open up — ride the over with it."),
+        "air_raid":    _slip("air-raid",    "AIR RAID",          top(pool, 5, per=1, mk=("recyds", "recs", "passyds"))),
+        "ground_pound":_slip("ground-pound","GROUND & POUND",    top(pool, 3, per=1, mk=("rushyds",)) + top(td_legs, 2, per=1, pos=("RB",))),
+        "qb_power":    _slip("qb-power",    "QB POWER HOUR",     top(pool, 2, per=1, pos=("QB",), mk=("passyds",)) + total + top(td_legs, 1, per=1, pos=("QB",))),
+        "kicker_night":_slip("kicker-night","KICKER'S NIGHT",    kick + total + top(allp, 2, per=1)),
+        "upset":       _slip("upset",       "UPSET SPECIAL",     dog + (top(pool, 2, per=1, team=underdog) + top(td_legs, 1, per=1, team=underdog) if underdog else top(allp, 2, per=1))),
+        "homework":    _slip("homework",    "THE HOMEWORK SPECIAL", spec + total,
+                             "QB combo, RB trifecta, receiver jackpot and the over. This is the $1,000 ticket."),
+        "defense_wins":_defense_wins(game_id),
+        "alt_line":    _alt_line(game_id),
     }
 
+    # Crazy Horse: 7-leg mega parlay built from the best legs already on the page.
+    # One player per leg — dedupe across all above slips, ranked by probability.
+    _ch_pool: list[dict] = []
+    for _k in ("ladder_5", "anytime_td", "air_raid", "ground_pound", "qb_power", "first_td"):
+        _ch_pool.extend(slips.get(_k, {}).get("legs", []))
+    _ch_pool.sort(key=lambda l: -l["probability"])
+    _ch_seen: set[str] = set()
+    _ch_legs: list[dict] = []
+    for _l in _ch_pool:
+        if _l["name"] not in _ch_seen:
+            _ch_seen.add(_l["name"])
+            _ch_legs.append(_l)
+        if len(_ch_legs) == 8:
+            break
+    slips["crazy_horse"] = _slip(
+        "crazy-horse", "THE CRAZY HORSE", _ch_legs,
+        "Every confident leg from tonight's slips stacked into one. This is the big number.",
+    )
+    for sl in slips.values():
+        for lg in sl["legs"]:
+            lg["gameId"] = game_id
+    week = int(info["week"]) if info and info.get("week") else 0
+    try:
+        import myboo
+        meta = myboo.track_slips([{**sl, "id": f"TD-{k}"} for k, sl in slips.items()], 2026, week, "THROWDOWN")
+        for k, sl in slips.items():
+            sl.update(meta.get(f"TD-{k}", {}))
+    except Exception:
+        pass
     return {
         "active": True,
         "brand": brand,
@@ -566,6 +788,7 @@ def build(game_id: Optional[str] = None) -> dict:
             "awayQB": away_qb,
             "homeQB": home_qb,
             "weekday": weekday,
+            "week": week,
         },
         "slips": slips,
         "boost": BOOST,
