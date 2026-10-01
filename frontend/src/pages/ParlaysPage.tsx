@@ -1,9 +1,88 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import SmokeBadge from "../components/SmokeBadge";
 import TicketCard, { fromThemed } from "../components/TicketCard";
 import { api } from "../api";
 import type { ParlaySlip } from "../types";
+
+const PASSCODE = "7779311baby";
+const STORAGE_KEY = "bp_parlay_unlocked";
+
+function getUnlocked(): boolean {
+  try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
+}
+function setUnlocked() {
+  try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* */ }
+}
+
+function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
+  const [val, setVal] = useState("");
+  const [shake, setShake] = useState(false);
+  const [hint, setHint] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function attempt() {
+    if (val === PASSCODE) {
+      setUnlocked();
+      onUnlock();
+    } else {
+      setShake(true);
+      setHint("Wrong code. Try again.");
+      setVal("");
+      setTimeout(() => setShake(false), 600);
+      inputRef.current?.focus();
+    }
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, padding: "40px 20px" }}>
+      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 8 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.28em", color: "#6e6878" }}>MEMBERS ONLY</span>
+        <span style={{ fontSize: 22, fontWeight: 900, background: "var(--bp-wordmark-gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+          TONIGHT&apos;S SLIPS ARE LOCKED
+        </span>
+        <span style={{ fontSize: 13, color: "#8a8290" }}>Enter your passcode to access tonight&apos;s parlays</span>
+      </div>
+
+      <div
+        style={{
+          display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 360,
+          background: "#0e0714", border: "1px solid #3a2610", borderRadius: 20, padding: 24,
+          animation: shake ? "bp-shake 0.5s ease" : "none",
+        }}
+      >
+        <style>{`@keyframes bp-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`}</style>
+        <input
+          ref={inputRef}
+          type="password"
+          value={val}
+          onChange={e => setVal(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && attempt()}
+          placeholder="Passcode"
+          autoFocus
+          style={{
+            height: 48, padding: "0 16px", borderRadius: 12,
+            border: "1px solid #4a3a20", background: "#160c22",
+            color: "#ece6f2", fontSize: 18, fontFamily: "monospace",
+            outline: "none", letterSpacing: "0.12em",
+          }}
+        />
+        {hint && <span style={{ fontSize: 12, color: "#ef4444", fontWeight: 700, letterSpacing: "0.06em" }}>{hint}</span>}
+        <button
+          onClick={attempt}
+          style={{
+            height: 44, borderRadius: 12, border: 0,
+            background: "linear-gradient(135deg,#d9b45a,#8a6224)",
+            color: "#0b0512", fontSize: 14, fontWeight: 900,
+            letterSpacing: "0.12em", cursor: "pointer",
+          }}
+        >
+          UNLOCK TONIGHT&apos;S SLIPS
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Big Proppa Parlays -- full-page dashboard, no nodes, per
@@ -14,17 +93,22 @@ import type { ParlaySlip } from "../types";
  */
 export default function ParlaysPage() {
   const [slips, setSlips] = useState<Record<string, ParlaySlip> | null>(null);
+  const [unlocked, setUnlocked] = useState(getUnlocked);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");
-    api.parlaysAll().then(setSlips).catch(() => setSlips(null));
-  }, []);
+    if (unlocked) {
+      api.parlaysAll().then(setSlips).catch(() => setSlips(null));
+    }
+  }, [unlocked]);
 
   const wager = 5;
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bp-page-bg)", color: "var(--bp-fg)", display: "flex", justifyContent: "center", padding: "32px 20px" }}>
       <div style={{ width: "100%", maxWidth: 1200, display: "flex", flexDirection: "column", gap: 24 }}>
+
+        {/* Big Proppa header — always visible, passcode does NOT block this */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
             <SmokeBadge size={92} />
@@ -44,21 +128,28 @@ export default function ParlaysPage() {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 8, height: 34, padding: "0 14px", border: "1px solid #6b4a1c", borderRadius: 999, fontSize: 12, fontWeight: 700, color: "#f1dc92" }}>
-              WAGER <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 14 }}>${wager}</span>
-            </span>
-            <span style={{ display: "flex", alignItems: "center", height: 34, padding: "0 14px", border: "1px solid var(--bp-border)", borderRadius: 999, fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: "var(--bp-muted)" }}>
-              FANDUEL ODDS
-            </span>
+            {unlocked && (
+              <>
+                <span style={{ display: "flex", alignItems: "center", gap: 8, height: 34, padding: "0 14px", border: "1px solid #6b4a1c", borderRadius: 999, fontSize: 12, fontWeight: 700, color: "#f1dc92" }}>
+                  WAGER <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 14 }}>${wager}</span>
+                </span>
+                <span style={{ display: "flex", alignItems: "center", height: 34, padding: "0 14px", border: "1px solid var(--bp-border)", borderRadius: 999, fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: "var(--bp-muted)" }}>
+                  FANDUEL ODDS
+                </span>
+              </>
+            )}
             <Link to="/" style={{ display: "flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px", border: "1px solid var(--bp-border)", borderRadius: 999, fontSize: 12, fontWeight: 600, color: "#b8b0c0", textDecoration: "none" }}>
               &larr; Canvas
             </Link>
           </div>
         </div>
 
-        {!slips && <div style={{ color: "var(--bp-muted)" }}>Loading slips from RAMP NFL...</div>}
+        {/* Passcode gate — only blocks the bets section */}
+        {!unlocked && <PasscodeGate onUnlock={() => setUnlocked(true)} />}
 
-        {slips && (
+        {unlocked && !slips && <div style={{ color: "var(--bp-muted)" }}>Loading slips from RAMP NFL...</div>}
+
+        {unlocked && slips && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(380px,1fr))", gap: 18, alignItems: "start" }}>
             {Object.values(slips).map((s) => (
               s.legs.length > 0 ? <TicketCard key={s.id} slip={fromThemed(s)} /> : <Ticket key={s.id} slip={s} />

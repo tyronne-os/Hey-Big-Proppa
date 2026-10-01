@@ -987,6 +987,19 @@ def api_ramp_gameday(date: str | None = None):
 
 # ── Landing page root ──────────────────────────────────────────────────────────
 # Serves the designer landing page at / (Space homepage).
+import throwdown as throwdown_mod
+
+@app.get("/api/throwdown")
+def api_throwdown(game_id: str | None = None):
+    """
+    THROWDOWN THURSDAY / MONDAY NIGHT THROWDOWN deep-dive for a single game.
+    Automatically detects tonight's primetime single-game slot (Thu/Mon).
+    Pass ?game_id=... to force a specific game for preview/testing.
+    Returns {active: false} when today is not a throwdown night.
+    """
+    return throwdown_mod.build(game_id)
+
+
 # React app still accessible at /app/* via the StaticFiles mount below.
 from fastapi.responses import FileResponse as _FileResponse
 

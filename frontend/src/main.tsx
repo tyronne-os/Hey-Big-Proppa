@@ -31,6 +31,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />} />
+          <Route path="/leaders" element={<App initialTab="leaders" />} />
           <Route path="/parlays" element={<ParlaysPage />} />
         </Routes>
       </BrowserRouter>

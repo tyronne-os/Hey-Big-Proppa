@@ -28,14 +28,14 @@ const nodeTypes: NodeTypes = { canvasNode: LakeCanvasNode };
 
 const DEFAULT_PLAYER_ID = "00-0033280"; // Christian McCaffrey -- a real player present in every gold CSV, sane default
 
-export default function App() {
+export default function App({ initialTab }: { initialTab?: ViewTab }) {
   const [isDark, setIsDark] = useState(true);
   const [leftPct, setLeftPct] = useState(40);
   const [rfNodes, setRfNodes] = useState<Node<LakeCanvasNodeData>[]>([]);
   const [rfEdges, setRfEdges] = useState<Edge[]>([]);
   const [nextNodeCount, setNextNodeCount] = useState(2);
 
-  const [tab, setTab] = useState<ViewTab>("parlay");
+  const [tab, setTab] = useState<ViewTab>(initialTab ?? "parlay");
   const [canvasOpen, setCanvasOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState(DEFAULT_PLAYER_ID);
   const [playerMarket, setPlayerMarket] = useState<string | undefined>(undefined);
