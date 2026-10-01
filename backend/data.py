@@ -130,6 +130,18 @@ def _headshots() -> dict[str, str]:
     return {r["player_id"]: r["headshot_url"] for r in load("player_headshots")}
 
 
+def _enhance_cloudinary(url: str | None, w: int = 400, h: int = 400) -> str | None:
+    """Inject face-crop + size transforms into NFL.com Cloudinary headshot URLs."""
+    if not url:
+        return url
+    # Pattern: .../image/upload/<existing_transforms>/...
+    import re
+    m = re.match(r"(https://static\.www\.nfl\.com/image/upload/)([^/]+)(/.+)", url)
+    if m:
+        return f"{m.group(1)}w_{w},h_{h},c_fill,g_face,{m.group(2)}{m.group(3)}"
+    return url
+
+
 def photo_url(player_id: str) -> str | None:
     """Tank01's ESPN headshot first (matched on name + team), nflverse's headshot as fallback.
     The browser loads the URL directly; the frontend shows an initials avatar if it fails."""
@@ -145,7 +157,7 @@ def photo_url(player_id: str) -> str | None:
             return same_team[0]
         if len(hits) == 1:
             return hits[0][1]
-    return _headshots().get(player_id)
+    return _enhance_cloudinary(_headshots().get(player_id))
 
 
 def search_players(query: str, limit: int = 20) -> list[dict]:
