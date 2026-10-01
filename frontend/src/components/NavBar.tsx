@@ -1,0 +1,59 @@
+import { Link, useLocation } from "react-router-dom";
+
+const TABS = [
+  { id: "leaders",  label: "LEADERS",  href: "/leaders" },
+  { id: "matchups", label: "MATCHUPS", href: "/?tab=matchups" },
+  { id: "ramp",     label: "RAMP",     href: "/?tab=ramp" },
+  { id: "parlay",   label: "PARLAY",   href: "/parlays" },
+  { id: "engine",   label: "ENGINE",   href: "/?tab=engine" },
+  { id: "news",     label: "NEWS",     href: "/?tab=news" },
+  { id: "queries",  label: "QUERIES",  href: "/?tab=queries" },
+  { id: "myboo",    label: "MY BOO",   href: "/?tab=myboo" },
+  { id: "odds",     label: "THE ODDS", href: "/?tab=odds" },
+] as const;
+
+type NavBarProps = { activeTab?: string };
+
+export default function NavBar({ activeTab }: NavBarProps) {
+  const location = useLocation();
+
+  // Detect active tab from URL
+  const currentTab = activeTab ?? (() => {
+    if (location.pathname === "/parlays") return "parlay";
+    if (location.pathname === "/leaders") return "leaders";
+    const sp = new URLSearchParams(location.search);
+    return sp.get("tab") ?? "parlay";
+  })();
+
+  return (
+    <div style={{
+      display: "flex", gap: 6, padding: "8px 20px 10px", flexWrap: "wrap", flex: "0 0 auto",
+      borderBottom: "1px solid var(--bp-border)",
+    }}>
+      {TABS.map(({ id, label, href }) => {
+        const isBoo = id === "myboo";
+        const isActive = id === currentTab;
+        return (
+          <Link
+            key={id}
+            to={href}
+            style={{
+              display: "inline-flex", alignItems: "center",
+              height: 32, padding: "0 14px", borderRadius: 999,
+              border: `1px solid ${isActive ? (isBoo ? "#a78bfa" : "#c9a54e") : (isBoo ? "#3a2060" : "var(--bp-border)")}`,
+              background: isActive
+                ? (isBoo ? "rgba(139,92,246,0.18)" : "rgba(201,165,78,0.14)")
+                : (isBoo ? "rgba(139,92,246,0.06)" : "var(--bp-card-bg)"),
+              color: isActive ? (isBoo ? "#c4b5fd" : "#f1dc92") : (isBoo ? "#9d72ff" : "var(--bp-fg)"),
+              fontSize: 12, fontWeight: 700, letterSpacing: "0.1em",
+              textDecoration: "none", cursor: "pointer",
+              transition: "background 0.15s, border-color 0.15s",
+            }}
+          >
+            {label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}

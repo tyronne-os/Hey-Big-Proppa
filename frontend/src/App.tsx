@@ -35,7 +35,14 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
   const [rfEdges, setRfEdges] = useState<Edge[]>([]);
   const [nextNodeCount, setNextNodeCount] = useState(2);
 
-  const [tab, setTab] = useState<ViewTab>(initialTab ?? "parlay");
+  const [tab, setTab] = useState<ViewTab>(() => {
+    if (initialTab) return initialTab;
+    try {
+      const t = new URLSearchParams(window.location.search).get("tab");
+      if (t && (VIEW_TABS as readonly string[]).includes(t)) return t as ViewTab;
+    } catch { /* */ }
+    return "parlay";
+  });
   const [canvasOpen, setCanvasOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState(DEFAULT_PLAYER_ID);
   const [playerMarket, setPlayerMarket] = useState<string | undefined>(undefined);

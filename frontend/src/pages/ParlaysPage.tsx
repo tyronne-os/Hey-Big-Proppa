@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import SmokeBadge from "../components/SmokeBadge";
+import NavBar from "../components/NavBar";
 import TicketCard, { fromThemed } from "../components/TicketCard";
 import { api } from "../api";
 import Throwdown, { type ThrowdownData } from "./Throwdown";
@@ -112,44 +113,47 @@ export default function ParlaysPage() {
   const wager = 5;
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bp-page-bg)", color: "var(--bp-fg)", display: "flex", justifyContent: "center", padding: "32px 20px" }}>
-      <div style={{ width: "100%", maxWidth: 1200, display: "flex", flexDirection: "column", gap: 24 }}>
-
-        {/* Big Proppa header — always visible, passcode does NOT block this */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <SmokeBadge size={92} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, fontWeight: 700, letterSpacing: "0.32em", color: "var(--bp-muted)" }}>
-                TONIGHT&apos;S SLIPS
-              </span>
-              <span
-                style={{
-                  fontSize: 48, lineHeight: 0.92, fontWeight: 900, letterSpacing: "-0.01em",
-                  background: "var(--bp-wordmark-gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
-                  filter: "drop-shadow(0 2px 0 #2a1a08)",
-                }}
-              >
-                HEY BIG PROPPA!
-              </span>
-            </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {unlocked && (
-              <>
-                <span style={{ display: "flex", alignItems: "center", gap: 8, height: 34, padding: "0 14px", border: "1px solid #6b4a1c", borderRadius: 999, fontSize: 12, fontWeight: 700, color: "#f1dc92" }}>
-                  WAGER <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 14 }}>${wager}</span>
-                </span>
-                <span style={{ display: "flex", alignItems: "center", height: 34, padding: "0 14px", border: "1px solid var(--bp-border)", borderRadius: 999, fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: "var(--bp-muted)" }}>
-                  FANDUEL ODDS
-                </span>
-              </>
-            )}
-            <Link to="/" style={{ display: "flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px", border: "1px solid var(--bp-border)", borderRadius: 999, fontSize: 12, fontWeight: 600, color: "#b8b0c0", textDecoration: "none" }}>
-              &larr; Canvas
-            </Link>
+    <div style={{ minHeight: "100vh", background: "var(--bp-page-bg)", color: "var(--bp-fg)" }}>
+      {/* Top brand bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16, padding: "20px 24px 12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+          <SmokeBadge size={72} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, fontWeight: 700, letterSpacing: "0.32em", color: "var(--bp-muted)" }}>
+              TONIGHT&apos;S SLIPS
+            </span>
+            <span
+              style={{
+                fontSize: 38, lineHeight: 0.92, fontWeight: 900, letterSpacing: "-0.01em",
+                background: "var(--bp-wordmark-gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
+                filter: "drop-shadow(0 2px 0 #2a1a08)",
+              }}
+            >
+              HEY BIG PROPPA!
+            </span>
           </div>
         </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {unlocked && (
+            <>
+              <span style={{ display: "flex", alignItems: "center", gap: 8, height: 34, padding: "0 14px", border: "1px solid #6b4a1c", borderRadius: 999, fontSize: 12, fontWeight: 700, color: "#f1dc92" }}>
+                WAGER <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 14 }}>${wager}</span>
+              </span>
+              <span style={{ display: "flex", alignItems: "center", height: 34, padding: "0 14px", border: "1px solid var(--bp-border)", borderRadius: 999, fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: "var(--bp-muted)" }}>
+                FANDUEL ODDS
+              </span>
+            </>
+          )}
+          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px", border: "1px solid var(--bp-border)", borderRadius: 999, fontSize: 12, fontWeight: 600, color: "#b8b0c0", textDecoration: "none" }}>
+            &larr; Canvas
+          </Link>
+        </div>
+      </div>
+
+      {/* Full nav menu */}
+      <NavBar activeTab="parlay" />
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 20px", display: "flex", flexDirection: "column", gap: 24 }}>
 
         {/* Passcode gate — only blocks the bets section */}
         {!unlocked && <PasscodeGate onUnlock={() => setUnlocked(true)} />}
