@@ -1023,6 +1023,13 @@ async def jimmy_deep_dive(body: dict):
 
 # ── Tank01 endpoints ─────────────────────────────────────────────────────────
 
+@app.get("/api/teamrankings/status")
+def api_teamrankings_status():
+    """Last full / daily TeamRankings intake runs and their per-page row counts or errors."""
+    import teamrankings
+    return teamrankings.status()
+
+
 @app.get("/api/tank01/stats")
 def api_tank01_stats():
     """API usage tracker — real vs cached calls by endpoint, last 50 log entries."""

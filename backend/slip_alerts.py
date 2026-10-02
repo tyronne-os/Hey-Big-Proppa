@@ -503,6 +503,11 @@ def start_worker() -> None:
             except Exception:
                 pass
             try:
+                import teamrankings
+                teamrankings.maybe_run()              # Tue 1 AM CT full intake, Mon/Thu-Sun 9 AM CT odds; catches up after downtime
+            except Exception:
+                pass
+            try:
                 import boo_training
                 boo_training.maybe_run_tuesday()      # Tuesday 6 AM Central: MY BOO trains Jimmy from the week's slips
             except Exception:

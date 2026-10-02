@@ -1,0 +1,24 @@
+{
+ "full": {
+  "kind": "full",
+  "at": "2026-10-02T15:42:12-05:00",
+  "pages": {
+   "entrance": 32,
+   "odds": 199,
+   "trends": 32
+  },
+  "errors": {}
+ },
+ "history": [
+  {
+   "kind": "full",
+   "at": "2026-10-02T15:42:12-05:00",
+   "pages": {
+    "entrance": 32,
+    "odds": 199,
+    "trends": 32
+   },
+   "errors": {}
+  }
+ ]
+}
