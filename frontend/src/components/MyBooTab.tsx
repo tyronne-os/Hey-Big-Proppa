@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem, MyBooReport, MyBooPickDetail, MyBooFactor } from "../api";
+import BooHero from "./BooHero";
+import { useBooAlerts } from "../hooks/useBooAlerts";
+import type { BooAlert, SlipRecap, MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem, MyBooReport, MyBooPickDetail, MyBooFactor } from "../api";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -1003,9 +1005,114 @@ function Stat({ label, val, accent }: { label: string; val: string; accent?: str
   );
 }
 
+// ─── ALERTS — slips ready to record ─────────────────────────────────────────
+
+function AlertsTab({ alerts }: { alerts: BooAlert[] }) {
+  const [busy, setBusy] = useState(false);
+  const [perm, setPerm] = useState<string>(typeof Notification !== "undefined" ? Notification.permission : "unsupported");
+  const color = (a: BooAlert) => a.kind === "READY_WON" ? "#2ee6a6" : a.kind === "READY_LOST" ? "#ef4444" : a.kind === "OVERTIME" ? "#f1dc92" : "#a78bfa";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <button disabled={busy} onClick={() => { setBusy(true); api.myBooAlertsPoll().finally(() => setBusy(false)); }}
+          style={{ height: 28, padding: "0 12px", borderRadius: 999, border: "1px solid #d9b45a", background: "rgba(201,165,78,0.14)", color: "#d9b45a", fontSize: 10, fontWeight: 800, cursor: "pointer" }}>
+          {busy ? "CHECKING…" : "CHECK THE GAMES NOW"}
+        </button>
+        {perm === "default" && (
+          <button onClick={() => Notification.requestPermission().then(setPerm)}
+            style={{ height: 28, padding: "0 12px", borderRadius: 999, border: "1px solid #a78bfa", background: "transparent", color: "#c4b5fd", fontSize: 10, fontWeight: 800, cursor: "pointer" }}>
+            TURN ON POP-UP ALERTS
+          </button>
+        )}
+        <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>Checked every minute during games. Overs lock the moment they pass the line; one dead leg kills a slip on the spot.</span>
+      </div>
+      {alerts.length === 0 && <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>Quiet. MY BOO will ring when a slip is ready to record.</div>}
+      {alerts.map(a => (
+        <div key={a.id} style={{ borderLeft: `3px solid ${color(a)}`, background: "var(--bp-card-bg)", border: "1px solid var(--bp-border)", borderLeftWidth: 3, borderLeftColor: color(a), borderRadius: 10, padding: "10px 12px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: "0.04em", color: color(a) }}>{a.title}</span>
+            <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>{a.at}{a.when === "EARLY" ? " · EARLY" : ""}</span>
+          </div>
+          <div style={{ fontSize: 12, lineHeight: 1.5, marginTop: 4 }}>{a.body}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── RECAPS — MY BOO's standard write-up on every slip ─────────────────────
+
+const VERDICT_COLOR = (label: string) =>
+  label.startsWith("SCIENCE") ? (label.includes("BAD BEAT") ? "#f1dc92" : "#2ee6a6") : label.startsWith("SHIT") ? "#ef4444" : "var(--bp-muted)";
+
+function RecapCard({ r }: { r: SlipRecap }) {
+  const [open, setOpen] = useState(false);
+  const title = r.name.split(" · ")[0];
+  const v = r.hindsight;
+  return (
+    <div style={{ background: "var(--bp-card-bg)", border: "1px solid var(--bp-border)", borderRadius: 12, overflow: "hidden" }}>
+      <button onClick={() => setOpen(o => !o)} style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", width: "100%", boxSizing: "border-box", flexWrap: "wrap" }}>
+        <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: "0.06em", flex: "1 1 160px" }}>{title}</span>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", color: "var(--bp-muted)" }}>WK {r.week} · {r.order_type === "POW" ? "TAKE IT" : "FAKE IT"}</span>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", padding: "3px 8px", borderRadius: 999, border: "1px solid var(--bp-border)", color: r.stage === "FINAL" ? "var(--bp-fg)" : "#c9a54e" }}>{r.stage}</span>
+        {v && <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.1em", padding: "3px 8px", borderRadius: 999, border: `1px solid ${VERDICT_COLOR(v.label)}`, color: VERDICT_COLOR(v.label) }}>{v.label}</span>}
+        <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 14px 14px", display: "flex", flexDirection: "column", gap: 14 }}>
+          <RecapSection label="THE SETUP · written before kickoff" text={r.setup} />
+          {r.facts ? <RecapSection label="THE FACTS · straight from the post-game stats" text={r.facts} />
+            : <div style={{ fontSize: 12, color: "var(--bp-muted)", fontStyle: "italic" }}>The facts and the hindsight are written once the game is graded. Nothing is filled in ahead of the final.</div>}
+          {v && <RecapSection label="HINDSIGHT · science or shit?" text={v.line} accent={VERDICT_COLOR(v.label)} />}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+            {v?.tags.map(tg => <span key={tg} style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", padding: "2px 7px", borderRadius: 6, background: "rgba(201,165,78,0.12)", color: "#d9b45a" }}>{tg}</span>)}
+            <span style={{ fontSize: 10, color: "var(--bp-muted)", marginLeft: "auto" }}>{r.word_count} words{r.nugget ? ` · nugget: ${r.nugget}` : ""}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RecapSection({ label, text, accent }: { label: string; text: string; accent?: string }) {
+  return (
+    <div>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.16em", color: accent ?? "#c9a54e", marginBottom: 6 }}>{label}</div>
+      {text.split("\n\n").map((p, i) => <p key={i} style={{ margin: "0 0 8px", fontSize: 13, lineHeight: 1.55 }}>{p}</p>)}
+    </div>
+  );
+}
+
+function RecapsTab() {
+  const [recaps, setRecaps] = useState<SlipRecap[] | null>(null);
+  const [week, setWeek] = useState<number | "all">("all");
+  useEffect(() => { api.myBooRecaps().then(r => setRecaps(r.recaps)).catch(() => setRecaps([])); }, []);
+  if (!recaps) return <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>MY BOO is reading the tape…</div>;
+  const weeks = [...new Set(recaps.map(r => r.week))].sort((a, b) => b - a);
+  const shown = recaps.filter(r => week === "all" || r.week === week);
+  const final = shown.filter(r => r.hindsight && r.hindsight.process_ok !== null);
+  const sci = final.filter(r => r.hindsight!.process_ok).length;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <select value={week} onChange={e => setWeek(e.target.value === "all" ? "all" : Number(e.target.value))}
+          style={{ height: 30, padding: "0 10px", borderRadius: 999, border: "1px solid #6b4a1c", background: "var(--bp-card-bg)", color: "#f1dc92", fontSize: 12, fontWeight: 700 }}>
+          <option value="all">ALL WEEKS</option>
+          {weeks.map(w => <option key={w} value={w}>WEEK {w}</option>)}
+        </select>
+        <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>
+          {shown.length} slips · {final.length} graded{final.length ? ` · process held on ${sci} of ${final.length} (${Math.round(sci / final.length * 100)}%)` : ""}
+        </span>
+      </div>
+      {shown.length === 0 && <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>No slips logged yet.</div>}
+      {shown.map(r => <RecapCard key={r.ticket_id} r={r} />)}
+    </div>
+  );
+}
+
 // ─── main MY BOO component ───────────────────────────────────────────────────
 
-const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT"] as const;
+const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS"] as const;
 type BooTab = (typeof BOO_TABS)[number];
 
 export default function MyBooTab() {
@@ -1030,8 +1137,13 @@ export default function MyBooTab() {
   const powTotal = powTickets.filter(t => t.status === "SETTLED_WIN" || t.status === "SETTLED_LOSS").length;
   const hitRate = powTotal > 0 ? (powWins / powTotal * 100).toFixed(1) : null;
 
+  const { alerts, unread, markRead } = useBooAlerts();
+  useEffect(() => { if (tab === "ALERTS") markRead(); }, [tab, markRead]);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%" }}>
+    <div style={{ display: "flex", gap: 20, alignItems: "flex-start", height: "100%" }}>
+    <BooHero alerts={alerts} unread={unread} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%", flex: 1, minWidth: 0 }}>
       {/* MY BOO header */}
       <div style={{ padding: "16px 0 12px", borderBottom: "1px solid var(--bp-border)", marginBottom: 14, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
@@ -1080,7 +1192,7 @@ export default function MyBooTab() {
                 color: t === tab ? "#d9b45a" : "var(--bp-muted)",
                 fontSize: 10, fontWeight: 700,
               }}>
-                {t}
+                {t}{t === "ALERTS" && unread > 0 ? ` (${unread})` : ""}
               </button>
             ))}
           </div>
@@ -1116,6 +1228,8 @@ export default function MyBooTab() {
             {tab === "TRAINING LOGS" && <TrainingLogTab />}
             {tab === "WEAPON ROOM" && <PostMortemTab />}
             {tab === "BET REPORT" && <BetReportTab />}
+            {tab === "RECAPS" && <RecapsTab />}
+            {tab === "ALERTS" && <AlertsTab alerts={alerts} />}
           </div>
         </div>
 
@@ -1131,6 +1245,7 @@ export default function MyBooTab() {
       </div>
 
       {showModal && <NewTicketModal onClose={() => setShowModal(false)} onCreated={loadTickets} />}
+    </div>
     </div>
   );
 }

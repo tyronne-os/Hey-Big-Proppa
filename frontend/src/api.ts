@@ -41,6 +41,9 @@ export const api = {
   parlaysHistoryWeek: (weekId: string) => get<Record<string, ParlaySlip>>(`/api/parlays/history/${weekId}`),
   parlaysSnapshot: () => fetch(`${BASE}/api/parlays/snapshot`, { method: "POST" }).then(r => r.json()),
   myBooSummary: () => get<any>("/api/myboo/summary"),
+  myBooAlerts: (since = 0) => get<{ latest: number; alerts: BooAlert[] }>(`/api/myboo/alerts?since=${since}`),
+  myBooAlertsPoll: () => fetch(`${BASE}/api/myboo/alerts/poll`, { method: "POST" }).then(r => r.json()),
+  myBooRecaps: (week?: number) => get<{ recaps: SlipRecap[] }>(`/api/myboo/recaps${week ? `?week=${week}` : ""}`),
   canvasNodes: () => get<{ nodes: { id: string; type: "lake" | "expert"; name: string; sub: string; chips?: string[]; store?: string }[] }>(
     "/api/canvas/nodes"
   ),
@@ -209,3 +212,16 @@ export interface MyBooPostMortem {
   aggressive_scale_recs: Array<{ player: string; market: string; games_analyzed: number; avg_pct_over_line: number; recommendation: string; confidence: string }>;
   conservatism_note: string;
 }
+
+export type SlipRecap = {
+  ticket_id: string; name: string; week: number; season: string; order_type?: string; status: string;
+  stage: "PREGAME" | "IN PROGRESS" | "FINAL"; nugget?: string | null;
+  setup: string; facts: string; word_count: number;
+  hindsight: { label: string; line: string; process_score: number | null; process_ok: boolean | null; tags: string[] } | null;
+};
+
+export type BooAlert = {
+  id: number; kind: "READY_WON" | "READY_LOST" | "HALFTIME" | "OVERTIME" | "GAME_FINAL" | "RECAP_FINAL";
+  title: string; body: string; at: string; ticket_id?: string; game?: string; when?: "EARLY" | "FINAL";
+  moment?: string; severity?: "win" | "loss"; recorded?: boolean;
+};

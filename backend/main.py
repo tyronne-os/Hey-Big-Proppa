@@ -65,6 +65,12 @@ def _warm_caches() -> None:
 
 _warm_caches()
 
+try:
+    import slip_alerts as _slip_alerts
+    _slip_alerts.start_worker()      # polls Tank01 once a minute when a key is configured
+except Exception:
+    pass
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # dev only -- local Vite dev server + this API
@@ -711,6 +717,27 @@ def api_myboo_take(ticket_id: str, payload: dict):
 @app.post("/api/myboo/settle")
 def api_myboo_settle():
     return myboo_mod.settle()
+
+
+@app.get("/api/myboo/alerts")
+def api_myboo_alerts(since: int = 0):
+    """In-app alert feed: slips ready to record, halftime/overtime/final checkpoints."""
+    import slip_alerts
+    return slip_alerts.alerts_since(since)
+
+
+@app.post("/api/myboo/alerts/poll")
+def api_myboo_alerts_poll():
+    """Run one live check now instead of waiting for the background worker."""
+    import slip_alerts
+    return {"new": slip_alerts.poll()}
+
+
+@app.get("/api/myboo/recaps")
+def api_myboo_recaps(week: int | None = None, ticket_id: str | None = None):
+    """MY BOO's standard 3-part recap (setup / facts / hindsight) for every slip."""
+    import slip_recap
+    return {"recaps": slip_recap.recaps(week=week, ticket_id=ticket_id)}
 
 
 @app.get("/api/myboo/summary")

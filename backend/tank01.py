@@ -94,7 +94,8 @@ def _to_cst(iso_or_epoch: str | int | None) -> str:
 
 
 def _today_str() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%d")
+    # Central time (New Orleans): the HF server runs UTC, which flips to tomorrow at 7pm CT
+    return datetime.now(ZoneInfo("America/Chicago")).strftime("%Y%m%d")
 
 
 # ── PUBLIC API ────────────────────────────────────────────────────────────────
@@ -467,3 +468,15 @@ def _f(v) -> float | None:
         return float(v) if v is not None else None
     except (ValueError, TypeError):
         return None
+
+
+def get_live_boxscore(game_id: str) -> dict | None:
+    """
+    Live box score for one game (Tank01 gameID like '20261001_PIT@CLE').
+    Short 45s cache so a 60s poller always sees fresh numbers. Returns the raw 'body' dict or None.
+    """
+    raw = _get("getNFLBoxScore", {"gameID": game_id, "playByPlay": "false", "fantasyPoints": "false"}, ttl=45)
+    if not raw:
+        return None
+    body = raw.get("body")
+    return body if isinstance(body, dict) and body else None

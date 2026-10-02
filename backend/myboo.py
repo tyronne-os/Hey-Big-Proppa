@@ -849,6 +849,11 @@ def track_slips(slips: list[dict], season: int, week: int, source: str = "BOARD"
             tid = create_ticket("SIM", name, legs, season, week, sl.get("boostedAmericanOdds", 0), STAKE, f"{source}")
             order = next((t["order_type"] for t in load_tickets_raw() if t["ticket_id"] == tid), "SIM")
             out[str(sl.get("id"))] = {"ticketId": tid, "taken": order == "POW"}
+    try:
+        import slip_recap
+        slip_recap.snapshot_open()   # freeze the pre-game thesis the moment a slip hits the board
+    except Exception:
+        pass
     return out
 
 
