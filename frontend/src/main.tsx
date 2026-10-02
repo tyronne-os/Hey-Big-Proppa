@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import App from "./App";
 import ParlaysPage from "./pages/ParlaysPage";
 import "reactflow/dist/style.css";
@@ -31,8 +31,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path="/leaders" element={<App initialTab="leaders" />} />
-          <Route path="/parlays" element={<ParlaysPage />} />
+          <Route path="/throwdown" element={<ParlaysPage />} />
+          <Route path="/parlays" element={<Navigate to="/throwdown" replace />} />
+          {(["player", "leaders", "matchups", "ramp", "engine", "news", "queries", "myboo", "odds"] as const).map((t) => (
+            <Route key={t} path={`/${t}`} element={<App initialTab={t} />} />
+          ))}
+          <Route path="*" element={<Navigate to="/throwdown" replace />} />
         </Routes>
       </BrowserRouter>
     </ErrorBoundary>

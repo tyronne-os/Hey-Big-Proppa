@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ReactFlow, { Background, Controls, MiniMap, type Edge, type EdgeTypes, type Node, type NodeTypes } from "reactflow";
 import "reactflow/dist/style.css";
 import AnimatedPulseEdge from "./AnimatedPulseEdge";
@@ -26,6 +27,8 @@ type ViewTab = (typeof VIEW_TABS)[number];
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
 const nodeTypes: NodeTypes = { canvasNode: LakeCanvasNode };
 
+export const tabPath = (t: string) => (t === "parlay" ? "/throwdown" : `/${t}`);
+
 const DEFAULT_PLAYER_ID = "00-0033280"; // Christian McCaffrey -- a real player present in every gold CSV, sane default
 
 export default function App({ initialTab }: { initialTab?: ViewTab }) {
@@ -43,6 +46,12 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
     } catch { /* */ }
     return "parlay";
   });
+  const navigate = useNavigate();
+  useEffect(() => { if (initialTab) setTab(initialTab); }, [initialTab]);
+  useEffect(() => {
+    const p = tabPath(tab);
+    if (window.location.pathname !== p) navigate(p, { replace: window.location.pathname === "/" });
+  }, [tab, navigate]);
   const [canvasOpen, setCanvasOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState(DEFAULT_PLAYER_ID);
   const [playerMarket, setPlayerMarket] = useState<string | undefined>(undefined);

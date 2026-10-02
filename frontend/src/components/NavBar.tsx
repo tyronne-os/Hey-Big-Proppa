@@ -2,14 +2,14 @@ import { Link, useLocation } from "react-router-dom";
 
 const TABS = [
   { id: "leaders",  label: "LEADERS",  href: "/leaders" },
-  { id: "matchups", label: "MATCHUPS", href: "/?tab=matchups" },
-  { id: "ramp",     label: "RAMP",     href: "/?tab=ramp" },
-  { id: "parlay",   label: "THROWDOWN THURSDAY",   href: "/parlays" },
-  { id: "engine",   label: "ENGINE",   href: "/?tab=engine" },
-  { id: "news",     label: "NEWS",     href: "/?tab=news" },
-  { id: "queries",  label: "QUERIES",  href: "/?tab=queries" },
-  { id: "myboo",    label: "MY BOO",   href: "/?tab=myboo" },
-  { id: "odds",     label: "THE ODDS", href: "/?tab=odds" },
+  { id: "matchups", label: "MATCHUPS", href: "/matchups" },
+  { id: "ramp",     label: "RAMP",     href: "/ramp" },
+  { id: "parlay",   label: "THROWDOWN THURSDAY",   href: "/throwdown" },
+  { id: "engine",   label: "ENGINE",   href: "/engine" },
+  { id: "news",     label: "NEWS",     href: "/news" },
+  { id: "queries",  label: "QUERIES",  href: "/queries" },
+  { id: "myboo",    label: "MY BOO",   href: "/myboo" },
+  { id: "odds",     label: "THE ODDS", href: "/odds" },
 ] as const;
 
 type NavBarProps = { activeTab?: string };
@@ -19,7 +19,7 @@ export default function NavBar({ activeTab }: NavBarProps) {
 
   // Detect active tab from URL
   const currentTab = activeTab ?? (() => {
-    if (location.pathname === "/parlays") return "parlay";
+    if (location.pathname === "/throwdown") return "parlay";
     if (location.pathname === "/leaders") return "leaders";
     const sp = new URLSearchParams(location.search);
     return sp.get("tab") ?? "parlay";

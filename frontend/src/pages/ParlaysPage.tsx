@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import SmokeBadge from "../components/SmokeBadge";
 import NavBar from "../components/NavBar";
 import TicketCard, { fromThemed } from "../components/TicketCard";
@@ -144,9 +143,6 @@ export default function ParlaysPage() {
               </span>
             </>
           )}
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 6, height: 34, padding: "0 14px", border: "1px solid var(--bp-border)", borderRadius: 999, fontSize: 12, fontWeight: 600, color: "#b8b0c0", textDecoration: "none" }}>
-            &larr; Canvas
-          </Link>
         </div>
       </div>
 
