@@ -674,7 +674,9 @@ def detect_throwdown_game() -> Optional[str]:
     Returns the game_id if tonight is Thursday or Monday and there is a
     primetime game scheduled. Returns None for full-slate weekends.
     """
-    today = datetime.date.today()
+    # NFL schedule dates are Eastern; servers (HF) run UTC. 4h grace keeps tonight's game live past midnight.
+    from zoneinfo import ZoneInfo
+    today = (datetime.datetime.now(ZoneInfo("America/New_York")) - datetime.timedelta(hours=4)).date()
     weekday = today.strftime("%A")
     if weekday not in BRANDS:
         return None
