@@ -156,6 +156,7 @@ export interface PlayerPropChart {
   position?: string;
   bpl?: BplPlayerLine | null;
   trust?: PlayerTrust | null;
+  fantasy?: PlayerFantasy | null;
   error?: string;
 }
 
@@ -614,4 +615,16 @@ export interface EngineResponse {
   scan?: EngineScan;
   mode?: string;
   version?: string;
+}
+
+export interface PlayerFantasy {
+  position: string;
+  season: number | null; l5: number | null; l10: number | null; last: number;
+  scoring: { PPR: number | null; HALF: number | null; STD: number | null };
+  positionRank: number | null; positionPool: number | null;
+  opponent: string | null; defenseRank: number | null; defensePool: number | null;
+  defenseAllowed: number | null; defenseLeague: number | null;
+  projection: number; oppFactor: number; signal: number;
+  log: { week: number; opp: string; ppr: number }[];
+  games: number;
 }

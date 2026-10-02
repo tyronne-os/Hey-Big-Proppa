@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { PlayerPropChart, PlayerSearchResult, PlayerTrust } from "../types";
+import type { PlayerPropChart, PlayerSearchResult, PlayerTrust, PlayerFantasy } from "../types";
 
 const PROP_CHIPS: { label: string; market: string }[] = [
   { label: "Rush Yds", market: "rushyds" },
@@ -74,6 +74,37 @@ function Tile({ label, value, tone }: { label: string; value: React.ReactNode; t
     <div style={{ background: INK.card, border: `1px solid ${INK.edge}`, borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
       <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: INK.mute }}>{label}</span>
       <span style={{ fontFamily: MONO, fontSize: 22, fontWeight: 800, color: tone ?? INK.text }}>{value}</span>
+    </div>
+  );
+}
+
+function FantasySection({ f }: { f: PlayerFantasy }) {
+  const toughest = f.defenseRank !== null && f.defensePool ? f.defenseRank <= f.defensePool / 3 : false;
+  const softest = f.defenseRank !== null && f.defensePool ? f.defenseRank > (f.defensePool * 2) / 3 : false;
+  const defTone = f.defenseRank === null ? undefined : toughest ? RED : softest ? MINT : undefined;
+  const edge = f.signal - 0.5;
+  const mx = Math.max(1, ...f.log.map(g => g.ppr));
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: "0.12em", color: GOLD }}>FANTASY POINTS · {f.position} · PPR</span>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>
+        <Tile label="FPTS L5" value={f.l5 === null ? "—" : f.l5.toFixed(1)} tone={GOLD} />
+        <Tile label="FPTS L10" value={f.l10 === null ? "—" : f.l10.toFixed(1)} />
+        <Tile label={`${f.position} RANK`} value={f.positionRank ? `#${f.positionRank} of ${f.positionPool}` : "—"} />
+        <Tile label={f.opponent ? `${f.opponent} D VS ${f.position}` : "OPPONENT D"} value={f.defenseRank ? `#${f.defenseRank} of ${f.defensePool}` : "—"} tone={defTone} />
+        <Tile label="D ALLOWS / GAME" value={f.defenseAllowed === null ? "—" : `${f.defenseAllowed.toFixed(1)} (lg ${f.defenseLeague?.toFixed(1)})`} />
+        <Tile label="FANTASY EDGE" value={`${edge >= 0 ? "+" : ""}${(edge * 200).toFixed(0)}%`} tone={edge > 0.02 ? MINT : edge < -0.02 ? RED : undefined} />
+      </div>
+      <div style={{ fontSize: 13, color: INK.mute, lineHeight: 1.5 }}>
+        Projection <b style={{ color: INK.text }}>{f.projection.toFixed(1)}</b> pts
+        {f.opponent ? <> vs {f.opponent} (×{f.oppFactor.toFixed(2)} for the matchup)</> : null}.
+        Rank 1 = toughest defense; {f.defensePool ?? 32} = most generous. Std {f.scoring.STD ?? "—"} · Half {f.scoring.HALF ?? "—"} · PPR {f.scoring.PPR ?? "—"} (L5 avg).
+      </div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 64 }}>
+        {f.log.slice(-10).map(g => (
+          <div key={g.week} title={`Wk ${g.week} vs ${g.opp}: ${g.ppr}`} style={{ flex: 1, maxWidth: 48, height: Math.max(3, (g.ppr / mx) * 64), background: g.ppr >= (f.season ?? 0) ? MINT : RED, borderRadius: "4px 4px 0 0" }} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -403,6 +434,7 @@ export default function PlayerTab({
           })}
         </div>
 
+        {chart.fantasy && <FantasySection f={chart.fantasy} />}
         {chart.trust && <TrustSection t={chart.trust} />}
       </div>
     </div>

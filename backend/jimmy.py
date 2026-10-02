@@ -559,6 +559,15 @@ def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None 
     if pressure_sig is not None:
         components.append(pressure_sig)
 
+    # Fantasy points: L5/season form scaled by the opponent's fantasy rank vs this position
+    try:
+        import fantasy
+        fan_sig = fantasy.signal(player_id)
+    except Exception:
+        fan_sig = None
+    if fan_sig is not None:
+        components.append(fan_sig)
+
     if not components:
         return None
 
