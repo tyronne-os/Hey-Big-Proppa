@@ -1118,8 +1118,11 @@ def api_throwdown(game_id: str | None = None):
         import datetime as _dt
         weekday = _dt.datetime.now(ZoneInfo("America/Chicago")).strftime("%A")
         if weekday != "Thursday":
-            return {"active": False, "game": None}
-    return throwdown_mod.build(game_id)
+            return throwdown_mod.archived("Thursday")   # between games: the last Thursday's frozen page
+    res = throwdown_mod.build(game_id)
+    if not game_id:
+        throwdown_mod.save_snapshot(res)           # keep it fresh until it is archived
+    return res
 
 
 @app.get("/api/monday")
@@ -1134,14 +1137,20 @@ def api_monday(game_id: str | None = None):
         import datetime as _dt
         weekday = _dt.datetime.now(ZoneInfo("America/Chicago")).strftime("%A")
         if weekday != "Monday":
-            return {"active": False, "game": None}
-    return throwdown_mod.build(game_id)
+            return throwdown_mod.archived("Monday")   # between games: the last Monday's frozen page
+    res = throwdown_mod.build(game_id)
+    if not game_id:
+        throwdown_mod.save_snapshot(res)           # keep it fresh until it is archived
+    return res
 
 
 @app.get("/api/matchup")
-def api_matchup(game_id: str | None = None):
+def api_matchup(game_id: str | None = None, day: str = "thursday"):
     import heatmap as matchup_mod
     gid = game_id or throwdown_mod.detect_throwdown_game()
+    if not gid:
+        last = throwdown_mod.latest_game("Monday" if day == "monday" else "Thursday")
+        gid = last["game_id"] if last else None
     info = throwdown_mod._game_info(gid) if gid else None
     if not info:
         return {"active": False}

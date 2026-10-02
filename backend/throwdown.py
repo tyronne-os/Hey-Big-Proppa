@@ -14,7 +14,10 @@ from __future__ import annotations
 
 import datetime
 import statistics
+import json
+import threading
 from functools import lru_cache
+from pathlib import Path
 from typing import Optional
 
 import bpl
@@ -690,6 +693,61 @@ def detect_throwdown_game() -> Optional[str]:
     # Return the latest-starting game for tonight (primetime)
     tonight.sort(key=lambda r: r.get("game_time_local", "20:00"))
     return tonight[-1]["game_id"]
+
+
+# ── archive: the last Thursday / Monday game stays viewable until the next one ──────────────
+HISTORY_DIR = Path(__file__).resolve().parent.parent / "lake" / "gold" / "nfl" / "throwdown_history"
+_archive_lock = threading.Lock()
+
+
+def latest_game(weekday: str) -> Optional[dict]:
+    """Most recent primetime game on `weekday` (Thursday / Monday) that has kicked off or is today."""
+    today = bpl.today_central()
+    rows = [r for r in data.load("schedule")
+            if r.get("game_type") == "REG" and r.get("game_date", "9999") <= today
+            and datetime.date.fromisoformat(r["game_date"]).strftime("%A") == weekday]
+    if not rows:
+        return None
+    day = max(r["game_date"] for r in rows)
+    todays = sorted((r for r in rows if r["game_date"] == day), key=lambda r: r.get("game_time_local", "20:00"))
+    return todays[-1]
+
+
+def save_snapshot(res: dict) -> None:
+    """Freeze a live build so the page can be reopened after the game."""
+    if not res.get("active"):
+        return
+    try:
+        HISTORY_DIR.mkdir(parents=True, exist_ok=True)
+        (HISTORY_DIR / f"{res['game']['gameId']}.json").write_text(json.dumps(res, default=str))
+    except OSError:
+        pass
+
+
+def archived(weekday: str) -> dict:
+    """
+    The most recent `weekday` Throwdown. Served from the frozen snapshot when one exists; otherwise
+    rebuilt as of that game's own date (board and odds as the lake holds them) and frozen.
+    """
+    g = latest_game(weekday)
+    if not g:
+        return {"active": False, "game": None}
+    path = HISTORY_DIR / f"{g['game_id']}.json"
+    if path.exists():
+        try:
+            return {**json.loads(path.read_text()), "archived": True}
+        except (OSError, ValueError):
+            pass
+    with _archive_lock:
+        bpl.AS_OF = g["game_date"]
+        try:
+            cached_sides(force=True)
+            res = build(g["game_id"])
+        finally:
+            bpl.AS_OF = None
+            cached_sides(force=True)
+    save_snapshot(res)
+    return {**res, "archived": True} if res.get("active") else res
 
 
 def build(game_id: Optional[str] = None) -> dict:

@@ -35,7 +35,7 @@ export const api = {
   parlay: (slip: string) => get<ParlaySlip>(`/api/chart/parlays?slip=${slip}`),
   throwdown: () => get<any>("/api/throwdown"),
   monday: () => get<any>("/api/monday"),
-  matchup: () => get<any>("/api/matchup"),
+  matchup: (day: "thursday" | "monday" = "thursday") => get<any>(`/api/matchup?day=${day}`),
   parlaysAll: () => get<Record<string, ParlaySlip>>("/api/chart/parlays/all"),
   parlaysHistory: () => get<{ weeks: { id: string; season: string; week: string; filename: string }[] }>("/api/parlays/history"),
   parlaysHistoryWeek: (weekId: string) => get<Record<string, ParlaySlip>>(`/api/parlays/history/${weekId}`),

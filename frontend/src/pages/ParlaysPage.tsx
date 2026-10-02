@@ -105,7 +105,7 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
     document.documentElement.setAttribute("data-theme", "dark");
     if (unlocked) {
       api.parlaysAll().then(setSlips).catch(() => setSlips(null));
-      api.matchup().then((d: MatchupData) => setMu(d?.active ? d : null)).catch(() => setMu(null));
+      api.matchup(variant).then((d: MatchupData) => setMu(d?.active ? d : null)).catch(() => setMu(null));
       const deepDive = variant === "monday" ? api.monday() : api.throwdown();
       deepDive.then((d: ThrowdownData) => setTd(d?.active ? d : null)).catch(() => setTd(null));
     }
@@ -156,6 +156,11 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
         {/* Passcode gate — only blocks the bets section */}
         {!unlocked && <PasscodeGate onUnlock={() => setUnlocked(true)} />}
 
+        {unlocked && td?.archived && !showRegular && (
+          <div style={{ alignSelf: "center", padding: "8px 18px", borderRadius: 999, border: "1px solid #6b4a1c", background: "rgba(201,165,78,0.12)", color: "#d9b45a", fontSize: 12, fontWeight: 800, letterSpacing: "0.12em", textAlign: "center" }}>
+            FROM {variant === "monday" ? "LAST MONDAY NIGHT" : "LAST THURSDAY NIGHT"} · {td.game.away} @ {td.game.home} · WEEK {td.game.week} · SAVED AS IT STOOD BEFORE KICKOFF
+          </div>
+        )}
         {unlocked && td && !showRegular && <Throwdown data={td} matchup={mu} />}
         {unlocked && td && (
           <button onClick={() => setShowRegular((v) => !v)} style={{ alignSelf: "center", height: 34, padding: "0 16px", borderRadius: 999, border: "1px solid #6b4a1c", background: "transparent", color: "#d9b45a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>

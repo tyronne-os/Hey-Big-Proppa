@@ -15,6 +15,7 @@ type Slip = {
 };
 export type ThrowdownData = {
   active: boolean;
+  archived?: boolean;
   brand: { title: string; subtitle: string };
   game: {
     gameId: string; away: string; home: string;
