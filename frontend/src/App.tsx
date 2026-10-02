@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ReactFlow, { Background, Controls, MiniMap, type Edge, type EdgeTypes, type Node, type NodeTypes } from "reactflow";
 import "reactflow/dist/style.css";
 import AnimatedPulseEdge from "./AnimatedPulseEdge";
@@ -9,7 +9,6 @@ import Composer from "./components/Composer";
 import AdminPanel from "./components/AdminPanel";
 import PlayerTab from "./components/PlayerTab";
 import LeadersTab from "./components/LeadersTab";
-import ParlaysTab from "./components/ParlaysTab";
 import QueriesTab, { type QueryResult } from "./components/QueriesTab";
 import EngineTab from "./components/EngineTab";
 import NewsTab from "./components/NewsTab";
@@ -21,13 +20,20 @@ import OddsTab from "./components/OddsTab";
 import { api } from "./api";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
-const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "parlay", "engine", "news", "queries", "myboo", "odds"] as const;
+const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "engine", "news", "queries", "myboo", "odds"] as const;
 type ViewTab = (typeof VIEW_TABS)[number];
+
+// These three are standalone pages — clicking them navigates away from the main app.
+const STANDALONE_LINKS = [
+  { id: "throwdown", label: "THROWDOWN THURSDAY", href: "/throwdown" },
+  { id: "monday",    label: "MONDAY NIGHT",        href: "/monday" },
+  { id: "sunday",    label: "SUNDAY SLIPS",         href: "/parlays" },
+] as const;
 
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
 const nodeTypes: NodeTypes = { canvasNode: LakeCanvasNode };
 
-export const tabPath = (t: string) => (t === "parlay" ? "/throwdown" : `/${t}`);
+export const tabPath = (t: string) => `/${t}`;
 
 const DEFAULT_PLAYER_ID = "00-0033280"; // Christian McCaffrey -- a real player present in every gold CSV, sane default
 
@@ -44,7 +50,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
       const t = new URLSearchParams(window.location.search).get("tab");
       if (t && (VIEW_TABS as readonly string[]).includes(t)) return t as ViewTab;
     } catch { /* */ }
-    return "parlay";
+    return "leaders";
   });
   const navigate = useNavigate();
   useEffect(() => { if (initialTab) setTab(initialTab); }, [initialTab]);
@@ -142,9 +148,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
     setSlip((prev) => (prev.some((s) => s.playerId === chart.playerId) ? prev : [...prev, chart]));
   }
 
-  function removeFromSlip(playerId: string) {
-    setSlip((prev) => prev.filter((s) => s.playerId !== playerId));
-  }
+
 
   const targets = useMemo(
     () => [{ id: "all", label: "All nodes" }, ...rfNodes.map((n) => ({ id: n.id, label: n.data.name }))],
@@ -235,6 +239,25 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
           <div style={{ height: 8, flex: "0 0 8px" }} />
 
           <div style={{ display: "flex", gap: 6, padding: "0 20px 10px", flexWrap: "wrap", flex: "0 0 auto" }}>
+            {/* Standalone page links — navigate away */}
+            {STANDALONE_LINKS.map(({ id, label, href }) => (
+              <Link
+                key={id}
+                to={href}
+                style={{
+                  display: "inline-flex", alignItems: "center",
+                  height: 32, padding: "0 14px", borderRadius: 999,
+                  border: "1px solid #c9a54e",
+                  background: "rgba(201,165,78,0.14)",
+                  color: "#f1dc92",
+                  fontSize: 12, fontWeight: 800, letterSpacing: "0.1em",
+                  textDecoration: "none", cursor: "pointer",
+                }}
+              >
+                {label}
+              </Link>
+            ))}
+            {/* In-app tabs */}
             {VIEW_TABS.filter((vt) => vt !== "player").map((vt) => {
               const isBoo = vt === "myboo";
               const isActive = vt === tab;
@@ -253,7 +276,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
                     letterSpacing: isBoo ? "0.06em" : undefined,
                   }}
                 >
-                  {isBoo ? "MY BOO" : vt === "odds" ? "THE ODDS" : vt === "parlay" ? "THROWDOWN THURSDAY" : vt.toUpperCase()}
+                  {isBoo ? "MY BOO" : vt === "odds" ? "THE ODDS" : vt.toUpperCase()}
                 </button>
               );
             })}
@@ -279,7 +302,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
                 }}
               />
             )}
-            {tab === "parlay" && <ParlaysTab slip={slip} onRemove={removeFromSlip} />}
+            {/* parlay tab removed — THROWDOWN THURSDAY is now a standalone page at /throwdown */}
             {tab === "engine" && <EngineTab />}
             {tab === "news" && <NewsTab />}
             {tab === "matchups" && <MatchupsTab />}
