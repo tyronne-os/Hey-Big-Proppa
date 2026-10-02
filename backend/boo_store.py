@@ -15,7 +15,9 @@ from pathlib import Path
 
 _GOLD = Path(__file__).parent.parent / "lake/gold/nfl"
 REPO = "AIBRUH/big-proppa-lake"
-FILES = ["myboo_tickets.csv", "myboo_legs.csv", "myboo_thesis.json", "myboo_recaps.json", "myboo_alerts.json", "myboo_counter.txt"]
+FILES = ["myboo_tickets.csv", "myboo_legs.csv", "myboo_thesis.json", "myboo_recaps.json", "myboo_alerts.json", "myboo_counter.txt",
+         "jimmy_lessons.json"]
+TRAIN_DIR = _GOLD / "boo_training"          # the weekly training package (jsonl), batch log and latest report
 _state = {"last_push": 0.0, "pushes": 0, "last_error": None}
 _lock = threading.Lock()
 
@@ -48,6 +50,15 @@ def pull() -> int:
             if not dst.exists() or Path(got).stat().st_size > dst.stat().st_size:
                 dst.write_bytes(Path(got).read_bytes())
                 n += 1
+        TRAIN_DIR.mkdir(exist_ok=True)
+        from huggingface_hub import list_repo_files
+        for rf in list_repo_files(REPO, repo_type="dataset", token=_token()):
+            if rf.startswith("myboo/boo_training/"):
+                got = hf_hub_download(REPO, rf, repo_type="dataset", token=_token())
+                dst = TRAIN_DIR / Path(rf).name
+                if not dst.exists() or Path(got).stat().st_size > dst.stat().st_size:
+                    dst.write_bytes(Path(got).read_bytes())
+                    n += 1
     except Exception as e:                         # a mirror problem must never stop the app
         _state["last_error"] = type(e).__name__
     return n
@@ -63,6 +74,7 @@ def push(force: bool = False) -> bool:
         try:
             from huggingface_hub import CommitOperationAdd, HfApi
             ops = [CommitOperationAdd(f"myboo/{f}", str(_GOLD / f)) for f in FILES if (_GOLD / f).exists()]
+            ops += [CommitOperationAdd(f"myboo/boo_training/{p.name}", str(p)) for p in TRAIN_DIR.glob("*") if p.is_file()]
             HfApi(token=_token()).create_commit(REPO, ops, repo_type="dataset", commit_message="MY BOO ledger sync")
             _state.update(last_push=time.time(), pushes=_state["pushes"] + 1, last_error=None)
             return True

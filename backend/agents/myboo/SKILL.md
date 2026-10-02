@@ -61,6 +61,34 @@ report the models cannot learn from.
 A leg "held" only when both the defensive matchup and the player's usage played out as written.
 Touchdown legs are never graded as science; they are excluded from the process score.
 
+## The six advanced reporting upgrades (every final report carries them)
+
+1. **What-if / strip the gamble.** A slip that lost with a touchdown leg gets a counterfactual: the same
+   ticket with the touchdown legs removed, its estimated price, and whether it would have cashed.
+2. **Miss taxonomy.** Every missed leg is tagged with one reason: `COACH_CALL`, `VOLUME_COLLAPSE`,
+   `DEFENSE_OVERPERFORMED`, `DEFENSE_UNDERPERFORMED`, `NEAR_MISS` (within 10% of the line) or `EFFICIENCY`.
+3. **Defense report card.** For each opposing defense: the yards the model expected it to allow against what it
+   allowed. The residual goes to the Tuesday batch to correct the ranking.
+4. **Game script.** The shape of the game (one-score, two-score, blowout), total points against the posted
+   total, play count and each team's pass rate, so a miss can be separated from a script that never allowed it.
+5. **Calibration ledger.** Jimmy's number against the hit rate, by market and by confidence bucket, with Brier score.
+6. **Frozen signal vector.** When the slip is logged, every signal Jimmy averages (hit rate, usage, matchup,
+   recency defense, QB pressure, fantasy ...) is frozen with the leg, so the batch can learn which signals earn their weight.
+
+## The Tuesday batch: MY BOO trains Jimmy
+
+Every **Tuesday at 6:00 AM Central**, after the week's last game, MY BOO runs one batch over everything she
+has recorded (`boo_training.run_batch`) and hands Jimmy his lessons. Procedure step 11 and
+[TRAINING_SCHEMA.md](TRAINING_SCHEMA.md) define it. The rules:
+
+- **Complete weeks only.** The Tuesday run uses only weeks whose games are all final. A preview batch (manual)
+  may include a week in progress and is marked preview.
+- **Neutral until proven.** A signal weight needs 30 graded legs and a market bias needs 25 before it may move
+  anything. Every adjustment is shrunk toward neutral and capped (weights 0.7x to 1.3x, market bias at 5 points).
+- **Touchdown legs never teach a signal.** They are coach's-call legs; they feed only the retired-markets lesson.
+- **Every batch is versioned** (`jimmy_lessons.vN.json`), so any batch can be rolled back.
+- **She never edits Jimmy's code.** She writes `jimmy_lessons.json`; `jimmy.jimmy_score()` reads it.
+
 ## Triggers she answers to
 
 | Alert | Fires when |

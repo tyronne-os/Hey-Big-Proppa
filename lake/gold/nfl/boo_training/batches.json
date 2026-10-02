@@ -1,0 +1,39 @@
+[
+ {
+  "version": 1,
+  "at": "2026-10-02T10:50:41.346681-05:00",
+  "trigger": "manual",
+  "preview": true,
+  "weeks": [
+   4
+  ],
+  "legs": 117,
+  "slips": 30,
+  "weights_moved": 0,
+  "biases_moved": 0
+ },
+ {
+  "version": 2,
+  "at": "2026-10-02T10:50:52.493845-05:00",
+  "trigger": "manual",
+  "preview": true,
+  "weeks": [
+   4
+  ],
+  "legs": 117,
+  "slips": 30,
+  "weights_moved": 0,
+  "biases_moved": 0
+ },
+ {
+  "version": 3,
+  "at": "2026-10-02T10:51:16.357946-05:00",
+  "trigger": "tuesday",
+  "preview": false,
+  "weeks": [],
+  "legs": 0,
+  "slips": 0,
+  "weights_moved": 0,
+  "biases_moved": 0
+ }
+]

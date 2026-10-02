@@ -128,6 +128,29 @@ Every report is checked against this procedure. A violation keeps the report out
 - [ ] A touchdown leg on the slip has the coach's-call paragraph.
 - [ ] A missed touchdown leg means the verdict is `SHIT (TD GAMBLE)`.
 - [ ] A final report's facts open with "Final:".
+- [ ] A lost slip with a touchdown leg ends its HINDSIGHT with the "What-if:" counterfactual.
+
+## Step 11: The Tuesday batch (`boo_training.run_batch`)
+
+Runs automatically once after each **Tuesday 6:00 AM Central** (`boo_training.maybe_run_tuesday`, checked every
+minute by the worker; if the worker was down at 6:00 it runs on restart). It can also be run by hand as a preview.
+
+1. **Collect.** Every FINAL report becomes one `boo.slip.v1` record and one `boo.leg.v1` record per graded leg
+   (full schema in [TRAINING_SCHEMA.md](TRAINING_SCHEMA.md)). Written to `lake/gold/nfl/boo_training/week_NN_legs.jsonl`
+   and `week_NN_slips.jsonl`.
+2. **Calibrate.** Hit rate against Jimmy's number by market and by bucket, with Brier score.
+3. **Weigh the signals.** For each signal Jimmy averages, the correlation between its value and the hit, shrunk
+   by sample size, becomes a weight between 0.7x and 1.3x. Under 30 legs the weight stays 1.0.
+4. **Bias the markets.** A market whose hit rate sits away from Jimmy's number (25 or more legs) gets a nudge of
+   at most 5 points.
+5. **Correct the defenses.** Actual yards allowed over expected, per defense and phase, averaged over games and
+   shrunk toward 1.0 (range 0.7 to 1.3).
+6. **Log usage drift and the miss taxonomy.** How each player's real workload compared with the baseline, and
+   why legs missed.
+7. **Retire what the evidence retires.** Touchdown-scorer legs are recorded with their record as the retired-markets lesson.
+8. **Write.** `jimmy_lessons.json` (the previous file is kept as `jimmy_lessons.vN.json`), `batches.json` (the log)
+   and `latest_report.md` (what Jimmy learned, in plain words, including the touchdown tax for real money and for the board).
+9. **Mirror.** The package, lessons and log are mirrored to the ledger dataset (Step 9).
 
 ## When something fails
 

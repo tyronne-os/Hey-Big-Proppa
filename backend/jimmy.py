@@ -44,6 +44,9 @@ carries -- see docs/HANDOFF.md sec 7 lesson 9.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import math
 from functools import lru_cache
 from statistics import mean
@@ -508,6 +511,64 @@ def _qb_pressure_signal(player_id: str, market_slug: str | None) -> float | None
     return round(0.55, 3)  # low pressure = slight boost for passing props
 
 
+_LESSONS_FILE = Path(__file__).parent.parent / "lake/gold/nfl/jimmy_lessons.json"
+_lessons_cache: tuple[float, dict] = (0.0, {})
+
+
+def lessons() -> dict:
+    """What MY BOO's Tuesday batch has taught Jimmy so far (empty until the first batch). Re-read when the file changes."""
+    global _lessons_cache
+    try:
+        m = _LESSONS_FILE.stat().st_mtime
+        if m != _lessons_cache[0]:
+            _lessons_cache = (m, json.loads(_LESSONS_FILE.read_text()))
+    except (OSError, ValueError):
+        _lessons_cache = (0.0, {})
+    return _lessons_cache[1]
+
+
+def score_components(player_id: str, hit_rate: float | None, market_slug: str | None = None,
+                     direction: str = "over") -> dict[str, float]:
+    """Every signal Jimmy averages, by name. MY BOO freezes this vector with each slip so the batch can learn which signals earn their weight."""
+    comp: dict[str, float] = {}
+    if hit_rate is not None:
+        comp["hit_rate"] = hit_rate
+    usage = _usage_index().get(player_id)
+    if usage is not None:
+        comp["usage"] = usage / 100
+    edge = leg_edge(player_id, market_slug or "", direction)
+    if edge is not None:
+        comp["matchup"] = matchup.phi(edge)
+    proj_sig = _projection_signal(player_id, market_slug or "", hit_rate)
+    if proj_sig is not None:
+        comp["projection"] = proj_sig
+    dfs_sig = _dfs_salary_signal(player_id, market_slug)
+    if dfs_sig is not None:
+        comp["dfs_salary"] = dfs_sig
+    # #16 Recency-weighted defense, nudged by MY BOO's measured error on that defense
+    opponent = next_opponent(player_id)
+    rec_def = _recency_defense_signal(opponent, market_slug)
+    if rec_def is not None:
+        resid = lessons().get("defense_residual", {}).get(opponent or "", {})
+        cat = {"passyds": "pass", "recyds": "pass", "recs": "pass", "rushyds": "rush"}.get(market_slug or "")
+        if cat and cat in resid and direction == "over":
+            rec_def = max(0.0, min(1.0, rec_def + max(-0.08, min(0.08, 0.5 * (resid[cat] - 1)))))
+        comp["recency_defense"] = rec_def
+    # #18 QB pressure rate
+    pressure_sig = _qb_pressure_signal(player_id, market_slug)
+    if pressure_sig is not None:
+        comp["qb_pressure"] = pressure_sig
+    # Fantasy points: L5/season form scaled by the opponent's fantasy rank vs this position (live during games)
+    try:
+        import fantasy
+        fan_sig = fantasy.signal(player_id)
+    except Exception:
+        fan_sig = None
+    if fan_sig is not None:
+        comp["fantasy"] = fan_sig
+    return comp
+
+
 def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None = None,
                 direction: str = "over") -> float | None:
     """
@@ -527,51 +588,16 @@ def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None 
       - starter factor  — non-starters get 0.70x (new)
       - line movement   — steam confirmation/fade nudge (new)
     """
-    components: list[float] = []
-
-    if hit_rate is not None:
-        components.append(hit_rate)
-
-    usage = _usage_index().get(player_id)
-    if usage is not None:
-        components.append(usage / 100)
-
-    edge = leg_edge(player_id, market_slug or "", direction)
-    if edge is not None:
-        components.append(matchup.phi(edge))
-
-    proj_sig = _projection_signal(player_id, market_slug or "", hit_rate)
-    if proj_sig is not None:
-        components.append(proj_sig)
-
-    dfs_sig = _dfs_salary_signal(player_id, market_slug)
-    if dfs_sig is not None:
-        components.append(dfs_sig)
-
-    # #16 Recency-weighted defense — how many yards the opponent's D has allowed lately
-    opponent = next_opponent(player_id)
-    rec_def = _recency_defense_signal(opponent, market_slug)
-    if rec_def is not None:
-        components.append(rec_def)
-
-    # #18 QB pressure rate — passing props penalized for high-pressure QBs
-    pressure_sig = _qb_pressure_signal(player_id, market_slug)
-    if pressure_sig is not None:
-        components.append(pressure_sig)
-
-    # Fantasy points: L5/season form scaled by the opponent's fantasy rank vs this position
-    try:
-        import fantasy
-        fan_sig = fantasy.signal(player_id)
-    except Exception:
-        fan_sig = None
-    if fan_sig is not None:
-        components.append(fan_sig)
-
-    if not components:
+    comp = score_components(player_id, hit_rate, market_slug, direction)
+    if not comp:
         return None
 
-    score = sum(components) / len(components)
+    # MY BOO's Tuesday batch tunes these: component weights (default 1.0) and a small per-market bias.
+    L = lessons()
+    w = L.get("weights", {})
+    wsum = sum(w.get(k, 1.0) for k in comp)
+    score = sum(v * w.get(k, 1.0) for k, v in comp.items()) / wsum
+    score += max(-0.05, min(0.05, L.get("market_bias", {}).get(market_slug or "", 0.0)))
 
     # Redzone boost for TD props
     if market_slug == "anytd":

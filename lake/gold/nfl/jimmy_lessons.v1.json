@@ -1,0 +1,292 @@
+{
+ "version": 1,
+ "built_at": "2026-10-02T10:50:41.346681-05:00",
+ "trigger": "manual",
+ "preview": true,
+ "through_week": 4,
+ "partial_weeks": [
+  4
+ ],
+ "legs": 117,
+ "slips": 30,
+ "weights": {},
+ "signal_detail": {},
+ "market_bias": {},
+ "defense_residual": {
+  "CLE": {
+   "rush": 0.938,
+   "pass": 1.126
+  },
+  "PIT": {
+   "rush": 0.985,
+   "pass": 1.046
+  }
+ },
+ "usage_drift": {
+  "00-0037228|touches": {
+   "ratio": 1.484,
+   "games": 12
+  },
+  "00-0040784|touches": {
+   "ratio": 1.548,
+   "games": 4
+  },
+  "00-0035640|touches": {
+   "ratio": 0.947,
+   "games": 5
+  },
+  "00-0041037|touches": {
+   "ratio": 1.273,
+   "games": 2
+  },
+  "00-0023459|att": {
+   "ratio": 1.013,
+   "games": 5
+  },
+  "00-0033537|touches": {
+   "ratio": 1.077,
+   "games": 3
+  },
+  "00-0023459|touches": {
+   "ratio": 0.0,
+   "games": 1
+  },
+  "00-0033537|att": {
+   "ratio": 1.269,
+   "games": 10
+  },
+  "00-0033537|car": {
+   "ratio": 1.077,
+   "games": 4
+  },
+  "00-0037228|tgt": {
+   "ratio": 1.2,
+   "games": 3
+  },
+  "00-0037228|car": {
+   "ratio": 1.619,
+   "games": 4
+  },
+  "00-0040784|tgt": {
+   "ratio": 2.0,
+   "games": 7
+  },
+  "00-0040784|car": {
+   "ratio": 1.417,
+   "games": 5
+  },
+  "00-0035640|tgt": {
+   "ratio": 0.947,
+   "games": 4
+  },
+  "00-0040663|tgt": {
+   "ratio": 1.111,
+   "games": 3
+  },
+  "00-0040663|touches": {
+   "ratio": 1.111,
+   "games": 2
+  },
+  "00-0041037|tgt": {
+   "ratio": 1.273,
+   "games": 13
+  },
+  "00-0036407|tgt": {
+   "ratio": 1.2,
+   "games": 8
+  },
+  "00-0041547|tgt": {
+   "ratio": 1.455,
+   "games": 8
+  },
+  "00-0036894|tgt": {
+   "ratio": 1.0,
+   "games": 3
+  },
+  "00-0041040|tgt": {
+   "ratio": 1.619,
+   "games": 1
+  }
+ },
+ "retired_markets": {
+  "touchdown_scorer": {
+   "markets": [
+    "anytd",
+    "firsttd",
+    "lasttd"
+   ],
+   "legs": 29,
+   "hits": 6,
+   "real_money": "0/4",
+   "board": "6/25",
+   "rule": "Not offered from NFL week 4. Replaced by the RED ZONE EFFORT leg (red_zone.py).",
+   "why": "Who scores is the offensive coordinator's call at the goal line, not something the stats can see."
+  }
+ },
+ "miss_taxonomy": {
+  "anytd": {
+   "COACH_CALL": 21
+  },
+  "firsttd": {
+   "COACH_CALL": 2
+  },
+  "passtd": {
+   "EFFICIENCY": 1
+  },
+  "rushyds": {
+   "EFFICIENCY": 3,
+   "NEAR_MISS": 2
+  },
+  "recs": {
+   "EFFICIENCY": 3
+  },
+  "recyds": {
+   "EFFICIENCY": 4,
+   "DEFENSE_UNDERPERFORMED": 2
+  },
+  "passyds": {
+   "DEFENSE_UNDERPERFORMED": 1
+  },
+  "kickpts": {
+   "EFFICIENCY": 1
+  }
+ },
+ "calibration": {
+  "markets": {
+   "kickpts over": {
+    "n": 1,
+    "predicted": 0.549,
+    "observed": 0.0,
+    "brier": 0.302
+   },
+   "nfl_ml over": {
+    "n": 1,
+    "predicted": 0.446,
+    "observed": 1.0,
+    "brier": 0.306
+   },
+   "nfl_total over": {
+    "n": 6,
+    "predicted": 0.454,
+    "observed": 1.0,
+    "brier": 0.298
+   },
+   "passtd over": {
+    "n": 2,
+    "predicted": 0.294,
+    "observed": 0.5,
+    "brier": 0.193
+   },
+   "passyds over": {
+    "n": 10,
+    "predicted": 0.551,
+    "observed": 1.0,
+    "brier": 0.219
+   },
+   "passyds under": {
+    "n": 1,
+    "predicted": 0.264,
+    "observed": 0.0,
+    "brier": 0.07
+   },
+   "recs over": {
+    "n": 18,
+    "predicted": 0.472,
+    "observed": 0.833,
+    "brier": 0.254
+   },
+   "recs under": {
+    "n": 2,
+    "predicted": 0.58,
+    "observed": 1.0,
+    "brier": 0.176
+   },
+   "recyds over": {
+    "n": 19,
+    "predicted": 0.552,
+    "observed": 0.842,
+    "brier": 0.185
+   },
+   "recyds under": {
+    "n": 2,
+    "predicted": 0.537,
+    "observed": 0.0,
+    "brier": 0.289
+   },
+   "rushyds over": {
+    "n": 7,
+    "predicted": 0.155,
+    "observed": 0.429,
+    "brier": 0.401
+   },
+   "rushyds under": {
+    "n": 2,
+    "predicted": 0.685,
+    "observed": 1.0,
+    "brier": 0.099
+   }
+  },
+  "buckets": {
+   "0-10%": {
+    "n": 6,
+    "predicted": 0.044,
+    "observed": 0.5,
+    "brier": 0.458
+   },
+   "10-20%": {
+    "n": 6,
+    "predicted": 0.146,
+    "observed": 0.5,
+    "brier": 0.389
+   },
+   "20-30%": {
+    "n": 2,
+    "predicted": 0.239,
+    "observed": 0.0,
+    "brier": 0.058
+   },
+   "30-40%": {
+    "n": 3,
+    "predicted": 0.352,
+    "observed": 1.0,
+    "brier": 0.419
+   },
+   "40-50%": {
+    "n": 16,
+    "predicted": 0.44,
+    "observed": 0.812,
+    "brier": 0.287
+   },
+   "50-60%": {
+    "n": 10,
+    "predicted": 0.578,
+    "observed": 0.7,
+    "brier": 0.203
+   },
+   "60-70%": {
+    "n": 27,
+    "predicted": 0.648,
+    "observed": 1.0,
+    "brier": 0.125
+   },
+   "70-80%": {
+    "n": 1,
+    "predicted": 0.787,
+    "observed": 0.0,
+    "brier": 0.62
+   }
+  }
+ },
+ "whatif": {
+  "slips_with_a_td_leg": 16,
+  "would_have_cashed_without_it": 9,
+  "profit_if_stripped": 874.59,
+  "profit_if_the_td_had_hit": 4707.48,
+  "staked_on_those": 38.75,
+  "price_note": "stripped-leg prices are estimates"
+ },
+ "notes": [
+  "Touchdown-scorer legs are 6/29 (real money 0/4, board 6/25). Retired from week 4; effort legs replace them.",
+  "CLE's pass defense runs 13% softer than its rank."
+ ]
+}

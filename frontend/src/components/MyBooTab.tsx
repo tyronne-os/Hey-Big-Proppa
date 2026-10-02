@@ -1067,6 +1067,47 @@ function DeskTab() {
   );
 }
 
+// ─── JIMMY LESSONS — what MY BOO has taught Jimmy, batch by batch ───────────────
+
+function LessonsTab() {
+  const [d, setD] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+  const load = () => api.myBooTraining().then(setD).catch(() => {});
+  useEffect(() => { load(); }, []);
+  if (!d) return <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>Opening the training room…</div>;
+  const L = d.lessons;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #a78bfa", background: "rgba(139,92,246,0.08)" }}>
+        <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.14em", color: "#c4b5fd" }}>NEXT TUESDAY BATCH · {d.nextTuesdayBatchCT}</div>
+        <div style={{ fontSize: 12, lineHeight: 1.5, marginTop: 4 }}>
+          Every Tuesday at 6 AM Central MY BOO trains Jimmy from the week's finished games.
+          {L ? ` Jimmy is on lessons v${L.version}${L.preview ? " (preview, week still in progress)" : ""}, learned from ${L.legs} graded legs.` : " No batch has run yet."}
+        </div>
+        <button disabled={busy} onClick={() => { setBusy(true); api.myBooTrainingRun().then(load).finally(() => setBusy(false)); }}
+          style={{ marginTop: 8, height: 28, padding: "0 12px", borderRadius: 999, border: "1px solid #d9b45a", background: "rgba(201,165,78,0.14)", color: "#d9b45a", fontSize: 10, fontWeight: 800, cursor: "pointer" }}>
+          {busy ? "TRAINING…" : "RUN A PREVIEW BATCH NOW"}
+        </button>
+      </div>
+      {L && (
+        <>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#d9b45a" }}>WHAT HE LEARNED</div>
+          {L.notes.map((n: string, i: number) => <div key={i} style={{ fontSize: 12, lineHeight: 1.5 }}>• {n}</div>)}
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#d9b45a", marginTop: 6 }}>SIGNAL WEIGHTS (1.0 = neutral)</div>
+          {Object.entries(L.signal_detail).map(([k, v]: [string, any]) => (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+              <span>{k}</span>
+              <span style={{ color: "var(--bp-muted)" }}>{L.weights[k] ? `${L.weights[k]}x` : `1.0x (needs 30 legs, has ${v.n})`} · corr {v.corr}</span>
+            </div>
+          ))}
+        </>
+      )}
+      {d.report && <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontFamily: "var(--font-mono, monospace)", fontSize: 11, lineHeight: 1.55, color: "var(--bp-muted)" }}>{d.report}</pre>}
+      {d.package.length > 0 && <div style={{ fontSize: 10, color: "var(--bp-muted)" }}>Training package: {d.package.join(", ")}</div>}
+    </div>
+  );
+}
+
 // ─── ALERTS — slips ready to record ─────────────────────────────────────────
 
 function AlertsTab({ alerts }: { alerts: BooAlert[] }) {
@@ -1174,7 +1215,7 @@ function RecapsTab() {
 
 // ─── main MY BOO component ───────────────────────────────────────────────────
 
-const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK"] as const;
+const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK", "JIMMY LESSONS"] as const;
 type BooTab = (typeof BOO_TABS)[number];
 
 export default function MyBooTab() {
@@ -1293,6 +1334,7 @@ export default function MyBooTab() {
             {tab === "RECAPS" && <RecapsTab />}
             {tab === "ALERTS" && <AlertsTab alerts={alerts} />}
             {tab === "DESK" && <DeskTab />}
+            {tab === "JIMMY LESSONS" && <LessonsTab />}
           </div>
         </div>
 

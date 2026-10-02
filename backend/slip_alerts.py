@@ -480,6 +480,11 @@ def start_worker() -> None:
                     poll()
             except Exception:
                 pass
+            try:
+                import boo_training
+                boo_training.maybe_run_tuesday()      # Tuesday 6 AM Central: MY BOO trains Jimmy from the week's slips
+            except Exception:
+                pass
             time.sleep(POLL_SECONDS)
 
     _worker = threading.Thread(target=run, daemon=True, name="boo-alerts")

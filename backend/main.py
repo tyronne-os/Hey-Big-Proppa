@@ -756,6 +756,21 @@ def api_myboo_desk(game_id: str | None = None, week: int | None = None):
     return {"clock": boo_desk.clock(), "scorecard": boo_desk.scorecard(game_id=game_id, week=week)}
 
 
+@app.get("/api/myboo/training")
+def api_myboo_training():
+    """What MY BOO has taught Jimmy: the latest Tuesday batch, his current lessons, and the training package files."""
+    import boo_training
+    return boo_training.status()
+
+
+@app.post("/api/myboo/training/run")
+def api_myboo_training_run(preview: bool = True):
+    """Run a batch now. preview=true (default) includes weeks still in progress; the Tuesday 6 AM CT run never does."""
+    import boo_training
+    r = boo_training.run_batch(preview=preview, trigger="manual")
+    return {k: r[k] for k in ("version", "legs", "slips", "weeks", "preview")}
+
+
 @app.get("/api/myboo/alerts")
 def api_myboo_alerts(since: int = 0):
     """In-app alert feed: slips ready to record, halftime/overtime/final checkpoints."""
