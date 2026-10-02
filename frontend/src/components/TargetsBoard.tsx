@@ -232,7 +232,8 @@ function TargetCard({ r, tree, rows, onBack, onPick, onOpenPlayer }: { r: Target
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8, marginTop: 12 }}>
-            <div style={tileRow}>
+            <div style={{ ...tileRow, position: "relative", overflow: "hidden", background: "linear-gradient(90deg, rgba(217,180,90,0.18) 0%, rgba(217,180,90,0.07) 60%, transparent 100%)", borderLeft: `3px solid ${C.gold}` }}>
+              <span style={{ position: "absolute", top: 0, bottom: 0, width: 80, pointerEvents: "none", background: "linear-gradient(90deg, transparent 0%, rgba(34,197,94,0.45) 40%, rgba(34,197,94,0.8) 50%, rgba(34,197,94,0.45) 60%, transparent 100%)", animation: "dot-scan 2.6s linear infinite" }} />
               <Tile label={stat === "tgt" ? "JIMMY TGT" : "LINE"} value={n1(line)} color={C.goldHi} />
               <Tile label="OVER" value={stat === "rec" ? am(r.over) : "—"} color={C.green} />
               <Tile label="UNDER" value={stat === "rec" ? am(r.under) : "—"} color={C.red} />
