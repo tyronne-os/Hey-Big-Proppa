@@ -148,6 +148,13 @@ def _next_opponent(pid: str, games: list[dict]) -> str | None:
     return None
 
 
+def _safe_live(player_id: str) -> dict | None:
+    try:
+        return live(player_id)
+    except Exception:
+        return None
+
+
 def profile(player_id: str) -> dict | None:
     """The fantasy block shown on the single-player page. None when there is no usable sample."""
     games = _logs().get(player_id) or []
@@ -188,7 +195,61 @@ def profile(player_id: str) -> dict | None:
         "signal": signal,
         "log": [{"week": g["week"], "opp": g["opp"], "ppr": g["ppr"]} for g in games],
         "games": len(games),
+        "live": _safe_live(player_id),
     }
+
+
+def _tank_ppr(p: dict) -> dict | None:
+    """Pull Tank01's own fantasy numbers out of one playerStats entry (live, default scoring)."""
+    fd = p.get("fantasyPointsDefault") or {}
+    def num(*keys):
+        for k in keys:
+            try:
+                return round(float(fd[k]), 1)
+            except (KeyError, TypeError, ValueError):
+                continue
+        return None
+    out = {"PPR": num("PPR", "ppr"), "HALF": num("halfPPR", "HalfPPR", "half_ppr", "half"),
+           "STD": num("standard", "Standard", "std")}
+    if out["PPR"] is None:
+        try:
+            out["PPR"] = round(float(p.get("fantasyPoints")), 1)
+        except (TypeError, ValueError):
+            return None
+    return out
+
+
+def live(player_id: str) -> dict | None:
+    """
+    Live fantasy points from Tank01's box score while the player's game is on (or just finished
+    today, Central time). None when no game today, no key, or the feed does not carry him.
+    """
+    from zoneinfo import ZoneInfo
+    import datetime as dt
+    import tank01
+    team = data.player_team(player_id)
+    if not team:
+        return None
+    today = dt.datetime.now(ZoneInfo("America/Chicago")).date().isoformat()
+    g = next((r for r in data.load("schedule")
+              if r.get("game_date") == today and team in (r.get("home_team"), r.get("away_team"))), None)
+    if not g:
+        return None
+    body = tank01.get_live_boxscore(f"{today.replace('-', '')}_{g['away_team']}@{g['home_team']}", fantasy=True)
+    if not body:
+        return None
+    name = data.normalize_name(data.player_name(player_id))
+    for p in (body.get("playerStats") or {}).values():
+        if isinstance(p, dict) and p.get("team") == team and data.normalize_name(p.get("longName", "")) == name:
+            pts = _tank_ppr(p)
+            if not pts:
+                return None
+            status = str(body.get("gameStatus", ""))
+            done = "complete" in status.lower() or "final" in status.lower()
+            return {"points": pts, "status": "FINAL" if done else "LIVE", "period": str(body.get("currentPeriod", "")),
+                    "clock": str(body.get("gameClock", "")),
+                    "opponent": g["home_team"] if g["away_team"] == team else g["away_team"]}
+    return None
 
 
 def signal(player_id: str) -> float | None:

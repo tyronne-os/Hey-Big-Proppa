@@ -470,12 +470,13 @@ def _f(v) -> float | None:
         return None
 
 
-def get_live_boxscore(game_id: str) -> dict | None:
+def get_live_boxscore(game_id: str, fantasy: bool = False) -> dict | None:
     """
     Live box score for one game (Tank01 gameID like '20261001_PIT@CLE').
     Short 45s cache so a 60s poller always sees fresh numbers. Returns the raw 'body' dict or None.
     """
-    raw = _get("getNFLBoxScore", {"gameID": game_id, "playByPlay": "false", "fantasyPoints": "false"}, ttl=45)
+    raw = _get("getNFLBoxScore", {"gameID": game_id, "playByPlay": "false",
+                                       "fantasyPoints": "true" if fantasy else "false"}, ttl=45)
     if not raw:
         return None
     body = raw.get("body")

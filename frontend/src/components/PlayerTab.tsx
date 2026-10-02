@@ -87,6 +87,19 @@ function FantasySection({ f }: { f: PlayerFantasy }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: "0.12em", color: GOLD }}>FANTASY POINTS · {f.position} · PPR</span>
+      {f.live && (
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 12, padding: "10px 14px", borderRadius: 12, border: `1px solid ${f.live.status === "LIVE" ? MINT : INK.edge}`, background: INK.card }}>
+          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.12em", color: f.live.status === "LIVE" ? MINT : INK.mute }}>
+            {f.live.status === "LIVE" ? "● LIVE" : "FINAL"} vs {f.live.opponent}{f.live.status === "LIVE" ? ` · ${f.live.period} ${f.live.clock}` : ""}
+          </span>
+          <span style={{ fontFamily: MONO, fontSize: 28, fontWeight: 800, color: f.live.points.PPR !== null && f.live.points.PPR >= f.projection ? MINT : INK.text }}>
+            {f.live.points.PPR?.toFixed(1) ?? "—"}
+          </span>
+          <span style={{ fontSize: 13, color: INK.mute }}>
+            PPR pts (proj {f.projection.toFixed(1)}) · Half {f.live.points.HALF ?? "—"} · Std {f.live.points.STD ?? "—"}
+          </span>
+        </div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>
         <Tile label="FPTS L5" value={f.l5 === null ? "—" : f.l5.toFixed(1)} tone={GOLD} />
         <Tile label="FPTS L10" value={f.l10 === null ? "—" : f.l10.toFixed(1)} />
@@ -195,6 +208,14 @@ export default function PlayerTab({
     setPhotoBroken(false);
     api.playerProps(playerId, market).then(setChart).catch(() => setChart(null));
   }, [playerId, market]);
+
+  // While his game is live, refresh every 45s (matches the backend box-score cache).
+  const isLive = chart?.fantasy?.live?.status === "LIVE";
+  useEffect(() => {
+    if (!isLive) return;
+    const t = setInterval(() => api.playerProps(playerId, market).then(setChart).catch(() => {}), 45000);
+    return () => clearInterval(t);
+  }, [isLive, playerId, market]);
 
   useEffect(() => {
     if (query.trim().length < 2) {
