@@ -18,6 +18,7 @@ import BooAgentPanel from "./components/BooAgentPanel";
 import RampIndex from "./components/RampIndex";
 import MyBooTab from "./components/MyBooTab";
 import OddsTab from "./components/OddsTab";
+import LiveTicker from "./components/LiveTicker";
 import { api } from "./api";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
@@ -193,6 +194,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100vw", height: "100vh", background: "var(--bp-page-bg)", color: "var(--bp-fg)" }}>
       <Header isDark={isDark} onToggleTheme={() => setIsDark((v) => !v)} onToggleAdmin={() => setAdminOpen((v) => !v)} />
+      <LiveTicker />
 
       <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
         {canvasCapable && !canvasOpen && (

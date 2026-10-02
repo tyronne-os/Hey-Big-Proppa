@@ -27,6 +27,7 @@ async function get<T>(path: string): Promise<T> {
 
 export const api = {
   index: () => get<ChartIndexRow[]>("/api/index"),
+  espnTicker: () => get<{ games: any[] }>("/api/espn/ticker"),
   searchPlayers: (q: string) => get<PlayerSearchResult[]>(`/api/players/search?q=${encodeURIComponent(q)}`),
   playerProps: (playerId: string, market: string) =>
     get<PlayerPropChart>(`/api/chart/player_props?player_id=${encodeURIComponent(playerId)}&market=${market}`),

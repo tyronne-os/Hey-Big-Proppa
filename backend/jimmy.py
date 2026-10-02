@@ -589,6 +589,11 @@ def score_components(player_id: str, hit_rate: float | None, market_slug: str | 
         opp  = opponent
         if team and opp:
             edge_pts = trusteddataTR.power_edge(team, opp)  # float or None
+            if edge_pts is None:                             # no TeamRankings number: use the live ESPN-derived rating
+                import espn
+                pw = espn.derive_power_ratings()
+                if team in pw and opp in pw:
+                    edge_pts = pw[team]["rating"] - pw[opp]["rating"]
             if edge_pts is not None:
                 # Map ±20 point range → 0.35–0.65 signal (sigmoid-like clamp)
                 tr_sig = round(min(0.65, max(0.35, 0.50 + edge_pts / 60.0)), 3)

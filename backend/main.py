@@ -1023,6 +1023,25 @@ async def jimmy_deep_dive(body: dict):
 
 # ── Tank01 endpoints ─────────────────────────────────────────────────────────
 
+@app.get("/api/espn/ticker")
+def api_espn_ticker():
+    """Live scoreboard rows for the scrolling banner (ESPN, free)."""
+    import espn
+    return {"games": espn.ticker()}
+
+
+@app.get("/api/espn/standings")
+def api_espn_standings():
+    import espn
+    return {"standings": espn.get_standings(), "power": espn.derive_power_ratings()}
+
+
+@app.get("/api/espn/injuries")
+def api_espn_injuries():
+    import espn
+    return {"injuries": espn.injuries(), "ats": espn.ats_records()}
+
+
 @app.get("/api/teamrankings/status")
 def api_teamrankings_status():
     """Last full / daily TeamRankings intake runs and their per-page row counts or errors."""

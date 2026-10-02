@@ -19,6 +19,7 @@ import threading
 from typing import Optional
 import urllib.request
 import json
+from datetime import datetime
 
 import data
 
@@ -356,3 +357,91 @@ def odds_by_team() -> dict[str, dict]:
         out[g["away"]] = entry
         out[g["home"]] = entry
     return out
+
+
+# ---------------------------------------------------------------------------
+# standings, team stats, ATS, injuries, derived power ratings (all free)
+# ---------------------------------------------------------------------------
+_STAND_URL = "https://site.web.api.espn.com/apis/v2/sports/football/nfl/standings?season={}"
+
+
+def get_standings(season: int | None = None) -> dict[str, dict]:
+    """{team_abbr: {wins, losses, ties, pf, pa, diff, games, streak, home, road, div, conf}} from ESPN standings."""
+    season = season or datetime.now().year
+    body = _fetch(_STAND_URL.format(season), ttl=600)
+    out: dict[str, dict] = {}
+    for conf in (body or {}).get("children", []):
+        for e in (conf.get("standings") or {}).get("entries", []):
+            abbr = (e.get("team") or {}).get("abbreviation", "")
+            st = {s["name"]: s for s in e.get("stats", [])}
+            val = lambda k: _f((st.get(k) or {}).get("value"))
+            disp = lambda k: (st.get(k) or {}).get("displayValue", "")
+            w, l, t = val("wins"), val("losses"), val("ties")
+            out[abbr] = {"wins": int(w), "losses": int(l), "ties": int(t), "games": int(w + l + t),
+                         "pf": val("pointsFor"), "pa": val("pointsAgainst"), "diff": val("pointDifferential") or val("differential"),
+                         "streak": disp("streak"), "home": disp("Home"), "road": disp("Road"),
+                         "div": disp("vs. Div."), "conf": disp("vs. Conf."), "seed": int(val("playoffSeed"))}
+    return out
+
+
+def derive_power_ratings() -> dict[str, dict]:
+    """
+    Our own live power rating from ESPN standings, no scraping: points-per-game margin vs league average,
+    shrunk toward zero early in the season (few games = noisy). Same scale as TeamRankings (points above average).
+    {team: {rating, rank, ppg, papg, games}}
+    """
+    st = get_standings()
+    rows = {t: s for t, s in st.items() if s["games"] > 0}
+    if not rows:
+        return {}
+    raw = {t: (s["pf"] - s["pa"]) / s["games"] for t, s in rows.items()}
+    out = {}
+    for t, s in rows.items():
+        shrink = s["games"] / (s["games"] + 4)          # 3 games -> 0.43, 10 games -> 0.71, 17 -> 0.81
+        out[t] = {"rating": round(raw[t] * shrink, 2), "ppg": round(s["pf"] / s["games"], 1),
+                  "papg": round(s["pa"] / s["games"], 1), "games": s["games"]}
+    for i, t in enumerate(sorted(out, key=lambda k: -out[k]["rating"]), 1):
+        out[t]["rank"] = i
+    return out
+
+
+def ats_records() -> dict[str, list]:
+    """{team_abbr: [record,...]} from the againstTheSpread block of each scoreboard game's summary (empty until ESPN fills it)."""
+    out: dict[str, list] = {}
+    for g in get_scoreboard():
+        body = _fetch(_SUM_URL.format(g["game_id"]), ttl=600)
+        for e in (body or {}).get("againstTheSpread", []):
+            abbr = (e.get("team") or {}).get("abbreviation", "")
+            recs = [{"type": (r.get("type") or r.get("name") or ""), "record": r.get("summary") or r.get("displayValue") or ""}
+                    for r in e.get("records", [])]
+            if abbr and recs:
+                out[abbr] = recs
+    return out
+
+
+def injuries() -> dict[str, list[dict]]:
+    """{team_abbr: [{player, status, detail}]} from each scoreboard game's summary (injury report block)."""
+    out: dict[str, list[dict]] = {}
+    for g in get_scoreboard():
+        body = _fetch(_SUM_URL.format(g["game_id"]), ttl=600)
+        for t in (body or {}).get("injuries", []):
+            abbr = (t.get("team") or {}).get("abbreviation", "")
+            out[abbr] = [{"player": (i.get("athlete") or {}).get("displayName", ""), "status": i.get("status", ""),
+                          "detail": (i.get("details") or {}).get("type") or i.get("type", {}).get("description", "")}
+                         for i in t.get("injuries", [])]
+    return out
+
+
+def team_game_stats(espn_event_id: str) -> dict[str, dict]:
+    """{team_abbr: {stat_name: value}} - total yards, 1st downs, 3rd-down eff, turnovers, possession ... for one game."""
+    body = _fetch(_SUM_URL.format(espn_event_id), ttl=600)
+    out = {}
+    for t in ((body or {}).get("boxscore") or {}).get("teams", []):
+        out[(t.get("team") or {}).get("abbreviation", "")] = {s["name"]: s.get("displayValue") for s in t.get("statistics", [])}
+    return out
+
+
+def ticker() -> list[dict]:
+    """Compact rows for the scrolling banner: one per game, LIVE first, then upcoming, then finals."""
+    order = {"LIVE": 0, "OT": 0, "HALFTIME": 0, "PRE": 1, "FINAL": 2}
+    return sorted(get_scoreboard(), key=lambda g: order.get(g["status"], 3))
