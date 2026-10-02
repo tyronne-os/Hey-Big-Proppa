@@ -96,7 +96,7 @@ function FantasySection({ f }: { f: PlayerFantasy }) {
             {f.live.points.PPR?.toFixed(1) ?? "—"}
           </span>
           <span style={{ fontSize: 13, color: INK.mute }}>
-            PPR pts (proj {f.projection.toFixed(1)}) · Half {f.live.points.HALF ?? "—"} · Std {f.live.points.STD ?? "—"}
+            PPR pts (pre-game proj {f.projection.toFixed(1)}{f.liveProjection != null ? ` · on pace for ${f.liveProjection.toFixed(1)}` : ""}) · Half {f.live.points.HALF ?? "—"} · Std {f.live.points.STD ?? "—"}
           </span>
         </div>
       )}

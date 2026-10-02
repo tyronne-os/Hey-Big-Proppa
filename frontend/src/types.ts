@@ -627,5 +627,6 @@ export interface PlayerFantasy {
   projection: number; oppFactor: number; signal: number;
   log: { week: number; opp: string; ppr: number }[];
   games: number;
+  liveProjection?: number | null;
   live?: { points: { PPR: number | null; HALF: number | null; STD: number | null }; status: "LIVE" | "FINAL"; period: string; clock: string; opponent: string } | null;
 }

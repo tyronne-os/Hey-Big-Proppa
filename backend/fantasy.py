@@ -183,7 +183,7 @@ def profile(player_id: str) -> dict | None:
     edge = projection / (sum(ppr) / len(ppr)) - 1 if sum(ppr) > 0 else 0.0
     signal = round(0.5 + 0.5 * math.tanh(2.0 * edge), 3)
 
-    return {
+    out = {
         "position": pos,
         "season": season, "l5": l5, "l10": l10,
         "last": ppr[-1],
@@ -197,6 +197,8 @@ def profile(player_id: str) -> dict | None:
         "games": len(games),
         "live": _safe_live(player_id),
     }
+    out["liveProjection"] = live_projection(out)
+    return out
 
 
 def _tank_ppr(p: dict) -> dict | None:
@@ -252,10 +254,51 @@ def live(player_id: str) -> dict | None:
     return None
 
 
+def _elapsed(period: str, clock: str, final: bool) -> float:
+    """Fraction of regulation played, 0..1, from Tank01's period + clock-remaining strings."""
+    if final:
+        return 1.0
+    pl = (period or "").lower()
+    if "half" in pl:
+        return 0.5
+    q = next((int(c) for c in pl if c.isdigit()), 0)
+    if "ot" in pl or q >= 5:
+        return 1.0
+    if q < 1:
+        return 0.0
+    try:
+        m, _, s = (clock or "15:00").partition(":")
+        left = int(float(m)) * 60 + int(float(s or 0)) if ":" in (clock or "") else int(float(clock))
+    except ValueError:
+        left = 900
+    left = max(0, min(900, left))
+    return min(1.0, ((q - 1) * 900 + (900 - left)) / 3600)
+
+
+def live_projection(p: dict) -> float | None:
+    """Projected final PPR from a profile: points banked so far + what is left of the projection."""
+    lv = p.get("live")
+    if not lv or lv["points"].get("PPR") is None:
+        return None
+    done = _elapsed(lv["period"], lv["clock"], lv["status"] == "FINAL")
+    return round(lv["points"]["PPR"] + p["projection"] * (1 - done), 1)
+
+
 def signal(player_id: str) -> float | None:
-    """0..1 composite component for Jimmy (0.5 = neutral). None when there is no sample."""
+    """
+    0..1 composite component for Jimmy (0.5 = neutral). None when there is no sample.
+    Pre-game it is the matchup-adjusted projection vs his season average. Once his game is on,
+    the live points replace the unplayed part of the projection, so a big first half pushes the
+    signal up and a dud pulls it down -- the more of the game is gone, the more the live number rules.
+    """
     p = profile(player_id)
-    return p["signal"] if p else None
+    if not p:
+        return None
+    proj_final = live_projection(p)
+    if proj_final is None or not p["season"]:
+        return p["signal"]
+    edge = proj_final / p["season"] - 1
+    return round(0.5 + 0.5 * math.tanh(2.0 * edge), 3)
 
 
 def reset() -> None:
