@@ -1,6 +1,6 @@
 # HANDOFF — frontal-lobe2, NFL ramp, Phase 1
 
-Written 2026-09-25. This document exists because a prior session lost context
+Written 2026-09-25, last updated 2026-10-01 (see §5.12). This document exists because a prior session lost context
 mid-task and had to re-derive everything from the repo. If you are reading this
 after a memory reset: **trust this document's structure, but verify every
 number against the live database before acting on it** (queries to run are at
@@ -561,6 +561,46 @@ The five themed dashboard slips (HOT DOGS, TOTALS, BEAST MODE, HOT BOYS, TOP GUN
 `jimmy_bpl.cached_sides`, cached 5 minutes, warmed at startup). The old versions gated every leg on
 Jimmy's 85% composite and returned zero legs; they are kept as `parlays.LEGACY_SLIPS`.
 
+### 5.12 MY BOO recaps, alerts, hero, fantasy points (built 2026-10-01)
+
+**Slip recaps** (`backend/slip_recap.py`, no LLM, every number comes from the lake): each slip gets a
+200+ word record in three parts. THE SETUP is frozen pre-game (opposing defense first, then the offense's
+identity, the leg-by-leg thesis, the nugget, the price check). THE FACTS is the post-game box score
+(targets, attempts, carries, what held and what did not). HINDSIGHT is the verdict: SCIENCE or SHIT, where
+SCIENCE needs BOTH the defensive matchup AND the player's usage to hold (`held = all(known)`), plus
+SCIENCE (BAD BEAT) / SHIT (LUCKY) when the result and the process disagree, and EARLY CASH / EARLY KILL for
+slips decided mid-game. Storage: `lake/gold/nfl/myboo_thesis.json` (frozen pre-game; `snapshot_open()` never
+overwrites a frozen thesis, and `myboo.track_slips()` calls it the moment a slip hits the board) and
+`myboo_recaps.json` (final training records for Jimmy and Big Proppa). The persona: MY BOO scouts from stats
+alone, a descendant of Grambling coach Eddie Robinson.
+
+**Alerts** (`backend/slip_alerts.py`): a daemon thread started at the end of `main.py` polls Tank01 once a
+minute when a key is configured. OVER legs on counting stats lock the instant they pass the line (stats never
+go backward); UNDER legs and moneylines wait for the final; first-TD locks on the first scorer. A slip that is
+decided early records at once and its recap is rewritten from EARLY CASH/KILL to SCIENCE/SHIT at the final
+whistle (`_refresh_partials`). Alert kinds: READY_WON, READY_LOST, HALFTIME, OVERTIME, GAME_FINAL, RECAP_FINAL.
+Endpoints: `GET /api/myboo/alerts?since=N`, `POST /api/myboo/alerts/poll`, `GET /api/myboo/recaps`.
+Frontend: `hooks/useBooAlerts.ts` (30 s poll, browser notification + chime), ALERTS and RECAPS and BET REPORT
+tabs in `MyBooTab.tsx`.
+
+**Pages**: `/throwdown` Thursday only, `/monday` Monday only (both via `throwdown.build()`), `/parlays` is now
+SUNDAY SLIPS with week-to-week history in `lake/gold/nfl/parlay_history/` (ARCHIVE WEEK button,
+`/api/parlays/history*`, `/api/parlays/snapshot`). MY BOO's hero rail is `components/BooHero.tsx`; it loads her
+portrait from `frontend/public/my-boo.png`, **which has not been supplied yet** (a drawn eye stands in).
+
+**Fantasy points** (`backend/fantasy.py`): the lake has none, so they are computed from the weekly
+passing/rushing/receiving tables with Tank01's default scoring (0.04/pass yd, 4/pass TD, 0.1/rush-rec yd,
+6/TD, -1 INT and fumble lost, +2 two-point, PPR/HALF/STD receptions). Five variables per skill player (QB, RB,
+WR, TE, 2+ games) shown in the FANTASY POINTS panel on the player page and returned as `fantasy` by
+`/api/chart/player_props`: FPTS L5, FPTS L10, position rank, next opponent's rank at allowing fantasy points to
+that position (1 = toughest; shrunk toward neutral until ~6 weeks are in), and a matchup-adjusted fantasy edge
+(60% L5 + 40% season, times the opponent factor). The edge is one more equal-weight component of
+`jimmy.jimmy_score`. **Live:** during the player's game (Central date) `fantasy.live()` reads Tank01
+`getNFLBoxScore` with `fantasyPoints=true` (45 s cache) and the signal switches to banked points plus the
+unplayed share of the projection (`_elapsed`, `live_projection`); the page refreshes every 45 s while LIVE.
+**Unverified:** the `fantasyPointsDefault` key names (PPR / halfPPR / standard) are parsed defensively from the
+docs, not from a real response. No game was on when this was written. Check this first on the next game day.
+
 ## 6. What Phase 1 still needs before it's "done" (per the user's own framing)
 
 As of this writing, the user has not yet declared Phase 1 complete. Sections
@@ -622,6 +662,19 @@ current status rather than trust this section blindly.
    accompanying doc. Never let a weighted score be presented or discussed as
    if it were a validated predictor before an actual walk-forward backtest
    has been run against it (Phase 2 work, not done).
+
+
+**Added 2026-10-01 -- deploy and time gotchas:**
+- Hugging Face: always `hf upload AIBRUH/big-proppa <local> <remote> --repo-type space`. Without
+  `--repo-type space` the upload goes to a model repo and the Space silently serves stale code. Upload
+  `backend` and `frontend/dist` (rebuild the frontend first, and exclude `design/*` and `*.png` LFS pointers).
+  Keep the Space (it holds the `JEV_API_KEY` secret); force a rebuild instead of deleting it.
+- Every date and time is Central (`America/Chicago`, New Orleans). HF runs in UTC, so `date.today()` flips to
+  tomorrow after 8 pm CT. Use `datetime.now(ZoneInfo("America/Chicago"))` (fixed in `bpl.next_games`,
+  `throwdown.detect_throwdown_game`, `tank01._today_str`, `fantasy.live`).
+- Keys live in `~/.dev_credentials`, `~/.huggingface_env`, `~/.api_keys_env` as `export NAME=value` lines
+  (last file wins). A bare value on its own line is not exported. Never print, log or commit a key.
+- Local pushes go through `bp-push`; plain `git push` fails with no credentials.
 
 ## 8. File map — where things actually live
 
