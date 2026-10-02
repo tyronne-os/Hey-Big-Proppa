@@ -700,7 +700,7 @@ current status rather than trust this section blindly.
 
 
 **Added 2026-10-01 -- deploy and time gotchas:**
-- Hugging Face: always `hf upload AIBRUH/big-proppa <local> <remote> --repo-type space`. Without
+- Hugging Face: the Dockerfile builds the frontend FROM frontend/src, so upload frontend/src (and package.json), not only frontend/dist, or a rebuild serves the old UI. Always `hf upload AIBRUH/big-proppa <local> <remote> --repo-type space`. Without
   `--repo-type space` the upload goes to a model repo and the Space silently serves stale code. Upload
   `backend` and `frontend/dist` (rebuild the frontend first, and exclude `design/*` and `*.png` LFS pointers).
   Keep the Space (it holds the `JEV_API_KEY` secret); force a rebuild instead of deleting it.
