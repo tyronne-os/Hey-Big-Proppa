@@ -503,8 +503,8 @@ def start_worker() -> None:
             except Exception:
                 pass
             try:
-                import teamrankings
-                teamrankings.maybe_run()              # Tue 1 AM CT full intake, Mon/Thu-Sun 9 AM CT odds; catches up after downtime
+                import trusteddataTR
+                trusteddataTR.maybe_run()              # Tue 1 AM CT full intake, Mon/Thu-Sun 9 AM CT odds; catches up after downtime
             except Exception:
                 pass
             try:

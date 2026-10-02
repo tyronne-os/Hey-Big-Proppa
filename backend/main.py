@@ -1026,8 +1026,8 @@ async def jimmy_deep_dive(body: dict):
 @app.get("/api/teamrankings/status")
 def api_teamrankings_status():
     """Last full / daily TeamRankings intake runs and their per-page row counts or errors."""
-    import teamrankings
-    return teamrankings.status()
+    import trusteddataTR
+    return trusteddataTR.status()
 
 
 @app.get("/api/tank01/stats")
