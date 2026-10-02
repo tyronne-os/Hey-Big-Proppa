@@ -536,3 +536,8 @@ def start_worker() -> None:
 
     _worker = threading.Thread(target=run, daemon=True, name="boo-alerts")
     _worker.start()
+    try:
+        import boo_staff
+        boo_staff.start_worker()               # MY BOO's ESPN staff (scores, plays, lines, polls, portal, SEC) on adaptive cadence
+    except Exception:
+        pass

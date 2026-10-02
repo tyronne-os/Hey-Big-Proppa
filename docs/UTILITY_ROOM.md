@@ -74,3 +74,33 @@ replacement candidates already identified if it needs to be swapped.
   to link ESPN athlete IDs to nflverse `gsis_id`, but the matching logic was
   never built. Currently 0 rows. Don't join through it yet -- match on team +
   player name in the meantime, as `matchup_report.py` already does.
+
+## The ESPN stream: schedule and staff (added 2026-10-02)
+
+MY BOO is the director of the ESPN data stream. `backend/boo_staff.py` runs her staff in one background thread
+(started from `slip_alerts.start_worker()`, so it comes up with the Space). Every agent has two cadences: **LIVE**
+(any NFL or Top-25/SEC game in progress) and **IDLE**. Each run is timed and stored in
+`lake/gold/espn/staff_status.json`; the Data Auditor flags any agent that goes stale or errors 3 times running, and
+the MY BOO → STAFF tab shows it all. A failing agent never stops the others, and the college page serves the last good
+snapshot if ESPN is down.
+
+| Agent | Duty | LIVE | IDLE | Writes (lake/gold/espn/) |
+|---|---|---|---|---|
+| Scoreboard Scout | NFL scoreboard + college Top-25/SEC slate, spots live games and finals | 20 s | 10 min | `nfl_scoreboard.json`, `cfb_snapshot.json` |
+| Play-by-Play Clerk | Reads plays of every live game; alerts on scores, turnovers, 20+ yd plays | 15 s | (off) | `play_events.json`, `play_seen.json` + MY BOO alert feed |
+| Line Watcher | Spread/total history, 1+ pt movement, ESPN-vs-TeamRankings disagreement (1.5+ pts) | 10 min | 30 min | `line_history.json` |
+| Poll Analyst | AP + Coaches polls, week-over-week movement | 30 min | 1 h | `polls_prev.json`, `poll_movers.json` |
+| Portal Scout | College transfer-portal stories, flags new ones | 30 min | 1 h | `cfb_portal.json` |
+| SEC Beat Reporter | SEC news + matchup news per SEC game | 15 min | 30 min | `cfb_sec.json` |
+| Injury Desk | NFL injury report snapshot and changes | 30 min | 1 h | `injuries.json` |
+| Standings Actuary | Standings + ESPN-derived power rating (Jimmy's fallback for `tr_power`) | 30 min | 1 h | `standings.json` |
+| Data Auditor | Staleness and error check on every agent | 5 min | 10 min | `audit.json` |
+| MY BOO — Director | Writes the briefing from the snapshots | 5 min | 1 h | `boo_briefing.json` |
+| Hermes Liaison | Exports the roster as a manifest for Hermes agents | 6 h | 6 h | `hermes_staff.json` |
+
+Other schedules that feed the lake (unchanged): TeamRankings Tue 1 AM CT full / Mon, Thu–Sun 9 AM CT daily
+(`trusteddataTR.maybe_run`); MY BOO Jimmy training Tue 6 AM CT (`boo_training.maybe_run_tuesday`).
+
+**Scope:** college football is Top 25 + SEC only (`espn_cfb.SEC` holds the 16 SEC team ids). To change a cadence, edit the
+`live`/`idle` numbers in `boo_staff.AGENTS`; to pause one agent, remove it from that list. Endpoints: `/api/boo/staff`,
+`/api/boo/staff/manifest` (Hermes), `/api/espn/ticker`, `/api/espn/game?id=&lg=nfl|cfb`, `/api/cfb/espn`, `/api/espn/lines`.

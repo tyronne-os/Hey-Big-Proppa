@@ -337,3 +337,42 @@ sources:
   - 'Tank01 would mainly add: DFS salaries, depth charts/snap-share data (not currently sourced
     anywhere in this ramp)'
   last_verified: null
+- id: espn_scoreboard_pbp
+  status: active
+  league: nfl+cfb
+  kind: api
+  base_url: https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
+  auth: none
+  ingest_script: 'backend/espn.py (run by backend/boo_staff.py - scoreboard_scout, play_clerk, line_watcher, injury_desk)'
+  feeds_tables:
+  - lake/gold/espn/nfl_scoreboard.json
+  - lake/gold/espn/play_events.json
+  - lake/gold/espn/line_history.json
+  - lake/gold/espn/injuries.json
+  cadence: 20s scoreboard / 15s plays while a game is live; 10 min scoreboard, 30 min lines, 1 h injuries when idle
+  risk: 'UNOFFICIAL, UNDOCUMENTED API (same caveat as espn_news). Needs a browser-style User-Agent or it returns 403.
+    Headshots/logos come from a.espncdn.com. If it breaks, the ticker, game drawer and MY BOO final-score trigger
+    fall back to the last snapshot / Tank01.'
+  replacement_candidates:
+  - tank01_rapidapi (paid, quota-limited)
+  - nflverse (post-game only)
+  last_verified: '2026-10-02'
+- id: espn_cfb
+  status: active
+  league: cfb
+  kind: api
+  base_url: https://site.api.espn.com/apis/site/v2/sports/football/college-football
+  auth: none
+  ingest_script: 'backend/espn_cfb.py (run by backend/boo_staff.py - poll_analyst, portal_scout, sec_reporter)'
+  feeds_tables:
+  - lake/gold/espn/cfb_snapshot.json
+  - lake/gold/espn/cfb_portal.json
+  - lake/gold/espn/cfb_sec.json
+  - lake/gold/espn/poll_movers.json
+  cadence: 30s slate while live / 2 min idle; polls hourly; portal hourly; SEC news 15-30 min
+  risk: 'Scope is deliberately Top 25 + SEC only (AP/Coaches rank <= 25 or one of the 16 SEC team ids in espn_cfb.SEC).
+    Transfer-portal and SEC stories come from ESPN article search; the portal is quiet outside Jan/Apr windows.
+    Same unofficial-API caveat as espn_scoreboard_pbp.'
+  replacement_candidates:
+  - cfbd (collegefootballdata.com, needs CFBD_API_KEY; already used by cfb_data.py for SP+/Elo)
+  last_verified: '2026-10-02'

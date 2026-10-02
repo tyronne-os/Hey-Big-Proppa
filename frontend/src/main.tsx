@@ -37,7 +37,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Route path="/monday"    element={<MondayPage />} />
           <Route path="/parlays"   element={<SundayParlaysPage />} />
           <Route path="/targets"   element={<Navigate to="/leaders?cat=targets" replace />} />
-          {(["player", "leaders", "matchups", "ramp", "engine", "news", "queries", "myboo", "odds"] as const).map((t) => (
+          {(["player", "leaders", "matchups", "ramp", "college", "engine", "news", "queries", "myboo", "odds"] as const).map((t) => (
             <Route key={t} path={`/${t}`} element={<App initialTab={t} />} />
           ))}
           <Route path="*" element={<Navigate to="/throwdown" replace />} />

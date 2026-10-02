@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import BooHero from "./BooHero";
+import StaffPanel from "./StaffPanel";
 import { useBooAlerts } from "../hooks/useBooAlerts";
 import type { BooAlert, SlipRecap, MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem, MyBooReport, MyBooPickDetail, MyBooFactor } from "../api";
 
@@ -1215,7 +1216,7 @@ function RecapsTab() {
 
 // ─── main MY BOO component ───────────────────────────────────────────────────
 
-const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK", "JIMMY LESSONS"] as const;
+const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK", "STAFF", "JIMMY LESSONS"] as const;
 type BooTab = (typeof BOO_TABS)[number];
 
 export default function MyBooTab() {
@@ -1334,6 +1335,7 @@ export default function MyBooTab() {
             {tab === "RECAPS" && <RecapsTab />}
             {tab === "ALERTS" && <AlertsTab alerts={alerts} />}
             {tab === "DESK" && <DeskTab />}
+            {tab === "STAFF" && <StaffPanel />}
             {tab === "JIMMY LESSONS" && <LessonsTab />}
           </div>
         </div>

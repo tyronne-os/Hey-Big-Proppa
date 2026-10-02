@@ -1025,9 +1025,51 @@ async def jimmy_deep_dive(body: dict):
 
 @app.get("/api/espn/ticker")
 def api_espn_ticker():
-    """Live scoreboard rows for the scrolling banner (ESPN, free)."""
+    """Live scoreboard rows for the scrolling banner: NFL week + college Top-25/SEC games (ESPN, free)."""
+    import espn, espn_cfb
+    cfb = []
+    try:
+        cfb = espn_cfb.latest(max_age=30)["games"]
+    except Exception:
+        pass
+    order = {"LIVE": 0, "OT": 0, "HALFTIME": 0, "PRE": 1, "FINAL": 2}
+    return {"games": sorted(espn.get_scoreboard() + cfb, key=lambda g: order.get(g["status"], 3))}
+
+
+@app.get("/api/espn/game")
+def api_espn_game(id: str, lg: str = "nfl"):
+    """Live game drawer: score, play-by-play (newest first), win-probability series, top performers with headshots."""
     import espn
-    return {"games": espn.ticker()}
+    if lg not in ("nfl", "cfb"):
+        raise HTTPException(400, "lg must be nfl or cfb")
+    return espn.game_detail(id, lg) or {"error": "ESPN has no data for that game right now"}
+
+
+@app.get("/api/cfb/espn")
+def api_cfb_espn():
+    """College football (Top 25 + SEC only): slate with odds/ranks, AP + Coaches polls, portal / SEC / matchup news."""
+    import espn_cfb
+    return espn_cfb.latest()
+
+
+@app.get("/api/espn/lines")
+def api_espn_lines():
+    import boo_staff
+    return boo_staff._read("line_history.json", {})
+
+
+@app.get("/api/boo/staff")
+def api_boo_staff():
+    """MY BOO's staff roster: each agent's duty, cadence, last run, health, plus the director's briefing."""
+    import boo_staff
+    return boo_staff.status()
+
+
+@app.get("/api/boo/staff/manifest")
+def api_boo_staff_manifest():
+    """Machine-readable staff manifest for Hermes agents."""
+    import boo_staff
+    return boo_staff._read("hermes_staff.json", {})
 
 
 @app.get("/api/espn/standings")

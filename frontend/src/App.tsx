@@ -19,10 +19,11 @@ import RampIndex from "./components/RampIndex";
 import MyBooTab from "./components/MyBooTab";
 import OddsTab from "./components/OddsTab";
 import LiveTicker from "./components/LiveTicker";
+import CollegeTab from "./components/CollegeTab";
 import { api } from "./api";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
-const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "engine", "news", "queries", "myboo", "odds"] as const;
+const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "college", "engine", "news", "queries", "myboo", "odds"] as const;
 type ViewTab = (typeof VIEW_TABS)[number];
 
 // These three are standalone pages — clicking them navigates away from the main app.
@@ -189,7 +190,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
     log("Display cleared");
   }
 
-  const canvasCapable = tab !== "leaders" && tab !== "matchups" && tab !== "ramp" && tab !== "myboo" && tab !== "odds";
+  const canvasCapable = tab !== "leaders" && tab !== "matchups" && tab !== "ramp" && tab !== "college" && tab !== "myboo" && tab !== "odds";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", width: "100vw", height: "100vh", background: "var(--bp-page-bg)", color: "var(--bp-fg)" }}>
@@ -305,6 +306,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
 
           <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px 20px", minHeight: 0 }}>
             {tab === "ramp" && <RampIndex />}
+            {tab === "college" && <CollegeTab />}
             {tab === "player" && (
               <PlayerTab
                 playerId={selectedPlayerId}
