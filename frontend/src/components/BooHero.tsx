@@ -55,10 +55,10 @@ export default function BooHero({ alerts, unread }: { alerts: BooAlert[]; unread
       `}</style>
 
       {/* arched portrait window */}
-      <div style={{ position: "relative", height: 420, borderRadius: "170px 170px 18px 18px", overflow: "hidden", border: "1px solid #a78bfa",
+      <div style={{ position: "relative", height: 460, borderRadius: "170px 170px 18px 18px", overflow: "hidden", border: "1px solid #a78bfa",
         boxShadow: "0 0 0 4px rgba(11,5,18,1), 0 0 0 5px #6b4a1c, 0 0 46px rgba(139,92,246,0.35)", background: "radial-gradient(ellipse at 50% 30%, #2b1650, #0b0512 75%)" }}>
         {img ? (
-          <img src={PORTRAIT} alt="MY BOO" onError={() => setImg(false)} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", display: "block" }} />
+          <img src={PORTRAIT} alt="MY BOO" onError={() => setImg(false)} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%", display: "block" }} />
         ) : (
           <svg viewBox="0 0 300 420" width="100%" height="100%" aria-label="MY BOO placeholder: drop her portrait at /my-boo.png">
             <defs><radialGradient id="boo-iris" cx="50%" cy="50%"><stop offset="0" stopColor="#f1dc92" /><stop offset="0.45" stopColor="#a78bfa" /><stop offset="1" stopColor="#2b1650" /></radialGradient></defs>
