@@ -188,10 +188,14 @@ def next_games() -> dict[str, dict]:
     """team -> its next unplayed game {opp, home, week, gameId, totalLine}."""
     played = _last_played_week()
     out: dict[str, dict] = {}
+    # Use Eastern time with a 4-hour grace so a Thursday night game
+    # (e.g. 8:15pm ET) isn't filtered out when HF servers report Friday UTC.
+    from zoneinfo import ZoneInfo
+    today_str = (dt.datetime.now(ZoneInfo("America/New_York")) - dt.timedelta(hours=4)).date().isoformat()
     for g in sorted(data.load("schedule"), key=lambda r: (int(r["week"]), r.get("game_date", ""))):
         if g.get("game_type") != "REG" or g.get("home_score") not in ("", None):
             continue
-        if g.get("game_date", "9999") < dt.date.today().isoformat():
+        if g.get("game_date", "9999") < today_str:
             continue
         if int(g["week"]) <= max(played.get(g["home_team"], 0), played.get(g["away_team"], 0)):
             continue
