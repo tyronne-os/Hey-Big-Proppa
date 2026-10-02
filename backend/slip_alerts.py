@@ -488,10 +488,17 @@ def start_worker() -> None:
     if _worker and _worker.is_alive():
         return
 
+    def _is_game_day() -> bool:
+        """Only poll on days games are actually played (Thurs–Mon Central). Saves API calls Tues/Wed."""
+        from zoneinfo import ZoneInfo
+        import datetime as _dt
+        now = _dt.datetime.now(ZoneInfo("America/Chicago"))
+        return now.weekday() in (0, 3, 4, 5, 6)  # Mon=0, Thurs=3, Fri=4, Sat=5, Sun=6
+
     def run() -> None:
         while True:
             try:
-                if tank01.available():
+                if tank01.available() and _is_game_day():
                     poll()
             except Exception:
                 pass

@@ -38,6 +38,92 @@ _HOST = "tank01-nfl-live-in-game-real-time-statistics-nfl.p.rapidapi.com"
 _cache: dict[str, tuple[Any, float]] = {}
 _TTL = 600  # 10 minutes
 
+# ── API call tracking ─────────────────────────────────────────────────────────
+import json as _json
+import threading as _threading
+_call_lock = _threading.Lock()
+_call_log: list[dict] = []   # {ts, endpoint, caller, cache_hit}
+_CALL_LOG_PATH: str | None = None  # set after _GOLD_PATH is known
+
+def _log_path() -> str:
+    p = os.path.join(os.path.dirname(__file__), "..", "lake", "gold", "nfl", "tank01_call_log.json")
+    return os.path.normpath(p)
+
+def _persist_log() -> None:
+    try:
+        p = _log_path()
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        # keep last 2000 entries on disk
+        existing = []
+        try:
+            existing = _json.loads(open(p).read())
+        except Exception:
+            pass
+        combined = (existing + _call_log)[-2000:]
+        open(p, "w").write(_json.dumps(combined))
+    except Exception:
+        pass
+
+def _record_call(endpoint: str, cache_hit: bool, caller: str = "") -> None:
+    import traceback, inspect
+    if not caller:
+        try:
+            stack = traceback.extract_stack()
+            callers = [f.name for f in stack[-5:-1] if f.name not in ("_get", "_record_call", "<module>")]
+            caller = " → ".join(callers[-2:]) if callers else "unknown"
+        except Exception:
+            caller = "unknown"
+    entry = {"ts": time.time(), "endpoint": endpoint, "cache_hit": cache_hit, "caller": caller}
+    with _call_lock:
+        _call_log.append(entry)
+        if len(_call_log) > 500:
+            _call_log.pop(0)
+    if not cache_hit and len(_call_log) % 10 == 0:
+        _threading.Thread(target=_persist_log, daemon=True).start()
+
+def call_stats() -> dict:
+    """Return API usage stats: total calls (cache hits vs real), by endpoint, last 50."""
+    now = time.time()
+    # load from disk too for persistence across restarts
+    all_entries: list[dict] = []
+    try:
+        all_entries = _json.loads(open(_log_path()).read())
+    except Exception:
+        pass
+    with _call_lock:
+        all_entries = all_entries + [e for e in _call_log if e not in all_entries]
+    # dedupe by ts+endpoint
+    seen: set = set()
+    deduped = []
+    for e in sorted(all_entries, key=lambda x: x["ts"]):
+        k = (e["ts"], e["endpoint"])
+        if k not in seen:
+            seen.add(k)
+            deduped.append(e)
+    hour_ago = now - 3600
+    day_ago  = now - 86400
+    by_ep: dict[str, dict] = {}
+    for e in deduped:
+        ep = e["endpoint"]
+        if ep not in by_ep:
+            by_ep[ep] = {"total": 0, "real": 0, "last_hour": 0, "last_day": 0}
+        by_ep[ep]["total"] += 1
+        if not e.get("cache_hit"):
+            by_ep[ep]["real"] += 1
+        if e["ts"] > hour_ago:
+            by_ep[ep]["last_hour"] += 1
+        if e["ts"] > day_ago:
+            by_ep[ep]["last_day"] += 1
+    real_today = sum(e.get("cache_hit") == False for e in deduped if e["ts"] > day_ago)
+    return {
+        "real_last_hour": sum(e.get("cache_hit") == False for e in deduped if e["ts"] > hour_ago),
+        "real_last_day":  real_today,
+        "total_logged":   len(deduped),
+        "by_endpoint":    dict(sorted(by_ep.items(), key=lambda x: -x[1]["real"])),
+        "last_50":        [{"ts": e["ts"], "endpoint": e["endpoint"], "cache_hit": e.get("cache_hit", False), "caller": e.get("caller", "")}
+                           for e in deduped[-50:]],
+    }
+
 
 def _headers() -> dict[str, str]:
     key = os.environ.get("TANK01_API_KEY", "")
@@ -52,11 +138,13 @@ def _get(endpoint: str, params: dict | None = None, ttl: int = _TTL) -> Any:
     cache_key = endpoint + str(sorted((params or {}).items()))
     cached = _cache.get(cache_key)
     if cached and time.time() < cached[1]:
+        _record_call(endpoint, cache_hit=True)
         return cached[0]
 
     if not os.environ.get("TANK01_API_KEY"):
         return None
 
+    _record_call(endpoint, cache_hit=False)
     try:
         r = requests.get(
             f"{_BASE}/{endpoint}",

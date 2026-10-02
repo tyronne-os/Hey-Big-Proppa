@@ -43,6 +43,15 @@ _cache: dict = {"at": 0.0, "board": None}
 CACHE_SECONDS = 300
 
 
+def _date_to_ts(date_str: str) -> float:
+    """Convert 'YYYY-MM-DD' game date to UTC epoch. Returns 0 on parse failure."""
+    try:
+        from datetime import timezone
+        return datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp()
+    except Exception:
+        return 0.0
+
+
 def _f(x, d=0.0) -> float:
     try:
         return float(x)
@@ -92,7 +101,11 @@ def _unlake_games() -> list[dict]:
             continue
         hp = big_plays.stored(g["game_id"])
         if (not hp or not hp.get("final") or "box" not in hp) and tank01.available():
-            hp = big_plays.record(g, ttl=3600)
+            # Only hit Tank01 for recent games (< 72 h old) — older unlaked games skip to avoid burning quota
+            from datetime import datetime, timezone
+            game_age_h = (datetime.now(timezone.utc).timestamp() - _date_to_ts(g.get("game_date", ""))) / 3600
+            if game_age_h < 72:
+                hp = big_plays.record(g, ttl=3600)
         if not hp or "box" not in hp:
             continue
         for pid, bx in hp["box"].items():

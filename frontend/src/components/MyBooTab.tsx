@@ -1350,7 +1350,130 @@ export default function MyBooTab() {
       </div>
 
       {showModal && <NewTicketModal onClose={() => setShowModal(false)} onCreated={loadTickets} />}
+
+      {/* ── TANK01 API USAGE DASHBOARD ── */}
+      <ApiUsageDashboard />
     </div>
+    </div>
+  );
+}
+
+// ── API Usage Dashboard ────────────────────────────────────────────────────────
+type ApiStats = {
+  real_last_hour: number;
+  real_last_day: number;
+  total_logged: number;
+  by_endpoint: Record<string, { total: number; real: number; last_hour: number; last_day: number }>;
+  last_50: { ts: number; endpoint: string; cache_hit: boolean; caller: string }[];
+};
+
+function ApiUsageDashboard() {
+  const [stats, setStats] = useState<ApiStats | null>(null);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const load = () => {
+    setLoading(true);
+    fetch("/api/tank01/stats")
+      .then(r => r.json())
+      .then(d => { setStats(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { if (open) load(); }, [open]);
+
+  const gold = "#d9b45a";
+  const green = "#22c55e";
+  const red = "#ef4444";
+  const mute = "var(--bp-muted)";
+  const card = "var(--bp-card-bg)";
+  const border = "var(--bp-border)";
+
+  const eps = stats ? Object.entries(stats.by_endpoint).sort((a, b) => b[1].real - a[1].real) : [];
+  const maxReal = eps.length ? Math.max(...eps.map(([, v]) => v.real)) : 1;
+
+  return (
+    <div style={{ borderTop: `1px solid ${border}`, marginTop: 16, padding: "12px 20px 20px" }}>
+      <div
+        onClick={() => setOpen(v => !v)}
+        style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", userSelect: "none" }}
+      >
+        <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.14em", color: gold }}>
+          TANK01 API USAGE
+        </span>
+        {stats && (
+          <>
+            <span style={{ fontSize: 11, color: stats.real_last_hour > 20 ? red : green, fontWeight: 700 }}>
+              {stats.real_last_hour} real calls / hr
+            </span>
+            <span style={{ fontSize: 11, color: mute }}>·</span>
+            <span style={{ fontSize: 11, color: stats.real_last_day > 100 ? red : mute }}>
+              {stats.real_last_day} today
+            </span>
+          </>
+        )}
+        <button onClick={e => { e.stopPropagation(); load(); }} style={{ marginLeft: "auto", fontSize: 10, padding: "2px 8px", borderRadius: 6, border: `1px solid ${border}`, background: card, color: mute, cursor: "pointer" }}>
+          {loading ? "…" : "↻ REFRESH"}
+        </button>
+        <span style={{ fontSize: 11, color: mute }}>{open ? "▲" : "▼"}</span>
+      </div>
+
+      {open && stats && (
+        <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 12 }}>
+          {/* summary tiles */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            {[
+              { label: "REAL CALLS / HOUR", value: stats.real_last_hour, warn: 20 },
+              { label: "REAL CALLS TODAY", value: stats.real_last_day, warn: 100 },
+              { label: "TOTAL LOGGED", value: stats.total_logged, warn: 9999 },
+            ].map(({ label, value, warn }) => (
+              <div key={label} style={{ padding: "8px 12px", borderRadius: 8, background: card, border: `1px solid ${border}` }}>
+                <div style={{ fontSize: 10, color: mute, letterSpacing: "0.1em", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: value > warn ? red : gold }}>{value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* by endpoint bar chart */}
+          <div style={{ padding: "10px 12px", borderRadius: 8, background: card, border: `1px solid ${border}` }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: mute, letterSpacing: "0.1em", marginBottom: 8 }}>BY ENDPOINT — REAL CALLS</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              {eps.slice(0, 12).map(([ep, v]) => (
+                <div key={ep} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 220, fontSize: 10, color: mute, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ep}</div>
+                  <div style={{ flex: 1, height: 14, background: "rgba(255,255,255,0.05)", borderRadius: 3, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${Math.max(2, (v.real / maxReal) * 100)}%`, background: v.real > 20 ? red : gold, borderRadius: 3 }} />
+                  </div>
+                  <div style={{ width: 28, fontSize: 11, fontWeight: 700, color: v.real > 20 ? red : gold, textAlign: "right" }}>{v.real}</div>
+                  <div style={{ width: 36, fontSize: 10, color: mute, textAlign: "right" }}>{v.last_hour}h</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* last 20 calls log */}
+          <div style={{ padding: "10px 12px", borderRadius: 8, background: card, border: `1px solid ${border}` }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: mute, letterSpacing: "0.1em", marginBottom: 8 }}>LAST 20 CALLS</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 260, overflowY: "auto" }}>
+              {[...stats.last_50].reverse().slice(0, 20).map((e, i) => {
+                const d = new Date(e.ts * 1000);
+                const hhmm = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+                return (
+                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 10 }}>
+                    <span style={{ color: mute, width: 44, flex: "0 0 44px" }}>{hhmm}</span>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: e.cache_hit ? green : red, flex: "0 0 8px" }} />
+                    <span style={{ color: e.cache_hit ? mute : "#fff", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.endpoint}</span>
+                    <span style={{ color: mute, fontSize: 9, whiteSpace: "nowrap" }}>{e.caller}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: 6, fontSize: 9, color: mute }}>
+              🟢 cache hit — no API call &nbsp;·&nbsp; 🔴 real HTTP call → burns quota
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

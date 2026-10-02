@@ -1023,6 +1023,12 @@ async def jimmy_deep_dive(body: dict):
 
 # ── Tank01 endpoints ─────────────────────────────────────────────────────────
 
+@app.get("/api/tank01/stats")
+def api_tank01_stats():
+    """API usage tracker — real vs cached calls by endpoint, last 50 log entries."""
+    return tank01.call_stats()
+
+
 @app.get("/api/nfl/standings")
 def api_nfl_standings():
     """NFL standings by division from Tank01. Falls back to {} if API unavailable."""
