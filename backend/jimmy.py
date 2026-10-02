@@ -579,6 +579,23 @@ def score_components(player_id: str, hit_rate: float | None, market_slug: str | 
         fan_sig = None
     if fan_sig is not None:
         comp["fantasy"] = fan_sig
+
+    # TeamRankings power-rating edge — team's numerical strength vs opponent.
+    # power_edge() returns +/- differential from tr_power_ratings.csv.
+    # +10 = significantly stronger → ~0.60 signal; -10 = weaker → ~0.40.
+    try:
+        import trusteddataTR
+        team = player_team(player_id)
+        opp  = opponent
+        if team and opp:
+            edge_pts = trusteddataTR.power_edge(team, opp)  # float or None
+            if edge_pts is not None:
+                # Map ±20 point range → 0.35–0.65 signal (sigmoid-like clamp)
+                tr_sig = round(min(0.65, max(0.35, 0.50 + edge_pts / 60.0)), 3)
+                comp["tr_power"] = tr_sig
+    except Exception:
+        pass
+
     return comp
 
 
@@ -681,4 +698,5 @@ def confidence_breakdown(player_id: str, hit_rate: float | None,
         "gameWind":            game_info.get("wind_actual") if game_info else None,
         "tank01Available":     tank01.available(),
         "sbAvailable":         sportsbook.available(),
+        "trPowerSignal":       score_components(player_id, hit_rate, market_slug, direction).get("tr_power"),
     }

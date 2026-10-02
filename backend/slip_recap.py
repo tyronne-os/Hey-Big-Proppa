@@ -404,6 +404,33 @@ def _snapshot(ticket: dict, legs: list[dict], persist: bool = True) -> dict:
         "identity": {t: _identity(tg, t, week) for t in dict.fromkeys(_slip_teams(legs, tg, week))},
         "nugget": (_nugget(lt) or {}).get("player"),
     }
+    # Freeze TeamRankings power context at slip creation time so MY BOO has game-week intelligence
+    try:
+        import trusteddataTR
+        teams = list(dict.fromkeys(_slip_teams(legs, tg, week)))
+        tr_ctx: dict = {}
+        for team in teams:
+            rating_row = trusteddataTR.ratings().get(team, {})
+            opp = next((
+                (g["home"] if g["away"] == team else g["away"])
+                for g in trusteddataTR.week_matchups()
+                if g["away"] == team or g["home"] == team
+            ), None)
+            opp_rating = trusteddataTR.ratings().get(opp, {}) if opp else {}
+            edge = trusteddataTR.power_edge(team, opp) if opp else None
+            tr_ctx[team] = {
+                "rank": rating_row.get("rank"), "rating": rating_row.get("rating"),
+                "opp": opp, "opp_rank": opp_rating.get("rank"), "opp_rating": opp_rating.get("rating"),
+                "power_edge": edge,
+            }
+        if tr_ctx:
+            snap["tr_context"] = tr_ctx
+        # Also freeze the tr_entrance.md snapshot text so MY BOO can reference it
+        entrance_path = Path(__file__).parent.parent / "lake/gold/nfl/tr_entrance.md"
+        if entrance_path.exists():
+            snap["tr_entrance"] = entrance_path.read_text()[:2000]   # cap at 2 KB
+    except Exception:
+        pass
     return snap
 
 

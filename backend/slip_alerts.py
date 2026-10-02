@@ -35,6 +35,7 @@ from typing import Callable
 from zoneinfo import ZoneInfo
 
 import data
+import espn
 import myboo
 import slip_recap
 import tank01
@@ -115,6 +116,25 @@ def tank01_source(lake_game: dict) -> dict | None:
     gid = f"{lake_game['game_date'].replace('-', '')}_{lake_game['away_team']}@{lake_game['home_team']}"
     body = tank01.get_live_boxscore(gid)
     return from_tank01(body, lake_game) if body else None
+
+
+def best_source(lake_game: dict) -> dict | None:
+    """
+    Smart source: uses ESPN (free, no quota) when Tank01 is unavailable or paused.
+    Falls back to Tank01 only when TANK01_PAUSED is unset AND tank01.available().
+    ESPN is always tried first for STATUS_FINAL detection since it's free.
+    """
+    # Try ESPN first — free, covers final scores perfectly
+    try:
+        result = espn.espn_source(lake_game)
+        if result:
+            return result
+    except Exception:
+        pass
+    # Fall back to Tank01 if available
+    if tank01.available():
+        return tank01_source(lake_game)
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -498,8 +518,8 @@ def start_worker() -> None:
     def run() -> None:
         while True:
             try:
-                if tank01.available() and _is_game_day():
-                    poll()
+                if _is_game_day():
+                    poll(source=best_source)   # ESPN first (free); falls back to Tank01 if available
             except Exception:
                 pass
             try:

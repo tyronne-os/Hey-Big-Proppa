@@ -205,3 +205,90 @@ def maybe_run() -> dict | None:
 def status() -> dict:
     r = _runs()
     return {"full": r.get("full"), "daily": r.get("daily"), "recent": r.get("history", [])[-6:]}
+
+
+# ── readers: what Jimmy, RAMP and MY BOO consume (lake only, never the network) ─
+_SPECIAL = {"LA Rams": "LAR", "LA Chargers": "LAC", "NY Giants": "NYG", "NY Jets": "NYJ"}
+_mem: dict[str, tuple[float, object]] = {}
+
+
+def _read(name: str) -> list[dict]:
+    """tr_*.csv rows, re-read only when the file changed, so a fresh intake is live on the next call."""
+    p = GOLD / f"{name}.csv"
+    try:
+        m = p.stat().st_mtime
+    except OSError:
+        return []
+    hit = _mem.get(name)
+    if hit and hit[0] == m:
+        return hit[1]  # type: ignore[return-value]
+    with open(p, newline="") as f:
+        rows = list(csv.DictReader(f))
+    _mem[name] = (m, rows)
+    return rows
+
+
+def abbr(name: str) -> str | None:
+    """'Seattle' / 'LA Rams' / 'NY Jets' -> lake abbreviation."""
+    name = (name or "").strip()
+    if name in _SPECIAL:
+        return _SPECIAL[name]
+    hit = _mem.get("_abbr")
+    if not hit:
+        try:
+            with open(GOLD / "team_abbr_map.csv", newline="") as f:
+                hit = (0.0, list(csv.DictReader(f)))
+        except OSError:
+            return None
+        _mem["_abbr"] = hit
+    for r in hit[1]:  # type: ignore[index]
+        if r["city"] == name or r["full_name"] == name or r["full_name"].startswith(name + " "):
+            return r["abbr_lake"]
+    return None
+
+
+def ratings() -> dict[str, dict]:
+    """{abbr: {rank, rating, proj_w, proj_l, playoffs_pct, win_sb_pct, ats_plus_minus, mov}}"""
+    ats = {abbr(r["team"]): r for r in _read("tr_ats_records")}
+    out = {}
+    for r in _read("tr_power_ratings"):
+        a = abbr(r["team"])
+        if a:
+            t = ats.get(a, {})
+            out[a] = {"rank": int(r["rank"]), "rating": float(r["rating"]), "proj_w": float(r["proj_w"]), "proj_l": float(r["proj_l"]),
+                      "playoffs_pct": float(r["playoffs_pct"]), "win_sb_pct": float(r["win_sb_pct"]),
+                      "ats_plus_minus": t.get("ats_plus_minus"), "mov": t.get("mov")}
+    return out
+
+
+def power_edge(team: str | None, opp: str | None) -> float | None:
+    """Team rating minus opponent rating (TeamRankings points scale). None when either is unknown."""
+    R = ratings()
+    if team in R and opp in R:
+        return round(R[team]["rating"] - R[opp]["rating"], 2)
+    return None
+
+
+def week_matchups() -> list[dict]:
+    """[{away, home, spread (home perspective), neutral, kickoff}] parsed from 'A (-3) at B' / 'A (-4.5) vs. B' (neutral site)."""
+    out = []
+    for r in _read("tr_week_matchups"):
+        m = re.match(r"(.+?)(?: \(([+-]?\d+(?:\.\d+)?)\))? (at|vs\.) (.+?)(?: \(([+-]?\d+(?:\.\d+)?)\))?$", r["matchup"])
+        if not m:
+            continue
+        a_name, a_sp, how, h_name, h_sp = m.groups()          # first team is the visitor ('at') or nominal home ('vs.')
+        first, second = abbr(a_name), abbr(h_name)
+        away, home = (first, second) if how == "at" else (second, first)
+        if how == "at":
+            home_spread = float(h_sp) if h_sp else -float(a_sp or 0)
+        else:
+            home_spread = float(a_sp) if a_sp else -float(h_sp or 0)
+        out.append({"away": away, "home": home, "spread": home_spread, "neutral": how == "vs.", "kickoff": r["kickoff"], "label": r["matchup"]})
+    return out
+
+
+def game_context(home: str | None, away: str | None) -> dict | None:
+    R = ratings()
+    if home not in R or away not in R:
+        return None
+    return {"home": R[home], "away": R[away], "edge_home": round(R[home]["rating"] - R[away]["rating"], 2)}

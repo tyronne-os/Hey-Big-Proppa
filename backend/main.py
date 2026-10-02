@@ -1167,12 +1167,35 @@ def api_ramp_gameday(date: str | None = None):
     All-in-one game-day intelligence for the RAMP index page.
     Combines: schedule, live lines, scoreboard, standings, injuries.
     One call powers the full RAMP index view.
+    Sources (in priority order):
+      - ESPN public API for live scores / STATUS_FINAL (free, no quota)
+      - Tank01 for deep stats when available
+      - TeamRankings (TR) for power ratings + context
+      - Sportsbook for lines
     """
-    games_t01    = tank01.get_games_for_date(date)
-    scoreboard   = tank01.get_daily_scoreboard(date)
-    standings    = tank01.get_nfl_standings()
-    injuries     = tank01.get_injury_list()
+    games_t01    = tank01.get_games_for_date(date) if tank01.available() else []
+    scoreboard   = tank01.get_daily_scoreboard(date) if tank01.available() else []
+    standings    = tank01.get_nfl_standings() if tank01.available() else []
+    injuries     = tank01.get_injury_list() if tank01.available() else []
     nfl_lines    = sportsbook.get_nfl_lines()
+
+    # ESPN scoreboard: live scores + odds (free)
+    try:
+        import espn as espn_mod
+        espn_games = {(g["away"], g["home"]): g for g in espn_mod.get_scoreboard()}
+        espn_odds  = espn_mod.odds_by_team()
+    except Exception:
+        espn_games = {}
+        espn_odds  = {}
+
+    # TeamRankings power ratings + week matchups
+    try:
+        import trusteddataTR
+        tr_ratings   = trusteddataTR.ratings()            # {abbr: {rank, rating, ...}}
+        tr_matchups  = {(m["away"], m["home"]): m for m in trusteddataTR.week_matchups()}
+    except Exception:
+        tr_ratings   = {}
+        tr_matchups  = {}
 
     # Merge live lines into game entries by home team name
     lines_by_home = {g["home"]: g for g in nfl_lines}
@@ -1187,27 +1210,49 @@ def api_ramp_gameday(date: str | None = None):
     # Merge scoreboard into games
     score_by_id = {g["gameID"]: g for g in scoreboard}
 
+    # Fallback game list from ESPN when Tank01 is paused
+    if not games_t01 and espn_games:
+        games_t01 = [
+            {"gameID": g["game_id"], "home": g["home"], "away": g["away"],
+             "gameStatus": g["status"], "homeScore": g["home_score"], "awayScore": g["away_score"]}
+            for g in espn_games.values()
+        ]
+
     enriched = []
     for g in games_t01:
-        live    = score_by_id.get(g["gameID"], {})
-        line    = lines_by_home.get(g["home"]) or lines_by_home.get(g["away"])
+        live     = score_by_id.get(g["gameID"], {})
+        line     = lines_by_home.get(g["home"]) or lines_by_home.get(g["away"])
         home_inj = injury_count.get(g["home"], 0)
-        away_inj  = injury_count.get(g["away"], 0)
+        away_inj = injury_count.get(g["away"], 0)
+        # ESPN live data
+        eg = espn_games.get((g.get("away", ""), g.get("home", ""))) or {}
+        eo = espn_odds.get(g.get("home", "")) or espn_odds.get(g.get("away", "")) or {}
+        # TR power ratings
+        home_tr = tr_ratings.get(g.get("home", ""), {})
+        away_tr = tr_ratings.get(g.get("away", ""), {})
+        tm = tr_matchups.get((g.get("away", ""), g.get("home", ""))) or tr_matchups.get((g.get("home", ""), g.get("away", ""))) or {}
         enriched.append({
             **g,
-            "homeScore":    live.get("homeScore") or g.get("homeScore"),
-            "awayScore":    live.get("awayScore") or g.get("awayScore"),
-            "quarter":      live.get("quarter"),
-            "clock":        live.get("clock"),
-            "liveStatus":   live.get("status") or g.get("gameStatus"),
-            "totalLine":    line.get("total_line") if line else None,
-            "spread":       line.get("spread_home") if line else None,
+            "homeScore":    eg.get("home_score") or live.get("homeScore") or g.get("homeScore"),
+            "awayScore":    eg.get("away_score") or live.get("awayScore") or g.get("awayScore"),
+            "quarter":      eg.get("period") or live.get("quarter"),
+            "clock":        eg.get("clock") or live.get("clock"),
+            "liveStatus":   eg.get("status") or live.get("status") or g.get("gameStatus"),
+            "totalLine":    line.get("total_line") if line else eo.get("ou"),
+            "spread":       tm.get("spread") or (line.get("spread_home") if line else None) or eo.get("spread"),
             "mlHome":       line.get("ml_home") if line else None,
             "mlAway":       line.get("ml_away") if line else None,
             "overOdds":     line.get("over_odds") if line else None,
             "underOdds":    line.get("under_odds") if line else None,
             "homeInjuries": home_inj,
             "awayInjuries": away_inj,
+            # TeamRankings context
+            "homePowerRating": home_tr.get("rating"),
+            "awayPowerRating": away_tr.get("rating"),
+            "homeRank":     home_tr.get("rank"),
+            "awayRank":     away_tr.get("rank"),
+            "trSpread":     tm.get("spread"),    # TR's own spread (home perspective)
+            "espnGameId":   eg.get("game_id"),
         })
 
     return {
@@ -1216,6 +1261,8 @@ def api_ramp_gameday(date: str | None = None):
         "injuryCount": injury_count,
         "tank01Available": tank01.available(),
         "sbAvailable":     sportsbook.available(),
+        "trRatingsCount":  len(tr_ratings),
+        "espnGamesCount":  len(espn_games),
     }
 
 
