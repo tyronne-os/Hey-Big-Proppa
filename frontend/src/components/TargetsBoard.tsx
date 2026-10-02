@@ -173,7 +173,33 @@ function chip(on: boolean): React.CSSProperties {
     border: `1px solid ${on ? C.purple : C.edge}`, background: on ? "rgba(139,92,246,0.25)" : C.card, color: on ? C.goldHi : C.mute };
 }
 function Divider({ text, color }: { text: string; color: string }) {
-  return <tr><td colSpan={16} style={{ padding: "8px 12px", fontSize: 11, fontWeight: 900, letterSpacing: "0.12em", color, background: "rgba(255,255,255,0.03)", borderBottom: `1px solid ${C.edge}` }}>{text}</td></tr>;
+  const gold = color === C.green;
+  return (
+    <tr>
+      <td colSpan={16} style={{ padding: 0, borderBottom: `1px solid ${C.edge}` }}>
+        <div style={{
+          position: "relative", overflow: "hidden",
+          padding: "9px 14px",
+          background: gold
+            ? "linear-gradient(90deg, rgba(217,180,90,0.18) 0%, rgba(217,180,90,0.07) 60%, transparent 100%)"
+            : "rgba(239,68,68,0.08)",
+          borderLeft: `3px solid ${gold ? C.gold : C.red}`,
+        }}>
+          {gold && (
+            <span style={{
+              position: "absolute", top: 0, bottom: 0, width: 80, pointerEvents: "none",
+              background: "linear-gradient(90deg, transparent 0%, rgba(34,197,94,0.55) 40%, rgba(34,197,94,0.9) 50%, rgba(34,197,94,0.55) 60%, transparent 100%)",
+              animation: "dot-scan 2.6s linear infinite",
+            }} />
+          )}
+          <span style={{ position: "relative", fontSize: 11, fontWeight: 900, letterSpacing: "0.12em", color: gold ? C.goldHi : color }}>
+            {text}
+          </span>
+        </div>
+        <style>{`@keyframes dot-scan { from { left: -80px } to { left: 100% } }`}</style>
+      </td>
+    </tr>
+  );
 }
 
 // ─── the player card (props-style detail) ─────────────────────────────────────
