@@ -34,8 +34,13 @@ export const api = {
   leaders: (category: string) => get<LeadersResponse>(`/api/chart/leaders?category=${encodeURIComponent(category)}`),
   parlay: (slip: string) => get<ParlaySlip>(`/api/chart/parlays?slip=${slip}`),
   throwdown: () => get<any>("/api/throwdown"),
+  monday: () => get<any>("/api/monday"),
   matchup: () => get<any>("/api/matchup"),
   parlaysAll: () => get<Record<string, ParlaySlip>>("/api/chart/parlays/all"),
+  parlaysHistory: () => get<{ weeks: { id: string; season: string; week: string; filename: string }[] }>("/api/parlays/history"),
+  parlaysHistoryWeek: (weekId: string) => get<Record<string, ParlaySlip>>(`/api/parlays/history/${weekId}`),
+  parlaysSnapshot: () => fetch(`${BASE}/api/parlays/snapshot`, { method: "POST" }).then(r => r.json()),
+  myBooSummary: () => get<any>("/api/myboo/summary"),
   canvasNodes: () => get<{ nodes: { id: string; type: "lake" | "expert"; name: string; sub: string; chips?: string[]; store?: string }[] }>(
     "/api/canvas/nodes"
   ),

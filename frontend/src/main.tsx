@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import App from "./App";
 import ParlaysPage from "./pages/ParlaysPage";
+import MondayPage from "./pages/MondayPage";
+import SundayParlaysPage from "./pages/SundayParlaysPage";
 import "reactflow/dist/style.css";
 import "./theme.css";
 
@@ -31,8 +33,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path="/throwdown" element={<ParlaysPage />} />
-          <Route path="/parlays" element={<Navigate to="/throwdown" replace />} />
+          <Route path="/throwdown" element={<ParlaysPage variant="thursday" />} />
+          <Route path="/monday"    element={<MondayPage />} />
+          <Route path="/parlays"   element={<SundayParlaysPage />} />
           {(["player", "leaders", "matchups", "ramp", "engine", "news", "queries", "myboo", "odds"] as const).map((t) => (
             <Route key={t} path={`/${t}`} element={<App initialTab={t} />} />
           ))}

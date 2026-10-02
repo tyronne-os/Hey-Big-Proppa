@@ -172,6 +172,54 @@ def api_parlays_all():
     return slips
 
 
+@app.get("/api/parlays/history")
+def api_parlays_history():
+    """List archived Sunday parlay weeks."""
+    import json
+    hist_dir = Path(__file__).resolve().parent.parent / "lake/gold/nfl/parlay_history"
+    if not hist_dir.exists():
+        return {"weeks": []}
+    weeks = []
+    for f in sorted(hist_dir.glob("????_W*.json"), reverse=True):
+        parts = f.stem.split("_W")
+        if len(parts) == 2:
+            weeks.append({"id": f.stem, "season": parts[0], "week": parts[1], "filename": f.name})
+    return {"weeks": weeks}
+
+
+@app.get("/api/parlays/history/{week_id}")
+def api_parlays_history_week(week_id: str):
+    """Return a saved snapshot for a specific week (e.g. 2026_W4)."""
+    import json, re
+    from fastapi.responses import JSONResponse
+    if not re.match(r"^\d{4}_W\d{1,2}$", week_id):
+        return JSONResponse(status_code=400, content={"error": "invalid week_id"})
+    hist_dir = Path(__file__).resolve().parent.parent / "lake/gold/nfl/parlay_history"
+    p = hist_dir / f"{week_id}.json"
+    if not p.exists():
+        return JSONResponse(status_code=404, content={"error": "week not found"})
+    return json.loads(p.read_text())
+
+
+@app.post("/api/parlays/snapshot")
+def api_parlays_snapshot():
+    """Archive this week's Sunday slips to lake/gold/nfl/parlay_history/."""
+    import json
+    hist_dir = Path(__file__).resolve().parent.parent / "lake/gold/nfl/parlay_history"
+    hist_dir.mkdir(parents=True, exist_ok=True)
+    slips = {sid: fn() for sid, fn in parlays_mod.SLIPS.items()}
+    try:
+        from bpl import next_games
+        ng = next_games()
+        week = min(g["week"] for g in ng.values()) if ng else 1
+        season = 2026
+    except Exception:
+        week, season = 1, 2026
+    fname = f"{season}_W{week}.json"
+    (hist_dir / fname).write_text(json.dumps(slips))
+    return {"saved": fname, "week": week, "season": season}
+
+
 @app.get("/api/parlays/engine")
 def api_parlays_engine():
     """
@@ -1034,11 +1082,32 @@ import throwdown as throwdown_mod
 @app.get("/api/throwdown")
 def api_throwdown(game_id: str | None = None):
     """
-    THROWDOWN THURSDAY / MONDAY NIGHT THROWDOWN deep-dive for a single game.
-    Automatically detects tonight's primetime single-game slot (Thu/Mon).
+    THROWDOWN THURSDAY deep-dive.  Auto-detects Thursday night game.
     Pass ?game_id=... to force a specific game for preview/testing.
-    Returns {active: false} when today is not a throwdown night.
+    Returns {active: false} when today is not Thursday (or no game found).
     """
+    if not game_id:
+        from zoneinfo import ZoneInfo
+        import datetime as _dt
+        weekday = _dt.datetime.now(ZoneInfo("America/Chicago")).strftime("%A")
+        if weekday != "Thursday":
+            return {"active": False, "game": None}
+    return throwdown_mod.build(game_id)
+
+
+@app.get("/api/monday")
+def api_monday(game_id: str | None = None):
+    """
+    MONDAY NIGHT THROWDOWN deep-dive.  Auto-detects Monday night game.
+    Pass ?game_id=... to force a specific game for preview/testing.
+    Returns {active: false} when today is not Monday (or no game found).
+    """
+    if not game_id:
+        from zoneinfo import ZoneInfo
+        import datetime as _dt
+        weekday = _dt.datetime.now(ZoneInfo("America/Chicago")).strftime("%A")
+        if weekday != "Monday":
+            return {"active": False, "game": None}
     return throwdown_mod.build(game_id)
 
 

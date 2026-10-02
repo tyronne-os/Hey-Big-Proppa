@@ -891,9 +891,121 @@ function ReportsPanel() {
   );
 }
 
+// ─── BET REPORT — profitability by slip type and market ─────────────────────
+
+const SLIP_EMOJI: Record<string, string> = {
+  "HOT DOGS!": "🌭", "TOTALS!": "📊", "BEAST MODE": "🏃", "HOT BOYS": "🎯", "TOP GUN": "✈️",
+};
+
+function BetReportTab() {
+  const [summary, setSummary] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.myBooSummary().then(setSummary).catch(() => setSummary(null)).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>Loading bet report…</div>;
+  if (!summary) return <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>No data yet. Settle some tickets first.</div>;
+
+  const bySlip: Record<string, { tickets: number; wins: number; losses: number; pending: number; hit_rate: number | null }> = summary.by_slip ?? {};
+  const byMarket: Record<string, { hit: number; miss: number; hit_rate: number }> = summary.by_market ?? {};
+
+  // Aggregate by slip TYPE (strip " · Week N" suffix)
+  const slipTypes: Record<string, { tickets: number; wins: number; losses: number }> = {};
+  for (const [name, block] of Object.entries(bySlip) as [string, any][]) {
+    const type = name.split(" · ")[0].trim();
+    const s = slipTypes[type] ?? { tickets: 0, wins: 0, losses: 0 };
+    slipTypes[type] = { tickets: s.tickets + block.tickets, wins: s.wins + block.wins, losses: s.losses + block.losses };
+  }
+
+  const marketLabel: Record<string, string> = {
+    rushing_yards: "RUSH YDS", receiving_yards: "REC YDS", receptions: "CATCHES",
+    passing_yards: "PASS YDS", passing_tds: "PASS TDs", rushing_tds: "RUSH TDs", anytd: "ANY TD",
+    nfl_total: "TOTAL PTS",
+  };
+
+  const hasSlipData = Object.keys(slipTypes).length > 0;
+  const hasMarketData = Object.keys(byMarket).length > 0;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+      {/* bankroll progress */}
+      {summary.bankroll && (
+        <div style={{ background: "rgba(201,165,78,0.08)", border: "1px solid #6b4a1c", borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", color: "#c9a54e" }}>BANKROLL PROGRESS — ${summary.bankroll.stake} FLAT STAKE</span>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+            <Stat label="NET WINS" val={`$${summary.bankroll.net_wins}`} accent="#2ee6a6" />
+            <Stat label="STAKED" val={`$${summary.bankroll.staked}`} />
+            <Stat label="GOAL" val={`$${summary.bankroll.goal}`} />
+            <Stat label="PROGRESS" val={`${(summary.bankroll.progress * 100).toFixed(1)}%`} accent="#c9a54e" />
+          </div>
+          <div style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${Math.round(summary.bankroll.progress * 100)}%`, background: "linear-gradient(90deg,#d9b45a,#2ee6a6)", borderRadius: 3, transition: "width 0.5s" }} />
+          </div>
+        </div>
+      )}
+
+      {/* by slip type */}
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", color: "var(--bp-muted)", marginBottom: 10 }}>PROFITABILITY BY SLIP TYPE</div>
+        {!hasSlipData && <div style={{ color: "var(--bp-muted)", fontSize: 12 }}>No settled tickets yet.</div>}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {Object.entries(slipTypes).map(([type, s]) => {
+            const graded = s.wins + s.losses;
+            const rate = graded > 0 ? s.wins / graded : null;
+            const color = rate === null ? "var(--bp-muted)" : rate >= 0.6 ? "#2ee6a6" : rate >= 0.4 ? "#f1dc92" : "#ef4444";
+            return (
+              <div key={type} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bp-card-bg)", border: "1px solid var(--bp-border)", borderRadius: 10, padding: "10px 14px" }}>
+                <span style={{ fontSize: 18, flex: "0 0 24px" }}>{SLIP_EMOJI[type] ?? "🎰"}</span>
+                <span style={{ flex: 1, fontSize: 12, fontWeight: 800, letterSpacing: "0.08em" }}>{type}</span>
+                <span style={{ fontFamily: "var(--font-mono,monospace)", fontSize: 11, color: "var(--bp-muted)" }}>{s.tickets}T</span>
+                <span style={{ fontFamily: "var(--font-mono,monospace)", fontSize: 11, color: "#2ee6a6" }}>{s.wins}W</span>
+                <span style={{ fontFamily: "var(--font-mono,monospace)", fontSize: 11, color: "#ef4444" }}>{s.losses}L</span>
+                <span style={{ fontFamily: "var(--font-mono,monospace)", fontSize: 14, fontWeight: 800, color, minWidth: 40, textAlign: "right" }}>
+                  {rate !== null ? `${(rate * 100).toFixed(0)}%` : "—"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* by market / leg type */}
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", color: "var(--bp-muted)", marginBottom: 10 }}>LEG HIT RATE BY MARKET</div>
+        {!hasMarketData && <div style={{ color: "var(--bp-muted)", fontSize: 12 }}>No graded legs yet.</div>}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
+          {Object.entries(byMarket).map(([market, m]) => {
+            const total = m.hit + m.miss;
+            const color = m.hit_rate >= 0.6 ? "#2ee6a6" : m.hit_rate >= 0.4 ? "#f1dc92" : "#ef4444";
+            return (
+              <div key={market} style={{ background: "var(--bp-card-bg)", border: "1px solid var(--bp-border)", borderRadius: 10, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", color: "var(--bp-muted)" }}>{marketLabel[market] ?? market.toUpperCase()}</span>
+                <span style={{ fontFamily: "var(--font-mono,monospace)", fontSize: 22, fontWeight: 900, color }}>{(m.hit_rate * 100).toFixed(0)}%</span>
+                <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>{m.hit}H / {m.miss}M · {total} graded</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, val, accent }: { label: string; val: string; accent?: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", color: "var(--bp-muted)" }}>{label}</span>
+      <span style={{ fontFamily: "var(--font-mono,monospace)", fontSize: 16, fontWeight: 800, color: accent ?? "var(--bp-fg)" }}>{val}</span>
+    </div>
+  );
+}
+
 // ─── main MY BOO component ───────────────────────────────────────────────────
 
-const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM"] as const;
+const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT"] as const;
 type BooTab = (typeof BOO_TABS)[number];
 
 export default function MyBooTab() {
@@ -1003,6 +1115,7 @@ export default function MyBooTab() {
             {tab === "WEEKLY LEDGER" && <LedgerTab />}
             {tab === "TRAINING LOGS" && <TrainingLogTab />}
             {tab === "WEAPON ROOM" && <PostMortemTab />}
+            {tab === "BET REPORT" && <BetReportTab />}
           </div>
         </div>
 

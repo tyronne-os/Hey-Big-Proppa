@@ -93,7 +93,8 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
  * >=85% probability filter and only includes legs with a real FanDuel
  * price -- nothing here is placeholder.
  */
-export default function ParlaysPage() {
+/** Shared implementation — variant controls which night's deep-dive API is called */
+export default function ParlaysPage({ variant = "thursday" }: { variant?: "thursday" | "monday" }) {
   const [slips, setSlips] = useState<Record<string, ParlaySlip> | null>(null);
   const [unlocked, setUnlocked] = useState(getUnlocked);
   const [td, setTd] = useState<ThrowdownData | null>(null);
@@ -105,9 +106,10 @@ export default function ParlaysPage() {
     if (unlocked) {
       api.parlaysAll().then(setSlips).catch(() => setSlips(null));
       api.matchup().then((d: MatchupData) => setMu(d?.active ? d : null)).catch(() => setMu(null));
-      api.throwdown().then((d: ThrowdownData) => setTd(d?.active ? d : null)).catch(() => setTd(null));
+      const deepDive = variant === "monday" ? api.monday() : api.throwdown();
+      deepDive.then((d: ThrowdownData) => setTd(d?.active ? d : null)).catch(() => setTd(null));
     }
-  }, [unlocked]);
+  }, [unlocked, variant]);
 
   const wager = 5;
 
