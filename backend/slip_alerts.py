@@ -46,7 +46,7 @@ _LOCK = threading.RLock()
 POLL_SECONDS = 60
 
 COUNT_STATS = {"rushyds": "rushyds", "recyds": "recyds", "recs": "recs", "passyds": "passyds",
-               "passtd": "passtd", "carries": "carries"}
+               "passtd": "passtd", "carries": "carries", "kickpts": "kickpts"}
 
 
 def _f(x, d=0.0):
@@ -92,12 +92,12 @@ def from_tank01(body: dict, lake_game: dict) -> dict:
             continue
         key = (data.normalize_name(p.get("longName", "")), p.get("team", ""))
         by_tank_id[str(tid)] = key
-        rush, rec, pas = p.get("Rushing") or {}, p.get("Receiving") or {}, p.get("Passing") or {}
+        rush, rec, pas, kick = p.get("Rushing") or {}, p.get("Receiving") or {}, p.get("Passing") or {}, p.get("Kicking") or {}
         players[key] = {
             "rushyds": _f(rush.get("rushYds")), "carries": _f(rush.get("carries")), "rushtd": _f(rush.get("rushTD")),
             "recyds": _f(rec.get("recYds")), "recs": _f(rec.get("receptions")), "tgt": _f(rec.get("targets")),
             "rectd": _f(rec.get("recTD")), "passyds": _f(pas.get("passYds")), "passtd": _f(pas.get("passTD")),
-            "att": _f(pas.get("passAttempts")),
+            "att": _f(pas.get("passAttempts")), "kickpts": _f(kick.get("kickingPts")),
         }
     first_td = None
     for sp in body.get("scoringPlays") or []:          # first touchdown of the game, if the feed names the scorer
@@ -157,6 +157,14 @@ def eval_leg(leg: dict, live: dict) -> dict:
         return {"state": "ALIVE", "actual": 0.0, "note": "waiting on the first touchdown"}
     if mk == "nfl_total":
         return counting(live["home_pts"] + live["away_pts"])
+    if mk == "nfl_spread":
+        if not final:
+            return {"state": "ALIVE", "actual": None, "note": "the spread is decided at the final"}
+        mine, theirs = (live["home_pts"], live["away_pts"]) if leg["team"] == live["home"] else (live["away_pts"], live["home_pts"])
+        cover = mine - theirs + line
+        if cover == 0:
+            return {"state": "HIT", "actual": mine - theirs, "note": "push -- FanDuel voids the leg, so it cannot lose the slip"}
+        return {"state": "HIT" if cover > 0 else "MISS", "actual": mine - theirs, "note": "final margin against the spread"}
     if mk == "nfl_ml":
         if not final:
             return {"state": "ALIVE", "actual": None, "note": "moneyline is decided at the final"}
@@ -246,7 +254,8 @@ def _overlay(lives: dict[str, dict], week: int) -> dict:
             pid = ids.get((name, team)) or ids.get((name, ""))
             if pid:
                 pw[(pid, week)] = {"att": s["att"], "car": s["carries"], "tgt": s["tgt"], "rec": s["recs"],
-                                   "pyds": s["passyds"], "ryds": s["rushyds"], "recyds": s["recyds"]}
+                                   "pyds": s["passyds"], "ryds": s["rushyds"], "recyds": s["recyds"],
+                                   "td": s["rushtd"] + s["rectd"], "team": team}
         if live["status"] == "FINAL":
             final = {"away_team": live["away"], "home_team": live["home"],
                      "away_score": int(live["away_pts"]), "home_score": int(live["home_pts"]), "home_score_": 1}
@@ -292,6 +301,31 @@ def record_ticket(ticket_id: str, ev: dict, lives: dict[str, dict]) -> dict:
         saved[ticket_id] = rc
         slip_recap._save_json(slip_recap._RECAPS_FILE, saved)
     return {"status": t["status"], "recap_words": rc["word_count"], "verdict": (rc.get("hindsight") or {}).get("label")}
+
+
+def rebuild_recaps(game_id: str, source: Callable[[dict], dict | None] = tank01_source) -> int:
+    """Rewrite every settled recap on one game from its frozen thesis (used after the recap logic changes)."""
+    g = next((r for r in slip_recap._rows("schedule") if r["game_id"] == game_id), None)
+    live = source(g) if g else None
+    if not live:
+        return 0
+    with open(myboo._LEGS_FILE, newline="") as f:
+        legs = [l for l in csv.DictReader(f) if l["game_id"] == game_id]
+    by_t: dict[str, list[dict]] = {}
+    for l in legs:
+        by_t.setdefault(l["ticket_id"], []).append(l)
+    snaps = slip_recap._load_json(slip_recap._THESIS_FILE)
+    saved = slip_recap._load_json(slip_recap._RECAPS_FILE)
+    n = 0
+    for t in myboo.load_tickets_raw():
+        if t["ticket_id"] in by_t and t["status"] in ("SETTLED_WIN", "SETTLED_LOSS"):
+            rc = slip_recap.build_recap(t, by_t[t["ticket_id"]], snaps.get(t["ticket_id"]),
+                                        overlay=_overlay({game_id: live}, int(t["week"])))
+            if rc["stage"] == "FINAL":
+                saved[t["ticket_id"]] = rc
+                n += 1
+    slip_recap._save_json(slip_recap._RECAPS_FILE, saved)
+    return n
 
 
 def _refresh_partials(lives: dict[str, dict]) -> int:
@@ -418,6 +452,12 @@ def poll(source: Callable[[dict], dict | None] = tank01_source, auto_record: boo
             if a: new.append(a)
         if new:
             _save(store)
+    if new:
+        try:
+            import boo_store
+            threading.Thread(target=boo_store.push, daemon=True).start()   # keep her records off the ephemeral disk
+        except Exception:
+            pass
     return new
 
 

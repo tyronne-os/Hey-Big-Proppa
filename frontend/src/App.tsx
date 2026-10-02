@@ -14,6 +14,7 @@ import EngineTab from "./components/EngineTab";
 import NewsTab from "./components/NewsTab";
 import MatchupsTab from "./components/MatchupsTab";
 import JimmyPanel from "./components/JimmyPanel";
+import BooAgentPanel from "./components/BooAgentPanel";
 import RampIndex from "./components/RampIndex";
 import MyBooTab from "./components/MyBooTab";
 import OddsTab from "./components/OddsTab";
@@ -69,6 +70,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
   const [results, setResults] = useState<QueryResult[]>([]);
   const [cleared, setCleared] = useState(false);
   const [jimmyPanelOpen, setJimmyPanelOpen] = useState(false);
+  const [booPanelOpen, setBooPanelOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
@@ -88,6 +90,8 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
         "ramp-nfl":        { x: 40,           y: 60  },
         "ramp-cfb":        { x: 40 + NODE_W + NODE_W + 30, y: 60  },
         "jimmy-the-greek": { x: 40 + NODE_W + 15, y: 390 },
+        // the authority: MY BOO sits right beside Jimmy, same row
+        "my-boo":          { x: 40 + NODE_W + 15 + NODE_W + 30, y: 390 },
       };
 
       // edges: every lake node feeds into every expert node
@@ -107,7 +111,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
         data: {
           type: n.type, name: n.name, sub: n.sub, chips: n.chips,
           ...(n.store ? { store: n.store } : {}),
-          ...(n.type === "expert" ? { onSettings: () => setJimmyPanelOpen(true) } : {}),
+          ...(n.type === "expert" ? { onSettings: () => (n.id === "my-boo" ? setBooPanelOpen(true) : setJimmyPanelOpen(true)) } : {}),
         },
       }));
 
@@ -333,6 +337,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
           {jimmyPanelOpen && (
             <JimmyPanel onClose={() => setJimmyPanelOpen(false)} />
           )}
+          {booPanelOpen && <BooAgentPanel onClose={() => setBooPanelOpen(false)} />}
         </div>
       </div>
     </div>

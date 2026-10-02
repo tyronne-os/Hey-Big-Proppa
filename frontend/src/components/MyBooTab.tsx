@@ -253,7 +253,7 @@ function NewTicketModal({ onClose, onCreated }: { onClose: () => void; onCreated
     fontSize: 10, fontWeight: 700, color: "var(--bp-muted)", letterSpacing: "0.1em", display: "block", marginBottom: 3,
   };
 
-  const MARKETS = ["passyds", "rushyds", "recyds", "recs", "passtd", "anytd", "intsthrown", "carries", "sacks"];
+  const MARKETS = ["passyds", "rushyds", "recyds", "recs", "carries", "kickpts", "nfl_total", "nfl_ml", "nfl_spread", "passtd", "anytd", "firsttd", "intsthrown", "sacks"];
 
   return (
     <div style={{
@@ -1005,6 +1005,68 @@ function Stat({ label, val, accent }: { label: string; val: string; accent?: str
   );
 }
 
+// ─── DESK — Central-time awareness, NFL + college matchups, and how the logic is scoring ───
+
+function DeskTab() {
+  const [d, setD] = useState<any>(null);
+  useEffect(() => {
+    const load = () => api.myBooDesk().then(setD).catch(() => {});
+    load();
+    const t = setInterval(load, 60000);
+    return () => clearInterval(t);
+  }, []);
+  if (!d) return <div style={{ color: "var(--bp-muted)", fontSize: 13, padding: 20 }}>Opening the desk…</div>;
+  const c = d.clock, s = d.scorecard;
+  const modeColor = c.mode === "LIVE" ? "#2ee6a6" : c.mode === "RECORDING" ? "#eab308" : c.mode === "GAME DAY" ? "#d9b45a" : "#a78bfa";
+  const GameRow = ({ g }: { g: any }) => (
+    <div style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", borderBottom: "1px solid var(--bp-border)", fontSize: 12 }}>
+      <span>{g.away.rank ? `#${g.away.rank} ` : ""}{g.away.abbr} @ {g.home.rank ? `#${g.home.rank} ` : ""}{g.home.abbr}{g.sec ? " · SEC" : ""}</span>
+      <span style={{ color: "var(--bp-muted)", whiteSpace: "nowrap" }}>
+        {g.status === "PRE" ? g.kickoffCT.replace(/^\w+ \w+ \d+ · /, "") : `${g.away.score ?? 0}-${g.home.score ?? 0} ${g.detail}`}{g.line ? ` · ${g.line}` : ""}
+      </span>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ padding: "12px 14px", borderRadius: 10, border: `1px solid ${modeColor}`, background: "var(--bp-card-bg)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+          <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.14em", color: modeColor }}>{c.mode}</span>
+          <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>{c.display}</span>
+        </div>
+        <div style={{ fontSize: 13, lineHeight: 1.5, marginTop: 4 }}>{c.line}</div>
+        <div style={{ fontSize: 11, color: "var(--bp-muted)", marginTop: 4 }}>{c.slips.open} slips open · {c.slips.waitingToRecord.length} waiting to record</div>
+      </div>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#d9b45a", marginBottom: 4 }}>NFL · WEEK {c.nfl.week ?? "—"}</div>
+        {[...c.nfl.live, ...c.nfl.today.filter((g: any) => g.status !== "LIVE" && g.status !== "HALFTIME")].map((g: any) => <GameRow key={g.espnId} g={g} />)}
+        {c.nfl.next && <GameRow g={c.nfl.next} />}
+      </div>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#d9b45a", marginBottom: 4 }}>
+          COLLEGE · WEEK {c.cfb.week ?? "—"} · {c.cfb.nextSlate.count} games on {c.cfb.nextSlate.date ?? "—"}, {c.cfb.nextSlate.ranked} ranked, {c.cfb.nextSlate.sec} SEC
+        </div>
+        {c.cfb.nextSlate.games.map((g: any) => <GameRow key={g.espnId} g={g} />)}
+      </div>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: "#d9b45a", marginBottom: 4 }}>THE LOGIC SCORECARD</div>
+        <div style={{ fontSize: 12, lineHeight: 1.5, marginBottom: 8 }}>{s.headline}</div>
+        {(["POW", "SIM"] as const).map(k => (
+          <div key={k} style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: k === "POW" ? "#d9b45a" : "#a78bfa" }}>
+              {s[k].label} · {s[k].won}/{s[k].slips} slips won · staked ${s[k].staked} · returned ${s[k].returned}
+            </div>
+            {s[k].markets.map((m: any) => (
+              <div key={m.market} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "2px 0" }}>
+                <span>{m.market}</span><span style={{ color: m.market.startsWith("Touchdown") ? "#ef4444" : "var(--bp-fg)" }}>{m.hit}/{m.total}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── ALERTS — slips ready to record ─────────────────────────────────────────
 
 function AlertsTab({ alerts }: { alerts: BooAlert[] }) {
@@ -1112,11 +1174,11 @@ function RecapsTab() {
 
 // ─── main MY BOO component ───────────────────────────────────────────────────
 
-const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS"] as const;
+const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK"] as const;
 type BooTab = (typeof BOO_TABS)[number];
 
 export default function MyBooTab() {
-  const [tab, setTab] = useState<BooTab>("POW ORDERS");
+  const [tab, setTab] = useState<BooTab>("DESK");
   const [powTickets, setPowTickets] = useState<MyBooTicket[]>([]);
   const [simTickets, setSimTickets] = useState<MyBooTicket[]>([]);
   const [loadingPow, setLoadingPow] = useState(true);
@@ -1230,6 +1292,7 @@ export default function MyBooTab() {
             {tab === "BET REPORT" && <BetReportTab />}
             {tab === "RECAPS" && <RecapsTab />}
             {tab === "ALERTS" && <AlertsTab alerts={alerts} />}
+            {tab === "DESK" && <DeskTab />}
           </div>
         </div>
 

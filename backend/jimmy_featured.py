@@ -67,6 +67,19 @@ def featured(sides: list[dict]) -> dict | None:
     if not best:
         return None
     _, pid, d, r, c, td_price, td_p = best
+    import red_zone
+    if red_zone.td_props_off(r.get("week")):
+        # no touchdown leg from week 4 on: his receiving effort, priced like his TD, takes the slot
+        eff = red_zone.effort_leg(pid, d["name"], d["team"], td_price, r.get("gameId"), market="recyds")
+        legs = ([eff] if eff else []) + [
+            {"playerId": pid, "name": d["name"], "team": d["team"], "market": "rushyds", "direction": "over", "line": r["line"],
+             "prop": f"{math.ceil(r['line'])}+ RUSHING YARDS", "probability": round(_p(r), 3), "l5": round(_p(r), 3), "odds": r["odds"],
+             "correlationNote": f"BPL {r['bpl']:g} vs FanDuel rung {r['line']:g}", "photoUrl": data.photo_url(pid)},
+            {"playerId": pid, "name": d["name"], "team": d["team"], "market": "recs", "direction": "over", "line": c["line"],
+             "prop": f"{math.ceil(c['line'])}+ RECEPTIONS", "probability": round(_p(c), 3), "l5": round(_p(c), 3), "odds": c["odds"],
+             "correlationNote": f"BPL {c['bpl']:g} vs FanDuel rung {c['line']:g}", "photoUrl": data.photo_url(pid)},
+        ]
+        return _finish(pid, d, legs, "No touchdown leg (week 4 on): his receiving effort, priced like his TD, takes that slot.")
     legs = [
         {"playerId": pid, "name": d["name"], "team": d["team"], "market": "anytd", "direction": "over", "line": 0.5,
          "prop": "ANYTIME TOUCHDOWN", "probability": round(td_p, 3), "l5": round(td_p, 3), "odds": int(td_price),
@@ -78,6 +91,10 @@ def featured(sides: list[dict]) -> dict | None:
          "prop": f"{math.ceil(c['line'])}+ RECEPTIONS", "probability": round(_p(c), 3), "l5": round(_p(c), 3), "odds": c["odds"],
          "correlationNote": f"BPL {c['bpl']:g} vs FanDuel rung {c['line']:g}", "photoUrl": data.photo_url(pid)},
     ]
+    return _finish(pid, d, legs, "The lake has no 2+ touchdown price, so the touchdown leg is anytime.")
+
+
+def _finish(pid: str, d: dict, legs: list[dict], extra: str) -> dict:
     dec = math.prod(_dec(l["odds"]) for l in legs)
     p = math.prod(l["probability"] for l in legs)
     return {
@@ -85,8 +102,8 @@ def featured(sides: list[dict]) -> dict | None:
         "player": {"name": d["name"], "team": d["team"], "position": d.get("position", "RB"), "photoUrl": data.photo_url(pid)},
         "legs": legs, "wager": STAKE, "boost": 0.0, "combinedDecimalOdds": round(dec, 4),
         "payout": round(STAKE * dec, 2), "boostedPayout": round(STAKE * dec, 2), "boostedAmericanOdds": _american(dec),
-        "hitProbability": round(p, 4), "confidence": round(100 * sum(l["probability"] for l in legs) / 3),
+        "hitProbability": round(p, 4), "confidence": round(100 * sum(l["probability"] for l in legs) / len(legs)),
         "insight": ("Legs multiplied: FanDuel prices same-player parlays lower than this because the legs move together, so treat the payout "
-                    "as an upper estimate. The lake has no 2+ touchdown price, so the touchdown leg is anytime."),
+                    "as an upper estimate. " + extra),
         "week": None,
     }

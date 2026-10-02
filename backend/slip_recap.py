@@ -36,6 +36,11 @@ _RECAPS_FILE = _GOLD / "myboo_recaps.json"
 _LOCK = threading.RLock()
 
 MIN_WORDS = 200
+# Scoring props. Who scores is the offensive coordinator's call at the goal line, not something the
+# stats can see, so these legs never count toward a SCIENCE verdict. The effort that gets a team to
+# the red zone (yards, targets, touches) is what MY BOO grades.
+TD_MARKETS = {"anytd", "firsttd", "lasttd"}
+GAME_LEGS = {"nfl_total", "nfl_ml"}
 
 USAGE_LABEL = {"tgt": "targets", "car": "carries", "att": "pass attempts", "touches": "touches"}
 
@@ -145,11 +150,13 @@ def _player_weeks(season: str) -> dict[tuple[str, int], dict]:
     out: dict[tuple[str, int], dict] = {}
     for fname, cols in (("player_passing_week", {"att": "attempts", "pyds": "passing_yards"}),
                         ("player_rushing_week", {"car": "carries", "ryds": "rushing_yards"}),
-                        ("player_receiving_week", {"tgt": "targets", "rec": "receptions", "recyds": "receiving_yards"})):
+                        ("player_receiving_week", {"tgt": "targets", "rec": "receptions", "recyds": "receiving_yards"}),
+                        ("player_scoring_week", {"td": "total_tds"})):
         for r in _rows(fname):
             if r["season"] != season or r.get("season_type", "REG") != "REG":
                 continue
             d = out.setdefault((r["player_id"], int(r["week"])), {})
+            d["team"] = r.get("team", d.get("team", ""))
             for k, c in cols.items():
                 d[k] = d.get(k, 0.0) + _f(r.get(c), 0.0)
     return out
@@ -195,6 +202,10 @@ def _defense(tg: dict, team: str, before_week: int) -> dict:
     return out
 
 
+def _def_adj(rank: int) -> str:
+    return "stout" if rank <= 8 else "solid" if rank <= 16 else "leaky" if rank <= 24 else "soft"
+
+
 def _def_label(rank: int | None) -> str:
     if rank is None:
         return "an unrated"
@@ -218,7 +229,7 @@ def _leg_thesis(leg: dict, week: int, season: str, tg: dict, pw: dict, ids: dict
     team = leg["team"]
     game = _schedule_game(leg.get("game_id", ""), str(week), team)
     opp = ""
-    if game:
+    if game and leg["market"] not in GAME_LEGS:
         opp = game["away_team"] if game["home_team"] == team else game["home_team"]
     mk = leg["market"]
     pid = ids.get((myboo._norm(leg["player_name"]), team)) or ids.get((myboo._norm(leg["player_name"]), ""))
@@ -280,7 +291,15 @@ def _setup_text(ticket: dict, legs: list[dict], identity: dict) -> str:
         if bits:
             soft_cat = "pass" if (pr or 0) > (rr or 0) else "run"
             soft_rank = max(pr or 0, rr or 0)
-            verdict = f"{_def_label(soft_rank)} unit overall, and the soft spot is the {soft_cat}" if soft_rank > 16 else "a unit that gives up very little in either phase, so I am only taking the cleanest price"
+            if pr and rr and abs(pr - rr) >= 10:
+                strong = "pass" if pr < rr else "run"
+                verdict = (f"a split defense, {_def_adj(min(pr, rr))} against the {strong} and {_def_adj(max(pr, rr))} "
+                           f"against the {soft_cat}, so the soft spot is the {soft_cat}")
+            elif soft_rank > 16:
+                overall = round(((pr or soft_rank) + (rr or soft_rank)) / 2)
+                verdict = f"{_def_label(overall)} unit overall, and the soft spot is the {soft_cat}"
+            else:
+                verdict = "a unit that gives up very little in either phase, so I am only taking the cleanest price"
             lead.append(f"{l['opp']} is {verdict}: " + " and ".join(bits) + ".")
     if lead:
         paras.append("I always read the defense first. " + " ".join(lead))
@@ -289,7 +308,7 @@ def _setup_text(ticket: dict, legs: list[dict], identity: dict) -> str:
 
     # 2. offensive identity
     idents: list[str] = []
-    for team in dict.fromkeys(l["team"] for l in legs):
+    for team in identity:
         idn = identity.get(team)
         if idn:
             idents.append(f"{team} has been {idn['label']} through {idn['games']} game{'s' if idn['games'] != 1 else ''}: {idn['att']} pass attempts and {idn['car']} rushes a game, {idn['tgt']} targets, a {round(idn['pass_rate'] * 100)}% pass rate.")
@@ -301,10 +320,14 @@ def _setup_text(ticket: dict, legs: list[dict], identity: dict) -> str:
     thoughts = []
     for l in legs:
         lab = MARKET_LABEL.get(l["market"], l["market"])
-        if l["market"] in ("anytd", "firsttd"):
+        if l["market"] == "nfl_total":
+            thoughts.append(f"The game total {l['direction']} {l['line']:g} points.")
+            continue
+        if l["market"] == "nfl_ml":
+            thoughts.append(f"{l['team']} on the moneyline.")
+            continue
+        if l["market"] in TD_MARKETS:
             want = f"to score {lab}"
-        elif l["market"] in ("nfl_total", "nfl_ml"):
-            want = lab
         else:
             want = f"{l['direction']} {l['line']:g} {lab}"
         if l["edge"] is None:
@@ -316,6 +339,11 @@ def _setup_text(ticket: dict, legs: list[dict], identity: dict) -> str:
         use = f", on a {l['usage_avg']} {USAGE_LABEL.get(l['usage_key'], l['usage_key'])} average" if l["usage_avg"] is not None else ""
         thoughts.append(f"{l['player']} ({l['team']}) {want}{use}{edge}.")
     paras.append(f"The {title} thesis, leg by leg: " + " ".join(thoughts))
+    tds = [l["player"] for l in legs if l["market"] in TD_MARKETS]
+    if tds:
+        paras.append(f"Coach's-call legs: {', '.join(dict.fromkeys(tds))} to score. Who gets the ball at the goal line is the offensive "
+                     "coordinator's decision, not something the stats can see, so these legs ride on the play call. The science on this "
+                     "slip lives in the effort legs, the yards and touches it takes to get to the red zone.")
 
     n = _nugget(legs)
     if n:
@@ -342,6 +370,19 @@ def _setup_text(ticket: dict, legs: list[dict], identity: dict) -> str:
     return "\n\n".join(paras)
 
 
+def _slip_teams(legs: list[dict], tg: dict, week: int) -> list[str]:
+    """Real teams on the slip. A game-total or moneyline leg contributes both teams of its game."""
+    out: list[str] = []
+    for l in legs:
+        if l.get("market") in GAME_LEGS or l.get("team") in ("TOTAL", ""):
+            g = _schedule_game(l.get("game_id", ""), str(week), "")
+            if g:
+                out += [g["away_team"], g["home_team"]]
+        else:
+            out.append(l["team"])
+    return out
+
+
 def _snapshot(ticket: dict, legs: list[dict], persist: bool = True) -> dict:
     season, week = str(ticket["season"]), int(ticket["week"])
     tg, pw, ids = _team_games(season), _player_weeks(season), _pid_lookup()
@@ -349,7 +390,7 @@ def _snapshot(ticket: dict, legs: list[dict], persist: bool = True) -> dict:
     snap = {
         "ticket_id": ticket["ticket_id"], "frozen_at": datetime.now(timezone.utc).isoformat(),
         "sample_weeks_before": week, "legs": lt,
-        "identity": {t: _identity(tg, t, week) for t in dict.fromkeys(l["team"] for l in legs)},
+        "identity": {t: _identity(tg, t, week) for t in dict.fromkeys(_slip_teams(legs, tg, week))},
         "nugget": (_nugget(lt) or {}).get("player"),
     }
     return snap
@@ -396,10 +437,16 @@ def _leg_facts(th: dict, leg: dict, week: int, tg: dict, pw: dict) -> dict:
         env_held = got >= 0.9 * th["attack_allowed"] if th["direction"] == "over" else got <= 1.1 * th["attack_allowed"]
     known = [x for x in (volume_held, env_held) if x is not None]
     held = all(known) if known else None      # a leg only 'held' when BOTH the matchup and the player's usage played out
+    if th["market"] in TD_MARKETS:
+        held = None                           # coach's call: never graded as science
     return {"player": th["player"], "market": th["market"], "line": th["line"], "direction": th["direction"],
             "status": leg["status"], "actual": _f(leg.get("actual_value")), "used": used, "usage_key": uk,
             "usage_avg": th["usage_avg"], "volume_held": volume_held, "env_held": env_held, "thesis_held": held,
-            "team_got": mine, "opp_got": theirs, "attack_cat": cat, "attack_allowed": th["attack_allowed"]}
+            "team_got": mine, "opp_got": theirs, "attack_cat": cat, "attack_allowed": th["attack_allowed"],
+            "team": th["team"], "td_leg": th["market"] in TD_MARKETS,
+            "scrimmage": (p.get("ryds", 0) + p.get("recyds", 0)) if p else None,
+            "scorers": sorted(data.player_name(pid) for (pid, wk), v in pw.items()
+                              if wk == week and v.get("team") == th["team"] and v.get("td", 0) > 0)}
 
 
 def _result_phrase(f: dict) -> str:
@@ -444,7 +491,14 @@ def _facts_text(snap: dict, facts: list[dict], week: int, final: dict | None, tg
         if f["used"] is not None and f["usage_avg"]:
             use = f" on {int(f['used'])} {USAGE_LABEL.get(f['usage_key'], f['usage_key'])} against his average of {f['usage_avg']}"
         why = ""
-        if f["status"] == "MISS":
+        if f["status"] == "MISS" and f.get("td_leg"):
+            yds = f" for {int(f['scrimmage'])} scrimmage yards" if f.get("scrimmage") else ""
+            who = (f"{f['team']}'s touchdowns went to {', '.join(f['scorers'])}" if f.get("scorers")
+                   else f"{f['team']} did not score an offensive touchdown")
+            effort = "The effort was there" if f["volume_held"] else "The volume was light too"
+            why = (f" {effort}: he handled the ball{yds}. {who}. That is a goal-line play call, not a stat, "
+                   "and it is exactly why a scoring leg is not science.")
+        elif f["status"] == "MISS":
             tm = f["team_got"]
             if f["volume_held"] is False:
                 why = " The workload fell short of the baseline, so the role assumption was the thing that broke."
@@ -452,7 +506,11 @@ def _facts_text(snap: dict, facts: list[dict], week: int, final: dict | None, tg
                 why = f" The workload and the matchup were both there and {tm_name(f)} still moved the ball ({int(tm['ryds'])} rushing, {int(tm['pyds'])} passing), so the leak was efficiency or who else ate the production, not the read."
             elif f["env_held"] is False:
                 why = " The defense played better than its numbers going in, which is the kind of miss that corrects the ranking."
-        line = f"{f['player']} {_result_phrase(f)}{use} (line {f['line']:g}) for a {f['status']}.{why}"
+        if f["market"] == "nfl_total":
+            pts = "n/a" if f["actual"] is None else f"{f['actual']:g}"
+            line = f"The game finished with {pts} total points (line {f['line']:g}) for a {f['status']}."
+        else:
+            line = f"{f['player']} {_result_phrase(f)}{use} (line {f['line']:g}) for a {f['status']}.{why}"
         (right if f["status"] == "HIT" else wrong).append(line)
     if right:
         paras.append("Where we got it right: " + " ".join(right))
@@ -483,6 +541,25 @@ def _verdict(slip_status: str, facts: list[dict], snap: dict, partial: str | Non
         label, line = "SHIT", "This was not rooted in science. The thesis broke on the facts, and the lesson is worth more than the stake."
     else:
         label, line = "OPEN", "Still live."
+    td_miss = [f for f in facts if f.get("td_leg") and f["status"] == "MISS"]
+    effort = [f for f in facts if not f.get("td_leg")]
+    effort_missed = [f for f in effort if f["status"] == "MISS"]
+    if lost and td_miss:
+        hit = sum(f["status"] == "HIT" for f in effort)
+        names = ", ".join(dict.fromkeys(f["player"] for f in td_miss))
+        if not effort_missed:
+            label = "SHIT (TD GAMBLE)"
+            line = (f"Every effort leg cashed, {hit} of {len(effort)}, and the slip still died on {names} to score. "
+                    "Who scores is the offensive coordinator's call at the goal line, not science. Take the effort prop "
+                    "that pays the same (an alt yardage rung) and this ticket cashes.")
+        else:
+            label = "SHIT (TD GAMBLE)"
+            line = (f"The slip leaned on {len(td_miss)} scoring leg{'s' if len(td_miss) != 1 else ''} ({names}) that the stats "
+                    f"cannot see, and the effort legs went {hit} of {len(effort)}. Scoring legs are a coin flip on the play call; "
+                    "build on the effort it takes to reach the red zone instead.")
+        process_ok = False if not effort else process_ok
+    elif won and any(f.get("td_leg") for f in facts) and label == "SCIENCE":
+        line += " The scoring leg landed too, but that part was the play call, not the science."
     tags = []
     if process_ok:
         tags.append("PROCESS_HELD")
@@ -492,6 +569,8 @@ def _verdict(slip_status: str, facts: list[dict], snap: dict, partial: str | Non
         tags.append("VOLUME_COLLAPSED")
     if any(f["env_held"] is False for f in facts):
         tags.append("DEFENSE_BEHAVED")
+    if any(f.get("td_leg") for f in facts):
+        tags.append("TD_GAMBLE")
     if won and process_ok and any((l.get("attack_rank") or 0) >= 25 for l in snap["legs"]):
         tags.append("FEAST_INDICATOR")
     return {"label": label, "process_score": score, "process_ok": process_ok, "outcome": slip_status, "tags": tags, "text": line}
@@ -541,7 +620,7 @@ def build_recap(ticket: dict, legs: list[dict], snap: dict | None = None, overla
     facts_text = _facts_text(snap, [f for f in facts if f["status"] in ("HIT", "MISS")], week, final, tg, partial)
     v = _verdict(ticket["status"], [f for f in facts if f["status"] in ("HIT", "MISS")], snap, partial)
     hind = (f"Hindsight: {v['label']}. {v['text']} Process score {v['process_score'] if v['process_score'] is not None else 'n/a'} "
-            f"(share of legs where both the defensive matchup and the player's usage played out the way I wrote them down).")
+            f"(share of effort legs where both the defensive matchup and the player's usage played out the way I wrote them down; scoring legs are not graded).")
     full = setup + "\n\n" + facts_text + "\n\n" + hind
     if _words(full) < MIN_WORDS:
         setup = _pad(setup, ticket, legs, snap)
@@ -589,3 +668,47 @@ def recaps(week: int | None = None, ticket_id: str | None = None) -> list[dict]:
         if dirty:
             _save_json(_RECAPS_FILE, saved)
         return out
+
+
+# ---------------------------------------------------------------------------
+# compliance -- every report is checked against agents/myboo/PROCEDURE.md
+# ---------------------------------------------------------------------------
+VERDICTS = {"SCIENCE", "SCIENCE (BAD BEAT)", "SHIT", "SHIT (LUCKY)", "SHIT (TD GAMBLE)", "EARLY CASH", "EARLY KILL", "UNSCORED", "OPEN"}
+_OPENER = "I always read the defense first"
+
+
+def audit(rc: dict, legs: list[dict] | None = None) -> list[str]:
+    """Return every way this report breaks the zero-deviation procedure. An empty list means compliant."""
+    bad: list[str] = []
+    setup, facts, hind = rc.get("setup") or "", rc.get("facts") or "", rc.get("hindsight")
+    if not setup.startswith(_OPENER):
+        bad.append("THE SETUP must open with 'I always read the defense first.'")
+    if rc.get("stage") != "PREGAME":
+        if not facts.strip():
+            bad.append("THE FACTS is missing")
+        elif rc.get("stage") == "FINAL" and "Final:" not in facts:
+            bad.append("THE FACTS must open with the final score")
+        if not hind:
+            bad.append("HINDSIGHT is missing")
+        else:
+            if hind.get("label") not in VERDICTS:
+                bad.append(f"verdict '{hind.get('label')}' is not in the closed set")
+            if rc.get("stage") == "FINAL" and hind.get("label") in ("EARLY CASH", "EARLY KILL"):
+                bad.append("a final report cannot carry an early verdict")
+    if rc.get("word_count", 0) < MIN_WORDS:
+        bad.append(f"under the {MIN_WORDS}-word floor ({rc.get('word_count', 0)})")
+    feats = (rc.get("features") or {}).get("legs") or []
+    has_td = any(l.get("market") in TD_MARKETS for l in feats)
+    if has_td and "Coach's-call legs" not in setup:
+        bad.append("a touchdown leg is on the slip but the coach's-call paragraph is missing")
+    if has_td and rc.get("stage") == "FINAL" and rc.get("status") == "SETTLED_LOSS":
+        missed_td = any(f.get("market") in TD_MARKETS and f.get("status") == "MISS" for f in (rc.get("features") or {}).get("facts") or [])
+        if missed_td and (hind or {}).get("label") not in ("SHIT (TD GAMBLE)", "SHIT"):
+            bad.append("a missed touchdown leg must grade SHIT (TD GAMBLE), never science")
+    return bad
+
+
+def audit_all() -> dict:
+    saved = _load_json(_RECAPS_FILE)
+    bad = {tid: a for tid, rc in saved.items() if (a := audit(rc))}
+    return {"checked": len(saved), "compliant": len(saved) - len(bad), "violations": bad}

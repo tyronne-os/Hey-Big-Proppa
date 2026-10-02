@@ -601,6 +601,41 @@ unplayed share of the projection (`_elapsed`, `live_projection`); the page refre
 **Unverified:** the `fantasyPointsDefault` key names (PPR / halfPPR / standard) are parsed defensively from the
 docs, not from a real response. No game was on when this was written. Check this first on the next game day.
 
+### 5.13 MY BOO as an authority node, the desk, and RED ZONE EFFORT (built 2026-10-02)
+
+**Why it was built:** on the first official night (Thu 2026-10-01, PIT 24 @ CLE 27) the user's three real FanDuel
+slips produced no reports. Causes: (1) the user's own slips were never entered in MY BOO (only the board's
+SIM slips were), (2) the HF Space's disk is wiped on every rebuild, so any record written there is lost, and
+(3) hand-logged legs had no `game_id`, so the live grader could not watch them. All three are fixed.
+
+**MY BOO is a node** next to Jimmy on the canvas (`/api/canvas/nodes`, id `my-boo`; the gear opens
+`BooAgentPanel.tsx`). Her duties are the zero-deviation `backend/agents/myboo/SKILL.md` and `PROCEDURE.md`.
+`slip_recap.audit()` / `audit_all()` check every report against them (opener, three sections, 200 words, closed
+verdict set, coach's-call paragraph, TD-gamble rule); `GET /api/myboo/agent` serves the docs and the audit.
+
+**Ledger persistence:** `boo_store.py` mirrors her files to the private dataset `AIBRUH/big-proppa-lake` (`myboo/`)
+after every change and pulls them at startup. **It only runs when an `HF_TOKEN` secret (write access) is set on
+the Space, and that has NOT been set** (a user decision). Until then a rebuild wipes the Space's copy.
+
+**The desk** (`boo_desk.py`, `GET /api/myboo/desk`, DESK tab): Central-time mode (PREP DAY / GAME DAY / LIVE /
+RECORDING), NFL + FBS college games from ESPN's public scoreboard (one date per request; ranked and SEC flagged),
+slips riding per game, and the logic scorecard (effort legs vs TD legs, real money vs board).
+
+**Grading additions:** kicker points (`kickpts`) and spreads in `slip_alerts.eval_leg`; `SHIT (TD GAMBLE)`
+verdict; TD legs are never graded as science. Recap defence wording handles split defences; game-total and
+moneyline legs no longer invent a team called TOTAL.
+
+**RED ZONE EFFORT (`red_zone.py`):** from NFL week 4 (`TD_PROPS_OFF_FROM_WEEK`) no touchdown-scorer leg is built.
+Each TD slot becomes that player's yardage rung (rushing for RB/QB, receiving for WR/TE) that pays about what his
+TD paid and that the Big Proppa Line rates at least as likely. Wired into the Throwdown/Monday builds, the featured
+parlay and the hunt questions; TD questions to deep-dive get a policy answer. FanDuel alt-ladder rows are only used
+for the team's next game (the lake holds the 2026-09-26 ladder, which is stale; refresh with
+`scripts/refresh_fanduel_alts.py`, which costs Odds API credits). Where no ladder exists the price shown is his TD
+price and is marked estimated (take the matching rung in the FanDuel app).
+
+**Open:** the $1 FanDuel slip (+7110) screenshot showed only 7 of its legs, so any legs above the fold are not
+recorded. College football has awareness only (no props, no grading) because no CFBD key is set.
+
 ## 6. What Phase 1 still needs before it's "done" (per the user's own framing)
 
 As of this writing, the user has not yet declared Phase 1 complete. Sections

@@ -66,6 +66,11 @@ def _warm_caches() -> None:
 _warm_caches()
 
 try:
+    import boo_store as _boo_store
+    _boo_store.pull()                # bring her ledger back after a redeploy, before the watcher starts
+except Exception:
+    pass
+try:
     import slip_alerts as _slip_alerts
     _slip_alerts.start_worker()      # polls Tank01 once a minute when a key is configured
 except Exception:
@@ -343,6 +348,12 @@ def api_canvas_nodes():
     jimmy_sub = (
         f"composite score · Jev {'connected' if jev_connected else 'disconnected'}"
     )
+    try:
+        import slip_recap
+        _a = slip_recap.audit_all()
+        boo_sub = f"authority · {_a['checked']} slips recorded · {_a['compliant']}/{_a['checked']} by the book"
+    except Exception:
+        boo_sub = "authority · reports every slip"
 
     return {
         "nodes": [
@@ -369,8 +380,27 @@ def api_canvas_nodes():
                 "sub": jimmy_sub,
                 "chips": ["Jev"],
             },
+            {
+                "id": "my-boo",
+                "type": "expert",
+                "name": "MY BOO",
+                "sub": boo_sub,
+                "chips": ["SKILL.md", "PROCEDURE.md"],
+            },
         ]
     }
+
+
+@app.get("/api/myboo/agent")
+def api_myboo_agent():
+    """MY BOO's node: her zero-deviation SKILL.md and PROCEDURE.md, plus live compliance and ledger-mirror status."""
+    import boo_store, slip_recap
+    root = Path(__file__).resolve().parent / "agents" / "myboo"
+    read = lambda n: (root / n).read_text() if (root / n).exists() else ""   # noqa: E731
+    audit = slip_recap.audit_all()
+    return {"skill": read("SKILL.md"), "procedure": read("PROCEDURE.md"),
+            "audit": {"checked": audit["checked"], "compliant": audit["compliant"], "violations": audit["violations"]},
+            "ledgerMirror": boo_store.status()}
 
 
 @app.get("/api/matchups")
@@ -719,6 +749,13 @@ def api_myboo_settle():
     return myboo_mod.settle()
 
 
+@app.get("/api/myboo/desk")
+def api_myboo_desk(game_id: str | None = None, week: int | None = None):
+    """MY BOO's desk: Central-time clock, NFL + college matchup awareness, slips riding, and the logic scorecard."""
+    import boo_desk
+    return {"clock": boo_desk.clock(), "scorecard": boo_desk.scorecard(game_id=game_id, week=week)}
+
+
 @app.get("/api/myboo/alerts")
 def api_myboo_alerts(since: int = 0):
     """In-app alert feed: slips ready to record, halftime/overtime/final checkpoints."""
@@ -767,6 +804,11 @@ def api_myboo_create_ticket(payload: dict):
             stake_units=float(payload.get("stake_units", 1)),
             note=payload.get("note", ""),
         )
+        try:
+            import slip_recap
+            slip_recap.snapshot_open()       # freeze MY BOO's pre-game thesis the moment the slip is logged
+        except Exception:
+            pass
         return {"ticket_id": ticket_id, "status": "created"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -909,11 +951,18 @@ async def jimmy_deep_dive(body: dict):
     NVIDIA cross-validates, JEV scores any specific claims found.
     Body: {"query": "Which RBs have the best spot this week?"}
     """
-    if jimmy_bpl.JIMMY_LLM_PAUSED:
-        return {"error": _PAUSED["message"], "paused": True}
     query = (body.get("query") or "").strip()
     if not query:
         return {"error": "query is required"}
+    import re, red_zone
+    wk = next((g["week"] for g in bpl_mod.next_games().values()), None)
+    if red_zone.td_props_off(wk) and re.search(r"\b(touchdowns?|tds?|anytime|first (td|score)|who (will )?scores?)\b", query, re.I):
+        return {"policy": "NO_TD_QUERIES", "answer": (
+            "Touchdown-scorer questions are off for the NFL from week 4: who scores is the offensive coordinator's call "
+            "at the goal line, not something the stats can see. Ask about the effort instead (rushing or receiving "
+            "yards, receptions, targets); the RED ZONE EFFORT legs on the slips price those like the player's TD.")}
+    if jimmy_bpl.JIMMY_LLM_PAUSED:
+        return {"error": _PAUSED["message"], "paused": True}
     return intelligence.deep_dive(query)
 
 

@@ -296,6 +296,14 @@ _cache:      dict | None = None
 _cache_date: str         = ""
 
 
+def bpl_next_week() -> list[int]:
+    try:
+        import bpl
+        return [g["week"] for g in bpl.next_games().values()][:1]
+    except Exception:
+        return []
+
+
 def hunt() -> dict:
     global _cache, _cache_date
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -418,7 +426,10 @@ def _run_hunt(today: str) -> dict:
     all_legs: list[dict] = []
     skipped = []
 
-    for pos, market, direction, line, label, def_unit in ALL_QUESTIONS:
+    import red_zone
+    _wk = next(iter(bpl_next_week()), None)
+    _qs = [q for q in ALL_QUESTIONS if not (red_zone.td_props_off(_wk) and q[1] in red_zone.TD_MARKETS)]
+    for pos, market, direction, line, label, def_unit in _qs:
         players = roster.get(pos, [])
         if not players:
             skipped.append({"question": label, "reason": f"no {pos} on slate"})

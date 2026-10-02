@@ -41,6 +41,8 @@ export const api = {
   parlaysHistoryWeek: (weekId: string) => get<Record<string, ParlaySlip>>(`/api/parlays/history/${weekId}`),
   parlaysSnapshot: () => fetch(`${BASE}/api/parlays/snapshot`, { method: "POST" }).then(r => r.json()),
   myBooSummary: () => get<any>("/api/myboo/summary"),
+  myBooAgent: () => get<any>("/api/myboo/agent"),
+  myBooDesk: () => get<any>("/api/myboo/desk"),
   myBooAlerts: (since = 0) => get<{ latest: number; alerts: BooAlert[] }>(`/api/myboo/alerts?since=${since}`),
   myBooAlertsPoll: () => fetch(`${BASE}/api/myboo/alerts/poll`, { method: "POST" }).then(r => r.json()),
   myBooRecaps: (week?: number) => get<{ recaps: SlipRecap[] }>(`/api/myboo/recaps${week ? `?week=${week}` : ""}`),

@@ -838,6 +838,26 @@ def build(game_id: Optional[str] = None) -> dict:
         "alt_line":    _alt_line(game_id),
     }
 
+    # No touchdown-scorer legs from NFL week 4 on: every TD slot becomes that player's RED ZONE EFFORT leg.
+    import red_zone
+    if red_zone.td_props_off(int(info["week"]) if info and info.get("week") else None):
+        titles = {"anytime_td": "RED ZONE EFFORT", "first_td": "EFFORT + OVER"}
+        notes = {"anytime_td": "Instead of guessing who scores, ride the yards it takes to get to the red zone. Each leg pays like that player's TD.",
+                 "first_td": "Best effort leg on the board plus the game going over."}
+        for k, sl in list(slips.items()):
+            legs = sl["legs"]
+            if k == "first_td":
+                eff = red_zone.swap_td_legs(_td_legs(game_id, "anytd"), game_id)
+                legs = sorted(eff, key=lambda l: -l["probability"])[:1] + total
+            elif any(red_zone._has_td(l) for l in legs):
+                legs = red_zone.swap_td_legs(legs, game_id)
+            else:
+                continue
+            if len(legs) < 2:                      # a swap can leave a slip short: top up with the best effort legs
+                have = {l["name"] for l in legs}
+                legs = legs + [l for l in sorted(pool, key=lambda l: -l["probability"]) if l["name"] not in have][:2 - len(legs)]
+            slips[k] = _slip(sl["id"], titles.get(k, sl["title"]), legs, notes.get(k, sl.get("note", "")))
+
     # Crazy Horse: 7-leg mega parlay built from the best legs already on the page.
     # One player per leg — dedupe across all above slips, ranked by probability.
     _ch_pool: list[dict] = []

@@ -74,6 +74,23 @@ def _next_ticket_id(order_type: str, week: int, season: int) -> str:
     return f"MB-{season}-WK{week:02d}-{tag}{n:04d}"
 
 
+def _resolve_game(leg: dict, week: int) -> dict:
+    """Attach game_id / game_date from the schedule when a hand-logged leg only names a team.
+    Without a game_id the live grader cannot find the leg, so every leg gets one if the schedule knows it."""
+    if leg.get("game_id"):
+        return {}
+    team = (leg.get("team") or "").upper().strip()
+    date = leg.get("game_date") or ""
+    sched = _GOLD / "schedule.csv"
+    if not team or not sched.exists():
+        return {}
+    with open(sched, newline="") as f:
+        rows = [r for r in csv.DictReader(f) if team in (r.get("home_team"), r.get("away_team"))]
+    hit = next((r for r in rows if date and r.get("game_date") == date), None) \
+        or next((r for r in rows if str(r.get("week")) == str(week) and r.get("game_type", "REG") == "REG"), None)
+    return {"game_id": hit["game_id"], "game_date": hit["game_date"], "team": team} if hit else {}
+
+
 def create_ticket(
     order_type: str,          # "POW" or "SIM"
     name: str,
@@ -95,6 +112,7 @@ def create_ticket(
         for t in csv.DictReader(f):
             if (t["name"], str(t["season"]), str(t["week"])) == (name, str(season), str(week)):
                 return t["ticket_id"]
+    legs = [{**l, **_resolve_game(l, week)} for l in legs]
     ticket_id = _next_ticket_id(order_type, week, season)
     now = datetime.now(timezone.utc).isoformat()
 

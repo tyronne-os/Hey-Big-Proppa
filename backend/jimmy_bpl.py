@@ -199,7 +199,8 @@ def _scored_sides() -> list[dict]:
         for team in (r["home"], r["away"]):
             pid = idx.get((data.normalize_name(r["player_name"]), team))
             game = nxt.get(team)
-            if pid and game:
+            # the ladder must be for the team's NEXT game -- an old week's ladder is stale, not a price
+            if pid and game and game["opp"] in (r["home"], r["away"]):
                 row = usable(pid, r["player_name"], team, market)
                 if row:
                     dec = _dec(float(r["price_american"]))
