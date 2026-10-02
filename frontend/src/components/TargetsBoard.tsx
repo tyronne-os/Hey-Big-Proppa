@@ -8,7 +8,7 @@ import { api } from "../api";
  * (who the second look is, and why).
  */
 
-type Log = { week: number; opp: string; tgt: number; rec: number; yds: number; big: number; src: string };
+type Log = { week: number; season?: number; opp: string; tgt: number; rec: number; yds: number; big: number; src: string };
 type Tree = {
   team: string;
   top: { playerId: string; name: string; pos: string; role: string; look: string | null; teamRank: number; nflRank: number; tgtPerGame: number; shareSeason: number; shareL3: number; bigPlays: number; tpi: number; projTargets: number }[];
@@ -261,7 +261,16 @@ function TargetCard({ r, tree, rows, onBack, onPick, onOpenPlayer }: { r: Target
             })}
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
-            {r.log.map(l => <div key={l.week} style={{ flex: "1 1 0", maxWidth: 90, textAlign: "center", fontSize: 11, color: C.mute }}>Wk {l.week}<br />{l.opp}{l.big ? ` · ${l.big}×20+` : ""}</div>)}
+            {r.log.map(l => {
+              const is2026 = !l.season || l.season >= 2026;
+              return (
+                <div key={`${l.season}-${l.week}`} style={{ flex: "1 1 0", maxWidth: 90, textAlign: "center", fontSize: 11, color: is2026 ? C.goldHi : C.mute }}>
+                  <span style={{ fontWeight: is2026 ? 800 : 400 }}>Wk {l.week}</span>
+                  {is2026 && <span style={{ fontSize: 9, marginLeft: 3, color: C.gold, fontWeight: 700, letterSpacing: "0.04em" }}>&#x2019;26</span>}
+                  <br />{l.opp}{l.big ? ` · ${l.big}×20+` : ""}
+                </div>
+              );
+            })}
           </div>
           <div style={{ fontSize: 11, color: C.mute, marginTop: 6 }}>{r.log.length} games this season{r.rookie ? <span style={{ color: C.gold, fontWeight: 700 }}> · ROOKIE — no 2025 data, this chart starts from Week 1</span> : r.priorGames > 0 ? ` (${r.priorGames} from last season)` : ""}; the lake has weeks 1–2, weeks 3–4 come from the Tank01 box scores.</div>
 
