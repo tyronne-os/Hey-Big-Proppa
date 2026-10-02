@@ -243,6 +243,21 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
           <div style={{ height: 8, flex: "0 0 8px" }} />
 
           <div style={{ display: "flex", gap: 6, padding: "0 20px 10px", flexWrap: "wrap", flex: "0 0 auto" }}>
+            {/* HOME — landing page */}
+            <a
+              href="/home/index.html"
+              style={{
+                display: "inline-flex", alignItems: "center",
+                height: 32, padding: "0 14px", borderRadius: 999,
+                border: "1px solid #c9a54e",
+                background: "rgba(201,165,78,0.14)",
+                color: "#f1dc92",
+                fontSize: 12, fontWeight: 800, letterSpacing: "0.1em",
+                textDecoration: "none", cursor: "pointer",
+              }}
+            >
+              HOME
+            </a>
             {/* Standalone page links — navigate away */}
             {STANDALONE_LINKS.map(({ id, label, href }) => (
               <Link

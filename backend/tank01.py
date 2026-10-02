@@ -475,7 +475,8 @@ def get_live_boxscore(game_id: str, fantasy: bool = False) -> dict | None:
     Live box score for one game (Tank01 gameID like '20261001_PIT@CLE').
     Short 45s cache so a 60s poller always sees fresh numbers. Returns the raw 'body' dict or None.
     """
-    raw = _get("getNFLBoxScore", {"gameID": game_id, "playByPlay": "false",
+    # play-by-play rides along on the same call, so MY BOO's high-production tracker costs no extra request
+    raw = _get("getNFLBoxScore", {"gameID": game_id, "playByPlay": "true",
                                        "fantasyPoints": "true" if fantasy else "false"}, ttl=45)
     if not raw:
         return None

@@ -387,6 +387,21 @@ def poll(source: Callable[[dict], dict | None] = tank01_source, auto_record: boo
             if live and live["status"] != "PRE":
                 lives[gid] = live
 
+        # HIGH PRODUCTION: anyone who beats his FanDuel line by the middle of the second quarter, and every 20+ yard play
+        try:
+            import big_plays
+            for gid in lives:
+                g = sched.get(gid)
+                hp = big_plays.record(g, ttl=45) if g else None
+                for c in (hp or {}).get("early_clears", []):
+                    a = _fire(store, f"HP:{gid}:{c['pid']}:{c['stat']}", "HIGH_PRODUCTION",
+                              f"Early clear — {c['player']} ({c['team']})",
+                              f"Beat his {c['line']:g} {c['label']} line at {c['at']}, before the middle of the second quarter.",
+                              game=gid)
+                    if a: new.append(a)
+        except Exception:
+            pass
+
         for gid, live in lives.items():
             score = f"{live['away']} {int(live['away_pts'])}, {live['home']} {int(live['home_pts'])}"
             riding = [t for t in tickets if any(l["game_id"] == gid for l in by_t.get(t["ticket_id"], []))]

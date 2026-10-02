@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 
 const TABS = [
-  { id: "leaders",  label: "LEADERS",           href: "/leaders" },
+  { id: "leaders",  label: "LEADERS · TARGETS", href: "/leaders?cat=targets" },
   { id: "matchups", label: "MATCHUPS",           href: "/matchups" },
   { id: "ramp",     label: "RAMP",               href: "/ramp" },
   { id: "parlay",   label: "THROWDOWN THURSDAY", href: "/throwdown" },

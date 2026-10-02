@@ -302,6 +302,14 @@ def player_trust(player_id: str) -> dict | None:
     }
 
 
+def _targets(player_id: str) -> dict | None:
+    try:
+        import targets
+        return targets.player(player_id)
+    except Exception:
+        return None
+
+
 def _fantasy(player_id: str) -> dict | None:
     try:
         import fantasy
@@ -352,6 +360,7 @@ def player_prop_chart(player_id: str, market_slug: str) -> dict:
         "bpl": official,
         "trust": player_trust(player_id),
         "fantasy": _fantasy(player_id),
+        "targets": _targets(player_id),
         "prop": PROP_LABELS.get(market_slug, market_slug),
         "marketSlug": market_slug,
         "line": line,

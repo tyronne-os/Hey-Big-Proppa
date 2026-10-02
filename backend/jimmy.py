@@ -512,6 +512,10 @@ def _qb_pressure_signal(player_id: str, market_slug: str | None) -> float | None
 
 
 _LESSONS_FILE = Path(__file__).parent.parent / "lake/gold/nfl/jimmy_lessons.json"
+# The lead-weighted stat: targets count double on catch markets before any lesson. MY BOO's Tuesday batch
+# multiplies these defaults by what the results earn (0.7x to 1.3x).
+TARGET_MARKETS = {"recs", "recyds", "rushrec"}
+DEFAULT_WEIGHTS = {"targets": 2.0}
 _lessons_cache: tuple[float, dict] = (0.0, {})
 
 
@@ -558,6 +562,15 @@ def score_components(player_id: str, hit_rate: float | None, market_slug: str | 
     pressure_sig = _qb_pressure_signal(player_id, market_slug)
     if pressure_sig is not None:
         comp["qb_pressure"] = pressure_sig
+    # TARGETS RULES: the Target Power Index leads every catch market (see targets.py; default weight 2.0)
+    if market_slug in TARGET_MARKETS:
+        try:
+            import targets
+            tsig = targets.signal(player_id)
+        except Exception:
+            tsig = None
+        if tsig is not None:
+            comp["targets"] = tsig
     # Fantasy points: L5/season form scaled by the opponent's fantasy rank vs this position (live during games)
     try:
         import fantasy
@@ -594,9 +607,9 @@ def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None 
 
     # MY BOO's Tuesday batch tunes these: component weights (default 1.0) and a small per-market bias.
     L = lessons()
-    w = L.get("weights", {})
-    wsum = sum(w.get(k, 1.0) for k in comp)
-    score = sum(v * w.get(k, 1.0) for k, v in comp.items()) / wsum
+    w = {k: DEFAULT_WEIGHTS.get(k, 1.0) * L.get("weights", {}).get(k, 1.0) for k in comp}
+    wsum = sum(w.values())
+    score = sum(v * w[k] for k, v in comp.items()) / wsum
     score += max(-0.05, min(0.05, L.get("market_bias", {}).get(market_slug or "", 0.0)))
 
     # Redzone boost for TD props

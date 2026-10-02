@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { BplPlayerLine, LeaderRow, LeadersResponse } from "../types";
+import TargetsBoard from "./TargetsBoard";
 
-const CATEGORIES = ["USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RECEIVING", "PASSING", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
+const CATEGORIES = ["TARGETS", "USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RECEIVING", "PASSING", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
 const SCORE_LABEL: Record<string, string> = {
   "USAGE INDEX": "USAGE INDEX",
   "BREAKOUT": "BREAKOUT SCORE",
@@ -39,10 +40,19 @@ function Photo({ url, name, size }: { url?: string | null; name: string; size: n
 }
 
 export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: string, market?: string) => void }) {
-  const [category, setCategory] = useState("RUSHING");
+  // TARGETS is the lead board ("targets rule predictions"); /leaders?cat=rushing opens another category
+  const [category, setCategory] = useState(() => {
+    try {
+      const c = new URLSearchParams(window.location.search).get("cat")?.toUpperCase().replace(/-/g, " ");
+      if (c && CATEGORIES.includes(c)) return c;
+    } catch { /* */ }
+    return "TARGETS";
+  });
   const [data, setData] = useState<LeadersResponse | null>(null);
 
   useEffect(() => {
+    if (category === "TARGETS") return;
+    setData(null);
     api.leaders(category).then(setData).catch(() => setData(null));
   }, [category]);
 
@@ -66,6 +76,8 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
         })}
       </div>
 
+      {category === "TARGETS" && <TargetsBoard onOpenPlayer={onOpenPlayer} />}
+      {category !== "TARGETS" && <>
       {!data && <div style={{ color: C.mute, fontSize: 15 }}>Loading...</div>}
 
       {data && data.sourceStatus !== "ok" && (
@@ -100,6 +112,7 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
       {data && data.sourceStatus === "ok" && data.rows && !data.bplVersion && (
         <RowsView rows={data.rows} onOpenPlayer={onOpenPlayer} scoreLabel={SCORE_LABEL[category]} isTeam={category === "DEFENSE TOXICITY"} />
       )}
+      </>}
     </div>
   );
 }

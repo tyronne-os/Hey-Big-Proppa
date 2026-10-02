@@ -8,9 +8,11 @@
 export default function SmokeBadge({
   size = 34,
   ring = true,
+  circle = true,
 }: {
   size?: number;
   ring?: boolean;
+  circle?: boolean;
 }) {
   const emberFontSize = size / 40;
   const inner = (
@@ -71,9 +73,11 @@ export default function SmokeBadge({
     </div>
   );
 
+  const radius = circle ? "50%" : 8;
+
   if (!ring) {
     return (
-      <div style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", position: "relative" }}>
+      <div style={{ width: size, height: size, borderRadius: radius, overflow: "hidden", position: "relative" }}>
         {inner}
       </div>
     );
@@ -85,19 +89,19 @@ export default function SmokeBadge({
         width: size,
         height: size,
         flex: `0 0 ${size}px`,
-        borderRadius: "50%",
+        borderRadius: radius,
         padding: 2,
         boxSizing: "border-box",
-        background: "var(--bp-badge-ring)",
+        background: circle ? "var(--bp-badge-ring)" : "transparent",
       }}
     >
       <div
         style={{
           width: "100%",
           height: "100%",
-          borderRadius: "50%",
+          borderRadius: radius,
           overflow: "hidden",
-          border: "1.5px solid var(--bp-page-bg)",
+          border: circle ? "1.5px solid var(--bp-page-bg)" : "none",
           boxSizing: "border-box",
           position: "relative",
         }}

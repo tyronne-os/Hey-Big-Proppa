@@ -12,6 +12,7 @@ Run:
 from __future__ import annotations
 
 import os
+import json
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -398,7 +399,15 @@ def api_myboo_agent():
     root = Path(__file__).resolve().parent / "agents" / "myboo"
     read = lambda n: (root / n).read_text() if (root / n).exists() else ""   # noqa: E731
     audit = slip_recap.audit_all()
-    return {"skill": read("SKILL.md"), "procedure": read("PROCEDURE.md"),
+    try:
+        import targets, big_plays
+        tgt = targets.digest()
+        hp_dir = big_plays.OUT_DIR
+        latest = sorted(hp_dir.glob("*.json"), key=lambda p: p.stat().st_mtime)[-3:] if hp_dir.exists() else []
+        tgt["highProduction"] = [{k: v for k, v in json.loads(p.read_text()).items() if k in ("game_id", "label", "early_clears", "big_plays")} for p in latest]
+    except Exception as e:
+        tgt = {"error": type(e).__name__}
+    return {"skill": read("SKILL.md"), "procedure": read("PROCEDURE.md"), "targets": tgt,
             "audit": {"checked": audit["checked"], "compliant": audit["compliant"], "violations": audit["violations"]},
             "ledgerMirror": boo_store.status()}
 
@@ -754,6 +763,37 @@ def api_myboo_desk(game_id: str | None = None, week: int | None = None):
     """MY BOO's desk: Central-time clock, NFL + college matchup awareness, slips riding, and the logic scorecard."""
     import boo_desk
     return {"clock": boo_desk.clock(), "scorecard": boo_desk.scorecard(game_id=game_id, week=week)}
+
+
+@app.get("/api/targets")
+def api_targets(force: bool = False):
+    """THE TARGETS BOARD: Jimmy's target line for every pass catcher, ordered from the biggest projected breakout
+    to the player the defense is projected to shut down. Team target trees and second looks are in `teams`."""
+    import targets
+    b = targets.board(force)
+    return {**b, "rows": [{k: v for k, v in r.items() if k != "teamTree"} for r in b["rows"]]}
+
+
+@app.get("/api/targets/{player_id}")
+def api_target_player(player_id: str):
+    """One player's target card: his line, projection, last games, defense matchup and his team's top five targets."""
+    import targets
+    r = targets.player(player_id)
+    if not r:
+        raise HTTPException(404, "no target data for this player")
+    b = targets.board()
+    mates = sorted((x for x in b["rows"] if x["team"] == r["team"]), key=lambda x: x["teamRank"])[:5]
+    return {**r, "teammates": [{k: v for k, v in x.items() if k != "teamTree"} for x in mates]}
+
+
+@app.get("/api/high-production/{game_id}")
+def api_high_production(game_id: str):
+    """MY BOO's high-production log for one game: early line clears (by mid-Q2) and every 20+ yard play."""
+    import big_plays
+    hp = big_plays.stored(game_id)
+    if not hp:
+        raise HTTPException(404, "no high-production log for this game")
+    return {k: v for k, v in hp.items() if k not in ("players", "box")}
 
 
 @app.get("/api/myboo/training")

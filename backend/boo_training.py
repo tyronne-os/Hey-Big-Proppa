@@ -95,6 +95,7 @@ def examples() -> tuple[list[dict], list[dict]]:
                           "ratio": round(used / avg, 3) if used is not None and avg else None},
                 "volume_held": f.get("volume_held"), "env_held": f.get("env_held"), "thesis_held": f.get("thesis_held"),
                 "miss_type": f.get("miss_type"), "coach_call": th["market"] in TD_MARKETS,
+                "cleared_at": f.get("cleared_at"),
                 "attack": {"cat": cat, "rank": th.get("attack_rank"), "expected": th.get("attack_allowed"),
                            "actual": d["actual"] if d else None, "ratio": d["ratio"] if d else None},
                 "game": game, "slip_verdict": h.get("label"),

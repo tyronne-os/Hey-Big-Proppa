@@ -758,8 +758,22 @@ def build_recap(ticket: dict, legs: list[dict], snap: dict | None = None, overla
         facts_text += "\n\n" + _game_script_text(script)
     if dfn and _defense_audit_text(dfn):
         facts_text += "\n\n" + _defense_audit_text(dfn)
-    for f in facts:
+    hp = None
+    try:
+        import big_plays
+        hp = big_plays.stored(legs[0].get("game_id", ""))
+        if hp and not partial and big_plays.summary_text(hp):
+            facts_text += "\n\n" + big_plays.summary_text(hp)
+    except Exception:
+        hp = None
+    for f, th in zip(facts, [th_by_key.get((l["player_name"], l["market"], _f(l.get("line")))) or {} for l in legs]):
         f["miss_type"] = _miss_type(f)
+        try:
+            import big_plays
+            c = big_plays.leg_cleared_at(hp, th.get("player_id"), f["market"])
+            f["cleared_at"] = {"at": c["at"], "elapsed": c["elapsed"], "early": c["early"]} if c else None
+        except Exception:
+            f["cleared_at"] = None
     v = _verdict(ticket["status"], [f for f in facts if f["status"] in ("HIT", "MISS")], snap, partial)
     hind = (f"Hindsight: {v['label']}. {v['text']} Process score {v['process_score'] if v['process_score'] is not None else 'n/a'} "
             f"(share of effort legs where both the defensive matchup and the player's usage played out the way I wrote them down; scoring legs are not graded).")
@@ -773,7 +787,7 @@ def build_recap(ticket: dict, legs: list[dict], snap: dict | None = None, overla
     stage = "FINAL" if ticket["status"] in ("SETTLED_WIN", "SETTLED_LOSS") else "IN PROGRESS"
     return {**base, "stage": stage, "partial": partial, "setup": setup, "facts": facts_text, "hindsight": {**v, "line": hind},
             "word_count": _words(full), "features": {"legs": snap["legs"], "game": script, "defense_audit": dfn, "whatif": wi, "facts": [
-                {k: f.get(k) for k in ("player", "market", "status", "actual", "used", "usage_avg", "volume_held", "env_held", "thesis_held", "miss_type", "scrimmage")} for f in facts]}}
+                {k: f.get(k) for k in ("player", "market", "status", "actual", "used", "usage_avg", "volume_held", "env_held", "thesis_held", "miss_type", "scrimmage", "cleared_at")} for f in facts]}}
 
 
 # ---------------------------------------------------------------------------

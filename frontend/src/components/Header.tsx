@@ -20,7 +20,7 @@ export default function Header({
 
   return (
     <div style={{ height: 52, flex: "0 0 52px", display: "flex", alignItems: "center", gap: 12, padding: "0 20px", borderBottom: "1px solid #241e2c", background: "var(--bp-page-bg)" }}>
-      <SmokeBadge size={34} />
+      <SmokeBadge size={50} ring={false} circle={false} />
       <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: "0.02em", whiteSpace: "nowrap", background: "var(--bp-wordmark-gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
         HEY BIG PROPPA!
       </span>

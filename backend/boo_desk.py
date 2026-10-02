@@ -76,6 +76,16 @@ def _parse(ev: dict, league: str) -> dict:
         }
     odds = (comp.get("odds") or [{}])[0]
     away, home = sides.get("away", {}), sides.get("home", {})
+
+    def close(group: str, side: str, key: str):
+        try:
+            return odds[group][side]["close"][key]
+        except (KeyError, TypeError):
+            return None
+    for side, s in (("home", home), ("away", away)):
+        if s:
+            s["ml"] = close("moneyline", side, "odds")
+            s["spread"] = close("pointSpread", side, "line")
     return {
         "league": league, "espnId": ev.get("id"), "label": f"{away.get('abbr')} @ {home.get('abbr')}",
         "kickoffCT": kick.strftime("%a %b %-d · %-I:%M %p CT"), "kickoffISO": kick.isoformat(), "dateCT": kick.date().isoformat(),
