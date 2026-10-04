@@ -37,6 +37,17 @@ def td_props_off(week: int | None, sport: str = "NFL") -> bool:
     return sport == "NFL" and week is not None and int(week) >= TD_PROPS_OFF_FROM_WEEK
 
 
+def td_blocked(week: int | None = None) -> bool:
+    """HARD RULE gate used at every leg-building and ticket-intake point. A touchdown-scorer leg is blocked
+    whenever the week is week 4+ OR unknown -- an unknown week must never let a TD leg through."""
+    return week is None or int(week) >= TD_PROPS_OFF_FROM_WEEK
+
+
+def strip_td_legs(legs: list[dict]) -> list[dict]:
+    """Drop any touchdown-scorer leg (including combos that contain one)."""
+    return [l for l in legs if not _has_td(l)]
+
+
 def _rungs(market: str) -> list[float]:
     if market == "passyds":
         return [x + 0.5 for x in range(149, 400, 25)]

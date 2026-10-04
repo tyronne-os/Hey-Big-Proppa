@@ -37,3 +37,15 @@ Backend needs `backend/.venv` (`pip install -r backend/requirements.txt`).
 - `lake/gold/espn/` is not persisted (see table). Polls/portal "seen" state resets when the Space restarts.
 - Local runs of the backend rewrite tracked lake files (`tr_runs.json`, `myboo_*`) — review before committing; they are runtime state.
 - `README.md` deployment text mentions a Node build stage; the actual `Dockerfile` uses a pre-built `dist/`.
+
+## Hard rules (do not relax without the founder)
+
+- **No touchdown-scorer legs.** `backend/red_zone.py` is the single source of truth (`TD_MARKETS`, `td_blocked()`, `strip_td_legs()`, `effort_leg()`). We bet the effort that reaches the red zone (rush/rec yards), not who scores. Enforced at: `parlay_engine.py` (`QUERIES` stripped, `_leg()` raises, output filtered), `parlays.py` `beast_mode()` (empty), `myboo.create_ticket()` (rejects), `jimmy_hunt.py` (unknown week = blocked). Unknown week counts as blocked.
+
+## Status as of 2026-10-04 (handoff)
+
+- JEV: wired in `parlay_engine._leg()` (50/50 blend with Jimmy). NOT wired into MY BOO (`myboo.py`, `boo_*.py`). Needs `JEV_API_KEY` on the HF Space.
+- ESPN/TeamRankings blocked from the Claude cloud container (network policy) — test locally or allow `site.api.espn.com`, `site.web.api.espn.com`, `a.espncdn.com`, `www.teamrankings.com`.
+- Open security item: parlay passcode is hardcoded in `ParlaysPage.tsx` and `SundayParlaysPage.tsx` — move to a backend check.
+- Stale "JEV NOT WIRED" comments in `jimmy.py` and `main.py`.
+- Branch `claude/tender-gauss-96z5nu` is ahead of `main`; HF Space needs a fresh `npm run build` `dist/` before redeploy.

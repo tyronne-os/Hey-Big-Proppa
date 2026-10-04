@@ -52,6 +52,7 @@ import data
 import jev
 import jimmy
 import matchup
+import red_zone
 from odds import compute_parlay
 
 WAGER = 5.0
@@ -390,6 +391,8 @@ def _player_prob(player_id: str, market_slug: str, threshold: float | None,
 def _leg(player_id: str, name: str, team: str, market: str, direction: str,
          label: str, prob: float, l5: float | None, price: float,
          correlation_note: str = "") -> dict:
+    if market in red_zone.TD_MARKETS:       # HARD RULE: no touchdown-scorer legs, ever (see red_zone.py)
+        raise ValueError(f"TD-scorer market '{market}' is banned; use red_zone.effort_leg")
     flag = breakout.breakout_by_player().get(player_id, {}).get("flag")
     if flag in ("BREAKOUT CANDIDATE", "REGRESSION RISK"):
         correlation_note = f"{correlation_note} | {flag}" if correlation_note else flag
@@ -522,8 +525,6 @@ def find_coaches_son(dim: dict[str, dict]) -> list[dict]:
         plan = [
             (yds_market, f"Inside-5 share {pct_i5:.0%} | {flag} | wins its matchup vs {opp}"),
             ("recs", "Check-down/slot target in stress situations"),
-            ("anytd", f"Inside-5 intra share {pct_i5:.0%} | TD rate per RZ opp: "
-                      f"{float(tc.get('td_per_redzone_opp') or 0):.2f}"),
         ]
         for market, note in plan:
             m = _measure(pid, name, market, "over", ib_score)
@@ -692,10 +693,10 @@ def find_volume_stack(dim: dict[str, dict]) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 _HERO_MARKETS: dict[str, list[str]] = {
-    "QB": ["passyds", "passtd", "rushyds"],
-    "WR": ["recyds", "recs", "anytd"],
-    "TE": ["recyds", "recs", "anytd"],
-    "RB": ["rushyds", "rushrec", "recs", "anytd"],
+    "QB": ["passyds", "rushyds"],
+    "WR": ["recyds", "recs"],
+    "TE": ["recyds", "recs"],
+    "RB": ["rushyds", "rushrec", "recs"],
 }
 
 
@@ -750,6 +751,9 @@ def run_engine() -> list[dict]:
     """
     dim = data.player_dimension()
 
+    # HARD RULE: TD-scorer queries never run. Finders read QUERIES, so strip the banned markets in place.
+    QUERIES[:] = [q for q in QUERIES if q["market"] not in red_zone.TD_MARKETS]
+
     coaches_son = find_coaches_son(dim)
     ib_cascade  = find_ib_cascade(dim)
     vol_stack   = find_volume_stack(dim)
@@ -767,4 +771,6 @@ def run_engine() -> list[dict]:
         seen_pid_sets.append(pids)
         unique.append(slip)
 
-    return unique
+    for s in unique:
+        s["legs"] = red_zone.strip_td_legs(s["legs"])
+    return [s for s in unique if len(s["legs"]) >= 2]

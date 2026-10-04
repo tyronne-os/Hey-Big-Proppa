@@ -94,6 +94,9 @@ def hot_dogs() -> dict:
 
 def beast_mode() -> dict:
     """2 RBs, 2+ total TDs (rushing + receiving) in a game."""
+    import red_zone
+    if red_zone.td_blocked():           # HARD RULE: no TD-scorer slip (see red_zone.py)
+        return _slip("beast-mode", "BEAST MODE", [])
     dim = data.player_dimension()
     rb_ids = [pid for pid, row in dim.items() if row.get("position") == "RB"]
     legs = []

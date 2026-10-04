@@ -107,6 +107,9 @@ def create_ticket(
     Each leg dict must have:
       player_name, team, market, direction, line, odds, probability, game_date
     """
+    import red_zone
+    if red_zone.td_blocked(week) and any(red_zone._has_td(l) for l in legs):   # HARD RULE
+        raise ValueError("TD-scorer legs are banned from week 4 on; use red_zone.effort_leg")
     _ensure_files()
     with open(_TICKETS_FILE, newline="") as f:
         for t in csv.DictReader(f):
