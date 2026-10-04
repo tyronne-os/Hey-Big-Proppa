@@ -59,7 +59,7 @@ export function LegLine({ leg }: { leg: EngineLeg }) {
   const pc = pct >= 75 ? "#2ee6a6" : pct >= 60 ? "#d9b45a" : "#e0782f";
   return (
     <div title={leg.correlationNote} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 14px", borderTop: "1px solid var(--bp-border)" }}>
-      <Avatar leg={leg} size={30} />
+      <Avatar leg={leg} size={48} />
       <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.name}</span>
         <span style={{ fontSize: 11, color: "#f1dc92", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.prop}</span>
@@ -101,7 +101,7 @@ export default function TicketCard({ slip }: { slip: EngineSlip }) {
         <div style={{ display: "flex", alignItems: "center", padding: "0 16px 12px" }}>
           {slip.legs.map((l, i) => (
             <span key={l.playerId + l.market + i} style={{ marginLeft: i ? -12 : 0, zIndex: slip.legs.length - i }}>
-              <Avatar leg={l} size={50} ring={meta.color} />
+              <Avatar leg={l} size={80} ring={meta.color} />
             </span>
           ))}
         </div>

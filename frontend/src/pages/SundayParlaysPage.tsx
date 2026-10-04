@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import SmokeBadge from "../components/SmokeBadge";
 import NavBar from "../components/NavBar";
+import LiveTicker from "../components/LiveTicker";
 import TicketCard, { fromThemed } from "../components/TicketCard";
 import { api } from "../api";
 import type { ParlaySlip } from "../types";
@@ -110,7 +111,7 @@ export default function SundayParlaysPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bp-page-bg)", color: "var(--bp-fg)" }}>
-
+      <LiveTicker />
       {/* Top brand bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16, padding: "20px 24px 12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>

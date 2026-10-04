@@ -6,6 +6,66 @@
 <script src="./support.js"></script>
 </head>
 <body>
+
+<!-- LIVE SCORE TICKER — ESPN public API, no key needed -->
+<div id="bp-ticker" style="position:fixed;top:0;left:0;right:0;z-index:9999;height:32px;overflow:hidden;display:flex;align-items:center;background:#0d0820;border-bottom:1px solid #2a1e40;font:700 11px/1 'SF Pro Text','Segoe UI',system-ui,sans-serif;letter-spacing:0.04em">
+  <style>
+    @keyframes bp-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @keyframes bp-pulse{0%,100%{opacity:.3}50%{opacity:1}}
+    #bp-ticker-track{display:inline-flex;white-space:nowrap;animation:bp-scroll 60s linear infinite}
+    #bp-ticker-track:hover{animation-play-state:paused}
+    .bp-chip{display:inline-flex;align-items:center;gap:7px;padding:0 18px;border-right:1px solid #2a1e40;color:#ece6f2}
+    .bp-chip .bp-live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;animation:bp-pulse 1.2s ease-in-out infinite;flex-shrink:0}
+    .bp-chip .bp-win{color:#f1dc92}
+    .bp-chip .bp-muted{color:#6a5a7a}
+    .bp-chip .bp-state-live{color:#22c55e}
+    .bp-chip .bp-state-final{color:#6a5a7a}
+    .bp-chip .bp-line{color:#d9b45a;font-size:10px}
+    body{padding-top:32px}
+  </style>
+  <div id="bp-ticker-track"><span class="bp-chip bp-muted">LOADING SCORES…</span></div>
+</div>
+<script>
+(function(){
+  var BASE=window.location.origin;
+  var track=document.getElementById('bp-ticker-track');
+  var secs=60;
+  function chip(g){
+    var live=g.status==='LIVE'||g.status==='OT'||g.status==='HALFTIME';
+    var pre=g.status==='PRE';
+    var final=g.status==='FINAL';
+    var half=g.status==='HALFTIME';
+    var state=final?'FINAL':half?'HALF':live?((g.period>=5?'OT':'Q'+g.period)+' '+g.clock):'';
+    var awayW=final&&g.away_score>g.home_score;
+    var homeW=final&&g.home_score>g.away_score;
+    var line=[(g.odds_spread||''),(g.odds_ou?'O/U '+g.odds_ou:'')].filter(Boolean).join(' · ');
+    return '<span class="bp-chip">'
+      +(live?'<span class="bp-live-dot"></span>':'')
+      +'<b class="'+(awayW?'bp-win':'')+'">'+g.away+(pre?'':' '+g.away_score)+'</b>'
+      +'<span class="bp-muted">'+(pre?'@':'–')+'</span>'
+      +'<b class="'+(homeW?'bp-win':'')+'">'+g.home+(pre?'':' '+g.home_score)+'</b>'
+      +(state?'<span class="'+(live?'bp-state-live':'bp-state-final')+'">'+state+'</span>':'')
+      +(line?'<span class="bp-line">'+line+'</span>':'')
+      +'</span>';
+  }
+  function load(){
+    fetch(BASE+'/api/espn/ticker').then(function(r){return r.json();}).then(function(d){
+      var games=d.games||[];
+      if(!games.length){track.innerHTML='<span class="bp-chip bp-muted">NO GAMES TODAY</span>';return;}
+      var anyLive=games.some(function(g){return g.status==='LIVE'||g.status==='OT'||g.status==='HALFTIME';});
+      secs=Math.max(30,games.length*6);
+      var html=games.map(chip).join('');
+      track.innerHTML=html+html;
+      track.style.animation='none';
+      track.offsetHeight;
+      track.style.animation='bp-scroll '+secs+'s linear infinite';
+      setTimeout(load,anyLive?15000:30000);
+    }).catch(function(){setTimeout(load,60000);});
+  }
+  load();
+})();
+</script>
+
 <x-dc>
 <helmet>
 <link rel="stylesheet" href="_ds/klarden-ui-design-system-be9654ae-7b32-4593-ac52-a0fed39c66fe/tokens/colors.css">

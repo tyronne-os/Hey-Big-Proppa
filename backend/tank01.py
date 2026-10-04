@@ -375,7 +375,7 @@ def get_player_info(player_id: str) -> dict:
         "name":      body.get("playerName", body.get("name", "")),
         "team":      body.get("team", ""),
         "position":  body.get("pos", body.get("position", "")),
-        "photoUrl":  (f"https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/{espn_id}.png&w=96&h=70" if espn_id else None),
+        "photoUrl":  (f"https://a.espncdn.com/i/headshots/nfl/players/full/{espn_id}.png" if espn_id else None),
         "jerseyNum": body.get("jerseyNum", ""),
         "height":    body.get("height", ""),
         "weight":    body.get("weight", ""),
