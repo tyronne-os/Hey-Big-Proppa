@@ -249,6 +249,15 @@ def api_parlays_engine():
     return {**built, "mode": "BPL", "version": bpl_mod.BPL_VERSION}
 
 
+@app.get("/api/parlays/early")
+def api_parlays_early(window: str = "early"):
+    """Featured kickoff-window tickets: WR 60 club, RB combos, overs, plus two Crazy Horses. No TD-scorer legs."""
+    import early_slate
+    if window not in early_slate.WINDOWS:
+        raise HTTPException(400, f"window must be one of {sorted(early_slate.WINDOWS)}")
+    return early_slate.build(window)
+
+
 @app.get("/api/jimmy/scan")
 def api_jimmy_scan():
     """Deep-scan funnel for the current slate: sides scored, legs kept per tier, tickets built."""

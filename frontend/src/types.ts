@@ -243,7 +243,15 @@ export interface ParlaySlip {
   boostedAmericanOdds: number;
 }
 
+export interface EarlyResponse {
+  window: string; week: number | null; boostNote: string;
+  games: { gameId: string; away: string; home: string; time: string }[];
+  slips: EngineSlip[]; crazyHorses: EngineSlip[];
+}
+
 export interface EngineLeg {
+  oddsEstimated?: boolean;
+  components?: { market: string; direction: string; line: number | null; odds: number; probability: number }[];
   playerId: string;
   name: string;
   team: string;
@@ -260,6 +268,7 @@ export interface EngineLeg {
 }
 
 export interface EngineSlip {
+  defaultChoice?: "TAKE IT" | "FAKE IT";
   id: string;
   title: string;
   correlationType: "COACHES_SON" | "IB_CASCADE" | "VOLUME_STACK" | "SINGLE_HERO" | "BPL_EDGE" | "SPY_BOY" | "CRAZY_HORSE" | "FEATURED" | "THEMED";

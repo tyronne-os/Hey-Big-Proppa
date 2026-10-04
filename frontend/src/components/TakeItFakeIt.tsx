@@ -14,7 +14,7 @@ function currentNflWeek(): number {
 type TifState = "idle" | "logging" | "logged_pow" | "logged_sim" | "error";
 
 export default function TakeItFakeIt({ slip, light = false }: { slip: EngineSlip; light?: boolean }) {
-  const [choice, setChoice] = useState<"FAKE IT" | "TAKE IT">("FAKE IT");
+  const [choice, setChoice] = useState<"FAKE IT" | "TAKE IT">(slip.defaultChoice ?? "FAKE IT");
   const [state, setState] = useState<TifState>("idle");
   const [ticketId, setTicketId] = useState<string | null>(null);
 
@@ -24,16 +24,16 @@ export default function TakeItFakeIt({ slip, light = false }: { slip: EngineSlip
     const orderType = choice === "TAKE IT" ? "POW" : "SIM";
     const week = slip.week ?? currentNflWeek();
     try {
-      const legs = slip.legs.map(lg => ({
+      const legs = slip.legs.flatMap(lg => (lg.components?.length ? lg.components : [lg]).map(c => ({
         player_name: lg.name,
         team: lg.team,
-        market: lg.market,
-        direction: lg.direction,
-        line: lg.line ?? 0,
-        odds: lg.odds,
-        probability: lg.probability,
+        market: c.market,
+        direction: c.direction,
+        line: c.line ?? 0,
+        odds: c.odds,
+        probability: c.probability,
         game_date: "",
-      }));
+      })));
       const res = await fetch(`${API_BASE}/api/myboo/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
