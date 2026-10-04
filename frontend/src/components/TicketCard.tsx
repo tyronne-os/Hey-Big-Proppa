@@ -30,7 +30,7 @@ export function fromThemed(s: ParlaySlip): EngineSlip {
     combinedDecimalOdds: s.combinedDecimalOdds, payout: s.payout, boostedPayout: s.boostedPayout, boostedAmericanOdds: s.boostedAmericanOdds,
     legs: s.legs.map((l) => ({
       playerId: l.playerId ?? l.teamId ?? l.name, name: l.name, team: l.team ?? "", market: l.market ?? "", direction: l.direction ?? "over",
-      line: l.line ?? null, prop: l.prop, probability: l.probability, l5: l.l5, odds: l.odds, photoUrl: l.photoUrl ?? null, correlationNote: "",
+      line: l.line ?? null, prop: l.prop, probability: l.probability, l5: l.l5, odds: l.odds, photoUrl: l.photoUrl ?? null, matchup: l.matchup, correlationNote: "",
     })),
   } as EngineSlip;
 }
@@ -63,6 +63,7 @@ export function LegLine({ leg }: { leg: EngineLeg }) {
       <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.name}</span>
         <span style={{ fontSize: 11, color: "#f1dc92", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.prop}</span>
+        {leg.matchup && <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", color: "var(--bp-muted)" }}>{leg.matchup}</span>}
       </span>
       <span style={{ fontFamily: MONO, fontSize: 12, color: "#d9b45a", flex: "0 0 auto" }}>{american(leg.odds)}</span>
       <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, color: pc, border: `1px solid ${pc}44`, borderRadius: 5, padding: "2px 6px", flex: "0 0 auto" }}>{pct}%</span>

@@ -41,7 +41,10 @@ function Betslip({ slip }: { slip: EngineSlip }) {
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px", borderTop: i ? "1px solid #efe6cb" : undefined }}>
             <Avatar leg={l} size={44} ring={accent} />
             <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-              <span style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name}</span>
+              <span style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name}</span>
+                {l.matchup && <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", color: "#fffdf6", background: INK, borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap", flex: "0 0 auto" }}>{l.matchup}</span>}
+              </span>
               <span style={{ fontSize: 11, color: accent, fontWeight: 700 }}>{l.prop}{l.oddsEstimated ? " · est. price" : ""}</span>
               {l.workload && <span style={{ fontSize: 10, color: MUTED, lineHeight: 1.35 }}>{l.workload}</span>}
             </span>

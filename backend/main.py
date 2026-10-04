@@ -181,7 +181,8 @@ def api_parlays_all():
             s_.update(meta.get(k, {}))
     except Exception:
         pass
-    return slips
+    import matchup_tag
+    return matchup_tag.tag(slips)
 
 
 @app.get("/api/parlays/history")
@@ -246,6 +247,8 @@ def api_parlays_engine():
             s_.update(meta.get(str(s_["id"]), {}))
     except Exception:
         jimmy_bpl.log_to_myboo(eng)
+    import matchup_tag
+    matchup_tag.tag(eng)
     return {**built, "mode": "BPL", "version": bpl_mod.BPL_VERSION}
 
 

@@ -124,7 +124,9 @@ def _slip(sid: str, title: str, series: str, legs: list[dict], insight: str, def
     legs = red_zone.strip_td_legs(legs)
     if not legs:
         return None
+    import matchup_tag
     for l in legs:
+        matchup_tag.tag_leg(l)
         l["workload"] = _workload(l["playerId"], l["market"], combo=bool(l.get("components"))) if not l.get("sport") else None
     m = compute_parlay([l["odds"] for l in legs], wager=stake, boost=BOOST)
     p = math.prod(l["probability"] for l in legs)
