@@ -102,7 +102,7 @@ def _unlake_games() -> list[dict]:
         hp = big_plays.stored(g["game_id"])
         if (not hp or not hp.get("final") or "box" not in hp) and tank01.available():
             # Only hit Tank01 for recent games (< 72 h old) — older unlaked games skip to avoid burning quota
-            from datetime import datetime, timezone
+            from datetime import timezone
             game_age_h = (datetime.now(timezone.utc).timestamp() - _date_to_ts(g.get("game_date", ""))) / 3600
             if game_age_h < 72:
                 hp = big_plays.record(g, ttl=3600)
