@@ -1,5 +1,6 @@
 """
-Back up lake/gold/nfl/*.csv to the private Hugging Face dataset
+Back up the WHOLE lake (gold/silver/bronze: CSV, JSON, text -- incl. ESPN/college caches, MY BOO
+tickets and Jimmy lessons) to the private Hugging Face dataset
 AIBRUH/big-proppa-lake -- redundancy for the data lake, not a second source of
 truth (GitHub stays canonical). Re-run any time the lake changes.
 
@@ -17,7 +18,7 @@ from pathlib import Path
 from huggingface_hub import HfApi
 
 REPO_ID = "AIBRUH/big-proppa-lake"
-LAKE_DIR = Path(__file__).resolve().parent.parent / "lake" / "gold" / "nfl"
+LAKE_DIR = Path(__file__).resolve().parent.parent / "lake"
 
 README = """---
 license: other
@@ -43,14 +44,14 @@ def main() -> None:
     api.create_repo(REPO_ID, repo_type="dataset", private=True, exist_ok=True)
     api.upload_folder(
         repo_id=REPO_ID, repo_type="dataset",
-        folder_path=str(LAKE_DIR), path_in_repo="lake/gold/nfl",
-        allow_patterns=["*.csv"],
+        folder_path=str(LAKE_DIR), path_in_repo="lake",
+        allow_patterns=["*.csv", "*.json", "*.txt", "*.parquet"],   # not photos: re-fetchable
     )
     api.upload_file(
         repo_id=REPO_ID, repo_type="dataset",
         path_or_fileobj=README.encode(), path_in_repo="README.md",
     )
-    print(f"backed up {sum(1 for _ in LAKE_DIR.glob('*.csv'))} CSVs -> https://huggingface.co/datasets/{REPO_ID}")
+    print(f"backed up {sum(1 for f in LAKE_DIR.rglob('*') if f.is_file() and f.suffix in ('.csv', '.json', '.txt', '.parquet'))} files -> https://huggingface.co/datasets/{REPO_ID}")
 
 
 if __name__ == "__main__":
