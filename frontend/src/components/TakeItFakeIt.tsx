@@ -81,7 +81,7 @@ export default function TakeItFakeIt({ slip, light = false }: { slip: EngineSlip
 
       {/* toggle */}
       {!isLogged && (
-        <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", border: "1px solid var(--bp-border)", flexShrink: 0 }}>
+        <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", border: light ? "1px solid #d9cca3" : "1px solid var(--bp-border)", flexShrink: 0 }}>
           {(["FAKE IT", "TAKE IT"] as const).map(opt => (
             <button
               key={opt}
@@ -89,12 +89,12 @@ export default function TakeItFakeIt({ slip, light = false }: { slip: EngineSlip
               style={{
                 height: 26, padding: "0 10px",
                 background: choice === opt
-                  ? (opt === "TAKE IT" ? "rgba(201,165,78,0.22)" : "rgba(139,92,246,0.18)")
+                  ? (light ? (opt === "TAKE IT" ? "#8a6224" : "#5b3fb0") : (opt === "TAKE IT" ? "rgba(201,165,78,0.22)" : "rgba(139,92,246,0.18)"))
                   : "transparent",
                 border: "none",
                 color: choice === opt
-                  ? (opt === "TAKE IT" ? "#d9b45a" : "#a78bfa")
-                  : "var(--bp-muted)",
+                  ? (light ? "#fffdf6" : opt === "TAKE IT" ? "#d9b45a" : "#a78bfa")
+                  : light ? "#6b6553" : "var(--bp-muted)",
                 fontSize: 10, fontWeight: 800, cursor: "pointer", letterSpacing: "0.08em",
                 transition: "all 0.12s",
               }}
@@ -122,8 +122,8 @@ export default function TakeItFakeIt({ slip, light = false }: { slip: EngineSlip
           style={{
             height: 26, padding: "0 14px", borderRadius: 6, cursor: "pointer",
             border: `1px solid ${isPow ? "#d9b45a" : "#a78bfa"}`,
-            background: isPow ? "rgba(201,165,78,0.14)" : "rgba(139,92,246,0.14)",
-            color: isPow ? "#d9b45a" : "#a78bfa",
+            background: light ? (isPow ? "#8a6224" : "#5b3fb0") : isPow ? "rgba(201,165,78,0.14)" : "rgba(139,92,246,0.14)",
+            color: light ? "#fffdf6" : isPow ? "#d9b45a" : "#a78bfa",
             fontSize: 10, fontWeight: 800, letterSpacing: "0.08em",
             flexShrink: 0,
           }}

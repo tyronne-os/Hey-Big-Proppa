@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import SmokeBadge from "../components/SmokeBadge";
 import NavBar from "../components/NavBar";
 import LiveTicker from "../components/LiveTicker";
+import EarlyHero from "../components/EarlyHero";
 import TicketCard, { fromThemed } from "../components/TicketCard";
 import { api } from "../api";
 import type { ParlaySlip, EarlyResponse } from "../types";
@@ -192,27 +193,7 @@ export default function SundayParlaysPage() {
               </div>
             )}
 
-            {activeWeek === "current" && early && early.slips.length > 0 && (
-              <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.22em", color: "#d9b45a" }}>EARLY GAMES · 1 PM KICKOFFS</span>
-                  <span style={{ fontSize: 11, color: "var(--bp-muted)" }}>{early.games.map(g => `${g.away}@${g.home}`).join(" · ")}</span>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: "#2ee6a6", border: "1px solid #2ee6a644", borderRadius: 5, padding: "2px 7px" }}>+50% PROFIT BOOST ON EVERY PAYOUT</span>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(380px,1fr))", gap: 18, alignItems: "start" }}>
-                  {early.slips.map(s => <TicketCard key={s.id} slip={s} />)}
-                </div>
-                {early.crazyHorses.length > 0 && (
-                  <>
-                    <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: "0.22em", color: "#e0782f", marginTop: 6 }}>CRAZY HORSE · EARLY GAME PROPS</span>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(380px,1fr))", gap: 18, alignItems: "start" }}>
-                      {early.crazyHorses.map(s => <TicketCard key={s.id} slip={s} />)}
-                    </div>
-                  </>
-                )}
-                <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>{early.boostNote} Prices marked estimated: take the matching line in the FanDuel app. Evening set posts later.</span>
-              </section>
-            )}
+            {activeWeek === "current" && early && early.slips.length > 0 && <EarlyHero early={early} />}
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(380px,1fr))", gap: 18, alignItems: "start" }}>
               {Object.values(slips).map(s =>
