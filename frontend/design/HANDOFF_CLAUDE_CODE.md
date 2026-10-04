@@ -64,7 +64,7 @@ Rules:
 | `Big Proppa Parlays.dc.html` | Full-page parlay poster dashboard. No nodes. |
 | `Big Proppa Logo.dc.html` | Logo sheet: main badge, header lockup, app icons, palette. |
 | `assets/big-proppa.png` | Mascot photo: watermark cropped, grayscale baked in, red cigar ember painted at (21.5%, 61%). |
-| `github.md` | Repo association + screen map. |
+| `INDEX.md` | Repo index: where everything lives and saves. Old sync log: `docs/SYNC_LOG.md`. |
 
 Treat the `.dc.html` files as the visual spec; rebuild them as React components in
 `frontend/src/` (they are not meant to be copied in).
