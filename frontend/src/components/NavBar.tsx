@@ -4,6 +4,7 @@ const TABS = [
   { id: "leaders",  label: "LEADERS · TARGETS", href: "/leaders?cat=targets" },
   { id: "matchups", label: "MATCHUPS",           href: "/matchups" },
   { id: "ramp",     label: "RAMP",               href: "/ramp" },
+  { id: "college",  label: "COLLEGE",            href: "/college" },
   { id: "parlay",   label: "THROWDOWN THURSDAY", href: "/throwdown" },
   { id: "monday",   label: "MONDAY NIGHT",       href: "/monday" },
   { id: "sunday",   label: "SUNDAY SLIPS",       href: "/parlays" },
@@ -25,7 +26,7 @@ export default function NavBar({ activeTab }: NavBarProps) {
     if (location.pathname === "/monday")    return "monday";
     if (location.pathname === "/parlays")   return "sunday";
     const seg = location.pathname.replace(/^\//, "");
-    if (seg && (["leaders","matchups","ramp","engine","news","queries","myboo","odds"] as string[]).includes(seg)) return seg;
+    if (seg && (["leaders","matchups","ramp","college","engine","news","queries","myboo","odds"] as string[]).includes(seg)) return seg;
     return "parlay";
   })();
 
@@ -34,6 +35,18 @@ export default function NavBar({ activeTab }: NavBarProps) {
       display: "flex", gap: 6, padding: "8px 20px 10px", flexWrap: "wrap", flex: "0 0 auto",
       borderBottom: "1px solid var(--bp-border)",
     }}>
+      <a
+        href="/home/index.html"
+        style={{
+          display: "inline-flex", alignItems: "center",
+          height: 32, padding: "0 14px", borderRadius: 999,
+          border: "1px solid #c9a54e", background: "rgba(201,165,78,0.14)",
+          color: "#f1dc92", fontSize: 12, fontWeight: 800, letterSpacing: "0.1em",
+          textDecoration: "none", cursor: "pointer",
+        }}
+      >
+        HOME
+      </a>
       {TABS.map(({ id, label, href }) => {
         const isBoo = id === "myboo";
         const isActive = id === currentTab;

@@ -412,11 +412,11 @@ export default function RampIndex() {
         <div style={S.section}>
           <div style={S.sectionTitle}>
             {data?.games?.length ? `${data.games.length} GAMES` : "NO GAMES FOUND"}
-            {!data?.tank01Available && " — CONNECT TANK01 FOR LIVE TIMES"}
+            {!data?.games?.length && !data?.tank01Available && " — ESPN FEED HAS NO GAMES RIGHT NOW"}
           </div>
-          {!data?.tank01Available && (
+          {!data?.games?.length && !data?.tank01Available && (
             <div style={{ ...S.card, borderColor: "#c9a54e", color: "#c9a54e", fontSize: 12, marginBottom: 12 }}>
-              ⚠ Tank01 API not connected — set TANK01_API_KEY to see live kickoff times, scores and lines
+              ⚠ No games from the ESPN live feed right now (Tank01 is optional and not connected)
             </div>
           )}
           {(data?.games || []).map(g => (

@@ -1,6 +1,9 @@
-repo: tyronne-os/frontal-lobe2
-branch: claude/clever-cori-swkzal
-path: frontend, backend
+repo: tyronne-os/Hey-Big-Proppa (canonical source of truth)
+branch: main (work branches: claude/*)
+path: frontend, backend, lake, scripts
+backups: Hugging Face Space (deploy) + AIBRUH/big-proppa-lake dataset (data) -- redundancy only
+local ports: frontend 8085, backend 8086 (reserved range 8085-9005; scripts/start.sh)
+note: entries below dated before 2026-10-04 were written under the old repo name tyronne-os/frontal-lobe2
 
 ## Last sync
 date: 2026-09-25 (this session, second pass)
