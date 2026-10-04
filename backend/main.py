@@ -7,7 +7,7 @@ HANDOFF_CLAUDE_CODE.md sec 3.9 / sec 7 until they're actually built.
 
 Run:
     cd backend
-    .venv/bin/uvicorn main:app --reload --port 8000
+    .venv/bin/uvicorn main:app --reload --port 8086
 """
 from __future__ import annotations
 
