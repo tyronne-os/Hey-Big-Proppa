@@ -62,15 +62,25 @@ function Betslip({ slip }: { slip: EngineSlip }) {
 const GRID = { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(340px,100%),1fr))", gap: 18, alignItems: "start" } as const;
 
 /** Hero for the featured kickoff window: the new bets as betslips on a gold field. */
-export default function EarlyHero({ early }: { early: EarlyResponse }) {
+export default function EarlyHero({ early, window: win = "early" }: { early: EarlyResponse; window?: "early" | "evening" }) {
+  const isEvening = win === "evening";
+  const kickoffLabel = isEvening ? "SUNDAY · 4 PM + LATE KICKOFFS" : "SUNDAY · 1 PM KICKOFFS";
+  const slateTitle = isEvening ? "THE EVENING SLATE" : "THE EARLY SLATE";
+  const crazyLabel = isEvening ? "CRAZY HORSE · EVENING GAME PROPS" : "CRAZY HORSE · EARLY GAME PROPS";
+  const footerNote = isEvening
+    ? `${early.boostNote} Prices marked est. are estimates: take the matching line in the FanDuel app.`
+    : `${early.boostNote} Prices marked est. are estimates: take the matching line in the FanDuel app. The evening set posts later.`;
+
   return (
     <section style={{ borderRadius: 22, padding: "26px clamp(14px,3vw,30px) 30px", display: "flex", flexDirection: "column", gap: 20,
-      background: "radial-gradient(120% 90% at 50% 0%, #f7e7a6 0%, #e0b955 38%, #b98a2c 72%, #8a6224 100%)",
+      background: isEvening
+        ? "radial-gradient(120% 90% at 50% 0%, #e8d48c 0%, #c99a30 38%, #9a6b1c 72%, #6b4810 100%)"
+        : "radial-gradient(120% 90% at 50% 0%, #f7e7a6 0%, #e0b955 38%, #b98a2c 72%, #8a6224 100%)",
       boxShadow: "0 0 0 1px #f1dc92 inset, 0 18px 50px rgba(217,180,90,0.25)" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center", textAlign: "center" }}>
-        <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, letterSpacing: "0.34em", color: "#4a3408" }}>SUNDAY · 1 PM KICKOFFS</span>
+        <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, letterSpacing: "0.34em", color: "#4a3408" }}>{kickoffLabel}</span>
         <h2 style={{ margin: 0, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(30px,6vw,58px)", fontWeight: 900, lineHeight: 1, color: INK, textShadow: "0 1px 0 rgba(255,255,255,0.45)" }}>
-          THE EARLY SLATE
+          {slateTitle}
         </h2>
         <span style={{ fontSize: 13, fontWeight: 700, color: "#3a2a06" }}>{early.games.map(g => `${g.away} @ ${g.home}`).join("  ·  ")}</span>
         <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#0b4d36", background: "#d7f5e8", borderRadius: 999, padding: "4px 12px" }}>
@@ -84,7 +94,7 @@ export default function EarlyHero({ early }: { early: EarlyResponse }) {
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ flex: 1, height: 2, background: "#4a340855" }} />
-            <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 900, letterSpacing: "0.3em", color: INK }}>CRAZY HORSE · EARLY GAME PROPS</span>
+            <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 900, letterSpacing: "0.3em", color: INK }}>{crazyLabel}</span>
             <span style={{ flex: 1, height: 2, background: "#4a340855" }} />
           </div>
           <div style={GRID}>{early.crazyHorses.map(s => <Betslip key={s.id} slip={s} />)}</div>
@@ -92,7 +102,7 @@ export default function EarlyHero({ early }: { early: EarlyResponse }) {
       )}
 
       <span style={{ fontSize: 10, color: "#3a2a06", textAlign: "center" }}>
-        {early.boostNote} Prices marked est. are estimates: take the matching line in the FanDuel app. The evening set posts later.
+        {footerNote}
       </span>
     </section>
   );

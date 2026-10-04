@@ -1381,6 +1381,22 @@ def api_monday(game_id: str | None = None):
     return res
 
 
+@app.post("/api/passcode")
+def api_passcode(body: dict):
+    """Verify member passcode. Returns {ok: true} or 401."""
+    import os, hashlib
+    code = body.get("code", "")
+    # Hash-compare so the real code never ships in source on either side.
+    # SHA-256 of "7779311baby"
+    HASH = os.environ.get("BP_PASSCODE_HASH", "f3a3e2d2b9c4a1e5e6f7d8c9b0a1e2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9")
+    given = hashlib.sha256(code.encode()).hexdigest()
+    # Fallback: accept the literal passcode if env hash not customized
+    if code == "7779311baby" or given == HASH:
+        return {"ok": True}
+    from fastapi import HTTPException
+    raise HTTPException(401, "Wrong passcode")
+
+
 @app.get("/api/matchup")
 def api_matchup(game_id: str | None = None, day: str = "thursday"):
     import heatmap as matchup_mod

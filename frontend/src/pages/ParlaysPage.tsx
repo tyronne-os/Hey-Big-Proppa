@@ -8,7 +8,6 @@ import Throwdown, { type ThrowdownData } from "./Throwdown";
 import { type MatchupData } from "./MatchupHeatMap";
 import type { ParlaySlip } from "../types";
 
-const PASSCODE = "7779311baby";
 const STORAGE_KEY = "bp_parlay_unlocked";
 
 function getUnlocked(): boolean {
@@ -22,18 +21,28 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
   const [val, setVal] = useState("");
   const [shake, setShake] = useState(false);
   const [hint, setHint] = useState("");
+  const [checking, setChecking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  function attempt() {
-    if (val === PASSCODE) {
-      setUnlocked();
-      onUnlock();
-    } else {
-      setShake(true);
-      setHint("Wrong code. Try again.");
-      setVal("");
-      setTimeout(() => setShake(false), 600);
-      inputRef.current?.focus();
+  async function attempt() {
+    if (!val.trim()) return;
+    setChecking(true);
+    try {
+      const r = await fetch("/api/passcode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: val }),
+      });
+      if (r.ok) { setUnlocked(); onUnlock(); }
+      else {
+        setShake(true); setHint("Wrong code. Try again."); setVal("");
+        setTimeout(() => setShake(false), 600);
+        inputRef.current?.focus();
+      }
+    } catch {
+      setHint("Connection error — try again.");
+    } finally {
+      setChecking(false);
     }
   }
 
@@ -73,14 +82,16 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
         {hint && <span style={{ fontSize: 12, color: "#ef4444", fontWeight: 700, letterSpacing: "0.06em" }}>{hint}</span>}
         <button
           onClick={attempt}
+          disabled={checking}
           style={{
             height: 44, borderRadius: 12, border: 0,
             background: "linear-gradient(135deg,#d9b45a,#8a6224)",
             color: "#0b0512", fontSize: 14, fontWeight: 900,
-            letterSpacing: "0.12em", cursor: "pointer",
+            letterSpacing: "0.12em", cursor: checking ? "default" : "pointer",
+            opacity: checking ? 0.7 : 1,
           }}
         >
-          UNLOCK TONIGHT&apos;S SLIPS
+          {checking ? "CHECKING..." : "UNLOCK TONIGHT’S SLIPS"}
         </button>
       </div>
     </div>

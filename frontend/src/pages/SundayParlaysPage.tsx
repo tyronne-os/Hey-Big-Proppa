@@ -12,7 +12,6 @@ import TicketCard, { fromThemed } from "../components/TicketCard";
 import { api } from "../api";
 import type { ParlaySlip, EarlyResponse } from "../types";
 
-const PASSCODE = "7779311baby";
 const STORAGE_KEY = "bp_parlay_unlocked";
 
 function getUnlocked(): boolean {
@@ -26,14 +25,28 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
   const [val, setVal] = useState("");
   const [shake, setShake] = useState(false);
   const [hint, setHint] = useState("");
+  const [checking, setChecking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  function attempt() {
-    if (val === PASSCODE) { setUnlocked(); onUnlock(); }
-    else {
-      setShake(true); setHint("Wrong code. Try again."); setVal("");
-      setTimeout(() => setShake(false), 600);
-      inputRef.current?.focus();
+  async function attempt() {
+    if (!val.trim()) return;
+    setChecking(true);
+    try {
+      const r = await fetch("/api/passcode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: val }),
+      });
+      if (r.ok) { setUnlocked(); onUnlock(); }
+      else {
+        setShake(true); setHint("Wrong code. Try again."); setVal("");
+        setTimeout(() => setShake(false), 600);
+        inputRef.current?.focus();
+      }
+    } catch {
+      setHint("Connection error — try again.");
+    } finally {
+      setChecking(false);
     }
   }
 
@@ -57,8 +70,8 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
           style={{ height: 48, padding: "0 16px", borderRadius: 12, border: "1px solid #4a3a20", background: "#160c22", color: "#ece6f2", fontSize: 18, fontFamily: "monospace", outline: "none", letterSpacing: "0.12em" }}
         />
         {hint && <span style={{ fontSize: 12, color: "#ef4444", fontWeight: 700, letterSpacing: "0.06em" }}>{hint}</span>}
-        <button onClick={attempt} style={{ height: 44, borderRadius: 12, border: 0, background: "linear-gradient(135deg,#d9b45a,#8a6224)", color: "#0b0512", fontSize: 14, fontWeight: 900, letterSpacing: "0.12em", cursor: "pointer" }}>
-          UNLOCK SUNDAY SLIPS
+        <button onClick={attempt} disabled={checking} style={{ height: 44, borderRadius: 12, border: 0, background: "linear-gradient(135deg,#d9b45a,#8a6224)", color: "#0b0512", fontSize: 14, fontWeight: 900, letterSpacing: "0.12em", cursor: checking ? "default" : "pointer", opacity: checking ? 0.7 : 1 }}>
+          {checking ? "CHECKING..." : "UNLOCK SUNDAY SLIPS"}
         </button>
       </div>
     </div>
@@ -111,9 +124,11 @@ export default function SundayParlaysPage() {
   const wager = 5;
 
   const [early, setEarly] = useState<EarlyResponse | null>(null);
+  const [evening, setEvening] = useState<EarlyResponse | null>(null);
   useEffect(() => {
     if (!unlocked) return;
     api.parlaysEarly("early").then(setEarly).catch(() => setEarly(null));
+    api.parlaysEarly("evening").then(setEvening).catch(() => setEvening(null));
   }, [unlocked]);
 
   return (
@@ -206,6 +221,7 @@ export default function SundayParlaysPage() {
             )}
 
             {activeWeek === "current" && early && early.slips.length > 0 && <EarlyHero early={early} />}
+            {activeWeek === "current" && evening && evening.slips.length > 0 && <EarlyHero early={evening} window="evening" />}
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(380px,1fr))", gap: 18, alignItems: "start" }}>
               {Object.values(slips).map(s =>
