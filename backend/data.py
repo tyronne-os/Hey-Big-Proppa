@@ -143,20 +143,17 @@ def _enhance_cloudinary(url: str | None, w: int = 400, h: int = 400) -> str | No
 
 
 def photo_url(player_id: str) -> str | None:
-    """Tank01's ESPN headshot first (matched on name + team), nflverse's headshot as fallback.
+    """Free ESPN headshot first (name + team match), nflverse's headshot as fallback.
     The browser loads the URL directly; the frontend shows an initials avatar if it fails."""
     d = player_dimension().get(player_id)
     if d:
         try:
-            import tank01
-            hits = tank01.player_photos().get(normalize_name(d["name"]), []) if tank01.available() else []
+            import espn_photos
+            u = espn_photos.espn_photo(d["name"], d.get("team", ""))
+            if u:
+                return u
         except Exception:
-            hits = []
-        same_team = [u for t, u in hits if t == d.get("team")]
-        if same_team:
-            return same_team[0]
-        if len(hits) == 1:
-            return hits[0][1]
+            pass
     return _enhance_cloudinary(_headshots().get(player_id))
 
 
