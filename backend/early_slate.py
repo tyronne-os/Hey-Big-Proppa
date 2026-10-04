@@ -57,6 +57,29 @@ def _targets_per_game() -> dict[str, float]:
     return out
 
 
+def _volume(season: int = 2026) -> dict[str, dict[str, float]]:
+    """Per-game averages from this season's regular-season weekly tables: carries, rushing yards, targets, catches."""
+    tot: dict[str, dict[str, float]] = {}
+    games: dict[str, set] = {}
+    for table, cols in (("player_rushing_week", ("carries", "rushing_yards")), ("player_receiving_week", ("targets", "receptions", "receiving_yards"))):
+        for r in data.load(table):
+            if str(r["season"]) != str(season) or r["season_type"] != "REG":
+                continue
+            t = tot.setdefault(r["player_id"], {})
+            games.setdefault(r["player_id"], set()).add(r["week"])
+            for c in cols:
+                try:
+                    t[c] = t.get(c, 0.0) + float(r[c] or 0)
+                except ValueError:
+                    pass
+    return {pid: {c: v / len(games[pid]) for c, v in t.items()} for pid, t in tot.items()}
+
+
+# The workload a leg needs before it can ride a ticket. Targets drive catches and receiving yards; carries drive rushing yards.
+RB_MIN = {"carries": 12.0, "rushing_yards": 45.0, "targets": 3.5}
+WR_MIN_TARGETS = 7.0
+
+
 def _price(side_by_key: dict, pid: str, market: str, rung: float, p_used: float) -> tuple[int, bool]:
     """FanDuel's posted price when this exact line is on the board, else a fair price from the haircut probability."""
     s = side_by_key.get((pid, market, "over", float(rung)))
@@ -106,7 +129,7 @@ def build(window: str = "early", today: str | None = None, force: bool = False) 
     sides = [s for s in jimmy_bpl.cached_sides() if s["gameId"] in ids]
     idx = {(s["playerId"], s["market"], s["direction"], float(s["line"])): s for s in sides}
     week = sides[0]["week"] if sides else None
-    tpg = _targets_per_game()
+    vol = _volume()
     pool = {}                                   # (pid, market) -> (name, team, gameId) for every priced player prop
     for s in sides:
         if not s.get("sport") and s["market"] in ("recyds", "rushyds", "recs", "passyds"):
@@ -117,12 +140,12 @@ def build(window: str = "early", today: str | None = None, force: bool = False) 
     # 1) WR 60 CLUB: 8-target role, 60+ receiving yards
     wrs = []
     for (pid, m), (name, team, gid) in pool.items():
-        if m != "recyds" or pos(pid) != "WR" or tpg.get(pid, 0) < 7.0:
+        if m != "recyds" or pos(pid) != "WR" or vol.get(pid, {}).get("targets", 0) < WR_MIN_TARGETS:
             continue
         leg = _prop_leg(pid, name, team, gid, "recyds", 59.5, idx)
         if leg:
             leg["week"] = week
-            leg["correlationNote"] = f"{tpg[pid]:.1f} targets a game. " + leg["correlationNote"]
+            leg["correlationNote"] = f"{vol[pid]['targets']:.1f} targets a game. " + leg["correlationNote"]
             wrs.append(leg)
     wrs = sorted(wrs, key=lambda l: -l["probability"])[:5]
 
@@ -130,6 +153,9 @@ def build(window: str = "early", today: str | None = None, force: bool = False) 
     rbs = []
     for (pid, m), (name, team, gid) in pool.items():
         if m != "rushyds" or pos(pid) != "RB" or (pid, "recs") not in pool:
+            continue
+        v = vol.get(pid, {})
+        if any(v.get(k, 0) < need for k, need in RB_MIN.items()):     # volume gate: carries, rushing yards and targets a game
             continue
         a, b = _prop_leg(pid, name, team, gid, "rushyds", 49.5, idx), _prop_leg(pid, name, team, gid, "recs", 2.5, idx)
         if not (a and b):
@@ -142,7 +168,7 @@ def build(window: str = "early", today: str | None = None, force: bool = False) 
                     "oddsEstimated": a["oddsEstimated"] or b["oddsEstimated"], "probability": p, "l5": p, "gameId": gid, "week": week,
                     "components": [comp(a), comp(b)], "photoUrl": data.photo_url(pid),
                     "correlationNote": f"Both must land: {round(a['probability'] * 100)}% for 50+ rushing yards x {round(b['probability'] * 100)}% for 3+ catches. "
-                                       "Price is the two legs multiplied."})
+                                       f"Workload: {v['carries']:.1f} carries, {v['rushing_yards']:.0f} rush yds and {v['targets']:.1f} targets a game. Price is the two legs multiplied."})
     rbs = sorted(rbs, key=lambda l: -l["probability"])[:5]
 
     # 3) OVERS: the 5 early games the BPL likes most to go over the total
@@ -178,7 +204,7 @@ def build(window: str = "early", today: str | None = None, force: bool = False) 
         _slip(f"EARLY-WR-{week}", "WR 60 CLUB", "FEATURED", wrs,
               "Five receivers in an 8-target role, each priced at 60+ receiving yards.", "TAKE IT"),
         _slip(f"EARLY-RB-{week}", "RB WORKHORSES", "FEATURED", rbs,
-              "Five backs who need 50+ rushing yards and 3+ catches. Each leg is that combo.", "TAKE IT"),
+              "Backs who carry 12+ times, average 45+ rushing yards and see 3.5+ targets a game, priced at 50+ rushing yards and 3+ catches.", "TAKE IT"),
         _slip(f"EARLY-OVR-{week}", "EARLY OVERS", "FEATURED", overs,
               "The five early games the Big Proppa Line rates most likely to finish over the posted total.", "TAKE IT"),
     ) if s]
