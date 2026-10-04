@@ -26,8 +26,9 @@ from jimmy_bpl import SPY_HAIRCUT, SPY_MAX_CREDIT, cached_sides, _dec
 
 # Branding by weekday
 BRANDS = {
-    "Thursday": {"title": "THROWDOWN THURSDAY", "subtitle": "ONE GAME. ALL THE MONEY."},
-    "Monday":   {"title": "MONDAY NIGHT THROWDOWN", "subtitle": "THE WHOLE WEEK BUILT FOR TONIGHT."},
+    "Thursday": {"title": "THROWDOWN THURSDAY",      "subtitle": "ONE GAME. ALL THE MONEY."},
+    "Monday":   {"title": "MONDAY NIGHT THROWDOWN",  "subtitle": "THE WHOLE WEEK BUILT FOR TONIGHT."},
+    "Sunday":   {"title": "SUNDAY NIGHT FOOTBALL",   "subtitle": "THE GAME OF THE WEEK. ALL THE PROPS."},
 }
 DEFAULT_BRAND = {"title": "THROWDOWN NIGHT", "subtitle": "ONE GAME. ALL THE MONEY."}
 WAGER = 5.0
@@ -693,6 +694,25 @@ def detect_throwdown_game() -> Optional[str]:
     # Return the latest-starting game for tonight (primetime)
     tonight.sort(key=lambda r: r.get("game_time_local", "20:00"))
     return tonight[-1]["game_id"]
+
+
+def detect_sunday_night_game() -> Optional[str]:
+    """
+    Returns the game_id for Sunday Night Football (the latest-kicking-off Sunday game).
+    Works any day of the week — useful for previewing before Sunday arrives.
+    """
+    from zoneinfo import ZoneInfo
+    today = datetime.datetime.now(ZoneInfo("America/Chicago")).date()
+    sched = data.load("schedule")
+    # Find the nearest Sunday (today if Sunday, else next Sunday)
+    days_ahead = (6 - today.weekday()) % 7  # weekday() Mon=0 ... Sun=6
+    sunday = today + datetime.timedelta(days=days_ahead)
+    sunday_str = sunday.isoformat()
+    games = [r for r in sched if r.get("game_date") == sunday_str and r.get("game_type") == "REG"]
+    if not games:
+        return None
+    games.sort(key=lambda r: r.get("game_time_local", "20:00"))
+    return games[-1]["game_id"]
 
 
 # ── archive: the last Thursday / Monday game stays viewable until the next one ──────────────

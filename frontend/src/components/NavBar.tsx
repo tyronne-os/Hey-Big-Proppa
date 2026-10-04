@@ -6,8 +6,9 @@ const TABS = [
   { id: "ramp",     label: "RAMP",               href: "/ramp" },
   { id: "college",  label: "COLLEGE",            href: "/college" },
   { id: "parlay",   label: "THROWDOWN THURSDAY", href: "/throwdown" },
-  { id: "monday",   label: "MONDAY NIGHT",       href: "/monday" },
-  { id: "sunday",   label: "SUNDAY SLIPS",       href: "/parlays" },
+  { id: "monday",       label: "MONDAY NIGHT",       href: "/monday" },
+  { id: "sunday-night", label: "SUNDAY NIGHT",      href: "/sunday-night" },
+  { id: "sunday",       label: "SUNDAY SLIPS",       href: "/parlays" },
   { id: "engine",   label: "ENGINE",             href: "/engine" },
   { id: "news",     label: "NEWS",               href: "/news" },
   { id: "queries",  label: "QUERIES",            href: "/queries" },
@@ -22,9 +23,10 @@ export default function NavBar({ activeTab }: NavBarProps) {
 
   // Detect active tab from URL
   const currentTab = activeTab ?? (() => {
-    if (location.pathname === "/throwdown") return "parlay";
-    if (location.pathname === "/monday")    return "monday";
-    if (location.pathname === "/parlays")   return "sunday";
+    if (location.pathname === "/throwdown")    return "parlay";
+    if (location.pathname === "/monday")       return "monday";
+    if (location.pathname === "/sunday-night") return "sunday-night";
+    if (location.pathname === "/parlays")      return "sunday";
     const seg = location.pathname.replace(/^\//, "");
     if (seg && (["leaders","matchups","ramp","college","engine","news","queries","myboo","odds"] as string[]).includes(seg)) return seg;
     return "parlay";

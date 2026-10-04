@@ -106,7 +106,7 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
  * price -- nothing here is placeholder.
  */
 /** Shared implementation — variant controls which night's deep-dive API is called */
-export default function ParlaysPage({ variant = "thursday" }: { variant?: "thursday" | "monday" }) {
+export default function ParlaysPage({ variant = "thursday" }: { variant?: "thursday" | "monday" | "sunday-night" }) {
   const [slips, setSlips] = useState<Record<string, ParlaySlip> | null>(null);
   const [unlocked, setUnlocked] = useState(getUnlocked);
   const [td, setTd] = useState<ThrowdownData | null>(null);
@@ -118,7 +118,7 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
     if (unlocked) {
       api.parlaysAll().then(setSlips).catch(() => setSlips(null));
       api.matchup(variant).then((d: MatchupData) => setMu(d?.active ? d : null)).catch(() => setMu(null));
-      const deepDive = variant === "monday" ? api.monday() : api.throwdown();
+      const deepDive = variant === "monday" ? api.monday() : variant === "sunday-night" ? api.sundayNight() : api.throwdown();
       deepDive.then((d: ThrowdownData) => setTd(d?.active ? d : null)).catch(() => setTd(null));
     }
   }, [unlocked, variant]);
@@ -162,7 +162,7 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
       </div>
 
       {/* Full nav menu */}
-      <NavBar activeTab="parlay" />
+      <NavBar activeTab={variant === "monday" ? "monday" : variant === "sunday-night" ? "sunday-night" : "parlay"} />
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 20px", display: "flex", flexDirection: "column", gap: 24 }}>
 
@@ -171,13 +171,13 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
 
         {unlocked && td?.archived && !showRegular && (
           <div style={{ alignSelf: "center", padding: "8px 18px", borderRadius: 999, border: "1px solid #6b4a1c", background: "rgba(201,165,78,0.12)", color: "#d9b45a", fontSize: 12, fontWeight: 800, letterSpacing: "0.12em", textAlign: "center" }}>
-            FROM {variant === "monday" ? "LAST MONDAY NIGHT" : "LAST THURSDAY NIGHT"} · {td.game.away} @ {td.game.home} · WEEK {td.game.week} · SAVED AS IT STOOD BEFORE KICKOFF
+            FROM {variant === "monday" ? "LAST MONDAY NIGHT" : variant === "sunday-night" ? "LAST SUNDAY NIGHT" : "LAST THURSDAY NIGHT"} · {td.game.away} @ {td.game.home} · WEEK {td.game.week} · SAVED AS IT STOOD BEFORE KICKOFF
           </div>
         )}
         {unlocked && td && !showRegular && <Throwdown data={td} matchup={mu} />}
         {unlocked && td && (
           <button onClick={() => setShowRegular((v) => !v)} style={{ alignSelf: "center", height: 34, padding: "0 16px", borderRadius: 999, border: "1px solid #6b4a1c", background: "transparent", color: "#d9b45a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-            {showRegular ? "BACK TO THE THROWDOWN" : "SEE THE FULL-WEEK SLIPS"}
+            {showRegular ? (variant === "sunday-night" ? "BACK TO SUNDAY NIGHT" : "BACK TO THE THROWDOWN") : "SEE THE FULL-WEEK SLIPS"}
           </button>
         )}
 

@@ -1381,6 +1381,22 @@ def api_monday(game_id: str | None = None):
     return res
 
 
+@app.get("/api/sunday-night")
+def api_sunday_night(game_id: str | None = None):
+    """
+    SUNDAY NIGHT FOOTBALL deep-dive.  Auto-detects the SNF game (latest kickoff on Sunday).
+    Pass ?game_id=... to force a specific game for preview/testing.
+    Shows archived last-Sunday data when accessed mid-week.
+    """
+    if not game_id:
+        gid = throwdown_mod.detect_sunday_night_game()
+        if not gid:
+            return throwdown_mod.archived("Sunday")
+        game_id = gid
+    res = throwdown_mod.build(game_id)
+    return res
+
+
 @app.post("/api/passcode")
 def api_passcode(body: dict):
     """Verify member passcode. Returns {ok: true} or 401."""
@@ -1400,10 +1416,16 @@ def api_passcode(body: dict):
 @app.get("/api/matchup")
 def api_matchup(game_id: str | None = None, day: str = "thursday"):
     import heatmap as matchup_mod
-    gid = game_id or throwdown_mod.detect_throwdown_game()
-    if not gid:
-        last = throwdown_mod.latest_game("Monday" if day == "monday" else "Thursday")
-        gid = last["game_id"] if last else None
+    if day == "sunday-night":
+        gid = game_id or throwdown_mod.detect_sunday_night_game()
+        if not gid:
+            last = throwdown_mod.latest_game("Sunday")
+            gid = last["game_id"] if last else None
+    else:
+        gid = game_id or throwdown_mod.detect_throwdown_game()
+        if not gid:
+            last = throwdown_mod.latest_game("Monday" if day == "monday" else "Thursday")
+            gid = last["game_id"] if last else None
     info = throwdown_mod._game_info(gid) if gid else None
     if not info:
         return {"active": False}
