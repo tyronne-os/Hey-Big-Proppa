@@ -25,13 +25,8 @@ node_modules/
 *.duckdb
 *.duckdb.wal
 
-# runtime lake files — rewritten by the backend on every run, not source-of-truth
+# runtime lake files rewritten on every run (MY BOO tickets, legs, recaps and counter ARE the record: keep them tracked)
 lake/gold/nfl/tr_runs.json
-lake/gold/nfl/myboo_counter.txt
-lake/gold/nfl/myboo_legs.csv
-lake/gold/nfl/myboo_thesis.json
-lake/gold/nfl/myboo_tickets.csv
-lake/gold/nfl/myboo_recaps.json
 lake/gold/nfl/myboo_alerts.json
 
 # frontend build artifacts
