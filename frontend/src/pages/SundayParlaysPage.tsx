@@ -172,7 +172,19 @@ export default function SundayParlaysPage() {
 
       <NavBar activeTab="sunday" />
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 20px", display: "flex", flexDirection: "column", gap: 24 }}>
+      <div className="bp-par-wrap">
+      <style>{`
+        .bp-par-wrap { display: flex; align-items: flex-start; }
+        .bp-par-rail { display: none; }
+        @media (min-width: 1360px) {
+          .bp-par-rail { display: block; position: sticky; top: 0; flex: 0 0 clamp(340px, 30vw, 620px); height: calc(100vh - 30px); overflow: hidden; align-self: flex-start; }
+        }
+      `}</style>
+      <aside className="bp-par-rail" aria-hidden="true">
+        <img src="/big-proppa.png" alt="" style={{ position: "absolute", top: 0, left: "-9%", height: "100%", width: "auto", maxWidth: "none", objectFit: "cover", filter: "contrast(1.1) brightness(1.05)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 62%, var(--bp-page-bg) 100%), linear-gradient(0deg, var(--bp-page-bg) 0%, transparent 16%)" }} />
+      </aside>
+      <div style={{ flex: 1, minWidth: 0, maxWidth: 1200, margin: "0 auto", padding: "24px 20px", display: "flex", flexDirection: "column", gap: 24 }}>
         {!unlocked && <PasscodeGate onUnlock={() => setUnlocked(true)} />}
 
         {unlocked && !slips && (
@@ -204,6 +216,7 @@ export default function SundayParlaysPage() {
             </div>
           </>
         )}
+      </div>
       </div>
     </div>
   );

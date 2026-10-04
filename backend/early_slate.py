@@ -72,7 +72,21 @@ def _volume(season: int = 2026) -> dict[str, dict[str, float]]:
                     t[c] = t.get(c, 0.0) + float(r[c] or 0)
                 except ValueError:
                     pass
-    return {pid: {c: v / len(games[pid]) for c, v in t.items()} for pid, t in tot.items()}
+    return {pid: {**{c: v / len(games[pid]) for c, v in t.items()}, "games": float(len(games[pid]))} for pid, t in tot.items()}
+
+
+_VOL: dict[str, dict[str, float]] = {}
+
+
+def _workload(pid: str, market: str, combo: bool = False) -> str | None:
+    """The per-game volume behind a leg, in plain words: carries drive rushing yards, targets drive catches and receiving yards."""
+    v = _VOL.get(pid)
+    if not v:
+        return None
+    rush = f"{v.get('carries', 0):.1f} carries, {v.get('rushing_yards', 0):.0f} rush yds"
+    rec = f"{v.get('targets', 0):.1f} targets, {v.get('receptions', 0):.1f} catches, {v.get('receiving_yards', 0):.0f} rec yds"
+    body = f"{rush} · {rec}" if combo else rush if market == "rushyds" else rec if market in ("recyds", "recs") else None
+    return f"{body} a game ({int(v['games'])} games)" if body else None
 
 
 # The workload a leg needs before it can ride a ticket. Targets drive catches and receiving yards; carries drive rushing yards.
@@ -110,6 +124,8 @@ def _slip(sid: str, title: str, series: str, legs: list[dict], insight: str, def
     legs = red_zone.strip_td_legs(legs)
     if not legs:
         return None
+    for l in legs:
+        l["workload"] = _workload(l["playerId"], l["market"], combo=bool(l.get("components"))) if not l.get("sport") else None
     m = compute_parlay([l["odds"] for l in legs], wager=stake, boost=BOOST)
     p = math.prod(l["probability"] for l in legs)
     return {"id": sid, "title": title, "correlationType": series, "insight": insight, "legs": legs,
@@ -129,7 +145,8 @@ def build(window: str = "early", today: str | None = None, force: bool = False) 
     sides = [s for s in jimmy_bpl.cached_sides() if s["gameId"] in ids]
     idx = {(s["playerId"], s["market"], s["direction"], float(s["line"])): s for s in sides}
     week = sides[0]["week"] if sides else None
-    vol = _volume()
+    global _VOL
+    vol = _VOL = _volume()
     pool = {}                                   # (pid, market) -> (name, team, gameId) for every priced player prop
     for s in sides:
         if not s.get("sport") and s["market"] in ("recyds", "rushyds", "recs", "passyds"):

@@ -251,6 +251,7 @@ export interface EarlyResponse {
 
 export interface EngineLeg {
   oddsEstimated?: boolean;
+  workload?: string | null;
   components?: { market: string; direction: string; line: number | null; odds: number; probability: number }[];
   playerId: string;
   name: string;

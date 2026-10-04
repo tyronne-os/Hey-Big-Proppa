@@ -43,6 +43,7 @@ function Betslip({ slip }: { slip: EngineSlip }) {
             <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name}</span>
               <span style={{ fontSize: 11, color: accent, fontWeight: 700 }}>{l.prop}{l.oddsEstimated ? " · est. price" : ""}</span>
+              {l.workload && <span style={{ fontSize: 10, color: MUTED, lineHeight: 1.35 }}>{l.workload}</span>}
             </span>
             <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 700, color: INK }}>{american(l.odds)}</span>
             <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, color: MUTED, border: "1px solid #d9cca3", borderRadius: 5, padding: "2px 6px" }}>{Math.round(l.probability * 100)}%</span>
