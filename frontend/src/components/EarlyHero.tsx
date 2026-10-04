@@ -45,6 +45,7 @@ function Betslip({ slip }: { slip: EngineSlip }) {
                 <span style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name}</span>
                 {l.matchup && <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", color: "#fffdf6", background: INK, borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap", flex: "0 0 auto" }}>{l.matchup}</span>}
               </span>
+              {l.teamName && <span style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>{l.teamName}</span>}
               <span style={{ fontSize: 11, color: accent, fontWeight: 700 }}>{l.prop}{l.oddsEstimated ? " · est. price" : ""}</span>
               {l.workload && <span style={{ fontSize: 10, color: MUTED, lineHeight: 1.35 }}>{l.workload}</span>}
             </span>

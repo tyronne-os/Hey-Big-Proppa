@@ -20,8 +20,15 @@ def _text(team: str, away: str, home: str) -> str:
     return f"{team} @ {home}" if team == away else f"{team} vs {away}"
 
 
+@lru_cache(maxsize=1)
+def _team_names() -> dict[str, str]:
+    return {r["abbr_lake"]: r["full_name"] for r in data.load("team_abbr_map") if r.get("abbr_lake")}
+
+
 def tag_leg(leg: dict) -> dict:
     if leg.get("sport") or leg.get("matchup"):          # game-line legs already name both teams
+        return leg
+    if leg.get("teamName"):
         return leg
     team = leg.get("team") or data.player_dimension().get(leg.get("playerId", ""), {}).get("team")
     if not team:
@@ -33,6 +40,7 @@ def tag_leg(leg: dict) -> dict:
         pair = _games(bpl.today_central()).get(nxt["gameId"]) if nxt else None
     if pair and team in pair:
         leg["matchup"] = _text(team, *pair)
+    leg["teamName"] = _team_names().get(team, team)
     return leg
 
 

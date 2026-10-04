@@ -216,6 +216,7 @@ export interface LeadersResponse {
 }
 
 export interface ParlayLeg {
+  teamName?: string;
   matchup?: string;
   team?: string;
   direction?: string;
@@ -251,6 +252,7 @@ export interface EarlyResponse {
 }
 
 export interface EngineLeg {
+  teamName?: string;
   matchup?: string;
   oddsEstimated?: boolean;
   workload?: string | null;

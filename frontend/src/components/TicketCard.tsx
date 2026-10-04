@@ -30,7 +30,7 @@ export function fromThemed(s: ParlaySlip): EngineSlip {
     combinedDecimalOdds: s.combinedDecimalOdds, payout: s.payout, boostedPayout: s.boostedPayout, boostedAmericanOdds: s.boostedAmericanOdds,
     legs: s.legs.map((l) => ({
       playerId: l.playerId ?? l.teamId ?? l.name, name: l.name, team: l.team ?? "", market: l.market ?? "", direction: l.direction ?? "over",
-      line: l.line ?? null, prop: l.prop, probability: l.probability, l5: l.l5, odds: l.odds, photoUrl: l.photoUrl ?? null, matchup: l.matchup, correlationNote: "",
+      line: l.line ?? null, prop: l.prop, probability: l.probability, l5: l.l5, odds: l.odds, photoUrl: l.photoUrl ?? null, matchup: l.matchup, teamName: l.teamName, correlationNote: "",
     })),
   } as EngineSlip;
 }
@@ -62,6 +62,7 @@ export function LegLine({ leg }: { leg: EngineLeg }) {
       <Avatar leg={leg} size={48} />
       <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.name}</span>
+        {leg.teamName && <span style={{ fontSize: 11, color: "var(--bp-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.teamName}</span>}
         <span style={{ fontSize: 11, color: "#f1dc92", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.prop}</span>
         {leg.matchup && <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", color: "var(--bp-muted)" }}>{leg.matchup}</span>}
       </span>
