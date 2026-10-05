@@ -13698,5 +13698,132 @@
    }
   },
   "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Fri Oct 2 2026 3:42 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | Seattle (2-1) | 5.7 | 10.6-6.4 | 70.4 | 8.2\n2 | LA Rams (1-2) | 5.6 | 9.8-7.2 | 58.6 | 6.1\n3 | Buffalo (3-0) | 5.5 | 12.0-5.0 | 90.4 | 10.4\n4 | San Francisco (3-0) | 5.3 | 11.6-5.4 | 82.6 | 10.3\n5 | Jacksonville (2-1) | 5.0 | 10.8-6.2 | 80.3 | 8.8\n6 | Kansas City (3-0) | 5.0 | 11.4-5.6 | 84.8 | 8.4\n7 | Chicago (2-1) | 4.5 | 10.7-6.3 | 72.0 | 6.7\n8 | Baltimore (2-1) | 4.3 | 10.9-6.1 | 78.4 | 7.3\n9 | Cincinnati (2-1) | 2.9 | 10.7-6.3 | 73.4 | 4.9\n10 | Minnesota (3-0) | 2.9 | 11.4-5.6 | 80.5 | 5.7\n11 | Denver (2-1) | 2.4 | 9.9-7.1 | 62.9 | 3.6\n12 | Detroit (2-1) | 1.7 | 10.2-6.8 | 61.7 | 3.1\n13 | New England (1-2) | 1.5 | 8.7-8.3 | 46.6 | 2.2\n14 | Dallas (1-2) | 1.4 | 8.5-8.5 | 38.8 | 2.3\n15 | Houston (0-3) | 0.9 | 7.6-9.4 | 27.0 | 1.3\n16 | Philadelphia (2-1) | 0.5 | 9.2-7.8 | 50.7 | 2.3\n17 | Las Vegas (3-0) | -0.3 | 9.5-7.5 | 54.9 | 1.7\n18 | LA Chargers (0-3) | -1.2 | 5.9-11.1 | 9.5 | 0.3\n19 | New Orleans (1-2) | -1.2 | 8.3-8.7 | 47.9 | 1.4\n20 | Washington (1-2) | -1.5 | 7.5-9.5 | 23.3 | 0.7\n21 | Green Bay (1-2) | -2.0 | 7.0-10.0 | 15.4 | 0.5\n22 | Carolina (1-2) | -2.0 | 7.2-9.8 | 31.0 | 0.8\n23 | Indianapolis (1-2) | -2.1 | 7.6-9.4 | 25.5 | 0.6\n24 | Pittsburgh (2-2) | -2.2 | 7.7-9.3 | 24.6 | 0.5\n25 | Tampa Bay (0-3) | -2.3 | 6.3-10.7 | 19.1 | 0.5\n26 | NY Giants (2-1) | -2.6 | 8.0-9.0 | 29.8 | 0.7\n27 | Atlanta (1-2) | -4.8 | 5.9-11.1 | 14.2 | 0.2\n28 | NY Jets (1-2) | -5.0 | 6.3-10.7 | 12.3 | 0.2\n29 | Cleveland (3-1) | -5.3 | 7.8-9.2 | 25.6 | 0.2\n30 | Tennessee (0-3) | -6.1 | 4.4-12.6 | 3.2 | 0.0\n31 | Arizona (1-2) | -6.2 | 5.3-11.7 | 3.9 | 0.0\n32 | Miami (0-3) | -10.1 | 3.1-13.9 | 0.6 | 0.0\n\n## This week's matchups (line, kickoff)\nPittsburgh (-3) at Cleveland | Thu 8:15pm\nLA Rams (-3.5) at Philadelphia | Sun 1:00pm\nNew England at Buffalo (-7) | Sun 1:00pm\nGreen Bay (-3.5) at Tampa Bay | Sun 1:00pm\nTennessee "
+ },
+ "MB-2026-WK04-SIM0085": {
+  "ticket_id": "MB-2026-WK04-SIM0085",
+  "frozen_at": "2026-10-05T21:36:04.570424+00:00",
+  "sample_weeks_before": 4,
+  "legs": [
+   {
+    "player": "Bijan Robinson",
+    "player_id": "00-0038542",
+    "team": "ATL",
+    "opp": "NO",
+    "market": "rushyds",
+    "direction": "over",
+    "line": 49.5,
+    "odds": -220.0,
+    "prob": 0.7092,
+    "implied": 0.6875,
+    "edge": 0.0217,
+    "attack_cat": "rush_yds",
+    "attack_rank": 26,
+    "attack_allowed": 127.0,
+    "attack_league": 116.9,
+    "defense": {
+     "games": 2,
+     "pass_yds": 220.5,
+     "rush_yds": 136.5,
+     "pass_yds_rank": 9,
+     "rush_yds_rank": 26,
+     "pass_yds_blend": 205.9,
+     "rush_yds_blend": 127.0,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": {
+     "hit_rate": 1.0,
+     "usage": 0.524,
+     "matchup": 0.5557,
+     "recency_defense": 0.611,
+     "fantasy": 0.667,
+     "tr_power": 0.453
+    },
+    "jimmy_score": 0.584,
+    "usage_key": "car",
+    "usage_avg": 22.0,
+    "usage_games": 3,
+    "game_id": "2026_04_ATL_NO"
+   },
+   {
+    "player": "Tyler Shough",
+    "player_id": "00-0040743",
+    "team": "NO",
+    "opp": "ATL",
+    "market": "passyds",
+    "direction": "over",
+    "line": 254.5,
+    "odds": -114.0,
+    "prob": 0.5778,
+    "implied": 0.5327,
+    "edge": 0.0451,
+    "attack_cat": "pass_yds",
+    "attack_rank": 21,
+    "attack_allowed": 234.8,
+    "attack_league": 225.0,
+    "defense": {
+     "games": 3,
+     "pass_yds": 273.3333333333333,
+     "rush_yds": 47.666666666666664,
+     "pass_yds_rank": 21,
+     "rush_yds_rank": 9,
+     "pass_yds_blend": 234.8,
+     "rush_yds_blend": 100.9,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": {
+     "hit_rate": 0.5,
+     "usage": 0.53,
+     "matchup": 0.6368,
+     "recency_defense": 0.431,
+     "fantasy": 0.459,
+     "tr_power": 0.485
+    },
+    "jimmy_score": 0.507,
+    "usage_key": "att",
+    "usage_avg": 45.0,
+    "usage_games": 2,
+    "game_id": "2026_04_ATL_NO"
+   }
+  ],
+  "identity": {
+   "ATL": {
+    "games": 3,
+    "att": 26.3,
+    "car": 34.7,
+    "tgt": 24.3,
+    "pass_rate": 0.432,
+    "label": "RUN-LEANING"
+   },
+   "NO": {
+    "games": 2,
+    "att": 45.0,
+    "car": 26.0,
+    "tgt": 42.0,
+    "pass_rate": 0.634,
+    "label": "PASS-FIRST"
+   }
+  },
+  "nugget": "Tyler Shough",
+  "tr_context": {
+   "ATL": {
+    "rank": 27,
+    "rating": -4.8,
+    "opp": "NO",
+    "opp_rank": 19,
+    "opp_rating": -1.2,
+    "power_edge": -3.6
+   },
+   "NO": {
+    "rank": 19,
+    "rating": -1.2,
+    "opp": "ATL",
+    "opp_rank": 27,
+    "opp_rating": -4.8,
+    "power_edge": 3.6
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Fri Oct 2 2026 3:42 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | Seattle (2-1) | 5.7 | 10.6-6.4 | 70.4 | 8.2\n2 | LA Rams (1-2) | 5.6 | 9.8-7.2 | 58.6 | 6.1\n3 | Buffalo (3-0) | 5.5 | 12.0-5.0 | 90.4 | 10.4\n4 | San Francisco (3-0) | 5.3 | 11.6-5.4 | 82.6 | 10.3\n5 | Jacksonville (2-1) | 5.0 | 10.8-6.2 | 80.3 | 8.8\n6 | Kansas City (3-0) | 5.0 | 11.4-5.6 | 84.8 | 8.4\n7 | Chicago (2-1) | 4.5 | 10.7-6.3 | 72.0 | 6.7\n8 | Baltimore (2-1) | 4.3 | 10.9-6.1 | 78.4 | 7.3\n9 | Cincinnati (2-1) | 2.9 | 10.7-6.3 | 73.4 | 4.9\n10 | Minnesota (3-0) | 2.9 | 11.4-5.6 | 80.5 | 5.7\n11 | Denver (2-1) | 2.4 | 9.9-7.1 | 62.9 | 3.6\n12 | Detroit (2-1) | 1.7 | 10.2-6.8 | 61.7 | 3.1\n13 | New England (1-2) | 1.5 | 8.7-8.3 | 46.6 | 2.2\n14 | Dallas (1-2) | 1.4 | 8.5-8.5 | 38.8 | 2.3\n15 | Houston (0-3) | 0.9 | 7.6-9.4 | 27.0 | 1.3\n16 | Philadelphia (2-1) | 0.5 | 9.2-7.8 | 50.7 | 2.3\n17 | Las Vegas (3-0) | -0.3 | 9.5-7.5 | 54.9 | 1.7\n18 | LA Chargers (0-3) | -1.2 | 5.9-11.1 | 9.5 | 0.3\n19 | New Orleans (1-2) | -1.2 | 8.3-8.7 | 47.9 | 1.4\n20 | Washington (1-2) | -1.5 | 7.5-9.5 | 23.3 | 0.7\n21 | Green Bay (1-2) | -2.0 | 7.0-10.0 | 15.4 | 0.5\n22 | Carolina (1-2) | -2.0 | 7.2-9.8 | 31.0 | 0.8\n23 | Indianapolis (1-2) | -2.1 | 7.6-9.4 | 25.5 | 0.6\n24 | Pittsburgh (2-2) | -2.2 | 7.7-9.3 | 24.6 | 0.5\n25 | Tampa Bay (0-3) | -2.3 | 6.3-10.7 | 19.1 | 0.5\n26 | NY Giants (2-1) | -2.6 | 8.0-9.0 | 29.8 | 0.7\n27 | Atlanta (1-2) | -4.8 | 5.9-11.1 | 14.2 | 0.2\n28 | NY Jets (1-2) | -5.0 | 6.3-10.7 | 12.3 | 0.2\n29 | Cleveland (3-1) | -5.3 | 7.8-9.2 | 25.6 | 0.2\n30 | Tennessee (0-3) | -6.1 | 4.4-12.6 | 3.2 | 0.0\n31 | Arizona (1-2) | -6.2 | 5.3-11.7 | 3.9 | 0.0\n32 | Miami (0-3) | -10.1 | 3.1-13.9 | 0.6 | 0.0\n\n## This week's matchups (line, kickoff)\nPittsburgh (-3) at Cleveland | Thu 8:15pm\nLA Rams (-3.5) at Philadelphia | Sun 1:00pm\nNew England at Buffalo (-7) | Sun 1:00pm\nGreen Bay (-3.5) at Tampa Bay | Sun 1:00pm\nTennessee "
  }
 }
