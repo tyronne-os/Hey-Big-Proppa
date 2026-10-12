@@ -40,7 +40,23 @@ def _read_csv(name: str) -> list[dict]:
         rows = list(csv.DictReader(fh))
     if name == "schedule":
         _alias_schedule(rows)
+    elif name in _LAR_FILES:
+        _fix_team_codes(rows)
     return rows
+
+
+# Some feeds (RotoWire, news, injuries, transactions) file the Rams as LAR; nflverse and the rest
+# of the app use LA. Normalize on load so a team code always matches across files.
+_LAR_FILES = {"prop_line_rotowire", "injury_narrative", "news_article_tag", "transaction"}
+
+
+def _fix_team_codes(rows: list[dict]) -> None:
+    for r in rows:
+        if r.get("team") == "LAR":
+            r["team"] = "LA"
+        opp = r.get("opponent")
+        if opp and "LAR" in opp:
+            r["opponent"] = opp.replace("LAR", "LA")
 
 
 # The schedule is refreshed straight from nflverse, whose column names differ from the ones

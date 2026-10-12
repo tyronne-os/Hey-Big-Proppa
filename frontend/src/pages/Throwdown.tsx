@@ -29,12 +29,16 @@ export type ThrowdownData = {
 
 // Display order — crazy_horse shown separately as hero
 const ORDER = [
+  "diff_3","diff_5","diff_steady",
   "ladder_3","ladder_5","ladder_7","ladder_9",
   "anytime_td","first_td","air_raid","ground_pound",
   "qb_power","kicker_night","upset","homework",
   "defense_wins",
 ];
 const WHY: Record<string, string> = {
+  diff_3:       "The three biggest green differentials from the Leaders board. Big Proppa sees these clearing the line by the widest margin.",
+  diff_5:       "Every green differential playing tonight, one leg per player. No touchdown scorers.",
+  diff_steady:  "Green differential plus 70%+ of the last five games over the line. The steadiest of the bunch.",
   ladder_3:     "Three highest-probability legs on the board tonight.",
   ladder_5:     "Five confident legs. More legs, bigger payout, still believable.",
   ladder_7:     "Seven-leg stack. You need most of them — Big Proppa thinks you'll get them.",

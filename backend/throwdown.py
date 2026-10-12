@@ -32,6 +32,7 @@ BRANDS = {
 }
 DEFAULT_BRAND = {"title": "THROWDOWN NIGHT", "subtitle": "ONE GAME. ALL THE MONEY."}
 WAGER = 5.0
+DIFF_MIN = 5.0   # a leader differential counts as green from +5% over the posted line
 BOOST = 0.50
 
 
@@ -637,6 +638,35 @@ def _pool(game_id: str) -> list[dict]:
     return out
 
 
+def _differential_legs(game_id: str, pool: list[dict]) -> list[dict]:
+    """
+    The leaders' big green differentials for tonight's two teams: players whose Big Proppa projection
+    sits at least DIFF_MIN percent above a line posted for THIS game. Bettable book markets only
+    (yards and receptions, never a touchdown scorer), one leg per player at his biggest differential.
+    """
+    out: dict[str, dict] = {}
+    for leg in pool:
+        if leg["direction"] != "over":
+            continue
+        row = bpl.nfl_player_line(leg["playerId"], leg["market"], leg["name"], leg["team"])
+        proj, line = row.get("bpl"), leg["line"]
+        if proj is None or not line or not row.get("lineLive"):
+            continue
+        # measured against the line this leg is actually priced at (FanDuel's), not the cross-book median
+        priced = round(100 * (proj - line) / line, 1)
+        diff = row.get("diffPct")          # the Leaders-board differential (vs the cross-book median line)
+        if diff is None or diff < DIFF_MIN or priced < DIFF_MIN:     # green on the board AND at the price you'd take
+            continue
+        l5 = [g["value"] > line for g in (row.get("l5") or [])][-5:]
+        cand = {**leg, "diffPct": diff, "bplProj": proj,
+                "l5Hit": round(sum(l5) / len(l5), 2) if l5 else None,
+                "pricedDiffPct": priced,
+                "correlationNote": f"Big Proppa projects {proj:g} vs a {line:g} line: +{diff}% on the Leaders board, +{priced}% at this price"}
+        if cand["name"] not in out or diff > out[cand["name"]]["diffPct"]:
+            out[cand["name"]] = cand
+    return sorted(out.values(), key=lambda l: -l["diffPct"])
+
+
 def _slip(slip_id: str, title: str, legs: list[dict], note: str = "") -> dict:
     from odds import compute_parlay
     seen: set = set()
@@ -838,7 +868,16 @@ def build(game_id: Optional[str] = None) -> dict:
         return out
 
     underdog = dog[0]["team"] if dog else None
+    diff_legs = _differential_legs(game_id, pool)
+    consistent = [l for l in diff_legs if (l.get("l5Hit") or 0) >= 0.7]
     slips = {
+        # Leaders' green differentials: the touchdown-free tickets
+        "diff_3":      _slip("diff-3",      "BIG PROPPA DIFFERENTIAL 3", diff_legs[:3],
+                             "The three biggest green differentials on the Leaders board for tonight's teams."),
+        "diff_5":      _slip("diff-5",      "BIG PROPPA DIFFERENTIAL 5", diff_legs[:5],
+                             "Every green differential tonight, one leg per player. No touchdown scorers."),
+        "diff_steady": _slip("diff-steady", "GREEN & STEADY",            consistent[:4],
+                             "Green differential and cleared the line in 70%+ of the last five games."),
         "ladder_3":    _slip("ladder-3",    "SAFE 3",            top(allp, 3, per=1),  "Highest-probability legs on the board."),
         "ladder_5":    _slip("ladder-5",    "STACKED 5",         top(allp, 5, per=2)),
         "ladder_7":    _slip("ladder-7",    "LOADED 7",          top(allp, 7, per=2)),

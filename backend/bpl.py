@@ -254,7 +254,7 @@ def _book_lines() -> dict[tuple[str, str, str], dict]:
     for r in data.load("prop_line_rotowire"):
         if r.get("market_slug") not in NFL_MARKETS or not r.get("line"):
             continue
-        key = (r["market_slug"], data.normalize_name(r.get("player_name", "")), r.get("team", ""))
+        key = (r["market_slug"], data.normalize_name(r.get("player_name", "")), _ABBR.get(r.get("team", ""), r.get("team", "")))
         raw.setdefault(key, {}).setdefault(r.get("pull_id", ""), []).append(r)
     out = {}
     for k, pulls in raw.items():
