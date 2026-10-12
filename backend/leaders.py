@@ -61,11 +61,13 @@ def _rank(totals: dict[str, dict]) -> list[dict]:
     return out
 
 
-BPL_ROWS = 75
+BPL_ROWS = 100
+CATEGORY_ROWS = {"RUSHING": 50}
 
 CATEGORY_SOURCES = {
     "RUSHING": ("player_rushing_week", "rushing_yards"),
     "RECEIVING": ("player_receiving_week", "receiving_yards"),
+    "RECEPTIONS": ("player_receiving_week", "receptions"),
     "PASSING": ("player_passing_week", "passing_yards"),
     "SCORING": ("player_scoring_week", "total_points"),
     "FIELD GOALS": ("player_kicking_week", "fg_made"),
@@ -178,7 +180,7 @@ def _leaders(category: str) -> dict:
     rows = _rank(_sum_by_player(src, stat_col))
     market = bpl.LEADER_MARKET.get(category)
     if market:
-        rows = [r for r in rows if r["value"] > 0][:BPL_ROWS]
+        rows = [r for r in rows if r["value"] > 0][:CATEGORY_ROWS.get(category, BPL_ROWS)]
         for r in rows:
             r["bpl"] = bpl.nfl_player_line(r["playerId"], market, r["name"], r["team"])
     return {

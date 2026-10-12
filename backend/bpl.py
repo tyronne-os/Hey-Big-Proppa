@@ -60,7 +60,7 @@ NFL_MARKETS = {
 # team_week column behind each allowed category
 _TEAM_WEEK_COL = {"rush_yds": "rushing_yards", "pass_yds": "passing_yards", "completions": "completions"}
 
-LEADER_MARKET = {"RUSHING": "rushyds", "RECEIVING": "recyds", "PASSING": "passyds"}
+LEADER_MARKET = {"RUSHING": "rushyds", "RECEIVING": "recyds", "RECEPTIONS": "recs", "PASSING": "passyds"}
 
 
 # ---------------------------------------------------------------------------
