@@ -6,7 +6,7 @@ slow on idle days. Each run is timed and its outcome stored (lake/gold/espn/staf
 the STAFF tab in MY BOO and Hermes can all see who is healthy. A failing agent never stops the others.
 
 Agents:  scoreboard_scout  play_clerk  line_watcher  poll_analyst  portal_scout  sec_reporter
-         injury_desk  standings_actuary  data_auditor  director (MY BOO's briefing)  hermes_liaison (manifest export)
+         injury_desk  standings_actuary  stats_reporter  data_auditor  director (MY BOO's briefing)  hermes_liaison (manifest export)
 The schedule lives in AGENTS below and is documented in docs/UTILITY_ROOM.md.
 """
 from __future__ import annotations
@@ -223,12 +223,24 @@ def director() -> str:
     sec = cfb["feeds"]["sec"]
     if sec:
         bullets.append("SEC: " + sec[0]["headline"])
+    try:
+        import jev_reports
+        h = jev_reports.headline()
+        bullets.append("Stats report: " + h if h else "Stats report: JEV's reads are logged and will be graded after tonight's final.")
+    except Exception:
+        pass
     prob = _read("audit.json", {}).get("problems", [])
     bullets.append("Staff: " + ("all agents reporting." if not prob else "problems — " + "; ".join(prob)))
     out = {"at": datetime.now(_CT).strftime("%a %-I:%M %p CT"), "ts": time.time(), "bullets": bullets,
            "text": "Director's briefing. " + " ".join(b if b.endswith((".", "!")) else b + "." for b in bullets)}
     _write("boo_briefing.json", out)
     return f"briefing written ({len(bullets)} items)"
+
+
+def stats_reporter() -> str:
+    """Grades JEV against ESPN finals and files the post-game stats report (jev_reports)."""
+    import jev_reports
+    return jev_reports.run()
 
 
 def hermes_liaison() -> str:
@@ -253,6 +265,7 @@ AGENTS = [
     {"id": "injury_desk", "name": "Injury Desk", "fn": injury_desk, "live": 1800, "idle": 3600, "duty": "NFL injury report snapshot and changes", "endpoint": "/api/espn/injuries", "reads": "ESPN game summaries"},
     {"id": "standings_actuary", "name": "Standings Actuary", "fn": standings_actuary, "live": 1800, "idle": 3600, "duty": "Standings and the live ESPN-derived power rating Jimmy falls back on", "endpoint": "/api/espn/standings", "reads": "ESPN standings"},
     {"id": "data_auditor", "name": "Data Auditor", "fn": data_auditor, "live": 300, "idle": 600, "duty": "Checks every agent for staleness and repeated errors", "endpoint": "/api/boo/staff", "reads": "staff_status.json"},
+    {"id": "stats_reporter", "name": "Stats Reporter", "fn": stats_reporter, "live": 300, "idle": 1800, "duty": "Grades every JEV read against the ESPN final, files the post-game stats report, retunes the blend weight", "endpoint": "/api/boo/stats-report", "reads": "JEV ledger + ESPN finals"},
     {"id": "director", "name": "MY BOO — Director", "fn": director, "live": 300, "idle": 3600, "duty": "Writes the briefing from what the staff found", "endpoint": "/api/boo/staff", "reads": "all snapshots"},
     {"id": "hermes_liaison", "name": "Hermes Liaison", "fn": hermes_liaison, "live": 21600, "idle": 21600, "duty": "Exports the staff manifest for Hermes agents", "endpoint": "/api/boo/staff/manifest", "reads": "AGENTS"},
 ]

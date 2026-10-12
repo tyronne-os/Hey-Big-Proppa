@@ -10,6 +10,14 @@ function ago(ts?: number) {
 /** MY BOO's staff: the director's briefing and every ESPN agent's duty, cadence and health. */
 export default function StaffPanel() {
   const [d, setD] = useState<any>(null);
+  const [sr, setSr] = useState<any>(null);
+  useEffect(() => {
+    let alive = true;
+    const load = () => api.booStatsReport().then((r) => alive && setSr(r)).catch(() => {});
+    load();
+    const t = window.setInterval(load, 60000);
+    return () => { alive = false; window.clearInterval(t); };
+  }, []);
   useEffect(() => {
     let alive = true, timer: number;
     const load = () => api.booStaff().then(r => { if (alive) { setD(r); timer = window.setTimeout(load, 15000); } }).catch(() => { timer = window.setTimeout(load, 30000); });
@@ -24,6 +32,25 @@ export default function StaffPanel() {
         <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.2em", color: "#a78bfa", marginBottom: 6 }}>DIRECTOR'S BRIEFING{d.briefing?.at ? ` · ${d.briefing.at}` : ""} · {d.live_now ? "GAMES LIVE — STAFF ON FAST CADENCE" : "IDLE CADENCE"}</div>
         {(d.briefing?.bullets ?? []).map((b: string, i: number) => <div key={i} style={{ fontSize: 12.5, lineHeight: 1.5 }}>• {b}</div>)}
         {!d.briefing?.bullets?.length && <div style={{ fontSize: 12, color: "var(--bp-muted)" }}>The first briefing is being written.</div>}
+      </div>
+      <div style={{ ...card, padding: 14, borderColor: "#d9b45a" }}>
+        <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: "0.2em", color: "#d9b45a", marginBottom: 6 }}>STATS REPORT · MY BOO · GRADES JEV AGAINST THE ESPN FINAL{sr?.updated ? ` · ${sr.updated}` : ""}</div>
+        {sr?.latest ? (
+          <>
+            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.45 }}>{sr.latest.headline}</div>
+            {sr.latest.bestCalls?.length > 0 && <div style={{ fontSize: 12, marginTop: 6 }}><b style={{ color: "#22c55e" }}>BEST CALLS</b>{sr.latest.bestCalls.map((c: any) => <div key={c.read}>• {c.read} — JEV {Math.round(c.jevP * 100)}%, {c.result}</div>)}</div>}
+            {sr.latest.worstMisses?.length > 0 && <div style={{ fontSize: 12, marginTop: 6 }}><b style={{ color: "#ef4444" }}>WORST MISSES</b>{sr.latest.worstMisses.map((c: any) => <div key={c.read}>• {c.read} — JEV {Math.round(c.jevP * 100)}%, {c.result}</div>)}</div>}
+          </>
+        ) : (
+          <div style={{ fontSize: 12.5, color: "var(--bp-muted)" }}>{sr?.scorecard?.open ?? 0} JEV reads are logged and waiting on finals. The first report posts when tonight's game ends.</div>
+        )}
+        {sr?.scorecard?.groups && (
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 11, marginTop: 8, color: "var(--bp-muted)" }}>
+            {(["prop", "game"] as const).map((g) => { const x = sr.scorecard.groups[g]; return x ? (
+              <span key={g}><b style={{ color: "var(--bp-fg)" }}>{g === "prop" ? "PROPS" : "GAMES"}</b> graded {x.graded} · JEV weight {Math.round(x.weightNow * 100)}%{x.brier?.jevOnly != null ? ` · Brier JEV ${x.brier.jevOnly} vs BPL ${x.brier.bplOnly}` : ""}{x.profitZone?.jev?.calls ? ` · profit zone ${x.profitZone.jev.calls} calls, ${Math.round((x.profitZone.jev.hitRate ?? 0) * 100)}% hit` : ""}</span>
+            ) : null; })}
+          </div>
+        )}
       </div>
       <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}>
         {d.agents.map((a: any) => {

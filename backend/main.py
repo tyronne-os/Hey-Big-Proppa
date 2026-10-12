@@ -321,6 +321,13 @@ def api_jev_game_brain(away: str, home: str, read: bool = False):
     return out
 
 
+@app.get("/api/boo/stats-report")
+def api_boo_stats_report(limit: int = 10):
+    """MY BOO's Stats Reporter: post-game reports grading JEV and the Big Proppa Line against ESPN finals, plus the running scorecard."""
+    import jev_reports
+    return jev_reports.latest(limit)
+
+
 @app.get("/api/jev/report")
 def api_jev_report(settle: bool = True):
     """How JEV is actually doing: every read graded against ESPN finals, Brier scores, calibration, live blend weights."""

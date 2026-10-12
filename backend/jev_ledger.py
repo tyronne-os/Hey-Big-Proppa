@@ -8,8 +8,9 @@ That is how "JEV is smarter" stays a measured claim instead of a hope:
   weight()  the JEV blend weight, tuned from settled rows (0.25 until 40 rows exist, then whatever weight in
             0-0.60 minimizes the blend's Brier score on the graded history)
 
-Rows live in lake/gold/espn/jev_ledger.jsonl. Hugging Face Spaces wipe their disk on restart, so when
-HF_TOKEN is set the ledger also syncs to a private dataset repo (JEV_LEDGER_REPO) and reloads from it.
+MY BOO owns the grading: her Stats Reporter staff agent (boo_staff, via jev_reports) calls settle(), writes the
+post-game reports and keeps this file mirrored. The ledger lives beside her other records in lake/gold/nfl and
+rides her existing backup (boo_store -> AIBRUH/big-proppa-lake/myboo/), so a Space restart never loses a read.
 """
 from __future__ import annotations
 
@@ -22,11 +23,12 @@ from pathlib import Path
 
 import data
 
-_FILE = Path(__file__).resolve().parent.parent / "lake" / "gold" / "espn" / "jev_ledger.jsonl"
-_REPO = os.environ.get("JEV_LEDGER_REPO", "AIBRUH/big-proppa-jev-ledger")
+_FILE = Path(__file__).resolve().parent.parent / "lake" / "gold" / "nfl" / "myboo_jev_ledger.jsonl"
+_LEGACY_REPO = "AIBRUH/big-proppa-jev-ledger"      # first home of the ledger; imported once if MY BOO's copy is missing
 _LOCK = threading.Lock()
 _ROWS: dict[str, dict] | None = None
-_STATE = {"dirty": False, "lastSync": 0.0, "lastSettle": 0.0, "worker": False, "syncError": None}
+_STATE = {"lastSettle": 0.0}
+_RECENT: list[str] = []                         # ESPN game ids settled since MY BOO's reporter last looked
 DEFAULT_WEIGHT = 0.25
 MIN_ROWS_TO_TUNE = 40
 GAME_KINDS = ("total", "spread", "ml")
@@ -42,13 +44,13 @@ def _load() -> dict[str, dict]:
         return _ROWS
     rows: dict[str, dict] = {}
     if not _FILE.exists() and os.environ.get("HF_TOKEN"):
-        try:
+        try:                                      # one-time import of the ledger's first home
             from huggingface_hub import hf_hub_download
-            p = hf_hub_download(_REPO, "jev_ledger.jsonl", repo_type="dataset", token=os.environ["HF_TOKEN"])
+            p = hf_hub_download(_LEGACY_REPO, "jev_ledger.jsonl", repo_type="dataset", token=os.environ["HF_TOKEN"])
             _FILE.parent.mkdir(parents=True, exist_ok=True)
             _FILE.write_text(Path(p).read_text())
-        except Exception as exc:
-            _STATE["syncError"] = f"load: {type(exc).__name__}"
+        except Exception:
+            pass
     if _FILE.exists():
         for ln in _FILE.read_text().splitlines():
             try:
@@ -67,19 +69,13 @@ def _save() -> None:
     tmp.replace(_FILE)
 
 
-def _sync(force: bool = False) -> None:
-    tok = os.environ.get("HF_TOKEN")
-    if not tok or not _FILE.exists() or (not force and time.time() - _STATE["lastSync"] < 900):
-        return
+def _mirror(force: bool = False) -> None:
+    """MY BOO's backup (boo_store) -- throttled to once per 30 s unless forced."""
     try:
-        from huggingface_hub import HfApi
-        api = HfApi(token=tok)
-        api.create_repo(_REPO, repo_type="dataset", private=True, exist_ok=True)
-        api.upload_file(path_or_fileobj=str(_FILE), path_in_repo="jev_ledger.jsonl", repo_id=_REPO, repo_type="dataset",
-                        commit_message="JEV ledger sync")
-        _STATE["lastSync"], _STATE["syncError"] = time.time(), None
-    except Exception as exc:
-        _STATE["syncError"] = f"upload: {type(exc).__name__}"
+        import boo_store
+        boo_store.push(force=force)
+    except Exception:
+        pass
 
 
 _ESPN_IDS: dict[str, str] = {}
@@ -101,8 +97,7 @@ def record(kind: str, key: str, **fields) -> None:
             return
         rows[key] = {"key": key, "kind": kind, "created": _now(), "settled": False, **fields}
         _save()
-        _STATE["dirty"] = True
-    _ensure_worker()
+    _mirror()
 
 
 def _outcome(row: dict, lg: dict) -> tuple[float | None, int | None]:
@@ -143,27 +138,25 @@ def settle() -> int:
                 r.update(settled=True, settledAt=_now(), actual=actual, hit=hit, void=hit is None)
                 done += 1
             _save()
-            _STATE["dirty"] = True
+            if gid not in _RECENT:
+                _RECENT.append(gid)
     _STATE["lastSettle"] = time.time()
+    if done:
+        _mirror(force=True)
     return done
 
 
-def _worker() -> None:
-    while True:
-        try:
-            settle()
-            if _STATE["dirty"]:
-                _sync()
-                _STATE["dirty"] = bool(_STATE["syncError"])
-        except Exception:
-            pass
-        time.sleep(1200)
+def pop_newly_settled() -> list[str]:
+    """ESPN game ids graded since the last call (MY BOO's reporter writes one stats report per game)."""
+    with _LOCK:
+        out = list(_RECENT)
+        _RECENT.clear()
+    return out
 
 
-def _ensure_worker() -> None:
-    if not _STATE["worker"]:
-        _STATE["worker"] = True
-        threading.Thread(target=_worker, daemon=True, name="jev-ledger").start()
+def rows_for_game(espn_id: str) -> list[dict]:
+    with _LOCK:
+        return [dict(r) for r in _load().values() if r.get("espnId") == espn_id and r.get("settled")]
 
 
 def _graded(kinds) -> list[dict]:
@@ -191,6 +184,14 @@ def weight(group: str = "prop") -> float:
     return w
 
 
+def _durable() -> bool:
+    try:
+        import boo_store
+        return boo_store.enabled()
+    except Exception:
+        return False
+
+
 def _zone(rows: list[dict]) -> dict:
     """Calls graded at 85%+ confidence (either side), and how often the favored side actually hit."""
     out = {}
@@ -206,7 +207,7 @@ def report() -> dict:
         rows = list(_load().values())
     out = {"rows": len(rows), "settled": sum(1 for r in rows if r.get("settled")), "open": sum(1 for r in rows if not r.get("settled")),
            "lastSettle": dt.datetime.fromtimestamp(_STATE["lastSettle"], dt.timezone.utc).isoformat(timespec="seconds") if _STATE["lastSettle"] else None,
-           "durableSync": bool(os.environ.get("HF_TOKEN")), "syncError": _STATE["syncError"], "groups": {}}
+           "durableSync": _durable(), "owner": "MY BOO (Stats Reporter)", "groups": {}}
     for group, kinds in (("prop", ("prop",)), ("game", GAME_KINDS)):
         g = _graded(kinds)
         buckets = []
