@@ -21,7 +21,7 @@ import main as bp  # noqa: E402  the existing FastAPI app, unchanged
 with gr.Blocks(title="Big Proppa runtime") as status:
     gr.Markdown("Big Proppa is running. The app is at the site root.")
 
-app = gr.mount_gradio_app(bp.app, status, path="/__gradio")
+app = gr.mount_gradio_app(bp.app, status, path="/__gradio", ssr_mode=False)
 
 def _diag() -> None:
     import subprocess
