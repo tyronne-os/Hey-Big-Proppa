@@ -1406,6 +1406,14 @@ def api_passcode(body: dict):
     # SHA-256 of "7779311baby"
     HASH = os.environ.get("BP_PASSCODE_HASH", "f3a3e2d2b9c4a1e5e6f7d8c9b0a1e2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9")
     given = hashlib.sha256(code.encode()).hexdigest()
+    # Monday Night has its own passcode (hash only; override with BP_PASSCODE_MONDAY_HASH).
+    # It does not unlock the other parlay pages, and theirs does not unlock Monday.
+    MONDAY_HASH = os.environ.get("BP_PASSCODE_MONDAY_HASH", "2796c527960920c161bf5712c873aaa7e3b66d1301ae584045b0634695fed96d")
+    if body.get("page") == "monday":
+        if given == MONDAY_HASH:
+            return {"ok": True}
+        from fastapi import HTTPException
+        raise HTTPException(401, "Wrong passcode")
     # Fallback: accept the literal passcode if env hash not customized
     if code == "7779311baby" or given == HASH:
         return {"ok": True}
