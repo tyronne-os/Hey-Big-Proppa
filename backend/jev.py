@@ -46,6 +46,14 @@ def _client():
     return TypeSafeClient(api_key=key, model="jev-latest", timeout=8.0)
 
 
+def _new_client():
+    """A fresh client per call: the SDK client cannot be reused after its `with` block closes it."""
+    key = os.environ.get("JEV_API_KEY") or os.environ.get("TYPESAFE_API_KEY")
+    if not key or TypeSafeClient is None:
+        return None
+    return TypeSafeClient(api_key=key, model="jev-latest", timeout=8.0)
+
+
 def available() -> bool:
     return _client() is not None
 
@@ -127,8 +135,8 @@ def leg_probability(
 
     _STATS["calls"] += 1
     try:
-        with client:
-            response = client.system_one(
+        with _new_client() as call_client:
+            response = call_client.system_one(
                 state=state,
                 questions={
                     "hits": Noul(
