@@ -1,70 +1,58 @@
 chart_name,source_table_or_view,grain,row_count,last_exported_at_utc,source_name,status
-player_passing_week,silver.nfl_player_passing_week,one row per player per week,5354,2026-10-12T02:50:59.151871+00:00,nflverse,ok
-player_rushing_week,silver.nfl_player_rushing_week,one row per player per week,5354,2026-10-12T02:50:59.201115+00:00,nflverse,ok
-player_receiving_week,silver.nfl_player_receiving_week,one row per player per week,5354,2026-10-12T02:50:59.237286+00:00,nflverse,ok
-player_scrimmage_week,silver.nfl_player_scrimmage_week,one row per player per week,5354,2026-10-12T02:50:59.307707+00:00,nflverse,ok
-player_defense_week,silver.nfl_player_defense_week,one row per player per week,5354,2026-10-12T02:50:59.343371+00:00,nflverse,ok
-player_scoring_week,silver.nfl_player_scoring_week,one row per player per week,5354,2026-10-12T02:50:59.391106+00:00,nflverse,ok
-player_kicking_week,silver.nfl_player_kicking_week,one row per player per week,5354,2026-10-12T02:50:59.445195+00:00,nflverse,ok
-player_returns_week,silver.nfl_player_returns_week,one row per player per week,5354,2026-10-12T02:50:59.517866+00:00,nflverse,ok
-pfr_adv_passing_week,silver.nfl_pfr_adv_passing_week,one row per player per week,152,2026-10-12T02:50:59.550427+00:00,nflverse (PFR mirror),ok
-pfr_adv_rushing_week,silver.nfl_pfr_adv_rushing_week,one row per player per week,512,2026-10-12T02:50:59.556130+00:00,nflverse (PFR mirror),ok
-pfr_adv_receiving_week,silver.nfl_pfr_adv_receiving_week,one row per player per week,1048,2026-10-12T02:50:59.562974+00:00,nflverse (PFR mirror),ok
-pfr_adv_defense_week,silver.nfl_pfr_adv_defense_week,one row per player per week,1841,2026-10-12T02:50:59.575782+00:00,nflverse (PFR mirror),ok
-team_week,silver.nfl_team_week,one row per team per week,154,2026-10-12T02:50:59.596003+00:00,nflverse,ok
-td_log,silver.nfl_td_log,one row per touchdown play,397,2026-10-12T02:50:59.608177+00:00,nflverse (play-by-play),ok
-td_team_summary,silver.v_nfl_td_team_summary,"one row per team per season, scored vs allowed",32,2026-10-12T02:50:59.619455+00:00,nflverse (derived),ok
-anytime_td_scorers,silver.v_nfl_anytime_td_scorers,one row per player per season,212,2026-10-12T02:50:59.632391+00:00,nflverse (derived),ok
-prop_line_rotowire,gold.nfl_prop_line_rotowire,one row per player/game/book/market/pull (append-only),0,2026-10-12T02:50:59.641723+00:00,rotowire,"error: Catalog Error: Table with name nfl_prop_line_rotowire does not exist!
-Did you mean ""nfl_prop_line""?
-
-LINE 1: SELECT * FROM gold.nfl_prop_line_rotowire
-                      ^"
-prop_best_price,gold.v_nfl_prop_best_price,"one row per player/game/market, best price across tracked books",0,2026-10-12T02:50:59.654969+00:00,rotowire (derived),"error: Catalog Error: Table with name v_nfl_prop_best_price does not exist!
-Did you mean ""v_nfl_team_report_card""?
-
-LINE 1: SELECT * FROM gold.v_nfl_prop_best_price
-                      ^"
-prop_line_movement,gold.v_nfl_prop_line_movement,one row per player/market/book with 2+ snapshots,0,2026-10-12T02:50:59.655678+00:00,rotowire (derived),"error: Catalog Error: Table with name v_nfl_prop_line_movement does not exist!
-Did you mean ""v_nfl_player_usage_components""?
-
-LINE 1: SELECT * FROM gold.v_nfl_prop_line_movement
-                      ^"
-injury_report_official,silver.nfl_injury_report,one row per player per week (league practice/game report),1413,2026-10-12T02:50:59.656189+00:00,nflverse,ok
-injury_narrative,silver.nfl_injury_narrative,one row per player per snapshot (why-it-matters context),800,2026-10-12T02:50:59.674713+00:00,espn,ok
-news_article,silver.nfl_news_article,one row per article (headline + summary),83,2026-10-12T02:50:59.700929+00:00,espn,ok
-news_article_tag,silver.nfl_news_article_tag,one row per article/subject tag (links articles to players/teams),571,2026-10-12T02:50:59.706842+00:00,espn,ok
-transaction,silver.nfl_transaction,one row per roster move,25,2026-10-12T02:50:59.714336+00:00,espn,ok
-schedule,silver.nfl_schedule,"one row per game, 2026 season",272,2026-10-12T02:50:59.717579+00:00,nflverse,ok
-match_page_today,gold.v_match_page_today,one row per matchup happening today (empty on non-game days),0,2026-10-12T02:50:59.727450+00:00,derived,"error: Catalog Error: Table with name v_match_page_today does not exist!
+player_passing_week,silver.nfl_player_passing_week,one row per player per week,5354,2026-10-12T02:57:03.556262+00:00,nflverse,ok
+player_rushing_week,silver.nfl_player_rushing_week,one row per player per week,5354,2026-10-12T02:57:03.601785+00:00,nflverse,ok
+player_receiving_week,silver.nfl_player_receiving_week,one row per player per week,5354,2026-10-12T02:57:03.636349+00:00,nflverse,ok
+player_scrimmage_week,silver.nfl_player_scrimmage_week,one row per player per week,5354,2026-10-12T02:57:03.687802+00:00,nflverse,ok
+player_defense_week,silver.nfl_player_defense_week,one row per player per week,5354,2026-10-12T02:57:03.726324+00:00,nflverse,ok
+player_scoring_week,silver.nfl_player_scoring_week,one row per player per week,5354,2026-10-12T02:57:03.771467+00:00,nflverse,ok
+player_kicking_week,silver.nfl_player_kicking_week,one row per player per week,5354,2026-10-12T02:57:03.812344+00:00,nflverse,ok
+player_returns_week,silver.nfl_player_returns_week,one row per player per week,5354,2026-10-12T02:57:03.876837+00:00,nflverse,ok
+pfr_adv_passing_week,silver.nfl_pfr_adv_passing_week,one row per player per week,152,2026-10-12T02:57:03.906659+00:00,nflverse (PFR mirror),ok
+pfr_adv_rushing_week,silver.nfl_pfr_adv_rushing_week,one row per player per week,512,2026-10-12T02:57:03.911852+00:00,nflverse (PFR mirror),ok
+pfr_adv_receiving_week,silver.nfl_pfr_adv_receiving_week,one row per player per week,1048,2026-10-12T02:57:03.918835+00:00,nflverse (PFR mirror),ok
+pfr_adv_defense_week,silver.nfl_pfr_adv_defense_week,one row per player per week,1841,2026-10-12T02:57:03.928042+00:00,nflverse (PFR mirror),ok
+team_week,silver.nfl_team_week,one row per team per week,154,2026-10-12T02:57:03.951470+00:00,nflverse,ok
+td_log,silver.nfl_td_log,one row per touchdown play,397,2026-10-12T02:57:03.961238+00:00,nflverse (play-by-play),ok
+td_team_summary,silver.v_nfl_td_team_summary,"one row per team per season, scored vs allowed",32,2026-10-12T02:57:03.973955+00:00,nflverse (derived),ok
+anytime_td_scorers,silver.v_nfl_anytime_td_scorers,one row per player per season,212,2026-10-12T02:57:03.985916+00:00,nflverse (derived),ok
+prop_line_rotowire,gold.nfl_prop_line_rotowire,one row per player/game/book/market/pull (append-only),11080,2026-10-12T02:57:03.992528+00:00,rotowire,ok
+prop_best_price,gold.v_nfl_prop_best_price,"one row per player/game/market, best price across tracked books",4008,2026-10-12T02:57:04.188279+00:00,rotowire (derived),ok
+prop_line_movement,gold.v_nfl_prop_line_movement,one row per player/market/book with 2+ snapshots,1235,2026-10-12T02:57:04.226841+00:00,rotowire (derived),ok
+injury_report_official,silver.nfl_injury_report,one row per player per week (league practice/game report),1413,2026-10-12T02:57:04.261662+00:00,nflverse,ok
+injury_narrative,silver.nfl_injury_narrative,one row per player per snapshot (why-it-matters context),800,2026-10-12T02:57:04.273877+00:00,espn,ok
+news_article,silver.nfl_news_article,one row per article (headline + summary),83,2026-10-12T02:57:04.294053+00:00,espn,ok
+news_article_tag,silver.nfl_news_article_tag,one row per article/subject tag (links articles to players/teams),571,2026-10-12T02:57:04.297824+00:00,espn,ok
+transaction,silver.nfl_transaction,one row per roster move,25,2026-10-12T02:57:04.302034+00:00,espn,ok
+schedule,silver.nfl_schedule,"one row per game, 2026 season",272,2026-10-12T02:57:04.306252+00:00,nflverse,ok
+match_page_today,gold.v_match_page_today,one row per matchup happening today (empty on non-game days),0,2026-10-12T02:57:04.313577+00:00,derived,"error: Catalog Error: Table with name v_match_page_today does not exist!
 Did you mean ""v_nfl_matchup_toxicity""?
 
 LINE 1: SELECT * FROM gold.v_match_page_today
                       ^"
-matchup_weather_signal,gold.v_matchup_weather_signal,"one row per game, raw weather signal (no impact scoring)",0,2026-10-12T02:50:59.728369+00:00,nflverse (derived),"error: Catalog Error: Table with name v_matchup_weather_signal does not exist!
+matchup_weather_signal,gold.v_matchup_weather_signal,"one row per game, raw weather signal (no impact scoring)",0,2026-10-12T02:57:04.327921+00:00,nflverse (derived),"error: Catalog Error: Table with name v_matchup_weather_signal does not exist!
 Did you mean ""v_nfl_player_usage_td_correlation""?
 
 LINE 1: SELECT * FROM gold.v_matchup_weather_signal
                       ^"
-matchup_game_odds,gold.v_matchup_game_odds,one row per game with a posted spread/total line,0,2026-10-12T02:50:59.729037+00:00,nflverse (derived),"error: Catalog Error: Table with name v_matchup_game_odds does not exist!
+matchup_game_odds,gold.v_matchup_game_odds,one row per game with a posted spread/total line,0,2026-10-12T02:57:04.328668+00:00,nflverse (derived),"error: Catalog Error: Table with name v_matchup_game_odds does not exist!
 Did you mean ""v_nfl_matchup_toxicity""?
 
 LINE 1: SELECT * FROM gold.v_matchup_game_odds
                       ^"
-opportunity_event,silver.nfl_opportunity_event,one row per opportunity (target or carry) with stress level,8970,2026-10-12T02:50:59.729523+00:00,nflverse (play-by-play),ok
-opportunity_spine,silver.v_nfl_opportunity_spine,one row per player per game -- position-gated opportunity + intra-team share,1458,2026-10-12T02:50:59.910925+00:00,nflverse (derived),ok
-stress_split,silver.v_nfl_stress_split,"one row per player per season -- share when calm vs under stress, and the delta",441,2026-10-12T02:50:59.939825+00:00,nflverse (derived),ok
-redzone_tiers,silver.v_nfl_redzone_tiers,"one row per player per season -- Inside 20/10/5 tiers, intra-team share",320,2026-10-12T02:50:59.968819+00:00,nflverse (derived),ok
-opportunity_location_map,silver.v_nfl_opportunity_location_map,one row per player/side/depth-or-gap -- where the ball actually went,3147,2026-10-12T02:50:59.986788+00:00,nflverse (derived),ok
-depth_chart_pregame,silver.v_nfl_depth_chart_pregame,"one row per game/team/depth slot, latest snapshot before kickoff",10370,2026-10-12T02:51:00.016371+00:00,"nflverse (depth_charts, derived)",ok
-player_usage_components,gold.v_nfl_player_usage_components,"one row per player per season -- all five layers, facts only, no weighting",441,2026-10-12T02:51:00.578590+00:00,nflverse (derived),ok
-player_usage,gold.v_nfl_player_usage_index,"one row per player per season -- weighted indicator + role (HEURISTIC, not backtested)",441,2026-10-12T02:51:00.872112+00:00,nflverse (derived),ok
-player_usage_by_team,gold.v_nfl_player_usage_by_team,"one row per player, ranked within his own team",441,2026-10-12T02:51:01.153450+00:00,nflverse (derived),ok
-player_usage_td_correlation,gold.v_nfl_player_usage_td_correlation,"one row per player -- confidence read vs. actual TDs scored (if this, then that also)",316,2026-10-12T02:51:01.421632+00:00,nflverse (derived),ok
-points_by_half,silver.nfl_points_by_half,one row per team per game per half -- points allowed,292,2026-10-12T02:51:01.706832+00:00,"nflverse (play-by-play, derived)",ok
-team_defense_season,silver.v_nfl_team_defense_season,"one row per team per season -- rankings in defense/sacks/INTs/turnovers, win %",32,2026-10-12T02:51:01.711958+00:00,nflverse (derived),ok
-individual_sacks,silver.v_nfl_individual_sacks,one row per defender per season with sacks -- who gets the sacks,224,2026-10-12T02:51:01.734569+00:00,nflverse (derived),ok
-individual_interceptions,silver.v_nfl_individual_interceptions,one row per defender per season with INTs -- who intercepts the ball,87,2026-10-12T02:51:01.748746+00:00,nflverse (derived),ok
-defense_ib_score,gold.v_nfl_defense_ib_score,"one row per team per season -- QB-comfort toxicity index, 1-5 category (HEURISTIC)",32,2026-10-12T02:51:01.760940+00:00,nflverse (derived),ok
-matchup_toxicity,gold.v_nfl_matchup_toxicity,one row per scheduled game -- each offense's opposing defense toxicity,272,2026-10-12T02:51:01.796965+00:00,nflverse (derived),ok
-team_ats_current,silver.v_nfl_team_ats_current,"one row per team, last-5/last-10 ATS cover %% as of most recent game",32,2026-10-12T02:51:01.845567+00:00,"nflverse (derived, computed not sourced)",ok
+opportunity_event,silver.nfl_opportunity_event,one row per opportunity (target or carry) with stress level,8970,2026-10-12T02:57:04.329195+00:00,nflverse (play-by-play),ok
+opportunity_spine,silver.v_nfl_opportunity_spine,one row per player per game -- position-gated opportunity + intra-team share,1458,2026-10-12T02:57:04.486890+00:00,nflverse (derived),ok
+stress_split,silver.v_nfl_stress_split,"one row per player per season -- share when calm vs under stress, and the delta",441,2026-10-12T02:57:04.511563+00:00,nflverse (derived),ok
+redzone_tiers,silver.v_nfl_redzone_tiers,"one row per player per season -- Inside 20/10/5 tiers, intra-team share",320,2026-10-12T02:57:04.532457+00:00,nflverse (derived),ok
+opportunity_location_map,silver.v_nfl_opportunity_location_map,one row per player/side/depth-or-gap -- where the ball actually went,3147,2026-10-12T02:57:04.545844+00:00,nflverse (derived),ok
+depth_chart_pregame,silver.v_nfl_depth_chart_pregame,"one row per game/team/depth slot, latest snapshot before kickoff",10370,2026-10-12T02:57:04.566705+00:00,"nflverse (depth_charts, derived)",ok
+player_usage_components,gold.v_nfl_player_usage_components,"one row per player per season -- all five layers, facts only, no weighting",441,2026-10-12T02:57:04.990421+00:00,nflverse (derived),ok
+player_usage,gold.v_nfl_player_usage_index,"one row per player per season -- weighted indicator + role (HEURISTIC, not backtested)",441,2026-10-12T02:57:05.255804+00:00,nflverse (derived),ok
+player_usage_by_team,gold.v_nfl_player_usage_by_team,"one row per player, ranked within his own team",441,2026-10-12T02:57:05.526797+00:00,nflverse (derived),ok
+player_usage_td_correlation,gold.v_nfl_player_usage_td_correlation,"one row per player -- confidence read vs. actual TDs scored (if this, then that also)",316,2026-10-12T02:57:05.798857+00:00,nflverse (derived),ok
+points_by_half,silver.nfl_points_by_half,one row per team per game per half -- points allowed,292,2026-10-12T02:57:06.079270+00:00,"nflverse (play-by-play, derived)",ok
+team_defense_season,silver.v_nfl_team_defense_season,"one row per team per season -- rankings in defense/sacks/INTs/turnovers, win %",32,2026-10-12T02:57:06.083328+00:00,nflverse (derived),ok
+individual_sacks,silver.v_nfl_individual_sacks,one row per defender per season with sacks -- who gets the sacks,224,2026-10-12T02:57:06.104037+00:00,nflverse (derived),ok
+individual_interceptions,silver.v_nfl_individual_interceptions,one row per defender per season with INTs -- who intercepts the ball,87,2026-10-12T02:57:06.115023+00:00,nflverse (derived),ok
+defense_ib_score,gold.v_nfl_defense_ib_score,"one row per team per season -- QB-comfort toxicity index, 1-5 category (HEURISTIC)",32,2026-10-12T02:57:06.124509+00:00,nflverse (derived),ok
+matchup_toxicity,gold.v_nfl_matchup_toxicity,one row per scheduled game -- each offense's opposing defense toxicity,272,2026-10-12T02:57:06.150534+00:00,nflverse (derived),ok
+team_ats_current,silver.v_nfl_team_ats_current,"one row per team, last-5/last-10 ATS cover %% as of most recent game",32,2026-10-12T02:57:06.195041+00:00,"nflverse (derived, computed not sourced)",ok
