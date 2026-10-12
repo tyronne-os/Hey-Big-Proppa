@@ -49,3 +49,11 @@ Backend needs `backend/.venv` (`pip install -r backend/requirements.txt`).
 - Open security item: parlay passcode is hardcoded in `ParlaysPage.tsx` and `SundayParlaysPage.tsx` — move to a backend check.
 - Stale "JEV NOT WIRED" comments in `jimmy.py` and `main.py`.
 - Branch `claude/tender-gauss-96z5nu` is ahead of `main`; HF Space needs a fresh `npm run build` `dist/` before redeploy.
+
+## Status as of 2026-10-12 (end of night handoff)
+
+- **Live site: HF Space `AIBRUH/big-proppa-live`** (Gradio SDK, raw mode). `space_gradio/app.py` mounts the unchanged FastAPI backend + built React/React Flow `frontend/dist`; Gradio is only a status page at `/__gradio` (SSR must stay off: it grabs port 7860). Verified live: shell and assets byte-identical to the build. Redeploy: `SPACE_ID=AIBRUH/big-proppa-live python scripts/deploy_gradio_space.py` (needs a built `frontend/dist` and an `HF_TOKEN` that authenticates).
+- Old Docker Space `AIBRUH/big-proppa` is PAUSED; retire it once the new one is signed off.
+- **TODO in the morning:** add Space secrets to `big-proppa-live` (`JEV_API_KEY`, Odds API key, `TANK01_API_KEY`; secrets do not copy between Spaces). The `HF_TOKEN` stored in the Claude environment returned 401 all session; deploys ran from an HF sandbox using the HF connector instead. Replace it.
+- Lake refreshed through week 5 on 2026-10-11/12 (nflverse, ESPN news/injuries, TeamRankings power ratings, Rotowire props). Not refreshed: `match_page_today`, `matchup_weather_signal`, `matchup_game_odds` (need the odds feed keys). `betiq.teamrankings.com` is a paywall: do not pull it.
+- Week 5 SNF BAL @ ATL and MNF BUF @ LA were not final at refresh time; rerun the lake refresh after Monday night.
