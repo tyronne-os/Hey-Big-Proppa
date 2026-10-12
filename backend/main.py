@@ -288,6 +288,41 @@ def api_jimmy_spy_boy():
     return {"legs": jimmy_bpl.spy_boy_legs(), "board": jimmy_bpl.QUESTION_BOARD, "minP": jimmy_bpl.SPY_MIN_P}
 
 
+@app.get("/api/jimmy/jev-stats")
+def api_jimmy_jev_stats():
+    """
+    JEV influence report for the current slate: how many legs JEV weighed in on,
+    average BPL-only vs blended probability, and which legs moved the most.
+    The React Flow JIMMY node reads this to show whether JEV is active and pulling weight.
+    """
+    sides = jimmy_bpl.cached_sides()
+    jev_legs = [s for s in sides if s.get("jevActive")]
+    total = len(sides)
+    influenced = len(jev_legs)
+    avg_shift = 0.0
+    biggest: list[dict] = []
+    for s in jev_legs:
+        jev_p = s["jevP"]
+        model_p = s["modelP"]
+        # modelP is already blended; shift vs pure-BPL = (modelP - bpl_po) which we can't recover exactly,
+        # but jevP vs modelP gap gives the JEV delta direction
+        shift = abs(jev_p - model_p)
+        avg_shift += shift
+        biggest.append({"name": s["name"], "market": s["market"], "direction": s["direction"],
+                        "line": s["line"], "jevP": jev_p, "modelP": model_p, "shift": round(shift, 3)})
+    if jev_legs:
+        avg_shift = round(avg_shift / influenced, 4)
+    biggest = sorted(biggest, key=lambda x: -x["shift"])[:5]
+    return {
+        "jevConnected": jev.available(),
+        "totalLegs": total,
+        "jevInfluencedLegs": influenced,
+        "influenceRate": round(influenced / total, 3) if total else 0,
+        "avgProbShift": avg_shift,
+        "biggestMoves": biggest,
+    }
+
+
 _PAUSED = {"paused": True, "message": "Jimmy's LLM mode is paused. Jimmy now runs on the Big Proppa Line (see /api/parlays/engine).",
            "questions": [], "parlays": [], "exploitParlays": [], "nuggets": []}
 

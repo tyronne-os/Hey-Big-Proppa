@@ -128,15 +128,29 @@ def _player_index() -> dict[tuple[str, str], str]:
 def _side_dicts(pid: str, name: str, team: str, game: dict, market: str, line: float, row: dict,
                 offers: list[tuple[str, float, float, float]], alt: bool) -> list[dict]:
     """offers: (side, decimal, american, book probability). Scores each side against the BPL."""
+    import jev as _jev
     parts = row["parts"]
     po = p_over(market, parts["raw"], line)
     if po is None:
         return []
     recent = [g["value"] for g in row["l5"]]
     gap = bpl.diff_pct(row["bpl"], line)
+
+    # JEV second opinion: independent holistic read on the over probability.
+    # Blended 75 BPL / 25 JEV when available; gracefully falls back to BPL-only.
+    hit_rate = (sum(1 for v in recent if v > line) / len(recent)) if recent else None
+    jev_po = _jev.leg_probability(
+        pid, name, team, market, "over", line,
+        hit_rate=hit_rate,
+        usage_score=float(parts.get("usage") or 0) or None,
+        matchup_edge=float(parts.get("matchup_edge") or 0) or None,
+        opponent=game.get("opp"),
+    )
+    po_final = round(0.75 * po + 0.25 * jev_po, 4) if jev_po is not None else po
+
     out = []
     for side, dec, px, book_p in offers:
-        p = po if side == "over" else 1 - po
+        p = po_final if side == "over" else 1 - po_final
         hits = sum(1 for v in recent if (v > line if side == "over" else v < line))
         out.append({
             "playerId": pid, "name": name, "team": team, "market": market,
@@ -145,6 +159,8 @@ def _side_dicts(pid: str, name: str, team: str, game: dict, market: str, line: f
             "bpl": row["bpl"], "gapPct": gap, "gameId": game["gameId"], "week": game["week"],
             "prop": f"{side.upper()} {line:g} {MARKET_LABEL[market]}" + (" (ALT)" if alt else ""),
             "l5": row["seasonAvg"] or 0, "alt": alt,
+            "jevP": round(jev_po, 3) if jev_po is not None else None,
+            "jevActive": jev_po is not None,
         })
     return out
 
