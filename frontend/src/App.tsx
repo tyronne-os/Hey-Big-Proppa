@@ -22,6 +22,7 @@ import OddsTab from "./components/OddsTab";
 import LiveTicker from "./components/LiveTicker";
 import CollegeTab from "./components/CollegeTab";
 import { api } from "./api";
+import type { TicketCtx } from "./components/h2hShared";
 import type { ChartIndexRow, PlayerPropChart } from "./types";
 
 const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "college", "engine", "news", "queries", "myboo", "odds"] as const;
@@ -58,6 +59,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
   const [canvasOpen, setCanvasOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState(DEFAULT_PLAYER_ID);
   const [playerMarket, setPlayerMarket] = useState<string | undefined>(undefined);
+  const [ticketCtx, setTicketCtx] = useState<TicketCtx | null>(null);
   const [slip, setSlip] = useState<PlayerPropChart[]>([]);
   const [target, setTarget] = useState("all");
   const [adminOpen, setAdminOpen] = useState(false);
@@ -248,14 +250,17 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
               <PlayerTab
                 playerId={selectedPlayerId}
                 initialMarket={playerMarket}
-                onSelectPlayer={(id) => { setPlayerMarket(undefined); setSelectedPlayerId(id); }}
+                onSelectPlayer={(id) => { setPlayerMarket(undefined); setTicketCtx(null); setSelectedPlayerId(id); }}
+                ticketCtx={ticketCtx}
+                onBackToH2H={() => setTab("leaders")}
                 onSlipAdd={addToSlip}
                 inSlip={slipIds.has(selectedPlayerId)}
               />
             )}
             {tab === "leaders" && (
               <LeadersTab
-                onOpenPlayer={(id, market) => {
+                onOpenPlayer={(id, market, ctx) => {
+                  setTicketCtx(ctx ?? null);
                   setPlayerMarket(market);
                   setSelectedPlayerId(id);
                   setTab("player");

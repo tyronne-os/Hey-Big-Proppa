@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { BplPlayerLine, LeaderRow, LeadersResponse } from "../types";
 import TargetsBoard from "./TargetsBoard";
+import HeadToHead from "./HeadToHead";
+import type { TicketCtx } from "./h2hShared";
 
-const CATEGORIES = ["TARGETS", "USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RECEIVING", "PASSING", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
+const CATEGORIES = ["TARGETS", "HEAD TO HEAD", "USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RECEIVING", "PASSING", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
 const SCORE_LABEL: Record<string, string> = {
   "USAGE INDEX": "USAGE INDEX",
   "BREAKOUT": "BREAKOUT SCORE",
@@ -39,19 +41,22 @@ function Photo({ url, name, size }: { url?: string | null; name: string; size: n
   return <span style={{ ...box, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: MONO, fontSize: size * 0.34, fontWeight: 700, color: C.mute }}>{initials(name)}</span>;
 }
 
-export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: string, market?: string) => void }) {
+export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: string, market?: string, ctx?: TicketCtx) => void }) {
   // TARGETS is the lead board ("targets rule predictions"); /leaders?cat=rushing opens another category
   const [category, setCategory] = useState(() => {
     try {
       const c = new URLSearchParams(window.location.search).get("cat")?.toUpperCase().replace(/-/g, " ");
       if (c && CATEGORIES.includes(c)) return c;
+      const saved = sessionStorage.getItem("bp_leaders_cat");
+      if (saved && CATEGORIES.includes(saved)) return saved;
     } catch { /* */ }
     return "TARGETS";
   });
   const [data, setData] = useState<LeadersResponse | null>(null);
 
   useEffect(() => {
-    if (category === "TARGETS") return;
+    try { sessionStorage.setItem("bp_leaders_cat", category); } catch { /* */ }
+    if (category === "TARGETS" || category === "HEAD TO HEAD") return;
     setData(null);
     api.leaders(category).then(setData).catch(() => setData(null));
   }, [category]);
@@ -77,7 +82,8 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
       </div>
 
       {category === "TARGETS" && <TargetsBoard onOpenPlayer={onOpenPlayer} />}
-      {category !== "TARGETS" && <>
+      {category === "HEAD TO HEAD" && <HeadToHead onOpenPlayer={onOpenPlayer} />}
+      {category !== "TARGETS" && category !== "HEAD TO HEAD" && <>
       {!data && <div style={{ color: C.mute, fontSize: 15 }}>Loading...</div>}
 
       {data && data.sourceStatus !== "ok" && (

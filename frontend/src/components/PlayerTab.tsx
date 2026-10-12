@@ -1,3 +1,5 @@
+import TicketBuilder from "./TicketBuilder";
+import type { TicketCtx } from "./h2hShared";
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { PlayerPropChart, PlayerSearchResult, PlayerTrust, PlayerFantasy } from "../types";
@@ -186,12 +188,16 @@ export default function PlayerTab({
   onSelectPlayer,
   onSlipAdd,
   inSlip,
+  ticketCtx,
+  onBackToH2H,
 }: {
   playerId: string;
   initialMarket?: string;
   onSelectPlayer: (playerId: string) => void;
   onSlipAdd: (chart: PlayerPropChart) => void;
   inSlip: boolean;
+  ticketCtx?: TicketCtx | null;
+  onBackToH2H?: () => void;
 }) {
   const [market, setMarket] = useState("rushyds");
   const [win, setWin] = useState<Window>("season");
@@ -347,6 +353,8 @@ export default function PlayerTab({
             )}
           </div>
         </div>
+
+        {ticketCtx && <TicketBuilder playerId={playerId} market={market} ctx={ticketCtx} onBack={onBackToH2H} />}
 
         {/* stat grid + matchup grade */}
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "stretch" }}>

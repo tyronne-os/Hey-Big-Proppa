@@ -26,7 +26,33 @@ async function get<T>(path: string): Promise<T> {
   return res.json();
 }
 
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(`${path} -> ${res.status}`);
+  return res.json();
+}
+
+/** Member passcode token that authorizes ticket writes; issued by /api/passcode and kept in this browser only. */
+export const h2hToken = {
+  get(): string { try { return localStorage.getItem("bp_h2h_token") ?? ""; } catch { return ""; } },
+  set(t: string) { try { localStorage.setItem("bp_h2h_token", t); } catch { /* */ } },
+};
+
 export const api = {
+  h2hSlate: () => get<any>("/api/h2h/slate"),
+  h2hGame: (id: string) => get<any>(`/api/h2h/game?game_id=${encodeURIComponent(id)}`),
+  h2hPlayer: (pid: string, market: string, gameId?: string | null) =>
+    get<any>(`/api/h2h/player?player_id=${encodeURIComponent(pid)}&market=${market}${gameId ? `&game_id=${encodeURIComponent(gameId)}` : ""}`),
+  h2hTicket: (day: string) => get<any>(`/api/h2h/tickets?day=${day}`),
+  h2hUnlock: async (code: string): Promise<string> => {
+    const r = await post<{ ok: boolean; token?: string }>("/api/passcode", { code });
+    return r.token ?? "";
+  },
+  h2hAdd: (b: { playerId: string; market: string; direction: string; gameId?: string | null; altLine?: number | null; day?: string | null }) =>
+    post<any>("/api/h2h/tickets/add", { ...b, token: h2hToken.get() }),
+  h2hRemove: (day: string, legId: string) => post<any>("/api/h2h/tickets/remove", { day, legId, token: h2hToken.get() }),
+  h2hClear: (day: string) => post<any>("/api/h2h/tickets/clear", { day, token: h2hToken.get() }),
+  h2hStake: (day: string, stake: number) => post<any>("/api/h2h/tickets/stake", { day, stake, token: h2hToken.get() }),
   index: () => get<ChartIndexRow[]>("/api/index"),
   espnTicker: () => get<{ games: any[] }>("/api/espn/ticker"),
   espnGame: (id: string, lg: string) => get<any>(`/api/espn/game?id=${encodeURIComponent(id)}&lg=${lg}`),

@@ -8,8 +8,9 @@ import SmokeBadge from "../components/SmokeBadge";
 import NavBar from "../components/NavBar";
 import LiveTicker from "../components/LiveTicker";
 import EarlyHero from "../components/EarlyHero";
+import MyTickets from "../components/MyTickets";
 import TicketCard, { fromThemed } from "../components/TicketCard";
-import { api } from "../api";
+import { api, h2hToken } from "../api";
 import type { ParlaySlip, EarlyResponse } from "../types";
 
 const STORAGE_KEY = "bp_parlay_unlocked";
@@ -37,7 +38,7 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: val }),
       });
-      if (r.ok) { setUnlocked(); onUnlock(); }
+      if (r.ok) { try { const j = await r.json(); if (j.token) h2hToken.set(j.token); } catch { /* */ } setUnlocked(); onUnlock(); }
       else {
         setShake(true); setHint("Wrong code. Try again."); setVal("");
         setTimeout(() => setShake(false), 600);
@@ -234,6 +235,8 @@ export default function SundayParlaysPage() {
             </div>
           </>
         )}
+
+        {unlocked && <MyTickets day="sunday" />}
       </div>
       </div>
     </div>

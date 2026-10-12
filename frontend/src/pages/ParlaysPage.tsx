@@ -3,7 +3,8 @@ import SmokeBadge from "../components/SmokeBadge";
 import NavBar from "../components/NavBar";
 import LiveTicker from "../components/LiveTicker";
 import TicketCard, { fromThemed } from "../components/TicketCard";
-import { api } from "../api";
+import MyTickets from "../components/MyTickets";
+import { api, h2hToken } from "../api";
 import Throwdown, { type ThrowdownData } from "./Throwdown";
 import { type MatchupData } from "./MatchupHeatMap";
 import type { ParlaySlip } from "../types";
@@ -33,7 +34,7 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: val }),
       });
-      if (r.ok) { markUnlocked(); onUnlock(); }
+      if (r.ok) { try { const j = await r.json(); if (j.token) h2hToken.set(j.token); } catch { /* */ } markUnlocked(); onUnlock(); }
       else {
         setShake(true); setHint("Wrong code. Try again."); setVal("");
         setTimeout(() => setShake(false), 600);
@@ -189,6 +190,8 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
             ))}
           </div>
         )}
+
+        {unlocked && <MyTickets day={variant === "monday" ? "monday" : variant === "sunday-night" ? "sunday" : "thursday"} />}
       </div>
     </div>
   );
