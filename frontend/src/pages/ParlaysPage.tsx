@@ -106,7 +106,7 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
  * price -- nothing here is placeholder.
  */
 /** Shared implementation — variant controls which night's deep-dive API is called */
-export default function ParlaysPage({ variant = "thursday" }: { variant?: "thursday" | "monday" | "sunday-night" }) {
+export default function ParlaysPage({ variant = "thursday" }: { variant?: "thursday" | "monday" | "sunday-night" | "parlay" }) {
   const [slips, setSlips] = useState<Record<string, ParlaySlip> | null>(null);
   const [unlocked, setUnlocked] = useState(getUnlocked);
   const [td, setTd] = useState<ThrowdownData | null>(null);
@@ -117,7 +117,7 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
     document.documentElement.setAttribute("data-theme", "dark");
     if (unlocked) {
       api.parlaysAll().then(setSlips).catch(() => setSlips(null));
-      api.matchup(variant).then((d: MatchupData) => setMu(d?.active ? d : null)).catch(() => setMu(null));
+      api.matchup(variant === "parlay" ? "thursday" : variant).then((d: MatchupData) => setMu(d?.active ? d : null)).catch(() => setMu(null));
       const deepDive = variant === "monday" ? api.monday() : variant === "sunday-night" ? api.sundayNight() : api.throwdown();
       deepDive.then((d: ThrowdownData) => setTd(d?.active ? d : null)).catch(() => setTd(null));
     }
@@ -162,7 +162,7 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
       </div>
 
       {/* Full nav menu */}
-      <NavBar activeTab={variant === "monday" ? "monday" : variant === "sunday-night" ? "sunday-night" : "parlay"} />
+      <NavBar activeTab={variant === "monday" ? "monday" : variant === "sunday-night" ? "sunday-night" : variant === "parlay" ? "parlay" : "throwdown"} />
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 20px", display: "flex", flexDirection: "column", gap: 24 }}>
 

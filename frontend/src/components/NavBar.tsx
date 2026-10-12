@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 
 const TOP_TABS = [
   { id: "leaders", label: "LEADERS · TARGETS", href: "/leaders?cat=targets" },
+  { id: "parlay",  label: "PARLAY",             href: "/parlay" },
   { id: "queries", label: "QUERIES",            href: "/queries" },
   { id: "myboo",   label: "MY BOO",             href: "/myboo" },
 ] as const;
@@ -13,7 +14,7 @@ const ODDS_MENU = [
   { id: "matchups",     label: "MATCHUPS",           href: "/matchups" },
   { id: "ramp",         label: "RAMP",               href: "/ramp" },
   { id: "college",      label: "COLLEGE",            href: "/college" },
-  { id: "parlay",       label: "THROWDOWN THURSDAY", href: "/throwdown" },
+  { id: "throwdown",    label: "THROWDOWN THURSDAY", href: "/throwdown" },
   { id: "monday",       label: "MONDAY NIGHT",       href: "/monday" },
   { id: "sunday-night", label: "SUNDAY NIGHT",       href: "/sunday-night" },
   { id: "sunday",       label: "SUNDAY SLIPS",       href: "/parlays" },
@@ -43,7 +44,8 @@ export default function NavBar({ activeTab }: NavBarProps) {
 
   // Detect active tab from URL
   const currentTab = activeTab ?? (() => {
-    if (location.pathname === "/throwdown")    return "parlay";
+    if (location.pathname === "/throwdown")    return "throwdown";
+    if (location.pathname === "/parlay")       return "parlay";
     if (location.pathname === "/monday")       return "monday";
     if (location.pathname === "/sunday-night") return "sunday-night";
     if (location.pathname === "/parlays")      return "sunday";

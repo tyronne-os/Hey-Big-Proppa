@@ -1,5 +1,6 @@
+import NavBar from "./components/NavBar";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ReactFlow, { Background, Controls, MiniMap, type Edge, type EdgeTypes, type Node, type NodeTypes } from "reactflow";
 import "reactflow/dist/style.css";
 import AnimatedPulseEdge from "./AnimatedPulseEdge";
@@ -25,13 +26,6 @@ import type { ChartIndexRow, PlayerPropChart } from "./types";
 
 const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "college", "engine", "news", "queries", "myboo", "odds"] as const;
 type ViewTab = (typeof VIEW_TABS)[number];
-
-// These three are standalone pages — clicking them navigates away from the main app.
-const STANDALONE_LINKS = [
-  { id: "throwdown", label: "THROWDOWN THURSDAY", href: "/throwdown" },
-  { id: "monday",    label: "MONDAY NIGHT",        href: "/monday" },
-  { id: "sunday",    label: "SUNDAY SLIPS",         href: "/parlays" },
-] as const;
 
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
 const nodeTypes: NodeTypes = { canvasNode: LakeCanvasNode };
@@ -245,64 +239,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", background: "var(--bp-page-bg)", color: "var(--bp-fg)", position: "relative" }}>
           <div style={{ height: 8, flex: "0 0 8px" }} />
 
-          <div style={{ display: "flex", gap: 6, padding: "0 20px 10px", flexWrap: "wrap", flex: "0 0 auto" }}>
-            {/* HOME — landing page */}
-            <a
-              href="/home/index.html"
-              style={{
-                display: "inline-flex", alignItems: "center",
-                height: 32, padding: "0 14px", borderRadius: 999,
-                border: "1px solid #c9a54e",
-                background: "rgba(201,165,78,0.14)",
-                color: "#f1dc92",
-                fontSize: 12, fontWeight: 800, letterSpacing: "0.1em",
-                textDecoration: "none", cursor: "pointer",
-              }}
-            >
-              HOME
-            </a>
-            {/* Standalone page links — navigate away */}
-            {STANDALONE_LINKS.map(({ id, label, href }) => (
-              <Link
-                key={id}
-                to={href}
-                style={{
-                  display: "inline-flex", alignItems: "center",
-                  height: 32, padding: "0 14px", borderRadius: 999,
-                  border: "1px solid #c9a54e",
-                  background: "rgba(201,165,78,0.14)",
-                  color: "#f1dc92",
-                  fontSize: 12, fontWeight: 800, letterSpacing: "0.1em",
-                  textDecoration: "none", cursor: "pointer",
-                }}
-              >
-                {label}
-              </Link>
-            ))}
-            {/* In-app tabs */}
-            {VIEW_TABS.filter((vt) => vt !== "player").map((vt) => {
-              const isBoo = vt === "myboo";
-              const isActive = vt === tab;
-              return (
-                <button
-                  key={vt}
-                  onClick={() => setTab(vt)}
-                  style={{
-                    height: 32, padding: "0 14px", borderRadius: 999,
-                    border: `1px solid ${isActive ? (isBoo ? "#a78bfa" : "#c9a54e") : (isBoo ? "#3a2060" : "var(--bp-border)")}`,
-                    background: isActive
-                      ? (isBoo ? "rgba(139,92,246,0.18)" : "rgba(201,165,78,0.14)")
-                      : (isBoo ? "rgba(139,92,246,0.06)" : "var(--bp-card-bg)"),
-                    color: isActive ? (isBoo ? "#c4b5fd" : "#d9b45a") : (isBoo ? "#a78bfa" : "var(--bp-fg)"),
-                    fontSize: 12, fontWeight: isBoo ? 900 : 700, cursor: "pointer",
-                    letterSpacing: isBoo ? "0.06em" : undefined,
-                  }}
-                >
-                  {isBoo ? "MY BOO" : vt === "odds" ? "THE ODDS" : vt.toUpperCase()}
-                </button>
-              );
-            })}
-          </div>
+          <NavBar activeTab={tab} />
 
           <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px 20px", minHeight: 0 }}>
             {tab === "ramp" && <RampIndex />}

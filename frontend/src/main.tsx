@@ -35,6 +35,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/throwdown" element={<ParlaysPage variant="thursday" />} />
+          <Route path="/parlay"   element={<ParlaysPage variant="parlay" />} />
           <Route path="/monday"        element={<MondayPage />} />
           <Route path="/sunday-night" element={<SundayNightPage />} />
           <Route path="/parlays"   element={<SundayParlaysPage />} />
