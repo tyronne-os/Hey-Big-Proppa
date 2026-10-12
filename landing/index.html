@@ -73,6 +73,7 @@ a:hover{color:#f1dc92}
         <span style="font-size:17px;font-weight:900;letter-spacing:0.01em;white-space:nowrap;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 55%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">HEY BIG PROPPA!</span>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <a href="/" style="padding:5px 12px;border:1px solid #d9b45a;border-radius:999px;font-size:12px;font-weight:800;color:#0b0512;background:#d9b45a;text-decoration:none">OPEN THE APP</a>
+          <a href="/monday" id="nav-tonight" style="padding:5px 12px;border:1px solid #2ee6a6;border-radius:999px;font-size:12px;font-weight:800;color:#0b0512;background:#2ee6a6;text-decoration:none">TONIGHT'S PARLAYS</a>
           <a href="/leaders" style="padding:5px 12px;border:1px solid #d9b45a;border-radius:999px;font-size:12px;font-weight:700;color:#d9b45a;text-decoration:none;transition:background .15s" onmouseover="this.style.background='rgba(217,180,90,0.12)'" onmouseout="this.style.background='transparent'">NFL</a>
           <span style="padding:5px 12px;border:1px solid #3a2a48;border-radius:999px;font-size:12px;font-weight:700;color:#ece6f2">SEC FOOTBALL</span>
           <span style="padding:5px 12px;border:1px solid #3a2a48;border-radius:999px;font-size:12px;font-weight:700;color:#ece6f2">NBA</span>
@@ -166,6 +167,17 @@ a:hover{color:#f1dc92}
             </div>
           </div>
         </div>
+      </div>
+
+      <div id="tonight" style="max-width:1120px;margin:0 auto;padding:8px 32px 64px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span id="tn-eyebrow" style="font-family:var(--font-mono);font-size:11px;letter-spacing:.32em;color:#6e6878">LIVE · REFRESHES EVERY FEW MINUTES</span>
+            <span id="tn-title" style="font-size:clamp(28px,3.6vw,46px);line-height:.95;font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 58%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">Tonight's parlays</span>
+          </div>
+          <a id="tn-open" href="/monday" style="padding:8px 16px;border:1px solid #d9b45a;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.08em;color:#d9b45a;text-decoration:none">OPEN FULL PAGE ↗</a>
+        </div>
+        <iframe id="tn-frame" title="Tonight's parlays" src="about:blank" style="width:100%;height:min(88vh,1000px);border:1px solid #2a1e36;border-radius:20px;background:#0b0512"></iframe>
       </div>
 
       <div id="topgun" style="max-width:1120px;margin:0 auto;padding:24px 32px 96px;display:flex;flex-direction:column;gap:36px">
@@ -467,6 +479,24 @@ class Component extends DCLogic {
     };
   }
 }
+</script>
+<script>
+(function () {
+  try {
+    var day = new Date().toLocaleString('en-US', { timeZone: 'America/Chicago', weekday: 'long' });
+    var night = day === 'Monday' ? ['/monday', 'MONDAY NIGHT THROWDOWN'] : day === 'Sunday' ? ['/sunday-night', 'SUNDAY NIGHT THROWDOWN'] : ['/throwdown', 'THURSDAY NIGHT THROWDOWN'];
+    var set = function () {
+      var f = document.getElementById('tn-frame');
+      if (!f) { return false; }
+      if (f.getAttribute('src') === 'about:blank') { f.setAttribute('src', night[0]); }
+      var e = document.getElementById('tn-eyebrow'); if (e) { e.textContent = night[1] + ' · LIVE · REFRESHES EVERY FEW MINUTES'; }
+      var o = document.getElementById('tn-open'); if (o) { o.setAttribute('href', night[0]); }
+      var n = document.getElementById('nav-tonight'); if (n) { n.setAttribute('href', night[0]); }
+      return true;
+    };
+    var tries = 0, t = setInterval(function () { if (set() || ++tries > 40) { clearInterval(t); } }, 150);
+  } catch (err) { /* the full-page links still work */ }
+})();
 </script>
 </body>
 </html>

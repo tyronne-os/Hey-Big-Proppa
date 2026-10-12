@@ -17,7 +17,9 @@ import type {
 } from "./types";
 import type { BacktestRow, CfbBigMoneyParlay, CfbCrazyHorse, CfbGame, CfbHotDog, CfbOver, HotDogBacktest, HotDogGame, MatchupGame, NewsArticle, PowSummary, SourceStatus } from "./types";
 
-const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8086";
+// Production (the Space) serves the app and the API from one origin, so it calls /api/* on the same host.
+// Only the local dev server falls back to the dedicated backend port.
+const BASE = import.meta.env.VITE_API_BASE ?? (import.meta.env.PROD ? "" : "http://localhost:8086");
 export const API_BASE = BASE;
 
 async function get<T>(path: string): Promise<T> {

@@ -636,6 +636,7 @@ def _pool(game_id: str) -> list[dict]:
         out.append({"playerId": s_["playerId"], "name": s_["name"], "team": s_["team"], "pos": pos.get(s_["playerId"], ""),
                     "prop": f"Over {s_['line']:g} {label[s_['market']]}", "market": s_["market"], "line": s_["line"],
                     "direction": "over", "odds": s_["odds"], "probability": round(p, 4), "l5": round(p, 4),
+                    "confidence": round(max(p, 1 - p) * 100, 1), "profitZone": p >= 0.85, "jevP": s_.get("jevP"),
                     "photoUrl": data.photo_url(s_["playerId"])})
     return out
 
