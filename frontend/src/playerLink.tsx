@@ -28,6 +28,18 @@ export function playerHref(leg: LegLike): string | null {
 export function PlayerLink({ leg, name, children }: { leg: LegLike; name: string; children: ReactNode }) {
   const href = playerHref(leg);
   if (!href) return <>{children}</>;
-  // _parent: when a ticket page sits inside the front page's frame, open the player page in the front page's window
-  return <a href={href} target="_parent" className="bp-plink" title={`Open ${name}'s page: L5, season and the line`} style={{ color: "inherit", textDecoration: "none", cursor: "pointer" }}>{children}</a>;
+  // Normal click: open the player page in this window. Only when this ticket page sits inside OUR front page's
+  // frame (same origin) does the front page's window navigate instead. A sandboxed host such as the Hugging Face
+  // wrapper is cross-origin and must never be targeted: the browser silently blocks that and the click does nothing.
+  const onClick = (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    try {
+      const parent = window.parent;
+      if (parent !== window && parent.location.origin === window.location.origin) {
+        e.preventDefault();
+        parent.location.assign(href);
+      }
+    } catch { /* cross-origin parent: fall through to the normal link */ }
+  };
+  return <a href={href} onClick={onClick} className="bp-plink" title={`Open ${name}'s page: L5, season and the line`} style={{ color: "inherit", textDecoration: "none", cursor: "pointer" }}>{children}</a>;
 }
