@@ -275,17 +275,28 @@ def prop_read(player_id: str, name: str, team: str, market: str, line: float) ->
         probs = raw["scores"]["range"]
         s = sum(probs) or 1
         probs = [p / s for p in probs]
+        import h2h
         return {"kind": "prop", "line": float(line), "p": raw["nouls"]["clears"], "edges": edges, "bands": probs,
+                "sigma": max(h2h.SD_FLOOR.get(market, 10.0), 0.30 * float(line)),
                 "expected": round(_expected(probs, edges), 1), "labels": _band_labels(edges, stat), "factors": jev_brain.factors(state)}
     return _memo(f"prop:{_hash(state)}", run)
 
 
+def _normal_over(mean: float, sigma: float, x: float) -> float:
+    return 1 - 0.5 * (1 + math.erf((x - mean) / (sigma * math.sqrt(2))))
+
+
+def _anchored(direct_p: float, mean: float, sigma: float, posted: float, x: float) -> float:
+    """P(over x): JEV's expected value as the center, real-world spread (JEV's own bands run far too tight),
+    shifted so it agrees exactly with JEV's direct yes/no answer at the posted line."""
+    if abs(x - posted) < 1e-9:
+        return direct_p
+    shift = _logit(direct_p) - _logit(_normal_over(mean, sigma, posted))
+    return round(_sig(_logit(_normal_over(mean, sigma, x)) + shift), 4)
+
+
 def prop_p_over(read: dict, x: float) -> float:
-    """P(over x) for any line: the ranged read, shifted so it agrees with JEV's direct answer at the posted line."""
-    if abs(x - read["line"]) < 1e-9:
-        return read["p"]
-    shift = _logit(read["p"]) - _logit(_dist_over(read["bands"], read["edges"], read["line"]))
-    return round(_sig(_logit(_dist_over(read["bands"], read["edges"], x)) + shift), 4)
+    return _anchored(read["p"], read["expected"], read.get("sigma") or 0.3 * read["line"], read["line"], x)
 
 
 def game_read(away: str, home: str, total: float | None, spread_home: float | None) -> dict | None:
@@ -320,20 +331,18 @@ def game_read(away: str, home: str, total: float | None, spread_home: float | No
     return _memo(f"game:{_hash([state, total, sp])}", run)
 
 
+GAME_SIGMA = 13.5   # NFL totals and margins miss by about this much on a typical night
+
+
 def game_p_over(read: dict, x: float) -> float:
-    base = read["pOver"] if read.get("pOver") is not None else _dist_over(read["totalBands"], read["totalEdges"], read["total"])
-    if abs(x - read["total"]) < 1e-9:
-        return base
-    shift = _logit(base) - _logit(_dist_over(read["totalBands"], read["totalEdges"], read["total"]))
-    return round(_sig(_logit(_dist_over(read["totalBands"], read["totalEdges"], x)) + shift), 4)
+    base = read["pOver"] if read.get("pOver") is not None else _normal_over(read["expectedTotal"], GAME_SIGMA, read["total"])
+    return _anchored(base, read["expectedTotal"], GAME_SIGMA, read["total"], x)
 
 
 def game_p_home_covers(read: dict, spread_home: float) -> float:
-    base = read["pHomeCovers"] if read.get("pHomeCovers") is not None else _dist_over(read["marginBands"], read["marginEdges"], -read["spreadHome"])
-    if abs(spread_home - read["spreadHome"]) < 1e-9:
-        return base
-    shift = _logit(base) - _logit(_dist_over(read["marginBands"], read["marginEdges"], -read["spreadHome"]))
-    return round(_sig(_logit(_dist_over(read["marginBands"], read["marginEdges"], -spread_home)) + shift), 4)
+    """P(home margin > -spread_home)."""
+    base = read["pHomeCovers"] if read.get("pHomeCovers") is not None else _normal_over(read["expectedHomeMargin"], GAME_SIGMA, -read["spreadHome"])
+    return _anchored(base, read["expectedHomeMargin"], GAME_SIGMA, -read["spreadHome"], -spread_home)
 
 
 def prefetch(jobs: list) -> None:
