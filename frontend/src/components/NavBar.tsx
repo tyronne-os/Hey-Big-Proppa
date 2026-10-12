@@ -14,7 +14,6 @@ const ODDS_MENU = [
   { id: "ramp",         label: "RAMP",               href: "/ramp" },
   { id: "college",      label: "COLLEGE",            href: "/college" },
   { id: "throwdown",    label: "THROWDOWN THURSDAY", href: "/throwdown" },
-  { id: "monday",       label: "MONDAY NIGHT",       href: "/monday" },
   { id: "sunday-night", label: "SUNDAY NIGHT",       href: "/sunday-night" },
   { id: "sunday",       label: "SUNDAY SLIPS",       href: "/parlays" },
   { id: "engine",       label: "ENGINE",             href: "/engine" },
@@ -130,6 +129,9 @@ export default function NavBar({ activeTab }: NavBarProps) {
           </div>
         )}
       </div>
+      <Link to="/monday" style={pill(currentTab === "monday")}>
+        MONDAY NIGHT
+      </Link>
     </div>
   );
 }
