@@ -88,12 +88,13 @@ function scoreTile(k,v){ if (v==null) return statTile(k,null); const c = v>=70?'
 function pctTile(k,v,hi,mid){ if (v==null) return statTile(k,null); const c = v>=hi?'#22c55e':v>=mid?'#d2b48c':'#ef4444'; return statTile(k,(v*100).toFixed(0)+'%',c); }
 function coachesPanel(row){
   const c = row.cs;
-  if (!c) return `<div class="panel"><div class="ptitle">Coaches Son</div><div style="color:var(--p-fg2);font-size:12px">No usage data in the lake for this player yet.</div></div>`;
-  const badge = c.qualifies ? '<span style="background:#f5a623;color:#000;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;margin-left:8px;letter-spacing:.05em">COACHES SON</span>' : '';
+  if (!c) return `<div class="panel"><div class="ptitle">DEPENDABILITY RANKING</div><div style="color:var(--p-fg2);font-size:12px">No usage data in the lake for this player yet.</div></div>`;
+  const badge = c.qualifies ? '<span style="background:#22c55e;color:#000;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;margin-left:8px;letter-spacing:.05em">DEPENDABILITY RANKING</span>' : '';
+  const ROLE_LABEL = {"PRIMARY":"PRIMARY TARGET","TRUSTED UNDER PRESSURE":"HIGH PRESSURE USAGE","VOLUME STACK":"VOLUME STACK","IB CASCADE":"IB CASCADE"};
   const fa = c.fan || {};
-  const n = v => v;
-  return `<div class="panel"><div class="ptitle">Coaches Son${badge}</div>
-    <div style="font-size:12px;color:var(--p-fg2);margin:-4px 0 10px">${c.role||''} · ${c.metric.replace(/_/g,' ')}</div>
+  const roleLabel = ROLE_LABEL[c.role] || c.role || '';
+  return `<div class="panel"><div class="ptitle">DEPENDABILITY RANKING${badge}</div>
+    <div style="font-size:12px;color:var(--p-fg2);margin:-4px 0 10px">${roleLabel} · ${c.metric.replace(/_/g,' ')}</div>
     <div class="tiles">${scoreTile('USAGE INDEX',c.usage)}${statTile('TEAM RANK', c.rankTeam!=null?'#'+c.rankTeam:null)}${statTile(c.pos+' RANK', c.rankPos!=null?'#'+c.rankPos:null)}${statTile('DEPTH', c.depthRank!=null?c.depthPos+c.depthRank:null)}</div>
     ${c.pos==='QB' ? '' : `<div class="rowlbl" style="grid-template-columns:70px 1fr"><span>SCORING</span><div class="tiles">${statTile('PTS / G', fa.ptsG)}${statTile('SEASON PTS', fa.ptsTot)}${statTile('TOTAL TDs', fa.tds)}</div></div>`}
     <div class="rowlbl" style="grid-template-columns:70px 1fr"><span>FANTASY PPR</span><div class="tiles">${statTile('PPR / G', fa.pprG)}${statTile('L3 PPR / G', fa.pprL3, fa.pprL3>fa.pprG?'#22c55e':fa.pprL3<fa.pprG?'#ef4444':null)}${statTile('SEASON PPR', fa.pprTot)}${statTile(c.pos+' PPR RANK', c.fanRank!=null?'#'+c.fanRank:null)}</div></div>
