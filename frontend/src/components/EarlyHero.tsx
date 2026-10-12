@@ -1,6 +1,7 @@
 import type { EarlyResponse, EngineSlip } from "../types";
 import { Avatar, american } from "./TicketCard";
 import TakeItFakeIt from "./TakeItFakeIt";
+import { PlayerLink } from "../playerLink";
 
 const MONO = "var(--font-mono, monospace)";
 const INK = "#1c1608";
@@ -42,7 +43,7 @@ function Betslip({ slip }: { slip: EngineSlip }) {
             <Avatar leg={l} size={44} ring={accent} />
             <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
               <span style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.name}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}><PlayerLink leg={l} name={l.name}>{l.name}</PlayerLink></span>
                 {l.matchup && <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", color: "#fffdf6", background: INK, borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap", flex: "0 0 auto" }}>{l.matchup}</span>}
               </span>
               {l.teamName && <span style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>{l.teamName}</span>}

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import MatchupHeatMap, { type MatchupData } from "./MatchupHeatMap";
+import { PlayerLink } from "../playerLink";
 
 type Leg = {
-  name: string; team: string; prop: string; market: string;
+  playerId?: string; name: string; team: string; prop: string; market: string;
   odds: number; probability: number; l5?: number;
   pos?: string; photoUrl?: string | null;
 };
@@ -248,10 +249,10 @@ function SlipCard({ slip, id, hero }: { slip: Slip; id: string; hero?: boolean }
               background: "#0e0714", border: "1px solid #241e2c",
               borderRadius: 12, padding: "8px 10px",
             }}>
-              <Avatar leg={l} />
+              <PlayerLink leg={l} name={l.name}><Avatar leg={l} /></PlayerLink>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {l.name}
+                  <PlayerLink leg={l} name={l.name}>{l.name}</PlayerLink>
                   {l.team && l.team !== "TOTAL" && <span style={{ fontSize: 10, color: "#6e6878", marginLeft: 5 }}>{l.team}</span>}
                 </div>
                 <div style={{ fontSize: 11, color: "#b8b0c0" }}>{l.prop}</div>

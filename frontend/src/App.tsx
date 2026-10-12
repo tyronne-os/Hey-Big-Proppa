@@ -57,8 +57,11 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
     if (window.location.pathname !== p) navigate(p, { replace: window.location.pathname === "/" });
   }, [tab, navigate]);
   const [canvasOpen, setCanvasOpen] = useState(false);
-  const [selectedPlayerId, setSelectedPlayerId] = useState(DEFAULT_PLAYER_ID);
-  const [playerMarket, setPlayerMarket] = useState<string | undefined>(undefined);
+  // A ticket leg opens /player?pid=...&market=...&from=ticket, so the page lands on that player and that stat
+  const query = (k: string) => { try { return new URLSearchParams(window.location.search).get(k) || undefined; } catch { return undefined; } };
+  const [selectedPlayerId, setSelectedPlayerId] = useState(() => query("pid") ?? DEFAULT_PLAYER_ID);
+  const [playerMarket, setPlayerMarket] = useState<string | undefined>(() => query("market"));
+  const [fromTicket, setFromTicket] = useState(() => query("from") === "ticket");
   const [ticketCtx, setTicketCtx] = useState<TicketCtx | null>(null);
   const [slip, setSlip] = useState<PlayerPropChart[]>([]);
   const [target, setTarget] = useState("all");
@@ -250,7 +253,8 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
               <PlayerTab
                 playerId={selectedPlayerId}
                 initialMarket={playerMarket}
-                onSelectPlayer={(id) => { setPlayerMarket(undefined); setTicketCtx(null); setSelectedPlayerId(id); }}
+                onSelectPlayer={(id) => { setPlayerMarket(undefined); setTicketCtx(null); setFromTicket(false); setSelectedPlayerId(id); }}
+                backToTicket={fromTicket}
                 ticketCtx={ticketCtx}
                 onBackToH2H={() => setTab("leaders")}
                 onSlipAdd={addToSlip}

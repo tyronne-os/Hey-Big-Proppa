@@ -8,6 +8,7 @@ import { api, h2hToken } from "../api";
 import Throwdown, { type ThrowdownData } from "./Throwdown";
 import { type MatchupData } from "./MatchupHeatMap";
 import type { ParlaySlip } from "../types";
+import { PlayerLink } from "../playerLink";
 
 const STORAGE_KEY = "bp_parlay_unlocked";
 
@@ -253,7 +254,7 @@ function Ticket({ slip }: { slip: ParlaySlip }) {
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.name}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}><PlayerLink leg={leg} name={leg.name}>{leg.name}</PlayerLink></span>
                 <span style={{ fontSize: 11, color: "#b8b0c0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.prop}</span>
               </div>
             </div>

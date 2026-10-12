@@ -178,3 +178,6 @@ body,
   50% { left: 100%; }
   100% { left: 0%; }
 }
+
+/* ticket legs link to the player's single-player page */
+.bp-plink:hover { text-decoration: underline !important; text-decoration-color: #d9b45a; text-underline-offset: 3px; }

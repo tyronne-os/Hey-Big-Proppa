@@ -190,6 +190,7 @@ export default function PlayerTab({
   inSlip,
   ticketCtx,
   onBackToH2H,
+  backToTicket,
 }: {
   playerId: string;
   initialMarket?: string;
@@ -198,6 +199,7 @@ export default function PlayerTab({
   inSlip: boolean;
   ticketCtx?: TicketCtx | null;
   onBackToH2H?: () => void;
+  backToTicket?: boolean;
 }) {
   const [market, setMarket] = useState("rushyds");
   const [win, setWin] = useState<Window>("season");
@@ -311,6 +313,12 @@ export default function PlayerTab({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 980, width: "100%" }}>
+      {backToTicket && (
+        <button onClick={() => window.history.back()}
+          style={{ alignSelf: "flex-start", height: 34, padding: "0 14px", borderRadius: 999, cursor: "pointer", border: "1px solid #6b4a1c", background: "transparent", color: "#d9b45a", fontSize: 12, fontWeight: 800, letterSpacing: "0.1em" }}>
+          ← BACK TO TICKET
+        </button>
+      )}
       {searchBox}
       <div className="pl-wrap" style={{ fontFamily: SANS, background: INK.bg, color: INK.text, border: `1px solid ${INK.edge}`, borderRadius: 22, padding: "18px 20px 22px", display: "flex", flexDirection: "column", gap: 18 }}>
 

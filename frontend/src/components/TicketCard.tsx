@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { EngineLeg, EngineSlip, ParlaySlip } from "../types";
 import TakeItFakeIt from "./TakeItFakeIt";
+import { PlayerLink } from "../playerLink";
 
 export const TYPE_META: Record<string, { label: string; color: string }> = {
   BPL_EDGE: { label: "BPL EDGE", color: "#22c55e" },
@@ -59,9 +60,9 @@ export function LegLine({ leg }: { leg: EngineLeg }) {
   const pc = pct >= 75 ? "#2ee6a6" : pct >= 60 ? "#d9b45a" : "#e0782f";
   return (
     <div title={leg.correlationNote} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 14px", borderTop: "1px solid var(--bp-border)" }}>
-      <Avatar leg={leg} size={48} />
+      <PlayerLink leg={leg} name={leg.name}><Avatar leg={leg} size={48} /></PlayerLink>
       <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.name}</span>
+        <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}><PlayerLink leg={leg} name={leg.name}>{leg.name}</PlayerLink></span>
         {leg.teamName && <span style={{ fontSize: 11, color: "var(--bp-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.teamName}</span>}
         <span style={{ fontSize: 11, color: "#f1dc92", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{leg.prop}</span>
         {leg.matchup && <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", color: "var(--bp-muted)" }}>{leg.matchup}</span>}

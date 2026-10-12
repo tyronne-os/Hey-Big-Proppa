@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api";
 import { H, MONO, GOLD_TEXT, DAY_LABEL, am, money, num, useToken, TokenPrompt, ConfidenceBar, ZoneChip, type Ticket, type TicketLeg } from "./h2hShared";
+import { PlayerLink } from "../playerLink";
 
 const STATUS_COLOR: Record<string, string> = {
   HIT: H.green, WON: H.green, "ON PACE": H.green, BEHIND: H.amber, "AT RISK": H.amber, BUSTED: H.red, LOST: H.red, PENDING: H.mute, LIVE: H.purpleSoft,
@@ -23,9 +24,9 @@ function LegRow({ leg, onRemove, canEdit }: { leg: TicketLeg; onRemove: () => vo
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "12px 0", borderBottom: `1px solid ${H.edge}` }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Photo url={leg.photoUrl} name={leg.name} />
+        <PlayerLink leg={leg} name={leg.name}><Photo url={leg.photoUrl} name={leg.name} /></PlayerLink>
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontSize: 15, fontWeight: 700 }}>{leg.name} <span style={{ fontSize: 11, color: H.mute, fontWeight: 400 }}>{leg.team} {leg.pos}</span></span>
+          <span style={{ fontSize: 15, fontWeight: 700 }}><PlayerLink leg={leg} name={leg.name}>{leg.name}</PlayerLink> <span style={{ fontSize: 11, color: H.mute, fontWeight: 400 }}>{leg.team} {leg.pos}</span></span>
           <span style={{ fontSize: 13, color: H.goldHi, fontFamily: MONO }}>
             {leg.direction.toUpperCase()} {num(leg.line)} {leg.prop.toUpperCase()}
           </span>
