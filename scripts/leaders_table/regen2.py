@@ -8,7 +8,7 @@ CATS={'Rushing Yds':('RUSHING','rushyds','player_rushing_week','rushing_yards',5
 # multi-season game history straight from nflverse + lake (current season)
 HIST={}  # col -> pid -> [(season,week,opp,value)]
 FILES=['/tmp/nflv/w2023.csv','/tmp/nflv/w2024.csv','/tmp/nflv/w2025.csv']+['/home/user/Hey-Big-Proppa/lake/gold/nfl/%s.csv'%n for n in('player_rushing_week','player_receiving_week','player_passing_week')]
-COLS=['rushing_yards','receiving_yards','receptions','passing_yards']
+COLS=['rushing_yards','receiving_yards','receptions','passing_yards','targets']
 seen=set()
 for f in FILES:
     for r in csv.DictReader(open(f)):
@@ -36,22 +36,32 @@ def nm(pid,name):
     if not n or n.startswith('00-'): n=NAMES.get(pid) or name
     return n
 def pct(a): return round(100*sum(a)/len(a)) if a else None
+SEASON=2026
+def hitrates(pid,col,line,opp):
+    """Hit rates against the line shown in the table: Season = every 2026 game, L5 = last five 2026 games,
+    vs Opp = every meeting since 2023. A hit is strictly over the line."""
+    allg=HIST.get(col,{}).get(pid,[])
+    cur=[v for (s,w,o,v) in allg if s==SEASON]
+    ov=[v>line for v in cur]
+    vs=[v for (s,w,o,v) in allg if o==opp]
+    st=0
+    for o_ in reversed(ov):
+        if st==0: st=1 if o_ else -1
+        elif (st>0)==o_: st+=1 if st>0 else -1
+        else: break
+    return dict(season=pct(ov),l5=pct(ov[-5:]),vs=pct([v>line for v in vs]) if vs else None,vsn=len(vs),streak=st)
 def build(pid,name,team,gp,total,market,col,withgames=True):
     b=bpl.nfl_player_line(pid,market,name,team)
     line=b.get('sportsbookLine'); g=b.get('l5') or []
     vals=[x['value'] for x in g]; ov=[v>line for v in vals] if line is not None else []
-    st=0
-    for o in reversed(ov):
-        if st==0: st=1 if o else -1
-        elif (st>0)==o: st+=1 if st>0 else -1
-        else: break
+    hr=hitrates(pid,col,line,b.get('nextOpp')) if line is not None else dict(season=None,l5=None,vs=None,vsn=0,streak=0)
+    st=hr['streak']
     allg=HIST.get(col,{}).get(pid,[])
-    vs=[v for (s,w,o,v) in allg if o==b.get('nextOpp')]
     row=dict(playerId=pid,name=nm(pid,name),team=team,pos=(tmap.get(pid) or {}).get('pos') or DIM.get(pid,{}).get('position'),photoUrl=data.photo_url(pid),gp=gp,season_total=total,
       line=line,proj=b.get('bpl'),diff=b.get('diffPct'),diff_abs=round(b['bpl']-line,1) if (b.get('bpl') is not None and line is not None) else None,
       nextOpp=b.get('nextOpp'),nextOppRank=b.get('nextOppRank'),nextOppHome=b.get('nextOppHome'),
-      season_pct=pct(ov),l5_pct=pct(ov[-5:]),
-      vs_opp=pct([v>line for v in vs]) if (vs and line is not None) else None,vs_opp_n=len(vs) if line is not None else 0,
+      season_pct=hr['season'],l5_pct=hr['l5'],
+      vs_opp=hr['vs'],vs_opp_n=hr['vsn'] if line is not None else 0,
       lineOpp=b.get('lineOpp'),lineLive=b.get('lineLive'),overPrice=b.get('overPrice'),underPrice=b.get('underPrice'),streak=st,parts=b.get('parts'),seasonAvg=b.get('seasonAvg'),books=b.get('books'))
     if withgames:
         row['games']=[dict(season=s,week=w,opp=o,value=v) for (s,w,o,v) in allg[-10:]]
@@ -75,9 +85,10 @@ def trow(r):
     line=r['line'] if r.get('line') is not None else round(r['projTargets']-r['projDiff'],1)
     p=lambda x: None if x is None else round(100*x)
     log=[x for x in (r.get('log') or [])][-10:]
+    hr=hitrates(r['playerId'],'targets',line,r['opp'])
     return dict(playerId=r['playerId'],team=r['team'],name=nm(r['playerId'],r['name']),pos=r['pos'],photoUrl=r.get('photoUrl'),gp=r['games'],tgtPerGame=r['tgtPerGame'],line=line,proj=r['projTargets'],
-      diff=round(100*r['projDiffPct'],1),diff_abs=r['projDiff'],nextOpp=r['opp'],nextOppRank=r['dRank'],season_pct=p(h.get('season')),l5_pct=p(h.get('l5')),
-      vs_opp=p(h.get('vsOpp')),vs_opp_n=h.get('vsOppN'),streak=r.get('streak'),tpi=r.get('tpi'),flag=r.get('flag'),
+      diff=round(100*r['projDiffPct'],1),diff_abs=r['projDiff'],nextOpp=r['opp'],nextOppRank=r['dRank'],season_pct=hr['season'],l5_pct=hr['l5'],
+      vs_opp=hr['vs'],vs_opp_n=hr['vsn'],streak=hr['streak'],tpi=r.get('tpi'),flag=r.get('flag'),
       tparts=dict(projRec=r.get('projRec'),projYds=r.get('projYds'),teamVolume=r.get('teamVolume'),posFactor=r.get('posFactor'),shareSeason=r.get('shareSeason'),shareL3=r.get('shareL3'),role=r.get('role'),look=r.get('look')),
       games=[dict(season=x['season'],week=x['week'],opp=x['opp'],value=x['tgt']) for x in log])
 allt=sorted(tmap.values(),key=lambda r:-(r.get('tgtPerGame') or 0))

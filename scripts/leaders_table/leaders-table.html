@@ -143,6 +143,20 @@ td:first-child,td:nth-child(2){text-align:left;}
 @media (prefers-reduced-motion:reduce){.bp-th{animation:none;}}
 td.td-proj{color:#f5c542;}
 .td-safe{color:#22c55e;font-weight:700;}
+
+/* Safe Bet column header: money-green metallic chrome with sweeping shine */
+.sb-th{
+  background-image:linear-gradient(100deg,#064e1a 0%,#16a34a 18%,#bbf7d0 32%,#22c55e 46%,#065f23 58%,#4ade80 72%,#dcfce7 82%,#15803d 100%) !important;
+  background-size:240% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent !important;
+  font-weight:800 !important;font-size:12px !important;letter-spacing:.06em !important;text-transform:uppercase;
+  text-shadow:none;filter:drop-shadow(0 0 5px rgba(34,197,94,.55));
+  animation:sbshine 3.2s linear infinite, sbpulse 2.4s ease-in-out infinite;
+}
+@keyframes sbshine{0%{background-position:160% 0}100%{background-position:-80% 0}}
+@keyframes sbpulse{0%,100%{filter:drop-shadow(0 0 3px rgba(34,197,94,.35))}50%{filter:drop-shadow(0 0 9px rgba(74,222,128,.9))}}
+@media (prefers-reduced-motion:reduce){.sb-th{animation:none;}}
 </style>
 
 <div class="page-hdr">
@@ -247,9 +261,9 @@ function drankColor(rank) {
 const C_GREEN={bg:'#14532d',fg:'#fff'}, C_TAN={bg:'#d2b48c',fg:'#3b2a14'}, C_RED={bg:'#7f1d1d',fg:'#fff'};
 function pctColor(pct) {
   if (pct == null) return {bg:'transparent',fg:'var(--fg3)'};
-  if (pct >= 70) return C_GREEN;   // 4-5 of 5
-  if (pct >= 40) return C_TAN;     // 2-3 of 5
-  return C_RED;                    // 0-1 of 5
+  if (pct >= 70) return C_GREEN;   // clears the line in 70%+ of games (4-5 of 5)
+  if (pct >= 50) return C_TAN;     // at least half (3 of 5)
+  return C_RED;                    // under half: 0-2 of 5, 4 of 9 and so on
 }
 function heat(t) { // t = diff% / 25
   const d = t * 25;
@@ -323,7 +337,8 @@ function render() {
   headEl.innerHTML = COLS.map(col => {
     const cls = col.key === sortKey ? (sortDir === -1 ? 'sorted-desc' : 'sorted-asc') : '';
     const align = col.align === 'left' ? 'style="text-align:left"' : col.align === 'center' ? 'style="text-align:center"' : '';
-    return `<th class="${cls}${col.key==='proj'?' bp-th':''}" ${align} onclick="sortBy('${col.key}')">${col.label}</th>`;
+    const extra = col.key==='proj' ? ' bp-th' : col.key==='safe' ? ' sb-th' : '';
+    return `<th class="${cls}${extra}" ${align} onclick="sortBy('${col.key}')">${col.label}</th>`;
   }).join('');
 
   // body
