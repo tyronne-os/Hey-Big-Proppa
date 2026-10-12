@@ -161,23 +161,22 @@ tbody tr:hover td{filter:brightness(1.12);}
 .pd table{color:var(--p-fg);} .pd th{background:#232327;color:var(--p-fg2);} .pd td{border-color:var(--p-line);}
 .pd tr.me td.td-player{box-shadow:inset 3px 0 0 var(--p-tan);} 
 .pd td,.pd .td-num,.pd .td-proj,.pd .td-player{color:var(--p-fg);} .pd .td-team{color:var(--p-fg2);} .pd .gp{color:var(--p-fg2);} .pd td.streak-over{color:#22c55e;} .pd td.streak-under{color:#ef4444;} .pd .rk{color:var(--p-fg2);font-size:11px;margin-right:6px;}
+
+.navdd{position:relative;}
+.navdd button{display:inline-flex;align-items:center;height:30px;padding:0 13px;border-radius:999px;border:1px solid var(--border2);background:var(--surface);color:var(--fg);font:inherit;font-size:11px;font-weight:700;letter-spacing:.1em;cursor:pointer;}
+.navdd button:hover,.navdd button[aria-expanded="true"]{border-color:#c9a54e;color:#f1dc92;}
+.navdd-menu{position:absolute;top:36px;left:50%;transform:translateX(-50%);z-index:50;min-width:220px;display:flex;flex-direction:column;gap:2px;padding:6px;background:#0b0b0c;border:1px solid #c9a54e;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.6);}
+.navdd-menu[hidden]{display:none;}
+.navdd-menu a{height:auto;padding:8px 12px;border:0;border-radius:8px;background:transparent;}
+.navdd-menu a:hover{background:rgba(201,165,78,.14);color:#f1dc92;}
 </style>
 
 <nav class="bpnav" aria-label="Main">
   <a class="home" href="https://aibruh-big-proppa-live.hf.space/home/index.html" target="_blank" rel="noopener">HOME</a>
   <a class="on" href="https://aibruh-big-proppa-live.hf.space/leaders?cat=targets" target="_blank" rel="noopener">LEADERS · TARGETS</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/matchups" target="_blank" rel="noopener">MATCHUPS</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/ramp" target="_blank" rel="noopener">RAMP</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/college" target="_blank" rel="noopener">COLLEGE</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/throwdown" target="_blank" rel="noopener">THROWDOWN THURSDAY</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/monday" target="_blank" rel="noopener">MONDAY NIGHT</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/sunday-night" target="_blank" rel="noopener">SUNDAY NIGHT</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/parlays" target="_blank" rel="noopener">SUNDAY SLIPS</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/engine" target="_blank" rel="noopener">ENGINE</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/news" target="_blank" rel="noopener">NEWS</a>
   <a href="https://aibruh-big-proppa-live.hf.space/queries" target="_blank" rel="noopener">QUERIES</a>
   <a class="boo" href="https://aibruh-big-proppa-live.hf.space/myboo" target="_blank" rel="noopener">MY BOO</a>
-  <a href="https://aibruh-big-proppa-live.hf.space/odds" target="_blank" rel="noopener">THE ODDS</a>
+  <div class="navdd" id="navdd"><button type="button" id="navdd-btn" aria-haspopup="menu" aria-expanded="false">THE ODDS <span id="navdd-caret">▾</span></button><div class="navdd-menu" id="navdd-menu" role="menu" hidden><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/odds" target="_blank" rel="noopener">THE ODDS</a><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/matchups" target="_blank" rel="noopener">MATCHUPS</a><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/ramp" target="_blank" rel="noopener">RAMP</a><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/college" target="_blank" rel="noopener">COLLEGE</a><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/throwdown" target="_blank" rel="noopener">THROWDOWN THURSDAY</a><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/monday" target="_blank" rel="noopener">MONDAY NIGHT</a><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/sunday-night" target="_blank" rel="noopener">SUNDAY NIGHT</a><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/parlays" target="_blank" rel="noopener">SUNDAY SLIPS</a><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/engine" target="_blank" rel="noopener">ENGINE</a><a role="menuitem" href="https://aibruh-big-proppa-live.hf.space/news" target="_blank" rel="noopener">NEWS</a></div></div>
 </nav>
 <div class="page-hdr">
   <div class="page-title" style="text-align:center">🏈 Big Proppa · Leaders</div>
@@ -515,6 +514,16 @@ function closePlayer() {
   LISTSEL.forEach(s => { const e=document.querySelector(s); if (e) e.hidden = false; });
   window.scrollTo(0,lastScroll);
 }
+
+
+(function(){
+  const btn=document.getElementById('navdd-btn'), menu=document.getElementById('navdd-menu'), caret=document.getElementById('navdd-caret');
+  if(!btn) return;
+  function set(o){ menu.hidden=!o; btn.setAttribute('aria-expanded',o?'true':'false'); caret.textContent=o?'▴':'▾'; }
+  btn.addEventListener('click',e=>{ e.stopPropagation(); set(menu.hidden); });
+  document.addEventListener('click',e=>{ if(!menu.contains(e.target)) set(false); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') set(false); });
+})();
 
 // init
 populateGameFilter();
