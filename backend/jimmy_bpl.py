@@ -125,6 +125,9 @@ def _player_index() -> dict[tuple[str, str], str]:
     return {(data.normalize_name(d["name"]), d["team"]): pid for pid, d in data.player_dimension().items()}
 
 
+_JEV_ANCHOR: dict[tuple[str, str], float] = {}
+
+
 def _side_dicts(pid: str, name: str, team: str, game: dict, market: str, line: float, row: dict,
                 offers: list[tuple[str, float, float, float]], alt: bool) -> list[dict]:
     """offers: (side, decimal, american, book probability). Scores each side against the BPL."""
@@ -136,17 +139,18 @@ def _side_dicts(pid: str, name: str, team: str, game: dict, market: str, line: f
     recent = [g["value"] for g in row["l5"]]
     gap = bpl.diff_pct(row["bpl"], line)
 
-    # JEV second opinion: independent holistic read on the over probability.
-    # Blended 75 BPL / 25 JEV when available; gracefully falls back to BPL-only.
-    hit_rate = (sum(1 for v in recent if v > line) / len(recent)) if recent else None
-    jev_po = _jev.leg_probability(
-        pid, name, team, market, "over", line,
-        hit_rate=hit_rate,
-        usage_score=float(parts.get("usage") or 0) or None,
-        matchup_edge=float(parts.get("matchup_edge") or 0) or None,
-        opponent=game.get("opp"),
-    )
-    po_final = round(0.75 * po + 0.25 * jev_po, 4) if jev_po is not None else po
+    # JEV second opinion: the full scouting read (jev_brain), anchored at FanDuel's main line so one call
+    # prices the main line and every alternate rung. Blend weight comes from the graded ledger.
+    import jev_ledger
+    anchor = _JEV_ANCHOR.get((pid, market), line)
+    read = _jev.prop_read(pid, name, team, market, anchor)
+    jev_po = _jev.prop_p_over(read, line) if read else None
+    w = jev_ledger.weight("prop")
+    po_final = round((1 - w) * po + w * jev_po, 4) if jev_po is not None else po
+    if jev_po is not None and not alt and abs(line - anchor) < 1e-9:
+        jev_ledger.record("prop", f"prop:{game['gameId']}:{pid}:{market}:{line:g}", espnId=jev_ledger.espn_id_for(game["gameId"]),
+                          lakeGameId=game["gameId"], playerId=pid, name=name, team=team, market=market, line=line, direction="over",
+                          bplP=round(po, 4), jevP=round(jev_po, 4), blendP=po_final, weight=w, jevExpected=read.get("expected"))
 
     out = []
     for side, dec, px, book_p in offers:
@@ -159,8 +163,9 @@ def _side_dicts(pid: str, name: str, team: str, game: dict, market: str, line: f
             "bpl": row["bpl"], "gapPct": gap, "gameId": game["gameId"], "week": game["week"],
             "prop": f"{side.upper()} {line:g} {MARKET_LABEL[market]}" + (" (ALT)" if alt else ""),
             "l5": row["seasonAvg"] or 0, "alt": alt,
-            "jevP": round(jev_po, 3) if jev_po is not None else None,
+            "jevP": round(jev_po if side == "over" else 1 - jev_po, 3) if jev_po is not None else None,
             "jevActive": jev_po is not None,
+            "jevExpected": read.get("expected") if read else None,
         })
     return out
 
@@ -186,6 +191,26 @@ def _scored_sides() -> list[dict]:
             ok = row.get("parts") and len(row["l5"]) >= MIN_GAMES_THIS_SEASON and row["parts"]["baseline"] >= MIN_BASELINE[market]
             rows[key] = row if ok else None
         return rows[key]
+
+    # Warm JEV's scouting reads in parallel (one per player and market, anchored at FanDuel's main line)
+    # so scoring never waits on calls one at a time.
+    import jev as _jev
+    if _jev.available():
+        jobs = []
+        _JEV_ANCHOR.clear()
+        for r in data.load("prop_line_rotowire"):
+            market = r.get("market_slug")
+            if r.get("book_slug") != BOOK or market not in bpl.NFL_MARKETS or not r.get("line"):
+                continue
+            team = r.get("team", "")
+            game = nxt.get(team)
+            pid = idx.get((data.normalize_name(r.get("player_name", "")), team))
+            if not game or not pid or game["opp"] != r.get("opponent", "").lstrip("@") or (pid, market) in _JEV_ANCHOR:
+                continue
+            if usable(pid, r["player_name"], team, market):
+                _JEV_ANCHOR[(pid, market)] = float(r["line"])
+                jobs.append(lambda a=(pid, r["player_name"], team, market, float(r["line"])): _jev.prop_read(*a))
+        _jev.prefetch(jobs)
 
     out: list[dict] = []
     for r in data.load("prop_line_rotowire"):

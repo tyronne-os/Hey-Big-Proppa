@@ -454,16 +454,17 @@ def analyze(player_id: str, market: str, game_id: str | None = None) -> dict:
     sd = max(statistics.pstdev(vals) if len(vals) > 1 else 0.0, SD_FLOOR[market], 0.28 * mu)
     p_over = 1 - _cdf((line - mu) / sd)
     hit_rate = sum(1 for v in l5 if v > line) / len(l5)
-    jev_p = None
+    jev_p, jev_read, w = None, None, 0.25
     try:
         import jev
-        if jev.available():
-            jev_p = jev.leg_probability(player_id, name, team, market, "over", line, hit_rate=hit_rate, usage_score=None,
-                                        matchup_edge=None, opponent=b.get("nextOpp"))
+        import jev_ledger
+        w = jev_ledger.weight("prop")
+        jev_read = jev.prop_read(player_id, name, team, market, line)
+        jev_p = jev_read["p"] if jev_read else None
     except Exception:
-        jev_p = None
+        jev_p, jev_read = None, None
     if jev_p is not None:
-        p_over = 0.75 * p_over + 0.25 * jev_p
+        p_over = (1 - w) * p_over + w * jev_p
     sides = {}
     for d_, p_, px in (("over", p_over, fd["overPrice"]), ("under", 1 - p_over, fd["underPrice"])):
         if px is None:
@@ -483,6 +484,12 @@ def analyze(player_id: str, market: str, game_id: str | None = None) -> dict:
             thin = f"Only {len(vals)} game{'s' if len(vals) != 1 else ''} of 2026 data, so a STRONG read is capped at LEAN."
     # safer-line finder: the alt on the recommended side with >=62% hit chance that still pays the most
     alts = _alts(market, line, mu, sd)
+    if jev_read:
+        import jev
+        for a_ in alts:
+            jp = jev.prop_p_over(jev_read, a_["line"])
+            po = (1 - w) * a_["pOver"] + w * jp
+            a_.update(pOver=round(po, 3), pUnder=round(1 - po, 3), overAmerican=_am_from_p(min(0.97, po * 1.045)), underAmerican=_am_from_p(min(0.97, (1 - po) * 1.045)))
     sweet = None
     if best:
         key = "pOver" if best[0] == "over" else "pUnder"
@@ -501,6 +508,8 @@ def analyze(player_id: str, market: str, game_id: str | None = None) -> dict:
         warn.append("This game has already started. Lines may have moved or closed.")
     out.update(ticketable=bool(best) and not (out["injury"] and out["injury"]["badge"] in ("OUT", "IR")),
                projection=round(mu, 1), sd=round(sd, 1), jevP=None if jev_p is None else round(jev_p, 3), jevActive=jev_p is not None,
+               jev=None if not jev_read else {"p": jev_read["p"], "expected": jev_read["expected"], "weight": w, "factors": jev_read.get("factors", []),
+                                               "bands": [{"label": l, "p": round(p_, 3)} for l, p_ in zip(jev_read["labels"], jev_read["bands"])]},
                sides=sides, recommended=best[0] if best else None, verdict=verdict,
                hits={"l5Over": sum(1 for v in l5 if v > line), "l5": len(l5), "seasonOver": sum(1 for v in vals if v > line), "season": len(vals)},
                alts=alts, sweet=sweet, warnings=warn)

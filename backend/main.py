@@ -288,6 +288,47 @@ def api_jimmy_spy_boy():
     return {"legs": jimmy_bpl.spy_boy_legs(), "board": jimmy_bpl.QUESTION_BOARD, "minP": jimmy_bpl.SPY_MIN_P}
 
 
+@app.get("/api/jev/brain")
+def api_jev_brain(player_id: str, market: str = "recyds", line: float | None = None, read: bool = False):
+    """The scouting file JEV reads for one prop (lake + live ESPN). read=true also returns JEV's answer."""
+    import jev_brain
+    import h2h as _h2h
+    dim = data.player_dimension().get(player_id, {})
+    name, team = dim.get("name") or data.player_name(player_id), dim.get("team", "")
+    if line is None:
+        fd = _h2h._fd_lines().get((market, data.normalize_name(name), team))
+        line = fd["line"] if fd else None
+    if line is None:
+        return {"ok": False, "error": "no posted line; pass ?line="}
+    state = jev_brain.prop_state(player_id, name, team, market, float(line))
+    out = {"ok": state is not None, "line": line, "state": state, "factors": jev_brain.factors(state)}
+    if read and state:
+        out["jev"] = jev.prop_read(player_id, name, team, market, float(line))
+    return out
+
+
+@app.get("/api/jev/game-brain")
+def api_jev_game_brain(away: str, home: str, read: bool = False):
+    """The scouting file JEV reads for one game. read=true also returns JEV's total / spread / moneyline read."""
+    import jev_brain
+    import h2h as _h2h
+    state = jev_brain.game_state(away, home)
+    out = {"ok": True, "state": state}
+    if read:
+        g = next((x for x in _h2h.slate()["games"] if x["away"]["abbr"] == away and x["home"]["abbr"] == home), None)
+        ln = (g or {}).get("lines") or {}
+        out["jev"] = jev.game_read(away, home, ln.get("total"), ln.get("spreadHome"))
+    return out
+
+
+@app.get("/api/jev/report")
+def api_jev_report(settle: bool = True):
+    """How JEV is actually doing: every read graded against ESPN finals, Brier scores, calibration, live blend weights."""
+    import jev_ledger
+    settled_now = jev_ledger.settle() if settle else 0
+    return {**jev_ledger.report(), "settledThisCall": settled_now, "jevConnected": jev.available(), "calls": jev.stats()}
+
+
 @app.get("/api/jimmy/jev-stats")
 def api_jimmy_jev_stats():
     """

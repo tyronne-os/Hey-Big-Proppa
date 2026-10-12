@@ -50,6 +50,7 @@ export type Analysis = {
   projection?: number; sd?: number; jevP?: number | null; jevActive?: boolean;
   sides?: { over: SideInfo; under: SideInfo }; recommended?: "over" | "under" | null; verdict?: string;
   hits?: { l5Over: number; l5: number; seasonOver: number; season: number };
+  jev?: { p: number; expected: number; weight: number; factors: string[]; bands: { label: string; p: number }[] } | null;
   alts?: AltLine[]; sweet?: { direction: "over" | "under"; line: number; p: number; american: number } | null; warnings?: string[];
 };
 

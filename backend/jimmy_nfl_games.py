@@ -108,11 +108,25 @@ def nfl_sides() -> list[dict]:
     model = {(t["home"], t["away"]): t for t in bpl.nfl_game_totals()}
     hist = bpl._team_points_history()
     cutoff = time.time() + LEAD_SECONDS
+    import jev
+    import jev_ledger
+    games = [r for r in _games() if not (r["epoch"] and r["epoch"] < cutoff)]
+    reads = {}
+    if jev.available():
+        def job(r):
+            reads[(r["home"], r["away"])] = jev.game_read(r["away"], r["home"], _f(r["fd"].get("totalOver")), _f(r["fd"].get("homeTeamSpread")))
+        jev.prefetch([lambda r=r: job(r) for r in games])
+    w = jev_ledger.weight("game")
+
+    def blend(raw: float, jp: float | None) -> float:
+        return raw if jp is None else (1 - w) * raw + w * jp
+
     out: list[dict] = []
-    for r in _games():
+    for r in games:
         if r["epoch"] and r["epoch"] < cutoff:
             continue
         home, away, fd = r["home"], r["away"], r["fd"]
+        jr = reads.get((home, away))
         m, g = model.get((home, away)), nxt.get(home)
         if not (m and g):
             continue
@@ -131,8 +145,14 @@ def nfl_sides() -> list[dict]:
         po, pu = _f(fd.get("totalOverOdds")), _f(fd.get("totalUnderOdds"))
         if line is not None and po and pu:
             book_o = (1 / _dec(po)) / (1 / _dec(po) + 1 / _dec(pu))
-            p_o = 1 - _cdf((line - total_mu) / SIGMA)
-            note = f"BPL total {total_mu:.1f} vs {book} {line:g}"
+            p_bpl = 1 - _cdf((line - total_mu) / SIGMA)
+            jp = jev.game_p_over(jr, line) if jr else None
+            p_o = blend(p_bpl, jp)
+            note = f"BPL total {total_mu:.1f} vs {book} {line:g}" + (f" · JEV {jp:.0%} over, sees {jr['expectedTotal']:g}" if jp is not None else "")
+            if jp is not None:
+                jev_ledger.record("total", f"total:{g['gameId']}:{line:g}", espnId=jev_ledger.espn_id_for(g["gameId"]), lakeGameId=g["gameId"],
+                                  name=f"{away} @ {home}", team="TOTAL", market="nfl_total", line=line, direction="over",
+                                  bplP=round(p_bpl, 4), jevP=round(jp, 4), blendP=round(p_o, 4), weight=w)
             for side, px, rp, bp, rec in (("over", po, p_o, book_o, [t > line for t in totals]),
                                           ("under", pu, 1 - p_o, 1 - book_o, [t < line for t in totals])):
                 out.append(_leg(g, hn, an, "nfl_total", side, line, "", "", px, rp, bp, rec, round(total_mu, 1), note))
@@ -141,8 +161,13 @@ def nfl_sides() -> list[dict]:
         ph, pa = _f(fd.get("homeTeamSpreadOdds")), _f(fd.get("awayTeamSpreadOdds"))
         if s_h is not None and ph and pa:
             book_h = (1 / _dec(ph)) / (1 / _dec(ph) + 1 / _dec(pa))
-            p_h = _cdf((margin_mu + s_h) / SIGMA)
-            note = f"BPL margin {home} {margin_mu:+.1f} vs {book} {home} {s_h:+g}"
+            p_bpl = _cdf((margin_mu + s_h) / SIGMA)
+            jp = jev.game_p_home_covers(jr, s_h) if jr else None
+            p_h = blend(p_bpl, jp)
+            note = f"BPL margin {home} {margin_mu:+.1f} vs {book} {home} {s_h:+g}" + (f" · JEV {jp:.0%} {home} covers, sees {jr['expectedHomeMargin']:+g}" if jp is not None else "")
+            if jp is not None:
+                jev_ledger.record("spread", f"spread:{g['gameId']}:{s_h:g}", espnId=jev_ledger.espn_id_for(g["gameId"]), lakeGameId=g["gameId"],
+                                  name=home, team=home, market="nfl_spread", line=s_h, bplP=round(p_bpl, 4), jevP=round(jp, 4), blendP=round(p_h, 4), weight=w)
             for name, px, rp, bp, sl, rec in ((hn, ph, p_h, book_h, s_h, [x + s_h > 0 for x in hm]),
                                              (an, pa, 1 - p_h, 1 - book_h, -s_h, [x - s_h > 0 for x in am])):
                 out.append(_leg(g, hn, an, "nfl_spread", "cover", sl, "", name, px, rp, bp, rec, round(margin_mu if name == hn else -margin_mu, 1), note))
@@ -150,8 +175,13 @@ def nfl_sides() -> list[dict]:
         mh, ma = _f(fd.get("homeTeamML")), _f(fd.get("awayTeamML"))
         if mh and ma:
             book_h = (1 / _dec(mh)) / (1 / _dec(mh) + 1 / _dec(ma))
-            p_h = _cdf(margin_mu / SIGMA)
-            note = f"BPL margin {home} {margin_mu:+.1f}"
+            p_bpl = _cdf(margin_mu / SIGMA)
+            jp = jr.get("pHomeWins") if jr else None
+            p_h = blend(p_bpl, jp)
+            note = f"BPL margin {home} {margin_mu:+.1f}" + (f" · JEV {jp:.0%} {home} wins" if jp is not None else "")
+            if jp is not None:
+                jev_ledger.record("ml", f"ml:{g['gameId']}", espnId=jev_ledger.espn_id_for(g["gameId"]), lakeGameId=g["gameId"],
+                                  name=home, team=home, market="nfl_ml", line=0.0, bplP=round(p_bpl, 4), jevP=round(jp, 4), blendP=round(p_h, 4), weight=w)
             for name, px, rp, bp, rec in ((hn, mh, p_h, book_h, [x > 0 for x in hm]), (an, ma, 1 - p_h, 1 - book_h, [x > 0 for x in am])):
                 out.append(_leg(g, hn, an, "nfl_ml", "win", 0.0, "", name, px, rp, bp, rec, round(margin_mu if name == hn else -margin_mu, 1), note))
     return out

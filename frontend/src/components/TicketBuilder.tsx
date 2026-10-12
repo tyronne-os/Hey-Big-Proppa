@@ -185,6 +185,27 @@ export default function TicketBuilder({ playerId, market, ctx, onBack }: { playe
               <span style={{ fontSize: 11, color: H.mute }}>Price source: <b>{a.fd.book}</b>{a.fd.isFanDuel ? "" : " (no FanDuel row)"} · JEV second opinion: {a.jevActive ? <b style={{ color: H.green }}>{Math.round((a.jevP ?? 0) * 100)}% over</b> : "offline, model only"}</span>
             </Card>
 
+            <Card title="7 · JEV SCOUTING READ" tone={a.jev ? "#4c1d95" : undefined}>
+              {a.jev ? (
+                <>
+                  <span style={{ fontSize: 12 }}>
+                    JEV gives the over <b style={{ color: a.jev.p >= 0.5 ? H.green : H.red }}>{Math.round(a.jev.p * 100)}%</b> and expects about <b style={{ color: H.goldHi }}>{num(a.jev.expected)}</b> {a.marketLabel?.toLowerCase()}. It carries {Math.round(a.jev.weight * 100)}% of the blended number.
+                  </span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                    {a.jev.bands.map((b) => (
+                      <div key={b.label} style={{ display: "grid", gridTemplateColumns: "minmax(0,1.6fr) minmax(0,1fr) 34px", gap: 6, alignItems: "center", fontSize: 10, fontFamily: MONO }}>
+                        <span style={{ color: H.mute, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b.label}</span>
+                        <span style={{ height: 7, background: H.edge, borderRadius: 4 }}><span style={{ display: "block", height: "100%", width: `${Math.round(b.p * 100)}%`, background: H.purple, borderRadius: 4 }} /></span>
+                        <span style={{ textAlign: "right" }}>{Math.round(b.p * 100)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                  <span style={{ fontSize: 10, color: H.gold, letterSpacing: "0.1em", fontFamily: MONO }}>WHAT JEV WEIGHED</span>
+                  {a.jev.factors.map((f) => <span key={f} style={{ fontSize: 11, color: H.text }}>• {f}</span>)}
+                </>
+              ) : <span style={{ fontSize: 12, color: H.mute }}>JEV is offline for this player right now; the read above is Big Proppa only.</span>}
+            </Card>
+
             <Card title="6 · LIVE TRACKING">
               <span style={{ fontSize: 12 }}>Once this ticket is built, each leg tracks the ESPN box score during the game: stat so far, projected pace against the line, and HIT / ON PACE / BEHIND / BUSTED status, refreshed every 30 seconds on the ticket.</span>
             </Card>

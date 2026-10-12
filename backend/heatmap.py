@@ -179,51 +179,26 @@ def game_lines(away: str, home: str) -> dict:
                       "decimal": round(_dec(under_px), 3)},
         }
 
-    # Alternate under lines: JEV must agree
+    # Alternate under lines: JEV must agree. One game read (full scouting file) prices every rung.
     alt_unders = []
+    jev_game = None
     if total and _jev.available():
-        # Use defensive heatmap data to estimate usage/edge for the game
-        tbl = _team_table()
-        home_d = tbl.get(home, {})
-        away_d = tbl.get(away, {})
-        # matchup edge proxy: average of both defenses' points-allowed rank (lower pa = stronger defense)
-        avg_pa = ((home_d.get("pa", 25) + away_d.get("pa", 25)) / 2)
-        # Normalize to a 0-100 usage-style score: 14 pa = 100, 35 pa = 0
-        def_strength = max(0.0, min(100.0, round(100 * (35 - avg_pa) / 21, 1)))
-        # matchup edge as z-score proxy: below-avg scoring = negative offense edge
-        matchup_edge = round((avg_pa - 22.5) / 7.0, 2)  # 22.5 = league avg scoring, 7 = sd
-
-        for drop in ALT_DROPS:
-            alt_line = round(total - drop, 1)
-            game_id = f"ALT:{away}@{home}:{alt_line}"
-            jev_p = _jev.leg_probability(
-                game_id, f"{away} @ {home}", home, "nfl_total", "under", alt_line,
-                hit_rate=None,
-                usage_score=def_strength,
-                matchup_edge=matchup_edge,
-                opponent=away,
-            )
-            if jev_p is not None and jev_p >= JEV_MIN_P:
-                # Alt under price — no live FanDuel price; estimate via normal CDF shift
-                # Each 2.5pt drop from posted total moves the under probability roughly +6%
-                SIGMA = 13.5
-                base_under_p = 1 - (0.5 + (1 / (_dec(under_px) if under_px else 2) - 0.5))
-                delta_p = 1 - (0.5 * (1 + math.erf((alt_line - total + 0.0) / (SIGMA * math.sqrt(2)))))
-                est_p = min(0.85, max(0.30, delta_p))
-                # estimated american odds at this probability
-                if est_p >= 0.5:
-                    est_am = int(round(-100 * est_p / (1 - est_p)))
-                else:
-                    est_am = int(round(100 * (1 - est_p) / est_p))
-                alt_unders.append({
-                    "line": alt_line,
-                    "drop": drop,
-                    "jevP": round(jev_p, 3),
-                    "estAmerican": est_am,
-                    "estDisplay": f"+{est_am}" if est_am > 0 else str(est_am),
-                    "estDecimal": round(_dec(est_am), 3),
-                    "note": f"JEV {jev_p:.0%} confident UNDER {alt_line} clears · {drop:+.1f}pts from posted line → better odds",
-                })
+        read = _jev.game_read(away, home, total, _f(fd.get("homeTeamSpread")))
+        if read:
+            jev_game = {"expectedTotal": read["expectedTotal"], "expectedHomeMargin": read["expectedHomeMargin"], "pOver": read["pOver"],
+                        "pHomeCovers": read["pHomeCovers"], "pHomeWins": read["pHomeWins"], "home": home, "away": away}
+            for drop in ALT_DROPS:
+                alt_line = round(total - drop, 1)
+                jev_p = round(1 - _jev.game_p_over(read, alt_line), 3)
+                if jev_p >= JEV_MIN_P:
+                    # no posted FanDuel alt price: estimate from JEV's own probability with a 4.5% hold
+                    est_p = min(0.95, max(0.05, jev_p * 1.045))
+                    est_am = int(round(-100 * est_p / (1 - est_p))) if est_p >= 0.5 else int(round(100 * (1 - est_p) / est_p))
+                    alt_unders.append({
+                        "line": alt_line, "drop": drop, "jevP": jev_p, "estAmerican": est_am,
+                        "estDisplay": f"+{est_am}" if est_am > 0 else str(est_am), "estDecimal": round(_dec(est_am), 3),
+                        "note": f"JEV {jev_p:.0%} confident UNDER {alt_line} clears · {drop:g} pts below the posted total",
+                    })
 
     return {
         "available": True,
@@ -231,6 +206,7 @@ def game_lines(away: str, home: str) -> dict:
         "total": total_line,
         "altUnders": alt_unders,
         "jevActive": _jev.available(),
+        "jevGame": jev_game,
         "underdogTeam": dog_team,
     }
 

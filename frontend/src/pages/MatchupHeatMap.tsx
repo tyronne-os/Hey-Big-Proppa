@@ -9,6 +9,7 @@ export type GameLines = {
   total?: { line: number; over: TotalSide; under: TotalSide } | null;
   altUnders?: AltUnder[];
   jevActive?: boolean;
+  jevGame?: { expectedTotal: number; expectedHomeMargin: number; pOver: number | null; pHomeCovers: number | null; pHomeWins: number | null; home: string; away: string } | null;
   underdogTeam?: string;
 };
 
@@ -139,6 +140,15 @@ function GameLinesPanel({ gl }: { gl: GameLines }) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {gl.jevGame && (
+        <div style={{ borderRadius: 12, padding: "10px 14px", background: "#140a22", border: "1.5px solid #6d28d9", display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center", fontSize: 12, color: "#ece6f2" }}>
+          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", color: "#b79cff" }}>JEV PROJECTS</span>
+          <span>Total <b style={{ color: "#f1dc92" }}>{gl.jevGame.expectedTotal}</b>{gl.jevGame.pOver !== null && <> · over {Math.round(gl.jevGame.pOver * 100)}%</>}</span>
+          <span>{gl.jevGame.home} margin <b style={{ color: "#f1dc92" }}>{gl.jevGame.expectedHomeMargin > 0 ? "+" : ""}{gl.jevGame.expectedHomeMargin}</b>{gl.jevGame.pHomeCovers !== null && <> · covers {Math.round(gl.jevGame.pHomeCovers * 100)}%</>}</span>
+          {gl.jevGame.pHomeWins !== null && <span>{gl.jevGame.home} wins {Math.round(gl.jevGame.pHomeWins * 100)}%</span>}
         </div>
       )}
 
