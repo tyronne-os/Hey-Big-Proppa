@@ -113,15 +113,14 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
   const [showRegular, setShowRegular] = useState(false);
   const [mu, setMu] = useState<MatchupData | null>(null);
 
+  // Pre-fetch slips immediately (no gate) so they're ready the moment the passcode is entered.
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");
-    if (unlocked) {
-      api.parlaysAll().then(setSlips).catch(() => setSlips(null));
-      api.matchup(variant === "parlay" ? "thursday" : variant).then((d: MatchupData) => setMu(d?.active ? d : null)).catch(() => setMu(null));
-      const deepDive = variant === "monday" ? api.monday() : variant === "sunday-night" ? api.sundayNight() : api.throwdown();
-      deepDive.then((d: ThrowdownData) => setTd(d?.active ? d : null)).catch(() => setTd(null));
-    }
-  }, [unlocked, variant]);
+    api.parlaysAll().then(setSlips).catch(() => setSlips(null));
+    api.matchup(variant === "parlay" ? "thursday" : variant).then((d: MatchupData) => setMu(d?.active ? d : null)).catch(() => setMu(null));
+    const deepDive = variant === "monday" ? api.monday() : variant === "sunday-night" ? api.sundayNight() : api.throwdown();
+    deepDive.then((d: ThrowdownData) => setTd(d?.active ? d : null)).catch(() => setTd(null));
+  }, [variant]);
 
   const wager = 5;
 
@@ -181,7 +180,7 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
           </button>
         )}
 
-        {unlocked && !slips && <div style={{ color: "var(--bp-muted)" }}>Loading slips from RAMP NFL...</div>}
+        {unlocked && !slips && <div style={{ color: "var(--bp-muted)" }}>Loading tonight&apos;s tickets...</div>}
 
         {unlocked && slips && (!td || showRegular) && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(380px,1fr))", gap: 18, alignItems: "start" }}>

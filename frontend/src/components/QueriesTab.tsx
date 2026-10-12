@@ -11,7 +11,7 @@ export default function QueriesTab({ results }: { results: QueryResult[] }) {
     return (
       <div style={{ height: "100%", minHeight: 240, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, textAlign: "center" }}>
         <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.32em", color: "var(--bp-label)" }}>DISPLAY CLEAR</span>
-        <span style={{ fontSize: 13, color: "var(--bp-muted)" }}>Query results from RAMP NFL and JIMMY THE GREEK render here.</span>
+        <span style={{ fontSize: 13, color: "var(--bp-muted)" }}>Query results render here.</span>
       </div>
     );
   }

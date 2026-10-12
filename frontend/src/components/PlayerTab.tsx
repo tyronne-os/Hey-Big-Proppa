@@ -260,7 +260,7 @@ export default function PlayerTab({
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 980 }}>
         {searchBox}
-        <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>Loading player data from RAMP NFL...</div>
+        <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>Loading player data...</div>
       </div>
     );
   }

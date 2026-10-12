@@ -3,14 +3,14 @@ import { api } from "../api";
 import type { NewsArticle } from "../types";
 
 const CORR_COLOR: Record<string, string> = {
-  COACHES_SON: "#d9b45a",
+  COACHES_SON: "#22c55e",
   IB_CASCADE: "#ef4444",
   VOLUME_STACK: "#2ee6a6",
   SINGLE_HERO: "#a78bfa",
 };
 
 const CORR_LABEL: Record<string, string> = {
-  COACHES_SON: "COACHES SON",
+  COACHES_SON: "DEPENDABILITY RANKING",
   IB_CASCADE: "IB CASCADE",
   VOLUME_STACK: "VOLUME STACK",
   SINGLE_HERO: "SINGLE HERO",

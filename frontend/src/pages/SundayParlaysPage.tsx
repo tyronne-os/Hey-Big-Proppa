@@ -92,12 +92,15 @@ export default function SundayParlaysPage() {
     document.documentElement.setAttribute("data-theme", "dark");
   }, []);
 
+  // Pre-fetch immediately so tickets are ready when passcode is entered.
+  useEffect(() => {
+    api.parlaysHistory().then(r => setHistoryWeeks(r.weeks)).catch(() => {});
+    loadWeek("current");
+  }, []);
+
   useEffect(() => {
     if (!unlocked) return;
-    // Load history list
     api.parlaysHistory().then(r => setHistoryWeeks(r.weeks)).catch(() => {});
-    // Load current slips
-    loadWeek("current");
   }, [unlocked]);
 
   function loadWeek(weekId: string) {
@@ -126,10 +129,9 @@ export default function SundayParlaysPage() {
   const [early, setEarly] = useState<EarlyResponse | null>(null);
   const [evening, setEvening] = useState<EarlyResponse | null>(null);
   useEffect(() => {
-    if (!unlocked) return;
     api.parlaysEarly("early").then(setEarly).catch(() => setEarly(null));
     api.parlaysEarly("evening").then(setEvening).catch(() => setEvening(null));
-  }, [unlocked]);
+  }, []);
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bp-page-bg)", color: "var(--bp-fg)" }}>
@@ -203,7 +205,7 @@ export default function SundayParlaysPage() {
         {!unlocked && <PasscodeGate onUnlock={() => setUnlocked(true)} />}
 
         {unlocked && !slips && (
-          <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>Loading slips from RAMP NFL...</div>
+          <div style={{ color: "var(--bp-muted)", fontSize: 13 }}>Loading tonight&apos;s tickets...</div>
         )}
 
         {unlocked && slips && (
