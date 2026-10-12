@@ -1,0 +1,329 @@
+<title>Big Proppa Leaders</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --bg: #000000;
+  --surface: #0b0b0c;
+  --border: #1f1f22;
+  --border2: #2c2c30;
+  --fg: #f4f4f5;
+  --fg2: #b4b4bb;
+  --fg3: #7c7c85;
+  --gold: #f5a623;
+  --green: #22c55e;
+  --accent: #f5a623;
+  --accent-bg: rgba(245,166,35,.12);
+  --red: #ef4444;
+  --red-bg: rgba(239,68,68,.1);
+  --hdr: #141416;
+  --hdr-fg: #b4b4bb;
+  --row-hover: #151517;
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--fg);font-family:'Inter',system-ui,sans-serif;font-size:13px;line-height:1.4;padding:0 16px;padding-block:0;}
+
+/* ── Page header ── */
+.page-hdr{padding:14px 0 0;}
+.page-title{font-size:22px;font-weight:700;letter-spacing:.3px;margin-bottom:12px;color:var(--gold);}
+
+/* ── Tabs ── */
+.cat-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:0;overflow-x:auto;}
+.cat-tab{
+  background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;
+  font-size:13px;font-weight:500;color:var(--fg3);padding:8px 16px;cursor:pointer;
+  white-space:nowrap;transition:color .15s,border-color .15s;
+}
+.cat-tab:hover{color:var(--fg2);}
+.cat-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+
+/* ── Controls ── */
+.controls{display:flex;align-items:center;gap:10px;padding:12px 0 10px;flex-wrap:wrap;}
+.ctl-label{font-size:11px;font-weight:600;color:var(--fg3);letter-spacing:.5px;text-transform:uppercase;}
+.sel-wrap{position:relative;}
+select{
+  appearance:none;background:var(--surface);border:1px solid var(--border2);
+  color:var(--fg);font-size:12px;font-weight:500;padding:6px 28px 6px 10px;
+  border-radius:6px;cursor:pointer;outline:none;min-width:130px;
+}
+select:focus{border-color:var(--gold);}
+.sel-wrap::after{
+  content:'▾';position:absolute;right:9px;top:50%;transform:translateY(-50%);
+  font-size:11px;color:var(--fg3);pointer-events:none;
+}
+.result-count{margin-left:auto;font-size:11px;color:var(--fg3);}
+
+/* ── Table wrapper ── */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border2);background:var(--surface);}
+table{border-collapse:collapse;width:100%;min-width:960px;}
+thead th{
+  background:var(--hdr);color:var(--hdr-fg);font-size:11px;font-weight:600;
+  padding:9px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border2);
+  cursor:pointer;user-select:none;letter-spacing:.3px;
+  position:sticky;top:0;z-index:2;
+}
+thead th:first-child,thead th:nth-child(2){text-align:left;}
+thead th:hover{color:var(--fg);}
+thead th.sorted-asc::after{content:' ↑';color:var(--accent);}
+thead th.sorted-desc::after{content:' ↓';color:var(--accent);}
+thead th.sorted-asc,thead th.sorted-desc{color:var(--fg);}
+
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--row-hover);}
+
+td{padding:8px 10px;text-align:right;vertical-align:middle;white-space:nowrap;}
+td:first-child,td:nth-child(2){text-align:left;}
+
+/* team + player col */
+.td-team{font-size:11px;font-weight:700;color:var(--fg2);width:44px;}
+.td-player{font-size:13px;font-weight:600;color:var(--fg);min-width:140px;}
+.td-player .gp{font-size:10px;font-weight:400;color:var(--fg3);margin-left:5px;}
+
+/* Line / Proj */
+.td-num{font-variant-numeric:tabular-nums;font-size:13px;}
+.td-proj{font-weight:600;color:var(--fg);}
+
+/* Proj Diff pill */
+.diff-pill{
+  display:inline-block;padding:3px 9px;border-radius:20px;
+  font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
+  min-width:56px;text-align:center;
+}
+.diff-over{background:#00875a;color:#fff;}
+.diff-under{background:#de3618;color:#fff;}
+.diff-push{background:#6b7280;color:#fff;}
+
+/* Odds */
+.td-odds{font-variant-numeric:tabular-nums;color:var(--fg2);font-size:12px;}
+
+/* D Rank badge */
+.drank-cell{display:inline-flex;align-items:center;gap:6px;}
+.drank-opp{display:inline-block;width:34px;text-align:left;font-size:10px;color:var(--fg3);}
+.drank{flex:none;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;font-size:11px;font-weight:700;
+}
+
+/* Streak */
+.streak-over{color:var(--green);font-weight:700;}
+.streak-under{color:var(--red);font-weight:700;}
+
+/* Hit rate cells */
+.pct-cell{
+  font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;
+  padding:8px 10px;
+}
+
+/* ── Heat scale for pct cells ── */
+/* computed inline via JS */
+
+.empty-state{
+  text-align:center;padding:40px;color:var(--fg3);font-size:13px;
+}
+
+@media(max-width:600px){
+  .page-title{font-size:17px;}
+  .cat-tab{font-size:12px;padding:7px 11px;}
+}
+</style>
+
+<div class="page-hdr">
+  <div class="page-title">🏈 Big Proppa</div>
+  <div class="cat-tabs" id="cat-tabs">
+    <button class="cat-tab active" onclick="setCategory('Rushing Yds',this)">Rushing Yds</button>
+    <button class="cat-tab" onclick="setCategory('Receiving Yds',this)">Receiving Yds</button>
+    <button class="cat-tab" onclick="setCategory('Passing Yds',this)">Passing Yds</button>
+  </div>
+</div>
+
+<div class="controls">
+  <span class="ctl-label">Prop</span>
+  <div class="sel-wrap">
+    <select id="prop-sel" onchange="setProp(this.value)">
+      <option>All Props</option>
+      <option>Over</option>
+      <option>Under</option>
+    </select>
+  </div>
+  <span class="ctl-label" style="margin-left:8px">Game</span>
+  <div class="sel-wrap">
+    <select id="game-sel" onchange="setGame(this.value)">
+      <option value="">All Teams</option>
+    </select>
+  </div>
+  <span class="result-count" id="result-count"></span>
+</div>
+
+<div class="tbl-wrap">
+  <table id="leaders-tbl">
+    <thead>
+      <tr id="tbl-head"></tr>
+    </thead>
+    <tbody id="tbl-body"></tbody>
+  </table>
+</div>
+
+<div style="font-size:10px;color:var(--fg3);padding:10px 0 16px;text-align:center">
+  BPL 1.0 · nflverse · ESPN — through Week 5 (BUF @ LA Monday night pending) · † = last posted line, not this week's (dim, italic) · Over/Under = best posted price · vs Opp needs 2+ meetings since 2023 · Mon Oct 12 2026
+</div>
+
+<script>
+const ALL = INJECT_TABLE_DATA;
+
+const COLS = [
+  { key: 'team',       label: 'Team',      align: 'left',  fmt: 'team'    },
+  { key: 'name',       label: 'Player',    align: 'left',  fmt: 'player'  },
+  { key: 'line',       label: 'Line',      align: 'right', fmt: 'line'    },
+  { key: 'proj',       label: 'Proj',      align: 'right', fmt: 'proj'    },
+  { key: 'diff',       label: 'Diff %',    align: 'right', fmt: 'diff' },
+  { key: 'over_odds',  label: 'Over',      align: 'right', fmt: 'odds'    },
+  { key: 'under_odds', label: 'Under',     align: 'right', fmt: 'odds'    },
+  { key: 'nextOppRank',label: 'D Rank',    align: 'center', fmt: 'drank'   },
+  { key: 'streak',     label: 'Streak',    align: 'right', fmt: 'streak'  },
+  { key: 'season_pct', label: 'Season',    align: 'right', fmt: 'pct'     },
+  { key: 'l5_pct',     label: 'L5',        align: 'right', fmt: 'pct'     },
+  { key: 'vs_opp',     label: 'vs Opp',    align: 'right', fmt: 'vsopp'   },
+];
+
+// Over/Under are the real posted prices (best across books) from the same pull as the line
+function augment(rows) {
+  return rows.map(r => ({...r, over_odds: r.overPrice ?? null, under_odds: r.underPrice ?? null}));
+}
+
+let currentCat = 'Rushing Yds';
+let sortKey    = 'diff';
+let sortDir    = -1;  // -1 = desc
+let propFilter = 'All Props';
+let gameFilter = '';
+
+function setCategory(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  populateGameFilter();
+  render();
+}
+
+function setProp(v)  { propFilter = v; render(); }
+function setGame(v)  { gameFilter = v; render(); }
+
+function populateGameFilter() {
+  const rows = ALL[currentCat] || [];
+  const teams = [...new Set(rows.map(r => r.team).filter(Boolean))].sort();
+  const sel = document.getElementById('game-sel');
+  sel.innerHTML = '<option value="">All Teams</option>'
+    + teams.map(t => `<option value="${t}">${t}</option>`).join('');
+}
+
+function drankColor(rank) {
+  // 1 = toughest defense. Same three solid colors as the heat map: red (tough) / tan / green (soft)
+  if (!rank) return {bg:'#3a3a3f',fg:'#fff'};
+  if (rank <= 10) return {bg:'#7f1d1d',fg:'#fff'};
+  if (rank <= 22) return {bg:'#d2b48c',fg:'#3b2a14'};
+  return {bg:'#14532d',fg:'#fff'};
+}
+
+// Solid, no gradients: dark green = hit, tan = fading, dark red = miss
+const C_GREEN={bg:'#14532d',fg:'#fff'}, C_TAN={bg:'#d2b48c',fg:'#3b2a14'}, C_RED={bg:'#7f1d1d',fg:'#fff'};
+function pctColor(pct) {
+  if (pct == null) return {bg:'transparent',fg:'var(--fg3)'};
+  if (pct >= 70) return C_GREEN;   // 4-5 of 5
+  if (pct >= 40) return C_TAN;     // 2-3 of 5
+  return C_RED;                    // 0-1 of 5
+}
+function heat(t) { // t = diff% / 25
+  const d = t * 25;
+  return d >= 5 ? C_GREEN : d <= -5 ? C_RED : C_TAN;
+}
+
+function fmtCell(col, row) {
+  const v = row[col.key];
+  switch(col.fmt) {
+    case 'team':
+      return `<td class="td-num td-team">${row.team||'—'}</td>`;
+    case 'player':
+      return `<td class="td-player">${row.name||'—'}<span class="gp">${row.gp} GP</span></td>`;
+    case 'line': {
+      if (v == null) return `<td class="td-num">—</td>`;
+      const stale = row.lineLive === false;
+      return stale ? `<td class="td-num" style="color:var(--fg3);font-style:italic" title="Last posted line (vs ${row.lineOpp||'prior opponent'}) - this week's line is not posted yet">${v}†</td>` : `<td class="td-num">${v}</td>`;
+    }
+    case 'num1':
+      return `<td class="td-num">${v != null ? v : '—'}</td>`;
+    case 'proj':
+      return `<td class="td-num td-proj">${v != null ? v.toFixed(1) : '—'}</td>`;
+    case 'diff': {
+      if (v == null) return `<td>—</td>`;
+      const c = heat(v / 25);
+      const sign = v > 0 ? '+' : '';
+      return `<td class="pct-cell" style="background:${c.bg};color:${c.fg};font-weight:600">${sign}${v.toFixed(1)}%</td>`;
+    }
+    case 'odds':
+      return `<td class="td-odds"${row.lineLive===false?' style="opacity:.55"':''}>${v != null ? (v > 0 ? '+'+v : v) : '—'}</td>`;
+    case 'drank': {
+      if (!v) return `<td style="text-align:center">—</td>`;
+      const c = drankColor(v);
+      const opp = row.nextOpp || '';
+      return `<td style="text-align:center"><span class="drank-cell"><span class="drank" style="background:${c.bg};color:${c.fg}">${v}</span><span class="drank-opp">${opp}</span></span></td>`;
+    }
+    case 'streak': {
+      if (v == null || v === 0) return `<td>—</td>`;
+      const cls = v > 0 ? 'streak-over' : 'streak-under';
+      const label = v > 0 ? `O${v}` : `U${Math.abs(v)}`;
+      return `<td class="${cls}">${label}</td>`;
+    }
+    case 'pct': {
+      const c = pctColor(v);
+      return `<td class="pct-cell" style="background:${c.bg};color:${c.fg}">${v != null ? v+'%' : '—'}</td>`;
+    }
+    default: return `<td>${v ?? '—'}</td>`;
+  }
+}
+
+function render() {
+  let rows = augment(ALL[currentCat] || []);
+
+  // filter
+  if (gameFilter) rows = rows.filter(r => r.team === gameFilter);
+  if (propFilter === 'Over')  rows = rows.filter(r => r.diff > 0);
+  if (propFilter === 'Under') rows = rows.filter(r => r.diff < 0);
+
+  // sort
+  rows.sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    if (av == null) av = sortDir > 0 ? Infinity : -Infinity;
+    if (bv == null) bv = sortDir > 0 ? Infinity : -Infinity;
+    return (av - bv) * sortDir;
+  });
+
+  // header
+  const headEl = document.getElementById('tbl-head');
+  headEl.innerHTML = COLS.map(col => {
+    const cls = col.key === sortKey ? (sortDir === -1 ? 'sorted-desc' : 'sorted-asc') : '';
+    const align = col.align === 'left' ? 'style="text-align:left"' : col.align === 'center' ? 'style="text-align:center"' : '';
+    return `<th class="${cls}" ${align} onclick="sortBy('${col.key}')">${col.label}</th>`;
+  }).join('');
+
+  // body
+  const bodyEl = document.getElementById('tbl-body');
+  if (!rows.length) {
+    bodyEl.innerHTML = '<tr><td colspan="' + COLS.length + '" class="empty-state">No players found</td></tr>';
+  } else {
+    bodyEl.innerHTML = rows.map(row => '<tr>' + COLS.map(col => fmtCell(col, row)).join('') + '</tr>').join('');
+  }
+
+  document.getElementById('result-count').textContent = rows.length + ' players';
+}
+
+function sortBy(key) {
+  if (sortKey === key) { sortDir *= -1; }
+  else { sortKey = key; sortDir = (key==='nextOppRank'||key==='dRank') ? 1 : -1; }
+  render();
+}
+
+// init
+populateGameFilter();
+render();
+</script>

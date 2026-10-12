@@ -234,17 +234,42 @@ def defense_ranks(cat: str) -> dict[str, int]:
     return {t: i for i, t in enumerate(ordered, start=1)}
 
 
+_ABBR = {"LAR": "LA", "JAC": "JAX", "WSH": "WAS", "LVR": "LV", "ARZ": "ARI", "BLT": "BAL", "CLV": "CLE", "HST": "HOU", "SD": "LAC", "OAK": "LV"}
+
+
+def _opp_code(raw: str) -> str:
+    code = (raw or "").replace("@", "").replace("vs", "").strip().upper()
+    return _ABBR.get(code, code)
+
+
 @lru_cache(maxsize=1)
 def _book_lines() -> dict[tuple[str, str, str], dict]:
-    """(market, normalized name, team) -> consensus (median) sportsbook line across books."""
-    raw: dict[tuple[str, str, str], list[tuple[str, float]]] = {}
+    """(market, normalized name, team) -> line from the player's MOST RECENT pull only.
+
+    Pooling every pull (the old median) mixed lines from games already played, so a week-3
+    line could sit next to a week-6 projection. The latest pull is the closest to the next game;
+    `opp` is the opponent that pull was priced for so callers can tell a live line from a stale one.
+    """
+    raw: dict[tuple[str, str, str], dict[str, list[dict]]] = {}
     for r in data.load("prop_line_rotowire"):
         if r.get("market_slug") not in NFL_MARKETS or not r.get("line"):
             continue
         key = (r["market_slug"], data.normalize_name(r.get("player_name", "")), r.get("team", ""))
-        raw.setdefault(key, []).append((r.get("book_slug", ""), _f(r["line"])))
-    return {k: {"line": statistics.median(v for _, v in rows), "books": sorted({b for b, _ in rows})}
-            for k, rows in raw.items()}
+        raw.setdefault(key, {}).setdefault(r.get("pull_id", ""), []).append(r)
+    out = {}
+    for k, pulls in raw.items():
+        rows = pulls[max(pulls)]
+        over = [int(x["over_price_american"]) for x in rows if x.get("over_price_american")]
+        under = [int(x["under_price_american"]) for x in rows if x.get("under_price_american")]
+        out[k] = {
+            "line": statistics.median(_f(x["line"]) for x in rows),
+            "books": sorted({x.get("book_slug", "") for x in rows}),
+            "opp": _opp_code(rows[0].get("opponent", "")),
+            "pull": max(pulls),
+            "overPrice": max(over) if over else None,
+            "underPrice": max(under) if under else None,
+        }
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -286,6 +311,11 @@ def nfl_player_line(player_id: str, market: str, name: str = "", team: str = "")
     if book:
         row["sportsbookLine"] = book["line"]
         row["books"] = book["books"]
+        row["lineOpp"] = book["opp"]
+        row["linePull"] = book["pull"]
+        row["lineLive"] = bool(row["nextOpp"]) and book["opp"] == row["nextOpp"]
+        row["overPrice"] = book["overPrice"]
+        row["underPrice"] = book["underPrice"]
     row["diffPct"] = diff_pct(row["bpl"], row["sportsbookLine"])
     return row
 
