@@ -13825,5 +13825,2360 @@
    }
   },
   "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Fri Oct 2 2026 3:42 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | Seattle (2-1) | 5.7 | 10.6-6.4 | 70.4 | 8.2\n2 | LA Rams (1-2) | 5.6 | 9.8-7.2 | 58.6 | 6.1\n3 | Buffalo (3-0) | 5.5 | 12.0-5.0 | 90.4 | 10.4\n4 | San Francisco (3-0) | 5.3 | 11.6-5.4 | 82.6 | 10.3\n5 | Jacksonville (2-1) | 5.0 | 10.8-6.2 | 80.3 | 8.8\n6 | Kansas City (3-0) | 5.0 | 11.4-5.6 | 84.8 | 8.4\n7 | Chicago (2-1) | 4.5 | 10.7-6.3 | 72.0 | 6.7\n8 | Baltimore (2-1) | 4.3 | 10.9-6.1 | 78.4 | 7.3\n9 | Cincinnati (2-1) | 2.9 | 10.7-6.3 | 73.4 | 4.9\n10 | Minnesota (3-0) | 2.9 | 11.4-5.6 | 80.5 | 5.7\n11 | Denver (2-1) | 2.4 | 9.9-7.1 | 62.9 | 3.6\n12 | Detroit (2-1) | 1.7 | 10.2-6.8 | 61.7 | 3.1\n13 | New England (1-2) | 1.5 | 8.7-8.3 | 46.6 | 2.2\n14 | Dallas (1-2) | 1.4 | 8.5-8.5 | 38.8 | 2.3\n15 | Houston (0-3) | 0.9 | 7.6-9.4 | 27.0 | 1.3\n16 | Philadelphia (2-1) | 0.5 | 9.2-7.8 | 50.7 | 2.3\n17 | Las Vegas (3-0) | -0.3 | 9.5-7.5 | 54.9 | 1.7\n18 | LA Chargers (0-3) | -1.2 | 5.9-11.1 | 9.5 | 0.3\n19 | New Orleans (1-2) | -1.2 | 8.3-8.7 | 47.9 | 1.4\n20 | Washington (1-2) | -1.5 | 7.5-9.5 | 23.3 | 0.7\n21 | Green Bay (1-2) | -2.0 | 7.0-10.0 | 15.4 | 0.5\n22 | Carolina (1-2) | -2.0 | 7.2-9.8 | 31.0 | 0.8\n23 | Indianapolis (1-2) | -2.1 | 7.6-9.4 | 25.5 | 0.6\n24 | Pittsburgh (2-2) | -2.2 | 7.7-9.3 | 24.6 | 0.5\n25 | Tampa Bay (0-3) | -2.3 | 6.3-10.7 | 19.1 | 0.5\n26 | NY Giants (2-1) | -2.6 | 8.0-9.0 | 29.8 | 0.7\n27 | Atlanta (1-2) | -4.8 | 5.9-11.1 | 14.2 | 0.2\n28 | NY Jets (1-2) | -5.0 | 6.3-10.7 | 12.3 | 0.2\n29 | Cleveland (3-1) | -5.3 | 7.8-9.2 | 25.6 | 0.2\n30 | Tennessee (0-3) | -6.1 | 4.4-12.6 | 3.2 | 0.0\n31 | Arizona (1-2) | -6.2 | 5.3-11.7 | 3.9 | 0.0\n32 | Miami (0-3) | -10.1 | 3.1-13.9 | 0.6 | 0.0\n\n## This week's matchups (line, kickoff)\nPittsburgh (-3) at Cleveland | Thu 8:15pm\nLA Rams (-3.5) at Philadelphia | Sun 1:00pm\nNew England at Buffalo (-7) | Sun 1:00pm\nGreen Bay (-3.5) at Tampa Bay | Sun 1:00pm\nTennessee "
+ },
+ "MB-2026-WK05-SIM0086": {
+  "ticket_id": "MB-2026-WK05-SIM0086",
+  "frozen_at": "2026-10-12T19:48:51.453089+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Chicago Bears @ Atlanta Falcons",
+    "player_id": null,
+    "team": "Atlanta Falcons",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.4755,
+    "implied": 0.4082,
+    "edge": 0.0673,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_CHI_ATL"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "CHI": {
+    "games": 4,
+    "att": 33.0,
+    "car": 39.8,
+    "tgt": 30.2,
+    "pass_rate": 0.454,
+    "label": "RUN-LEANING"
+   },
+   "ATL": {
+    "games": 4,
+    "att": 24.8,
+    "car": 34.8,
+    "tgt": 23.2,
+    "pass_rate": 0.416,
+    "label": "RUN-LEANING"
+   }
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "CHI": {
+    "rank": 6,
+    "rating": 4.7,
+    "opp": "GB",
+    "opp_rank": 21,
+    "opp_rating": -1.5,
+    "power_edge": 6.2
+   },
+   "ATL": {
+    "rank": 25,
+    "rating": -2.3,
+    "opp": "BAL",
+    "opp_rank": 8,
+    "opp_rating": 3.4,
+    "power_edge": -5.7
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0087": {
+  "ticket_id": "MB-2026-WK05-SIM0087",
+  "frozen_at": "2026-10-12T19:48:51.508279+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Tennessee Titans @ Indianapolis Colts",
+    "player_id": null,
+    "team": "Indianapolis Colts",
+    "opp": "IND",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.0,
+    "odds": -108.0,
+    "prob": 0.5995,
+    "implied": 0.5192,
+    "edge": 0.0803,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 276.25,
+     "rush_yds": 131.0,
+     "pass_yds_rank": 31,
+     "rush_yds_rank": 20,
+     "pass_yds_blend": 265.9,
+     "rush_yds_blend": 119.6,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_TEN_IND"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "Indianapolis Colts": null
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "Indianapolis Colts": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0088": {
+  "ticket_id": "MB-2026-WK05-SIM0088",
+  "frozen_at": "2026-10-12T19:48:51.560621+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Chicago Bears @ Atlanta Falcons",
+    "player_id": null,
+    "team": "Atlanta Falcons",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.4755,
+    "implied": 0.4082,
+    "edge": 0.0673,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_CHI_ATL"
+   },
+   {
+    "player": "Tennessee Titans @ Indianapolis Colts",
+    "player_id": null,
+    "team": "Indianapolis Colts",
+    "opp": "IND",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.0,
+    "odds": -108.0,
+    "prob": 0.5995,
+    "implied": 0.5192,
+    "edge": 0.0803,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 276.25,
+     "rush_yds": 131.0,
+     "pass_yds_rank": 31,
+     "rush_yds_rank": 20,
+     "pass_yds_blend": 265.9,
+     "rush_yds_blend": 119.6,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_TEN_IND"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "CHI": {
+    "games": 4,
+    "att": 33.0,
+    "car": 39.8,
+    "tgt": 30.2,
+    "pass_rate": 0.454,
+    "label": "RUN-LEANING"
+   },
+   "ATL": {
+    "games": 4,
+    "att": 24.8,
+    "car": 34.8,
+    "tgt": 23.2,
+    "pass_rate": 0.416,
+    "label": "RUN-LEANING"
+   },
+   "Indianapolis Colts": null
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "CHI": {
+    "rank": 6,
+    "rating": 4.7,
+    "opp": "GB",
+    "opp_rank": 21,
+    "opp_rating": -1.5,
+    "power_edge": 6.2
+   },
+   "ATL": {
+    "rank": 25,
+    "rating": -2.3,
+    "opp": "BAL",
+    "opp_rank": 8,
+    "opp_rating": 3.4,
+    "power_edge": -5.7
+   },
+   "Indianapolis Colts": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0089": {
+  "ticket_id": "MB-2026-WK05-SIM0089",
+  "frozen_at": "2026-10-12T19:48:51.618044+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Chicago Bears @ Atlanta Falcons",
+    "player_id": null,
+    "team": "Atlanta Falcons",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.4755,
+    "implied": 0.4082,
+    "edge": 0.0673,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_CHI_ATL"
+   },
+   {
+    "player": "Pittsburgh Steelers @ Tampa Bay Buccaneers",
+    "player_id": null,
+    "team": "Tampa Bay Buccaneers",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 130.0,
+    "prob": 0.4903,
+    "implied": 0.4348,
+    "edge": 0.0555,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_PIT_TB"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "CHI": {
+    "games": 4,
+    "att": 33.0,
+    "car": 39.8,
+    "tgt": 30.2,
+    "pass_rate": 0.454,
+    "label": "RUN-LEANING"
+   },
+   "ATL": {
+    "games": 4,
+    "att": 24.8,
+    "car": 34.8,
+    "tgt": 23.2,
+    "pass_rate": 0.416,
+    "label": "RUN-LEANING"
+   },
+   "PIT": {
+    "games": 4,
+    "att": 38.8,
+    "car": 21.5,
+    "tgt": 36.0,
+    "pass_rate": 0.643,
+    "label": "PASS-FIRST"
+   },
+   "TB": {
+    "games": 4,
+    "att": 31.5,
+    "car": 24.2,
+    "tgt": 30.2,
+    "pass_rate": 0.565,
+    "label": "BALANCED"
+   }
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "CHI": {
+    "rank": 6,
+    "rating": 4.7,
+    "opp": "GB",
+    "opp_rank": 21,
+    "opp_rating": -1.5,
+    "power_edge": 6.2
+   },
+   "ATL": {
+    "rank": 25,
+    "rating": -2.3,
+    "opp": "BAL",
+    "opp_rank": 8,
+    "opp_rating": 3.4,
+    "power_edge": -5.7
+   },
+   "PIT": {
+    "rank": 23,
+    "rating": -1.8,
+    "opp": "IND",
+    "opp_rank": 18,
+    "opp_rating": -0.7,
+    "power_edge": -1.1
+   },
+   "TB": {
+    "rank": 22,
+    "rating": -1.8,
+    "opp": "DAL",
+    "opp_rank": 14,
+    "opp_rating": 0.4,
+    "power_edge": -2.2
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0090": {
+  "ticket_id": "MB-2026-WK05-SIM0090",
+  "frozen_at": "2026-10-12T19:48:51.674517+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Chicago Bears @ Atlanta Falcons",
+    "player_id": null,
+    "team": "Atlanta Falcons",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.4755,
+    "implied": 0.4082,
+    "edge": 0.0673,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_CHI_ATL"
+   },
+   {
+    "player": "Tennessee Titans @ Indianapolis Colts",
+    "player_id": null,
+    "team": "Indianapolis Colts",
+    "opp": "IND",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.0,
+    "odds": -108.0,
+    "prob": 0.5995,
+    "implied": 0.5192,
+    "edge": 0.0803,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 276.25,
+     "rush_yds": 131.0,
+     "pass_yds_rank": 31,
+     "rush_yds_rank": 20,
+     "pass_yds_blend": 265.9,
+     "rush_yds_blend": 119.6,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_TEN_IND"
+   },
+   {
+    "player": "Pittsburgh Steelers @ Tampa Bay Buccaneers",
+    "player_id": null,
+    "team": "Tampa Bay Buccaneers",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 130.0,
+    "prob": 0.4903,
+    "implied": 0.4348,
+    "edge": 0.0555,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_PIT_TB"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "CHI": {
+    "games": 4,
+    "att": 33.0,
+    "car": 39.8,
+    "tgt": 30.2,
+    "pass_rate": 0.454,
+    "label": "RUN-LEANING"
+   },
+   "ATL": {
+    "games": 4,
+    "att": 24.8,
+    "car": 34.8,
+    "tgt": 23.2,
+    "pass_rate": 0.416,
+    "label": "RUN-LEANING"
+   },
+   "Indianapolis Colts": null,
+   "PIT": {
+    "games": 4,
+    "att": 38.8,
+    "car": 21.5,
+    "tgt": 36.0,
+    "pass_rate": 0.643,
+    "label": "PASS-FIRST"
+   },
+   "TB": {
+    "games": 4,
+    "att": 31.5,
+    "car": 24.2,
+    "tgt": 30.2,
+    "pass_rate": 0.565,
+    "label": "BALANCED"
+   }
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "CHI": {
+    "rank": 6,
+    "rating": 4.7,
+    "opp": "GB",
+    "opp_rank": 21,
+    "opp_rating": -1.5,
+    "power_edge": 6.2
+   },
+   "ATL": {
+    "rank": 25,
+    "rating": -2.3,
+    "opp": "BAL",
+    "opp_rank": 8,
+    "opp_rating": 3.4,
+    "power_edge": -5.7
+   },
+   "Indianapolis Colts": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "PIT": {
+    "rank": 23,
+    "rating": -1.8,
+    "opp": "IND",
+    "opp_rank": 18,
+    "opp_rating": -0.7,
+    "power_edge": -1.1
+   },
+   "TB": {
+    "rank": 22,
+    "rating": -1.8,
+    "opp": "DAL",
+    "opp_rank": 14,
+    "opp_rating": 0.4,
+    "power_edge": -2.2
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0091": {
+  "ticket_id": "MB-2026-WK05-SIM0091",
+  "frozen_at": "2026-10-12T19:48:51.742701+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Chicago Bears @ Atlanta Falcons",
+    "player_id": null,
+    "team": "Atlanta Falcons",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.4755,
+    "implied": 0.4082,
+    "edge": 0.0673,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_CHI_ATL"
+   },
+   {
+    "player": "Tennessee Titans @ Indianapolis Colts",
+    "player_id": null,
+    "team": "Indianapolis Colts",
+    "opp": "IND",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.0,
+    "odds": -108.0,
+    "prob": 0.5995,
+    "implied": 0.5192,
+    "edge": 0.0803,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 276.25,
+     "rush_yds": 131.0,
+     "pass_yds_rank": 31,
+     "rush_yds_rank": 20,
+     "pass_yds_blend": 265.9,
+     "rush_yds_blend": 119.6,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_TEN_IND"
+   },
+   {
+    "player": "New Orleans Saints @ NY Giants",
+    "player_id": null,
+    "team": "NY Giants",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 102.0,
+    "prob": 0.5531,
+    "implied": 0.495,
+    "edge": 0.0581,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_NO_NYG"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "CHI": {
+    "games": 4,
+    "att": 33.0,
+    "car": 39.8,
+    "tgt": 30.2,
+    "pass_rate": 0.454,
+    "label": "RUN-LEANING"
+   },
+   "ATL": {
+    "games": 4,
+    "att": 24.8,
+    "car": 34.8,
+    "tgt": 23.2,
+    "pass_rate": 0.416,
+    "label": "RUN-LEANING"
+   },
+   "Indianapolis Colts": null,
+   "NO": {
+    "games": 4,
+    "att": 45.0,
+    "car": 24.8,
+    "tgt": 42.8,
+    "pass_rate": 0.645,
+    "label": "PASS-FIRST"
+   },
+   "NYG": {
+    "games": 4,
+    "att": 28.0,
+    "car": 29.8,
+    "tgt": 27.8,
+    "pass_rate": 0.485,
+    "label": "RUN-LEANING"
+   }
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "CHI": {
+    "rank": 6,
+    "rating": 4.7,
+    "opp": "GB",
+    "opp_rank": 21,
+    "opp_rating": -1.5,
+    "power_edge": 6.2
+   },
+   "ATL": {
+    "rank": 25,
+    "rating": -2.3,
+    "opp": "BAL",
+    "opp_rank": 8,
+    "opp_rating": 3.4,
+    "power_edge": -5.7
+   },
+   "Indianapolis Colts": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "NO": {
+    "rank": 27,
+    "rating": -3.7,
+    "opp": "MIN",
+    "opp_rank": 11,
+    "opp_rating": 2.3,
+    "power_edge": -6.0
+   },
+   "NYG": {
+    "rank": 24,
+    "rating": -2.1,
+    "opp": "WAS",
+    "opp_rank": 26,
+    "opp_rating": -3.3,
+    "power_edge": 1.2
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0092": {
+  "ticket_id": "MB-2026-WK05-SIM0092",
+  "frozen_at": "2026-10-12T19:48:51.798974+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Chicago Bears @ Atlanta Falcons",
+    "player_id": null,
+    "team": "Atlanta Falcons",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.4755,
+    "implied": 0.4082,
+    "edge": 0.0673,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_CHI_ATL"
+   },
+   {
+    "player": "Tennessee Titans @ Indianapolis Colts",
+    "player_id": null,
+    "team": "Indianapolis Colts",
+    "opp": "IND",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.0,
+    "odds": -108.0,
+    "prob": 0.5995,
+    "implied": 0.5192,
+    "edge": 0.0803,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 276.25,
+     "rush_yds": 131.0,
+     "pass_yds_rank": 31,
+     "rush_yds_rank": 20,
+     "pass_yds_blend": 265.9,
+     "rush_yds_blend": 119.6,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_TEN_IND"
+   },
+   {
+    "player": "Pittsburgh Steelers @ Tampa Bay Buccaneers",
+    "player_id": null,
+    "team": "Tampa Bay Buccaneers",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 130.0,
+    "prob": 0.4903,
+    "implied": 0.4348,
+    "edge": 0.0555,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_PIT_TB"
+   },
+   {
+    "player": "New Orleans Saints @ NY Giants",
+    "player_id": null,
+    "team": "NY Giants",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 102.0,
+    "prob": 0.5531,
+    "implied": 0.495,
+    "edge": 0.0581,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_NO_NYG"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "CHI": {
+    "games": 4,
+    "att": 33.0,
+    "car": 39.8,
+    "tgt": 30.2,
+    "pass_rate": 0.454,
+    "label": "RUN-LEANING"
+   },
+   "ATL": {
+    "games": 4,
+    "att": 24.8,
+    "car": 34.8,
+    "tgt": 23.2,
+    "pass_rate": 0.416,
+    "label": "RUN-LEANING"
+   },
+   "Indianapolis Colts": null,
+   "PIT": {
+    "games": 4,
+    "att": 38.8,
+    "car": 21.5,
+    "tgt": 36.0,
+    "pass_rate": 0.643,
+    "label": "PASS-FIRST"
+   },
+   "TB": {
+    "games": 4,
+    "att": 31.5,
+    "car": 24.2,
+    "tgt": 30.2,
+    "pass_rate": 0.565,
+    "label": "BALANCED"
+   },
+   "NO": {
+    "games": 4,
+    "att": 45.0,
+    "car": 24.8,
+    "tgt": 42.8,
+    "pass_rate": 0.645,
+    "label": "PASS-FIRST"
+   },
+   "NYG": {
+    "games": 4,
+    "att": 28.0,
+    "car": 29.8,
+    "tgt": 27.8,
+    "pass_rate": 0.485,
+    "label": "RUN-LEANING"
+   }
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "CHI": {
+    "rank": 6,
+    "rating": 4.7,
+    "opp": "GB",
+    "opp_rank": 21,
+    "opp_rating": -1.5,
+    "power_edge": 6.2
+   },
+   "ATL": {
+    "rank": 25,
+    "rating": -2.3,
+    "opp": "BAL",
+    "opp_rank": 8,
+    "opp_rating": 3.4,
+    "power_edge": -5.7
+   },
+   "Indianapolis Colts": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "PIT": {
+    "rank": 23,
+    "rating": -1.8,
+    "opp": "IND",
+    "opp_rank": 18,
+    "opp_rating": -0.7,
+    "power_edge": -1.1
+   },
+   "TB": {
+    "rank": 22,
+    "rating": -1.8,
+    "opp": "DAL",
+    "opp_rank": 14,
+    "opp_rating": 0.4,
+    "power_edge": -2.2
+   },
+   "NO": {
+    "rank": 27,
+    "rating": -3.7,
+    "opp": "MIN",
+    "opp_rank": 11,
+    "opp_rating": 2.3,
+    "power_edge": -6.0
+   },
+   "NYG": {
+    "rank": 24,
+    "rating": -2.1,
+    "opp": "WAS",
+    "opp_rank": 26,
+    "opp_rating": -3.3,
+    "power_edge": 1.2
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0093": {
+  "ticket_id": "MB-2026-WK05-SIM0093",
+  "frozen_at": "2026-10-12T19:48:51.854494+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Chicago Bears @ Atlanta Falcons",
+    "player_id": null,
+    "team": "Atlanta Falcons",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.4755,
+    "implied": 0.4082,
+    "edge": 0.0673,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_CHI_ATL"
+   },
+   {
+    "player": "Tennessee Titans @ Indianapolis Colts",
+    "player_id": null,
+    "team": "Indianapolis Colts",
+    "opp": "IND",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.0,
+    "odds": -108.0,
+    "prob": 0.5995,
+    "implied": 0.5192,
+    "edge": 0.0803,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 276.25,
+     "rush_yds": 131.0,
+     "pass_yds_rank": 31,
+     "rush_yds_rank": 20,
+     "pass_yds_blend": 265.9,
+     "rush_yds_blend": 119.6,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_TEN_IND"
+   },
+   {
+    "player": "Pittsburgh Steelers @ Tampa Bay Buccaneers",
+    "player_id": null,
+    "team": "Tampa Bay Buccaneers",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 130.0,
+    "prob": 0.4903,
+    "implied": 0.4348,
+    "edge": 0.0555,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_PIT_TB"
+   },
+   {
+    "player": "Washington Commanders @ San Francisco 49ers",
+    "player_id": null,
+    "team": "San Francisco 49ers",
+    "opp": "SF",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.5,
+    "odds": -108.0,
+    "prob": 0.5748,
+    "implied": 0.5192,
+    "edge": 0.0556,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 214.75,
+     "rush_yds": 99.75,
+     "pass_yds_rank": 13,
+     "rush_yds_rank": 9,
+     "pass_yds_blend": 222.4,
+     "rush_yds_blend": 101.4,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_WAS_SF"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "CHI": {
+    "games": 4,
+    "att": 33.0,
+    "car": 39.8,
+    "tgt": 30.2,
+    "pass_rate": 0.454,
+    "label": "RUN-LEANING"
+   },
+   "ATL": {
+    "games": 4,
+    "att": 24.8,
+    "car": 34.8,
+    "tgt": 23.2,
+    "pass_rate": 0.416,
+    "label": "RUN-LEANING"
+   },
+   "Indianapolis Colts": null,
+   "PIT": {
+    "games": 4,
+    "att": 38.8,
+    "car": 21.5,
+    "tgt": 36.0,
+    "pass_rate": 0.643,
+    "label": "PASS-FIRST"
+   },
+   "TB": {
+    "games": 4,
+    "att": 31.5,
+    "car": 24.2,
+    "tgt": 30.2,
+    "pass_rate": 0.565,
+    "label": "BALANCED"
+   },
+   "San Francisco 49ers": null
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "CHI": {
+    "rank": 6,
+    "rating": 4.7,
+    "opp": "GB",
+    "opp_rank": 21,
+    "opp_rating": -1.5,
+    "power_edge": 6.2
+   },
+   "ATL": {
+    "rank": 25,
+    "rating": -2.3,
+    "opp": "BAL",
+    "opp_rank": 8,
+    "opp_rating": 3.4,
+    "power_edge": -5.7
+   },
+   "Indianapolis Colts": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "PIT": {
+    "rank": 23,
+    "rating": -1.8,
+    "opp": "IND",
+    "opp_rank": 18,
+    "opp_rating": -0.7,
+    "power_edge": -1.1
+   },
+   "TB": {
+    "rank": 22,
+    "rating": -1.8,
+    "opp": "DAL",
+    "opp_rank": 14,
+    "opp_rating": 0.4,
+    "power_edge": -2.2
+   },
+   "San Francisco 49ers": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0094": {
+  "ticket_id": "MB-2026-WK05-SIM0094",
+  "frozen_at": "2026-10-12T19:48:51.910490+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Pittsburgh Steelers @ Tampa Bay Buccaneers",
+    "player_id": null,
+    "team": "Tampa Bay Buccaneers",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 130.0,
+    "prob": 0.4903,
+    "implied": 0.4348,
+    "edge": 0.0555,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_PIT_TB"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "PIT": {
+    "games": 4,
+    "att": 38.8,
+    "car": 21.5,
+    "tgt": 36.0,
+    "pass_rate": 0.643,
+    "label": "PASS-FIRST"
+   },
+   "TB": {
+    "games": 4,
+    "att": 31.5,
+    "car": 24.2,
+    "tgt": 30.2,
+    "pass_rate": 0.565,
+    "label": "BALANCED"
+   }
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "PIT": {
+    "rank": 23,
+    "rating": -1.8,
+    "opp": "IND",
+    "opp_rank": 18,
+    "opp_rating": -0.7,
+    "power_edge": -1.1
+   },
+   "TB": {
+    "rank": 22,
+    "rating": -1.8,
+    "opp": "DAL",
+    "opp_rank": 14,
+    "opp_rating": 0.4,
+    "power_edge": -2.2
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0095": {
+  "ticket_id": "MB-2026-WK05-SIM0095",
+  "frozen_at": "2026-10-12T19:48:51.965122+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Tennessee Titans @ Indianapolis Colts",
+    "player_id": null,
+    "team": "Indianapolis Colts",
+    "opp": "IND",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.0,
+    "odds": -108.0,
+    "prob": 0.5995,
+    "implied": 0.5192,
+    "edge": 0.0803,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 276.25,
+     "rush_yds": 131.0,
+     "pass_yds_rank": 31,
+     "rush_yds_rank": 20,
+     "pass_yds_blend": 265.9,
+     "rush_yds_blend": 119.6,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_TEN_IND"
+   },
+   {
+    "player": "Pittsburgh Steelers @ Tampa Bay Buccaneers",
+    "player_id": null,
+    "team": "Tampa Bay Buccaneers",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 130.0,
+    "prob": 0.4903,
+    "implied": 0.4348,
+    "edge": 0.0555,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_PIT_TB"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "Indianapolis Colts": null,
+   "PIT": {
+    "games": 4,
+    "att": 38.8,
+    "car": 21.5,
+    "tgt": 36.0,
+    "pass_rate": 0.643,
+    "label": "PASS-FIRST"
+   },
+   "TB": {
+    "games": 4,
+    "att": 31.5,
+    "car": 24.2,
+    "tgt": 30.2,
+    "pass_rate": 0.565,
+    "label": "BALANCED"
+   }
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "Indianapolis Colts": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "PIT": {
+    "rank": 23,
+    "rating": -1.8,
+    "opp": "IND",
+    "opp_rank": 18,
+    "opp_rating": -0.7,
+    "power_edge": -1.1
+   },
+   "TB": {
+    "rank": 22,
+    "rating": -1.8,
+    "opp": "DAL",
+    "opp_rank": 14,
+    "opp_rating": 0.4,
+    "power_edge": -2.2
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
+ },
+ "MB-2026-WK05-SIM0096": {
+  "ticket_id": "MB-2026-WK05-SIM0096",
+  "frozen_at": "2026-10-12T19:48:52.025065+00:00",
+  "sample_weeks_before": 5,
+  "legs": [
+   {
+    "player": "Buffalo Bills @ LA Rams",
+    "player_id": null,
+    "team": "Buffalo Bills",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.505,
+    "implied": 0.4082,
+    "edge": 0.0968,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_05_BUF_LA"
+   },
+   {
+    "player": "Chicago Bears @ Atlanta Falcons",
+    "player_id": null,
+    "team": "Atlanta Falcons",
+    "opp": "",
+    "market": "nfl_ml",
+    "direction": "win",
+    "line": 0.5,
+    "odds": 145.0,
+    "prob": 0.4755,
+    "implied": 0.4082,
+    "edge": 0.0673,
+    "attack_cat": "pass_yds",
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": null,
+     "pass_yds": null,
+     "rush_yds": null,
+     "pass_yds_rank": null,
+     "rush_yds_rank": null,
+     "pass_yds_blend": null,
+     "rush_yds_blend": null,
+     "pass_yds_league": null,
+     "rush_yds_league": null
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_CHI_ATL"
+   },
+   {
+    "player": "Tennessee Titans @ Indianapolis Colts",
+    "player_id": null,
+    "team": "Indianapolis Colts",
+    "opp": "IND",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.0,
+    "odds": -108.0,
+    "prob": 0.5995,
+    "implied": 0.5192,
+    "edge": 0.0803,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 276.25,
+     "rush_yds": 131.0,
+     "pass_yds_rank": 31,
+     "rush_yds_rank": 20,
+     "pass_yds_blend": 265.9,
+     "rush_yds_blend": 119.6,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_TEN_IND"
+   },
+   {
+    "player": "Washington Commanders @ San Francisco 49ers",
+    "player_id": null,
+    "team": "San Francisco 49ers",
+    "opp": "SF",
+    "market": "nfl_spread",
+    "direction": "cover",
+    "line": -7.5,
+    "odds": -108.0,
+    "prob": 0.5748,
+    "implied": 0.5192,
+    "edge": 0.0556,
+    "attack_cat": null,
+    "attack_rank": null,
+    "attack_allowed": null,
+    "attack_league": null,
+    "defense": {
+     "games": 4,
+     "pass_yds": 214.75,
+     "rush_yds": 99.75,
+     "pass_yds_rank": 13,
+     "rush_yds_rank": 9,
+     "pass_yds_blend": 222.4,
+     "rush_yds_blend": 101.4,
+     "pass_yds_league": 225.0,
+     "rush_yds_league": 116.9
+    },
+    "components": null,
+    "jimmy_score": null,
+    "usage_key": null,
+    "usage_avg": null,
+    "usage_games": 0,
+    "game_id": "2026_06_WAS_SF"
+   }
+  ],
+  "identity": {
+   "BUF": {
+    "games": 4,
+    "att": 29.8,
+    "car": 27.5,
+    "tgt": 28.0,
+    "pass_rate": 0.52,
+    "label": "RUN-LEANING"
+   },
+   "LA": {
+    "games": 4,
+    "att": 41.2,
+    "car": 26.2,
+    "tgt": 39.0,
+    "pass_rate": 0.611,
+    "label": "BALANCED"
+   },
+   "CHI": {
+    "games": 4,
+    "att": 33.0,
+    "car": 39.8,
+    "tgt": 30.2,
+    "pass_rate": 0.454,
+    "label": "RUN-LEANING"
+   },
+   "ATL": {
+    "games": 4,
+    "att": 24.8,
+    "car": 34.8,
+    "tgt": 23.2,
+    "pass_rate": 0.416,
+    "label": "RUN-LEANING"
+   },
+   "Indianapolis Colts": null,
+   "San Francisco 49ers": null
+  },
+  "nugget": "Buffalo Bills @ LA Rams",
+  "tr_context": {
+   "BUF": {
+    "rank": 7,
+    "rating": 4.5,
+    "opp": "LAR",
+    "opp_rank": 3,
+    "opp_rating": 5.6,
+    "power_edge": -1.1
+   },
+   "LA": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "CHI": {
+    "rank": 6,
+    "rating": 4.7,
+    "opp": "GB",
+    "opp_rank": 21,
+    "opp_rating": -1.5,
+    "power_edge": 6.2
+   },
+   "ATL": {
+    "rank": 25,
+    "rating": -2.3,
+    "opp": "BAL",
+    "opp_rank": 8,
+    "opp_rating": 3.4,
+    "power_edge": -5.7
+   },
+   "Indianapolis Colts": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   },
+   "San Francisco 49ers": {
+    "rank": null,
+    "rating": null,
+    "opp": null,
+    "opp_rank": null,
+    "opp_rating": null,
+    "power_edge": null
+   }
+  },
+  "tr_entrance": "# NFL power ratings and week matchups (TeamRankings)\nPulled Sun Oct 11 2026 9:48 PM CT\n\n## Power ratings\nrank | team | rating | proj W-L | playoffs % | win SB %\n1 | San Francisco (4-0) | 5.9 | 12.2-4.8 | 89.2 | 12.3\n2 | Jacksonville (3-1) | 5.8 | 11.6-5.4 | 88.8 | 12.0\n3 | LA Rams (2-2) | 5.6 | 10.3-6.7 | 70.2 | 7.3\n4 | Seattle (3-1) | 5.3 | 10.7-6.3 | 71.8 | 8.2\n5 | Kansas City (4-0) | 5.3 | 11.9-5.1 | 90.9 | 10.2\n6 | Chicago (3-1) | 4.7 | 11.0-6.0 | 76.3 | 7.0\n7 | Buffalo (3-1) | 4.5 | 10.9-6.1 | 81.1 | 7.6\n8 | Baltimore (3-1) | 3.4 | 10.8-6.2 | 76.2 | 5.6\n9 | Cincinnati (2-2) | 2.5 | 10.0-7.0 | 64.6 | 3.7\n10 | New England (2-2) | 2.3 | 9.7-7.3 | 65.9 | 3.6\n11 | Minnesota (4-0) | 2.3 | 11.4-5.6 | 80.9 | 5.3\n12 | Denver (2-2) | 2.1 | 9.4-7.6 | 57.0 | 2.8\n13 | Detroit (2-2) | 0.6 | 9.1-7.9 | 43.9 | 1.8\n14 | Dallas (2-3) | 0.4 | 8.0-9.0 | 32.8 | 1.4\n15 | Philadelphia (2-2) | 0.1 | 8.7-8.3 | 43.4 | 1.7\n16 | Houston (0-4) | 0.0 | 6.7-10.3 | 13.6 | 0.5\n17 | Las Vegas (3-1) | -0.2 | 9.1-7.9 | 48.1 | 1.4\n18 | Indianapolis (2-2) | -0.7 | 8.5-8.5 | 37.7 | 1.1\n19 | Carolina (2-2) | -1.0 | 8.2-8.8 | 46.2 | 1.4\n20 | LA Chargers (0-4) | -1.4 | 5.5-11.5 | 7.1 | 0.3\n21 | Green Bay (2-2) | -1.5 | 7.8-9.2 | 23.2 | 0.7\n22 | Tampa Bay (1-4) | -1.8 | 6.5-10.5 | 18.5 | 0.5\n23 | Pittsburgh (2-2) | -1.8 | 7.9-9.1 | 27.8 | 0.7\n24 | NY Giants (3-1) | -2.1 | 8.6-8.4 | 40.6 | 1.0\n25 | Atlanta (2-2) | -2.3 | 7.6-9.4 | 31.7 | 0.7\n26 | Washington (1-3) | -3.3 | 6.3-10.7 | 10.7 | 0.2\n27 | New Orleans (1-3) | -3.7 | 6.6-10.4 | 18.4 | 0.4\n28 | NY Jets (1-3) | -4.8 | 6.1-10.9 | 10.6 | 0.1\n29 | Cleveland (3-1) | -5.1 | 7.9-9.1 | 27.4 | 0.3\n30 | Tennessee (0-4) | -5.6 | 4.4-12.6 | 2.3 | 0.0\n31 | Arizona (1-3) | -6.6 | 5.0-12.0 | 2.2 | 0.0\n32 | Miami (0-4) | -9.1 | 3.3-13.7 | 0.9 | 0.0\n\n## This week's matchups (line, kickoff)\nTampa Bay at Dallas (-9.5) | Thu 8:15pm\nChicago (-1.5) at Green Bay | Sun 1:00pm\nMinnesota (-2.5) at New Orleans | Sun 1:00pm\nHouston (-6.5) at Tennessee | Sun 1:00pm\nCincinnati "
  }
 }
