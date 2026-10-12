@@ -15,6 +15,11 @@ Requires:
 
 Optional:
   SPACE_ID env var to override the default repo (e.g. AIBRUH/big-proppa).
+
+RULE: any Gradio-SDK Space runs Gradio in RAW MODE only. The Space's own README.md (sdk: gradio),
+app.py (serves the FastAPI backend + built frontend; Gradio is just a status page at /__gradio)
+and the absence of a Dockerfile are deliberate. This script never uploads or overwrites them, so a
+deploy cannot flip the Space's runtime or trigger Gradio/Docker rebuild errors.
 """
 from __future__ import annotations
 
@@ -37,7 +42,7 @@ def main():
         print("  Add it via claude.ai/code → environment → Secrets → HF_TOKEN")
         sys.exit(1)
 
-    space_id = os.environ.get("SPACE_ID", "AIBRUH/big-proppa")
+    space_id = os.environ.get("SPACE_ID", "AIBRUH/big-proppa-live")
     api = HfApi(token=token)
 
     # Verify dist/ was built
@@ -47,15 +52,13 @@ def main():
         sys.exit(1)
 
     print(f"=== DEPLOYING HEY BIG PROPPA → {space_id} ===")
-    print(f"  Dist: {dist}")
+    print(f"  Dist: {dist}  (README.md / app.py / Dockerfile are never touched)")
     print(f"  Backend: {ROOT / 'backend'}")
     print()
 
     # Upload everything the Dockerfile needs
     # We upload from ROOT but only include the paths Docker COPYs
     paths_to_include = [
-        "Dockerfile",
-        "README.md",
         "backend/",
         "frontend/dist/",
         "lake/gold/nfl/",
@@ -63,6 +66,7 @@ def main():
 
     # Build an ignore list — exclude things not needed in the Space
     ignore_patterns = [
+        "README.md", "Dockerfile", "app.py",   # the Space's own raw-mode Gradio files (see RULE above)
         "*.pyc", "__pycache__", ".venv", ".pylibs",
         "*.db", "*.sqlite", "*.duckdb", "*.duckdb.wal",
         "*.pem", "*.key", "*_cookies.txt",
