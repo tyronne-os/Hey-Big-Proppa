@@ -8,17 +8,16 @@ import Throwdown, { type ThrowdownData } from "./Throwdown";
 import { type MatchupData } from "./MatchupHeatMap";
 import type { ParlaySlip } from "../types";
 
-// Monday Night has its own passcode, so it keeps its own unlock flag.
-const storageKey = (page: string) => (page === "monday" ? "bp_parlay_unlocked_monday" : "bp_parlay_unlocked");
+const STORAGE_KEY = "bp_parlay_unlocked";
 
-function getUnlocked(page: string): boolean {
-  try { return localStorage.getItem(storageKey(page)) === "1"; } catch { return false; }
+function getUnlocked(): boolean {
+  try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
 }
-function markUnlocked(page: string) {
-  try { localStorage.setItem(storageKey(page), "1"); } catch { /* */ }
+function markUnlocked() {
+  try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* */ }
 }
 
-function PasscodeGate({ onUnlock, page }: { onUnlock: () => void; page: string }) {
+function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
   const [val, setVal] = useState("");
   const [shake, setShake] = useState(false);
   const [hint, setHint] = useState("");
@@ -32,9 +31,9 @@ function PasscodeGate({ onUnlock, page }: { onUnlock: () => void; page: string }
       const r = await fetch("/api/passcode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: val, page }),
+        body: JSON.stringify({ code: val }),
       });
-      if (r.ok) { markUnlocked(page); onUnlock(); }
+      if (r.ok) { markUnlocked(); onUnlock(); }
       else {
         setShake(true); setHint("Wrong code. Try again."); setVal("");
         setTimeout(() => setShake(false), 600);
@@ -109,7 +108,7 @@ function PasscodeGate({ onUnlock, page }: { onUnlock: () => void; page: string }
 /** Shared implementation — variant controls which night's deep-dive API is called */
 export default function ParlaysPage({ variant = "thursday" }: { variant?: "thursday" | "monday" | "sunday-night" | "parlay" }) {
   const [slips, setSlips] = useState<Record<string, ParlaySlip> | null>(null);
-  const [unlocked, setUnlocked] = useState(() => getUnlocked(variant));
+  const [unlocked, setUnlocked] = useState(getUnlocked);
   const [td, setTd] = useState<ThrowdownData | null>(null);
   const [showRegular, setShowRegular] = useState(false);
   const [mu, setMu] = useState<MatchupData | null>(null);
@@ -168,7 +167,7 @@ export default function ParlaysPage({ variant = "thursday" }: { variant?: "thurs
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 20px", display: "flex", flexDirection: "column", gap: 24 }}>
 
         {/* Passcode gate — only blocks the bets section */}
-        {!unlocked && <PasscodeGate page={variant} onUnlock={() => setUnlocked(true)} />}
+        {!unlocked && <PasscodeGate onUnlock={() => setUnlocked(true)} />}
 
         {unlocked && td?.archived && !showRegular && (
           <div style={{ alignSelf: "center", padding: "8px 18px", borderRadius: 999, border: "1px solid #6b4a1c", background: "rgba(201,165,78,0.12)", color: "#d9b45a", fontSize: 12, fontWeight: 800, letterSpacing: "0.12em", textAlign: "center" }}>
