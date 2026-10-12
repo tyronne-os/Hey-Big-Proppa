@@ -32,6 +32,8 @@ BRANDS = {
 }
 DEFAULT_BRAND = {"title": "THROWDOWN NIGHT", "subtitle": "ONE GAME. ALL THE MONEY."}
 WAGER = 5.0
+MIN_LEGS = 3          # no two-leg tickets
+CRAZY_HORSE_MAX = 10  # the Crazy Horse runs 7 to 10 legs
 DIFF_MIN = 5.0   # a leader differential counts as green from +5% over the posted line
 BOOST = 0.50
 
@@ -869,15 +871,15 @@ def build(game_id: Optional[str] = None) -> dict:
 
     underdog = dog[0]["team"] if dog else None
     diff_legs = _differential_legs(game_id, pool)
-    consistent = [l for l in diff_legs if (l.get("l5Hit") or 0) >= 0.7]
+    consistent = sorted(diff_legs, key=lambda l: (-(l.get("l5Hit") or 0), -l["diffPct"]))
     slips = {
         # Leaders' green differentials: the touchdown-free tickets
         "diff_3":      _slip("diff-3",      "BIG PROPPA DIFFERENTIAL 3", diff_legs[:3],
                              "The three biggest green differentials on the Leaders board for tonight's teams."),
         "diff_5":      _slip("diff-5",      "BIG PROPPA DIFFERENTIAL 5", diff_legs[:5],
                              "Every green differential tonight, one leg per player. No touchdown scorers."),
-        "diff_steady": _slip("diff-steady", "GREEN & STEADY",            consistent[:4],
-                             "Green differential and cleared the line in 70%+ of the last five games."),
+        "diff_steady": _slip("diff-steady", "GREEN & STEADY",            consistent[:3],
+                             "The green differentials with the best last-five record: steady, not just big."),
         "ladder_3":    _slip("ladder-3",    "SAFE 3",            top(allp, 3, per=1),  "Highest-probability legs on the board."),
         "ladder_5":    _slip("ladder-5",    "STACKED 5",         top(allp, 5, per=2)),
         "ladder_7":    _slip("ladder-7",    "LOADED 7",          top(allp, 7, per=2)),
@@ -917,19 +919,34 @@ def build(game_id: Optional[str] = None) -> dict:
                 legs = legs + [l for l in sorted(pool, key=lambda l: -l["probability"]) if l["name"] not in have][:2 - len(legs)]
             slips[k] = _slip(sl["id"], titles.get(k, sl["title"]), legs, notes.get(k, sl.get("note", "")))
 
+    # No two-leg tickets: the point is big parlays. Top short slips up to 3 legs, green differentials first.
+    _fill = diff_legs + sorted(pool, key=lambda l: -l["probability"])
+    for k, sl in list(slips.items()):
+        if 0 < len(sl["legs"]) < MIN_LEGS:
+            have = {l["name"] for l in sl["legs"]}
+            extra = []
+            for l in _fill:
+                if l["name"] not in have:
+                    have.add(l["name"])
+                    extra.append(l)
+                if len(sl["legs"]) + len(extra) >= MIN_LEGS:
+                    break
+            slips[k] = _slip(sl["id"], sl["title"], sl["legs"] + extra, sl.get("note", ""))
+
     # Crazy Horse: 7-leg mega parlay built from the best legs already on the page.
     # One player per leg — dedupe across all above slips, ranked by probability.
     _ch_pool: list[dict] = []
     for _k in ("ladder_5", "anytime_td", "air_raid", "ground_pound", "qb_power", "first_td"):
         _ch_pool.extend(slips.get(_k, {}).get("legs", []))
     _ch_pool.sort(key=lambda l: -l["probability"])
+    _ch_pool = diff_legs + _ch_pool + sorted(pool, key=lambda l: -l["probability"])   # green differentials lead
     _ch_seen: set[str] = set()
     _ch_legs: list[dict] = []
     for _l in _ch_pool:
         if _l["name"] not in _ch_seen:
             _ch_seen.add(_l["name"])
             _ch_legs.append(_l)
-        if len(_ch_legs) == 8:
+        if len(_ch_legs) == CRAZY_HORSE_MAX:
             break
     slips["crazy_horse"] = _slip(
         "crazy-horse", "THE CRAZY HORSE", _ch_legs,
