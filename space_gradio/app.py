@@ -23,5 +23,17 @@ with gr.Blocks(title="Big Proppa runtime") as status:
 
 app = gr.mount_gradio_app(bp.app, status, path="/__gradio")
 
+def _diag() -> None:
+    import subprocess
+    keys = {k: v for k, v in os.environ.items() if k.startswith(("GRADIO", "PORT", "SYSTEM", "SPACE"))}
+    print("DIAG env", {k: v for k, v in keys.items() if "TOKEN" not in k and "KEY" not in k}, flush=True)
+    print("DIAG name", __name__, "argv", sys.argv, flush=True)
+    print(subprocess.run("ps -eo pid,args | cut -c1-200", shell=True, capture_output=True, text=True).stdout, flush=True)
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 7860)))
+    try:
+        uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 7860)))
+    except BaseException:
+        _diag()
+        raise
