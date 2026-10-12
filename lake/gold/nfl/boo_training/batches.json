@@ -35,5 +35,18 @@
   "slips": 0,
   "weights_moved": 0,
   "biases_moved": 0
+ },
+ {
+  "version": 4,
+  "at": "2026-10-12T12:07:14.883322-05:00",
+  "trigger": "tuesday",
+  "preview": false,
+  "weeks": [
+   4
+  ],
+  "legs": 167,
+  "slips": 51,
+  "weights_moved": 0,
+  "biases_moved": 0
  }
 ]

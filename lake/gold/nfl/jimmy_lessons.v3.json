@@ -1,0 +1,41 @@
+{
+ "version": 3,
+ "built_at": "2026-10-02T10:51:16.357946-05:00",
+ "trigger": "tuesday",
+ "preview": false,
+ "through_week": null,
+ "partial_weeks": [],
+ "legs": 0,
+ "slips": 0,
+ "weights": {},
+ "signal_detail": {},
+ "market_bias": {},
+ "defense_residual": {},
+ "usage_drift": {},
+ "retired_markets": {},
+ "miss_taxonomy": {},
+ "calibration": {
+  "markets": {},
+  "buckets": {}
+ },
+ "whatif": {
+  "real": {
+   "slips_with_a_td_leg": 0,
+   "would_have_cashed_without_it": 0,
+   "staked_on_those": 0,
+   "profit_if_stripped": 0,
+   "profit_if_the_td_had_hit": 0
+  },
+  "board": {
+   "slips_with_a_td_leg": 0,
+   "would_have_cashed_without_it": 0,
+   "staked_on_those": 0,
+   "profit_if_stripped": 0,
+   "profit_if_the_td_had_hit": 0
+  },
+  "price_note": "stripped-leg prices are estimates from FanDuel's board"
+ },
+ "notes": [
+  "Not enough graded legs yet to move any signal; every lesson stays neutral until the sample grows."
+ ]
+}
