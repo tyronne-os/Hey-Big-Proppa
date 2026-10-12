@@ -1,9 +1,23 @@
 export type MatchupCell = { value: number; rank: number; strength: number } | null;
+
+type MLCard = { team: string; american: number; display: string; decimal: number; impliedPct: number; label: "FAVORITE" | "UNDERDOG" };
+type TotalSide = { american: number; display: string; decimal: number };
+type AltUnder = { line: number; drop: number; jevP: number; estAmerican: number; estDisplay: string; estDecimal: number; note: string };
+export type GameLines = {
+  available: boolean;
+  moneylines?: MLCard[];
+  total?: { line: number; over: TotalSide; under: TotalSide } | null;
+  altUnders?: AltUnder[];
+  jevActive?: boolean;
+  underdogTeam?: string;
+};
+
 export type MatchupData = {
   active: boolean; season: string; teamsRanked: number;
   away: { team: string; qb: { name: string; photoUrl?: string | null } };
   home: { team: string; qb: { name: string; photoUrl?: string | null } };
   rows: { key: string; label: string; unit: string; away: MatchupCell; home: MatchupCell }[];
+  gameLines?: GameLines;
 };
 
 // Winner takes all: better rank = full deep green, loser = full deep red. No gradient between.
@@ -74,6 +88,107 @@ function Cell({ c, won }: { c: MatchupCell; won: boolean | null }) {
   );
 }
 
+function GameLinesPanel({ gl }: { gl: GameLines }) {
+  if (!gl.available) return null;
+  const fav = gl.moneylines?.find(m => m.label === "FAVORITE");
+  const dog = gl.moneylines?.find(m => m.label === "UNDERDOG");
+  return (
+    <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* Divider */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ flex: 1, height: 1, background: "#e3dce9" }} />
+        <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 10, letterSpacing: "0.25em", color: "#8a8290", whiteSpace: "nowrap" }}>TONIGHT'S LINES</span>
+        <div style={{ flex: 1, height: 1, background: "#e3dce9" }} />
+      </div>
+
+      {/* Moneylines */}
+      {fav && dog && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {[fav, dog].map(ml => (
+            <div key={ml.team} style={{
+              borderRadius: 12, padding: "12px 14px",
+              background: ml.label === "UNDERDOG" ? "#0b1f12" : "#160c22",
+              border: `1.5px solid ${ml.label === "UNDERDOG" ? "#16a34a" : "#6b4a1c"}`,
+              display: "flex", flexDirection: "column", gap: 4,
+            }}>
+              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", color: ml.label === "UNDERDOG" ? "#4ade80" : "#d9b45a" }}>{ml.label}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#ece6f2" }}>{ml.team}</span>
+              <span style={{ fontSize: 22, fontWeight: 900, fontVariantNumeric: "tabular-nums", color: ml.label === "UNDERDOG" ? "#22c55e" : "#f1dc92" }}>{ml.display}</span>
+              <span style={{ fontSize: 10, color: "#8a8290" }}>implied {ml.impliedPct}%</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Posted total */}
+      {gl.total && (
+        <div style={{
+          borderRadius: 12, padding: "12px 14px",
+          background: "#0e0714", border: "1.5px solid #3a2610",
+          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
+        }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", color: "#d9b45a" }}>GAME TOTAL</span>
+            <span style={{ fontSize: 24, fontWeight: 900, color: "#f1dc92", fontVariantNumeric: "tabular-nums" }}>{gl.total.line}</span>
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            {([["OVER", gl.total.over], ["UNDER", gl.total.under]] as const).map(([label, side]) => (
+              <div key={label} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#6e6878", letterSpacing: "0.15em" }}>{label}</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: "#ece6f2", fontVariantNumeric: "tabular-nums" }}>{side.display}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* JEV-endorsed alternate unders */}
+      {gl.altUnders && gl.altUnders.length > 0 && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ flex: 1, height: 1, background: "#d1fae5" }} />
+            <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 10, letterSpacing: "0.2em", color: "#22c55e", whiteSpace: "nowrap" }}>
+              JEV ALTERNATE UNDERS · BETTER ODDS
+            </span>
+            <div style={{ flex: 1, height: 1, background: "#d1fae5" }} />
+          </div>
+          <div style={{ fontSize: 11, color: "#6e6878", lineHeight: 1.5 }}>
+            Lower total = better odds on the under. JEV confirms each line still clears.
+            {gl.underdogTeam && <> Underdog: <b style={{ color: "#4ade80" }}>{gl.underdogTeam}</b>.</>}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {gl.altUnders.map(alt => (
+              <div key={alt.line} style={{
+                borderRadius: 12, padding: "12px 14px",
+                background: "linear-gradient(135deg,#0b1f12,#071a0e)",
+                border: "1.5px solid #16a34a",
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+              }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", color: "#4ade80" }}>
+                    UNDER {alt.line} &nbsp;·&nbsp; {alt.drop > 0 ? `${alt.drop} BELOW POSTED` : ""}
+                  </span>
+                  <span style={{ fontSize: 11, color: "#86efac" }}>JEV confidence: {Math.round(alt.jevP * 100)}%</span>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: "#22c55e", fontVariantNumeric: "tabular-nums" }}>{alt.estDisplay}</div>
+                  <div style={{ fontSize: 10, color: "#6e6878" }}>est. odds</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {gl.jevActive === false && (
+        <div style={{ fontSize: 11, color: "#6e6878", textAlign: "center" }}>
+          Connect JEV to unlock alternate under analysis.
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MatchupHeatMap({ data }: { data: MatchupData }) {
   return (
     <div style={{
@@ -130,6 +245,9 @@ export default function MatchupHeatMap({ data }: { data: MatchupData }) {
         </span>
         <span>· {data.season} · {data.teamsRanked} teams</span>
       </div>
+
+      {/* Game lines + JEV alternate unders */}
+      {data.gameLines && <GameLinesPanel gl={data.gameLines} />}
     </div>
   );
 }
