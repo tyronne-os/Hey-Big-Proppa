@@ -133,7 +133,7 @@ function openPlayer(i, fromDepth, keep) {
     ? statTile(lineLbl, line) + statTile('PROJ TGTS', row.proj) + statTile('PROJ REC', tp.projRec) + statTile('PROJ YDS', tp.projYds) + statTile('TPI', row.tpi)
     : statTile(lineLbl, line) + statTile('BPL PROJ', row.proj) + statTile('DIFF', row.diff!=null?sign(row.diff)+'%':'n/a', row.diff>=5?'#4ade80':row.diff<=-5?'#f87171':'#d2b48c') + statTile('BLENDED AVG', p.baseline) + statTile('SEASON AVG', row.seasonAvg);
   const dRows = augment(depth).map(d=>d.line==null?{...d,over_odds:null,under_odds:null}:d).map((d,j) => `<tr class="${d.playerId===row.playerId&&d.name===row.name?'me':''}" onclick="openPlayer(${j},true)">` + cols().map(col => col.fmt==='player'||col.fmt==='tplayer' ? `<td class="td-player"><span class="rk">#${j+1}</span>${d.name||'—'}<span class="gp">${d.pos||''} · ${d.gp||0} GP</span></td>` : fmtCell(col,d)).join('') + '</tr>').join('');
-  const head = cols().map(col => `<th ${col.align==='left'?'style="text-align:left"':col.align==='center'?'style="text-align:center"':''}>${col.label}</th>`).join('');
+  const head = cols().map(col => `<th class="${col.key==='proj'?'bp-th':''}" ${col.align==='left'?'style="text-align:left"':col.align==='center'?'style="text-align:center"':''}>${col.label}</th>`).join('');
   const photo = PH[row.playerId] ? `<img class="ph" src="${PH[row.playerId]}" alt="${row.name}" onerror="this.style.display='none'">` : '';
   document.getElementById('pd').innerHTML = `
     <button class="back" onclick="closePlayer()">← Back to ${currentCat}</button>

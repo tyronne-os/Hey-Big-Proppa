@@ -127,6 +127,21 @@ td:first-child,td:nth-child(2){text-align:left;}
   .page-title{font-size:17px;}
   .cat-tab{font-size:12px;padding:7px 11px;}
 }
+
+/* Big Proppa column header: gold metallic chrome with a sweeping shine */
+.bp-th{
+  background-image:linear-gradient(100deg,#7a5a14 0%,#d9a928 18%,#fff3b0 32%,#f5a623 46%,#8a6416 58%,#e8c14a 72%,#fffbe0 82%,#b8860b 100%) !important;
+  background-size:240% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent !important;
+  font-weight:800 !important;font-size:12px !important;letter-spacing:.06em !important;text-transform:uppercase;
+  text-shadow:none;filter:drop-shadow(0 0 5px rgba(245,166,35,.55));
+  animation:bpshine 3.2s linear infinite, bppulse 2.4s ease-in-out infinite;
+}
+@keyframes bpshine{0%{background-position:160% 0}100%{background-position:-80% 0}}
+@keyframes bppulse{0%,100%{filter:drop-shadow(0 0 3px rgba(245,166,35,.35))}50%{filter:drop-shadow(0 0 9px rgba(255,214,102,.9))}}
+@media (prefers-reduced-motion:reduce){.bp-th{animation:none;}}
+td.td-proj{color:#f5c542;}
 </style>
 
 <div class="page-hdr">
@@ -176,7 +191,7 @@ const COLS = [
   { key: 'team',       label: 'Team',      align: 'left',  fmt: 'team'    },
   { key: 'name',       label: 'Player',    align: 'left',  fmt: 'player'  },
   { key: 'line',       label: 'Line',      align: 'right', fmt: 'line'    },
-  { key: 'proj',       label: 'Proj',      align: 'right', fmt: 'proj'    },
+  { key: 'proj',       label: 'Big Proppa',      align: 'right', fmt: 'proj'    },
   { key: 'diff',       label: 'Diff %',    align: 'right', fmt: 'diff' },
   { key: 'over_odds',  label: 'Over',      align: 'right', fmt: 'odds'    },
   { key: 'under_odds', label: 'Under',     align: 'right', fmt: 'odds'    },
@@ -303,7 +318,7 @@ function render() {
   headEl.innerHTML = COLS.map(col => {
     const cls = col.key === sortKey ? (sortDir === -1 ? 'sorted-desc' : 'sorted-asc') : '';
     const align = col.align === 'left' ? 'style="text-align:left"' : col.align === 'center' ? 'style="text-align:center"' : '';
-    return `<th class="${cls}" ${align} onclick="sortBy('${col.key}')">${col.label}</th>`;
+    return `<th class="${cls}${col.key==='proj'?' bp-th':''}" ${align} onclick="sortBy('${col.key}')">${col.label}</th>`;
   }).join('');
 
   // body

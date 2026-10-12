@@ -128,6 +128,21 @@ td:first-child,td:nth-child(2){text-align:left;}
   .cat-tab{font-size:12px;padding:7px 11px;}
 }
 
+/* Big Proppa column header: gold metallic chrome with a sweeping shine */
+.bp-th{
+  background-image:linear-gradient(100deg,#7a5a14 0%,#d9a928 18%,#fff3b0 32%,#f5a623 46%,#8a6416 58%,#e8c14a 72%,#fffbe0 82%,#b8860b 100%) !important;
+  background-size:240% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent !important;
+  font-weight:800 !important;font-size:12px !important;letter-spacing:.06em !important;text-transform:uppercase;
+  text-shadow:none;filter:drop-shadow(0 0 5px rgba(245,166,35,.55));
+  animation:bpshine 3.2s linear infinite, bppulse 2.4s ease-in-out infinite;
+}
+@keyframes bpshine{0%{background-position:160% 0}100%{background-position:-80% 0}}
+@keyframes bppulse{0%,100%{filter:drop-shadow(0 0 3px rgba(245,166,35,.35))}50%{filter:drop-shadow(0 0 9px rgba(255,214,102,.9))}}
+@media (prefers-reduced-motion:reduce){.bp-th{animation:none;}}
+td.td-proj{color:#f5c542;}
+
 .bpnav{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;padding:12px 0 10px;border-bottom:1px solid var(--border);}
 .bpnav a{display:inline-flex;align-items:center;height:30px;padding:0 13px;border-radius:999px;border:1px solid var(--border2);background:var(--surface);color:var(--fg);font-size:11px;font-weight:700;letter-spacing:.1em;text-decoration:none;white-space:nowrap;}
 .bpnav a:hover{border-color:#c9a54e;}
@@ -228,7 +243,7 @@ const COLS = [
   { key: 'team',       label: 'Team',      align: 'left',  fmt: 'team'    },
   { key: 'name',       label: 'Player',    align: 'left',  fmt: 'player'  },
   { key: 'line',       label: 'Line',      align: 'right', fmt: 'line'    },
-  { key: 'proj',       label: 'Proj',      align: 'right', fmt: 'proj'    },
+  { key: 'proj',       label: 'Big Proppa',      align: 'right', fmt: 'proj'    },
   { key: 'diff',       label: 'Diff %',    align: 'right', fmt: 'diff' },
   { key: 'over_odds',  label: 'Over',      align: 'right', fmt: 'odds'    },
   { key: 'under_odds', label: 'Under',     align: 'right', fmt: 'odds'    },
@@ -374,7 +389,7 @@ function render() {
   headEl.innerHTML = cols().map(col => {
     const cls = col.key === sortKey ? (sortDir === -1 ? 'sorted-desc' : 'sorted-asc') : '';
     const align = col.align === 'left' ? 'style="text-align:left"' : col.align === 'center' ? 'style="text-align:center"' : '';
-    return `<th class="${cls}" ${align} onclick="sortBy('${col.key}')">${col.label}</th>`;
+    return `<th class="${cls}${col.key==='proj'?' bp-th':''}" ${align} onclick="sortBy('${col.key}')">${col.label}</th>`;
   }).join('');
 
   // body
@@ -482,7 +497,7 @@ function openPlayer(i, fromDepth, keep) {
     ? statTile(lineLbl, line) + statTile('PROJ TGTS', row.proj) + statTile('PROJ REC', tp.projRec) + statTile('PROJ YDS', tp.projYds) + statTile('TPI', row.tpi)
     : statTile(lineLbl, line) + statTile('BPL PROJ', row.proj) + statTile('DIFF', row.diff!=null?sign(row.diff)+'%':'n/a', row.diff>=5?'#4ade80':row.diff<=-5?'#f87171':'#d2b48c') + statTile('BLENDED AVG', p.baseline) + statTile('SEASON AVG', row.seasonAvg);
   const dRows = augment(depth).map(d=>d.line==null?{...d,over_odds:null,under_odds:null}:d).map((d,j) => `<tr class="${d.playerId===row.playerId&&d.name===row.name?'me':''}" onclick="openPlayer(${j},true)">` + cols().map(col => col.fmt==='player'||col.fmt==='tplayer' ? `<td class="td-player"><span class="rk">#${j+1}</span>${d.name||'—'}<span class="gp">${d.pos||''} · ${d.gp||0} GP</span></td>` : fmtCell(col,d)).join('') + '</tr>').join('');
-  const head = cols().map(col => `<th ${col.align==='left'?'style="text-align:left"':col.align==='center'?'style="text-align:center"':''}>${col.label}</th>`).join('');
+  const head = cols().map(col => `<th class="${col.key==='proj'?'bp-th':''}" ${col.align==='left'?'style="text-align:left"':col.align==='center'?'style="text-align:center"':''}>${col.label}</th>`).join('');
   const photo = PH[row.playerId] ? `<img class="ph" src="${PH[row.playerId]}" alt="${row.name}" onerror="this.style.display='none'">` : '';
   document.getElementById('pd').innerHTML = `
     <button class="back" onclick="closePlayer()">← Back to ${currentCat}</button>
