@@ -28,6 +28,7 @@ the sole basis for a probability.
 from __future__ import annotations
 
 import os
+import time
 from functools import lru_cache
 
 try:
@@ -80,7 +81,16 @@ def diagnose() -> dict:
     return out
 
 
-@lru_cache(maxsize=4096)
+_CACHE: dict[tuple, tuple[float, float | None]] = {}
+_FAIL_RETRY_SECONDS = 90
+_STATS: dict = {"calls": 0, "ok": 0, "errors": {}, "lastError": None}
+
+
+def stats() -> dict:
+    """Call counts and the most recent failure, so a muted JEV is visible instead of silent."""
+    return {"calls": _STATS["calls"], "ok": _STATS["ok"], "errors": dict(_STATS["errors"]), "lastError": _STATS["lastError"]}
+
+
 def leg_probability(
     player_id: str, name: str, team: str, market_slug: str, direction: str,
     line: float | None, hit_rate: float | None, usage_score: float | None,
@@ -94,6 +104,11 @@ def leg_probability(
     client = _client()
     if client is None or Noul is None:
         return None
+
+    key = (player_id, name, team, market_slug, direction, line, hit_rate, usage_score, matchup_edge, opponent)
+    hit = _CACHE.get(key)
+    if hit and (hit[1] is not None or hit[0] > time.time()):
+        return hit[1]
 
     state = {
         "player": name, "team": team, "opponent": opponent,
@@ -110,6 +125,7 @@ def leg_probability(
         f"{direction} {line} in his next game against {opponent}?"
     )
 
+    _STATS["calls"] += 1
     try:
         with client:
             response = client.system_one(
@@ -124,6 +140,13 @@ def leg_probability(
                     ),
                 },
             )
-        return round(response.nouls["hits"].noul, 3)
-    except Exception:
+        val = round(response.nouls["hits"].noul, 3)
+        _STATS["ok"] += 1
+        _CACHE[key] = (float("inf"), val)
+        return val
+    except Exception as exc:
+        kind = type(exc).__name__
+        _STATS["errors"][kind] = _STATS["errors"].get(kind, 0) + 1
+        _STATS["lastError"] = {"type": kind, "message": str(exc)[:200]}
+        _CACHE[key] = (time.time() + _FAIL_RETRY_SECONDS, None)
         return None

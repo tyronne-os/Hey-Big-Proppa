@@ -320,6 +320,7 @@ def api_jimmy_jev_stats():
         "influenceRate": round(influenced / total, 3) if total else 0,
         "avgProbShift": avg_shift,
         "biggestMoves": biggest,
+        "diagnostics": jev.stats(),
     }
 
 
