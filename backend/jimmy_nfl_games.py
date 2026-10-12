@@ -56,7 +56,7 @@ def _leg(game: dict, home: str, away: str, market: str, direction: str, line: fl
     return {
         "playerId": gid, "name": f"{away} @ {home}", "team": name if market != "nfl_total" else "TOTAL", "market": market,
         "direction": direction, "line": line, "odds": int(price), "decimal": round(_dec(price), 4),
-        "modelP": round(p, 4), "bookP": round(book_p, 4), "recentHits": sum(recent), "recentGames": len(recent),
+        "modelP": round(p, 4), "bookP": round(book_p, 4), "confidence": round(max(p, 1 - p) * 100, 1), "profitZone": p >= 0.85, "recentHits": sum(recent), "recentGames": len(recent),
         "bpl": bpl_val, "gapPct": 0.0, "gameId": game["gameId"], "week": game["week"], "prop": prop, "l5": 0, "alt": False,
         "sport": "NFL", "note": f"{note} · raw {raw_p:.0%}, {p:.0%} trusting Vegas half · price implies {1 / _dec(price):.0%} · "
                                 f"{sum(recent)}/{len(recent)} of this season's games cleared it",

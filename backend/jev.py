@@ -178,7 +178,18 @@ TOTAL_SPAN = (-28, 28)
 MARGIN_CUTS = (-14.5, -7.5, -3.5, 3.5, 7.5, 14.5)       # home margin bands
 MARGIN_SPAN = (-35, 35)
 _READS: dict[str, tuple[float, dict | None]] = {}
-_POOL = ThreadPoolExecutor(max_workers=8)
+_POOL = ThreadPoolExecutor(max_workers=16)
+
+PROFIT_ZONE = 0.85
+
+
+def grade(p: float | None, sides: tuple[str, str] = ("over", "under")) -> dict | None:
+    """Every prediction on one scale: the side it favors, confidence 50-100, profit zone at 85+."""
+    if p is None:
+        return None
+    conf = max(p, 1 - p)
+    return {"pick": sides[0] if p >= 0.5 else sides[1], "confidence": round(conf * 100, 1), "profitZone": conf >= PROFIT_ZONE}
+
 
 GUIDE = ("You are JEV, a sharp NFL handicapper. Read the whole scouting file: recent form, the Big Proppa "
          "projection, dependability ranking and share when the game is tight, target share, the opposing defense's "
@@ -278,7 +289,8 @@ def prop_read(player_id: str, name: str, team: str, market: str, line: float) ->
         import h2h
         return {"kind": "prop", "line": float(line), "p": raw["nouls"]["clears"], "edges": edges, "bands": probs,
                 "sigma": max(h2h.SD_FLOOR.get(market, 10.0), 0.30 * float(line)),
-                "expected": round(_expected(probs, edges), 1), "labels": _band_labels(edges, stat), "factors": jev_brain.factors(state)}
+                "expected": round(_expected(probs, edges), 1), "labels": _band_labels(edges, stat), "factors": jev_brain.factors(state),
+                "grade": grade(raw["nouls"]["clears"])}
     return _memo(f"prop:{_hash(state)}", run)
 
 
@@ -327,7 +339,9 @@ def game_read(away: str, home: str, total: float | None, spread_home: float | No
                 "pHomeWins": raw["nouls"].get("homeWins"), "totalEdges": t_edges, "totalBands": norm(raw["scores"]["totalRange"]),
                 "marginEdges": m_edges, "marginBands": norm(raw["scores"]["marginRange"]),
                 "expectedTotal": round(_expected(norm(raw["scores"]["totalRange"]), t_edges), 1),
-                "expectedHomeMargin": round(_expected(norm(raw["scores"]["marginRange"]), m_edges), 1)}
+                "expectedHomeMargin": round(_expected(norm(raw["scores"]["marginRange"]), m_edges), 1),
+                "grades": {"total": grade(raw["nouls"].get("over")), "spread": grade(raw["nouls"].get("homeCovers"), (f"{home} {sp:+g}", f"{away} {-sp:+g}")),
+                           "moneyline": grade(raw["nouls"].get("homeWins"), (home, away))}}
     return _memo(f"game:{_hash([state, total, sp])}", run)
 
 
@@ -367,3 +381,46 @@ def leg_probability(
             p = r["p"]
             return round(p if direction == "over" else 1 - p, 3)
     return _thin_leg_probability(player_id, name, team, market_slug, direction, line, hit_rate, usage_score, matchup_edge, opponent)
+
+
+# ---------------------------------------------------------------------------
+# Leaders overlay -- JEV's projection for the BIG PROPPA column and the SAFE BET (line cut 15%)
+# ---------------------------------------------------------------------------
+
+SAFE_CUT = 0.15
+
+
+def safe_line_for(line: float) -> float | None:
+    """The line reduced by 15%, floored to a half point (a lower line is easier to clear). None if it cannot go lower."""
+    safe = max(0.5, math.floor(line * (1 - SAFE_CUT) * 2) / 2)
+    return safe if safe < line else None
+
+
+def _overlay(read: dict, line: float) -> dict:
+    out = {"value": read["expected"], "p": round(read["p"], 3), "grade": read.get("grade"), "safeLine": None, "safeP": None, "safeProfitZone": False}
+    sl = safe_line_for(line)
+    if sl is not None:
+        sp = prop_p_over(read, sl)
+        out.update(safeLine=sl, safeP=round(sp, 3), safeProfitZone=sp >= PROFIT_ZONE)
+    return out
+
+
+def leader_overlay(items: list[tuple], wait: float = 8.0) -> tuple[dict, int]:
+    """items: (key, player_id, name, team, market, line). Returns ({key: overlay}, reads still running).
+    Reads that miss the wait budget keep running and fill the cache, so the next load has them."""
+    if not available() or Noul is None or Score is None or not items:
+        return {}, 0
+    from concurrent.futures import wait as _wait
+    futs = {it[0]: _POOL.submit(prop_read, it[1], it[2], it[3], it[4], float(it[5])) for it in items}
+    _, pending = _wait(list(futs.values()), timeout=wait)
+    out = {}
+    for it in items:
+        f = futs[it[0]]
+        if f.done():
+            try:
+                r = f.result()
+            except Exception:
+                r = None
+            if r:
+                out[it[0]] = _overlay(r, float(it[5]))
+    return out, len(pending)

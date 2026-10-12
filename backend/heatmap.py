@@ -186,7 +186,8 @@ def game_lines(away: str, home: str) -> dict:
         read = _jev.game_read(away, home, total, _f(fd.get("homeTeamSpread")))
         if read:
             jev_game = {"expectedTotal": read["expectedTotal"], "expectedHomeMargin": read["expectedHomeMargin"], "pOver": read["pOver"],
-                        "pHomeCovers": read["pHomeCovers"], "pHomeWins": read["pHomeWins"], "home": home, "away": away}
+                        "pHomeCovers": read["pHomeCovers"], "pHomeWins": read["pHomeWins"], "home": home, "away": away,
+                        "grades": read.get("grades")}
             for drop in ALT_DROPS:
                 alt_line = round(total - drop, 1)
                 jev_p = round(1 - _jev.game_p_over(read, alt_line), 3)

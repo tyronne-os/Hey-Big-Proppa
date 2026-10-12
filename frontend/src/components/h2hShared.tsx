@@ -32,14 +32,15 @@ export type BoardRow = {
   l5: { week: number; opp: string; value: number }[]; l5Avg: number | null; l5Total: number | null; seasonAvg: number | null; seasonTotal: number | null;
   market: string | null; line: number | null; overPrice: number | null; underPrice: number | null; book: string | null;
   bpl: number | null; diffPct: number | null; l5Over: number | null; oppRank: number | null; injury: Injury;
+  jev?: { value: number; p: number; safeLine: number | null; safeP: number | null; safeProfitZone: boolean } | null;
 };
 export type BoardCat = { category: string; unit: string; market: string | null; seasonGrain: boolean; rows: BoardRow[]; teamSplit: Record<string, number> };
-export type Boards = { ok: boolean; error?: string; game: Game; categories: BoardCat[] };
+export type Boards = { ok: boolean; error?: string; jevPending?: number; game: Game; categories: BoardCat[] };
 
 export type TicketCtx = { gameId: string | null; matchup: string; day: string; from: "h2h" };
 
 export type AltLine = { line: number; step: number; base: boolean; pOver: number; pUnder: number; overAmerican: number; underAmerican: number; est: boolean };
-export type SideInfo = { p: number; price: number; priceText: string; implied: number; edge: number; ev: number; fairAmerican: number; payout5: number } | null;
+export type SideInfo = { p: number; profitZone: boolean; price: number; priceText: string; implied: number; edge: number; ev: number; fairAmerican: number; payout5: number } | null;
 export type Analysis = {
   ok: boolean; ticketable: boolean; reason?: string; playerId?: string; name?: string; team?: string; pos?: string; photoUrl?: string | null;
   market?: string; marketLabel?: string; gameId?: string | null; matchup?: string | null; day?: string | null; kickoff?: string | null;
@@ -51,6 +52,8 @@ export type Analysis = {
   sides?: { over: SideInfo; under: SideInfo }; recommended?: "over" | "under" | null; verdict?: string;
   hits?: { l5Over: number; l5: number; seasonOver: number; season: number };
   jev?: { p: number; expected: number; weight: number; factors: string[]; bands: { label: string; p: number }[] } | null;
+  grade?: { pick: string; confidence: number; profitZone: boolean };
+  profitZoneLine?: { direction: "over" | "under"; line: number; p: number; american: number; est: boolean } | null;
   alts?: AltLine[]; sweet?: { direction: "over" | "under"; line: number; p: number; american: number } | null; warnings?: string[];
 };
 
@@ -58,11 +61,11 @@ export type LegLive = { state: string; status: string; current: number | null; p
 export type TicketLeg = {
   id: string; playerId: string; name: string; team: string; pos: string; photoUrl: string | null; market: string; prop: string;
   direction: "over" | "under"; line: number; odds: number; oddsText: string; oddsEstimated: boolean; book: string; modelP: number;
-  verdict: string; gameId: string; matchup: string; kickoff: string; live?: LegLive;
+  verdict: string; confidence?: number; profitZone?: boolean; gameId: string; matchup: string; kickoff: string; live?: LegLive;
 };
 export type Ticket = {
   day: string; stake: number; boost: number; legs: TicketLeg[]; legCount: number; combinedDecimal: number; payout: number; boostedPayout: number;
-  boostedAmerican: number; hitProbability: number | null; notes: { kind: "good" | "caution" | "conflict"; text: string }[]; anyLive: boolean;
+  boostedAmerican: number; profitZoneLegs?: number; hitProbability: number | null; notes: { kind: "good" | "caution" | "conflict"; text: string }[]; anyLive: boolean;
 };
 
 export const DAY_LABEL: Record<string, string> = { monday: "MONDAY NIGHT", thursday: "THURSDAY NIGHT", sunday: "SUNDAY BOARD" };
@@ -96,4 +99,34 @@ export function TokenPrompt({ onToken, label }: { onToken: (t: string) => void; 
       {err && <span style={{ fontSize: 12, color: H.red }}>{err}</span>}
     </div>
   );
+}
+
+export const PROFIT_ZONE = 85;
+
+/** Confidence on the 50-100 scale; everything from 85 up is the profit zone. */
+export function ConfidenceBar({ conf, label, compact }: { conf: number; label?: string; compact?: boolean }) {
+  const c = Math.max(50, Math.min(100, conf));
+  const pos = (c - 50) * 2;
+  const zone = c >= PROFIT_ZONE;
+  const color = zone ? H.green : c >= 70 ? H.gold : c >= 60 ? H.amber : H.mute;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
+      <div style={{ position: "relative", height: compact ? 8 : 12, background: H.edge, borderRadius: 6, overflow: "hidden" }}>
+        <span style={{ position: "absolute", left: `${(PROFIT_ZONE - 50) * 2}%`, right: 0, top: 0, bottom: 0, background: "rgba(34,197,94,0.22)" }} />
+        <span style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pos}%`, background: color, borderRadius: 6, transition: "width .5s" }} />
+        <span style={{ position: "absolute", left: `${(PROFIT_ZONE - 50) * 2}%`, top: 0, bottom: 0, borderLeft: `2px solid ${H.green}` }} />
+      </div>
+      {!compact && (
+        <div style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: 9, color: H.mute }}>
+          <span>50%</span><span style={{ color: H.green, marginLeft: "auto", marginRight: "16%" }}>PROFIT ZONE 85%+</span><span>100%</span>
+        </div>
+      )}
+      {label && <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, color }}>{label}</span>}
+    </div>
+  );
+}
+
+export function ZoneChip({ conf }: { conf: number }) {
+  const zone = conf >= PROFIT_ZONE;
+  return <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 999, color: zone ? "#04120c" : H.mute, background: zone ? H.green : H.edge, whiteSpace: "nowrap" }}>{conf.toFixed(0)}%{zone ? " · PROFIT ZONE" : ""}</span>;
 }

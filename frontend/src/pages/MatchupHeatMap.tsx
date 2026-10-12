@@ -9,7 +9,7 @@ export type GameLines = {
   total?: { line: number; over: TotalSide; under: TotalSide } | null;
   altUnders?: AltUnder[];
   jevActive?: boolean;
-  jevGame?: { expectedTotal: number; expectedHomeMargin: number; pOver: number | null; pHomeCovers: number | null; pHomeWins: number | null; home: string; away: string } | null;
+  jevGame?: { expectedTotal: number; expectedHomeMargin: number; pOver: number | null; pHomeCovers: number | null; pHomeWins: number | null; home: string; away: string; grades?: Record<string, { pick: string; confidence: number; profitZone: boolean } | null> } | null;
   underdogTeam?: string;
 };
 
@@ -149,6 +149,14 @@ function GameLinesPanel({ gl }: { gl: GameLines }) {
           <span>Total <b style={{ color: "#f1dc92" }}>{gl.jevGame.expectedTotal}</b>{gl.jevGame.pOver !== null && <> · over {Math.round(gl.jevGame.pOver * 100)}%</>}</span>
           <span>{gl.jevGame.home} margin <b style={{ color: "#f1dc92" }}>{gl.jevGame.expectedHomeMargin > 0 ? "+" : ""}{gl.jevGame.expectedHomeMargin}</b>{gl.jevGame.pHomeCovers !== null && <> · covers {Math.round(gl.jevGame.pHomeCovers * 100)}%</>}</span>
           {gl.jevGame.pHomeWins !== null && <span>{gl.jevGame.home} wins {Math.round(gl.jevGame.pHomeWins * 100)}%</span>}
+          {gl.jevGame.grades && (
+            <span style={{ display: "flex", gap: 8, flexWrap: "wrap", width: "100%" }}>
+              {(["total", "spread", "moneyline"] as const).map((k) => { const g = gl.jevGame!.grades?.[k]; return g ? (
+                <span key={k} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 999, border: `1px solid ${g.profitZone ? "#16a34a" : "#3a3345"}`, background: g.profitZone ? "rgba(34,197,94,0.15)" : "transparent", color: g.profitZone ? "#4ade80" : "#b9b0c8" }}>
+                  {k.toUpperCase()}: {g.pick.toUpperCase()} {g.confidence.toFixed(0)}%{g.profitZone ? " · PROFIT ZONE" : ""}
+                </span>) : null; })}
+            </span>
+          )}
         </div>
       )}
 

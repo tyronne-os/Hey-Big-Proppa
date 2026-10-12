@@ -134,12 +134,14 @@ function MatchupHeader({ g }: { g: Game }) {
   );
 }
 
-const COLS = "36px minmax(180px,2.4fr) minmax(70px,0.8fr) minmax(110px,1.2fr) minmax(70px,0.8fr) minmax(120px,1.3fr) minmax(70px,0.8fr) minmax(70px,0.8fr)";
+const COLS = "36px minmax(180px,2.4fr) minmax(70px,0.8fr) minmax(110px,1.2fr) minmax(70px,0.8fr) minmax(120px,1.3fr) minmax(70px,0.8fr) minmax(70px,0.8fr) minmax(110px,1.2fr)";
+const proppa = (r: BoardRow): number | null => r.jev?.value ?? r.bpl;
+const proppaDiff = (r: BoardRow): number | null => (proppa(r) === null || r.line === null || r.line === 0 ? r.diffPct : (((proppa(r) as number) - r.line) / r.line) * 100);
 
 function BoardTable({ cat, game, sort, teamFilter, onOpen }: { cat: BoardCat; game: Game; sort: SortKey; teamFilter: string; onOpen: (r: BoardRow) => void }) {
   const rows = useMemo(() => {
     let r = cat.rows.filter((x) => teamFilter === "BOTH" || x.team === teamFilter);
-    const key = (x: BoardRow) => cat.seasonGrain ? x.seasonTotal ?? 0 : sort === "l5tot" ? x.l5Total ?? 0 : sort === "season" ? x.seasonAvg ?? 0 : sort === "edge" ? x.diffPct ?? -999 : x.l5Avg ?? 0;
+    const key = (x: BoardRow) => cat.seasonGrain ? x.seasonTotal ?? 0 : sort === "l5tot" ? x.l5Total ?? 0 : sort === "season" ? x.seasonAvg ?? 0 : sort === "edge" ? proppaDiff(x) ?? -999 : x.l5Avg ?? 0;
     r = [...r].sort((a, b) => key(b) - key(a));
     return r;
   }, [cat, sort, teamFilter]);
@@ -162,7 +164,7 @@ function BoardTable({ cat, game, sort, teamFilter, onOpen }: { cat: BoardCat; ga
         </div>
       </div>
       <div style={{ background: H.card, border: `1px solid ${H.edge}`, borderRadius: 14, overflowX: "auto" }}>
-        <div style={{ minWidth: 860 }}>
+        <div style={{ minWidth: 980 }}>
           <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 12, alignItems: "center", padding: "10px 14px", borderBottom: `1px solid ${H.edge}` }}>
             <span style={{ ...head, textAlign: "left" }}>RK</span>
             <span style={{ ...head, textAlign: "left" }}>PLAYER</span>
@@ -170,12 +172,14 @@ function BoardTable({ cat, game, sort, teamFilter, onOpen }: { cat: BoardCat; ga
             <span style={{ ...head, textAlign: "left" }}>LAST 5</span>
             <span style={head}>SZN AVG</span>
             <span style={head}>FANDUEL LINE</span>
-            <span style={head}>BIG PROPPA</span>
+            <span style={head} title="JEV's projection (Big Proppa Line until JEV's read loads)">BIG PROPPA</span>
             <span style={head}>DIFF</span>
+            <span style={head} title="FanDuel line cut 15% with JEV's chance of clearing it. 85%+ is the profit zone.">SAFE BET</span>
           </div>
           {rows.length === 0 && <div style={{ padding: 16, color: H.mute, fontSize: 13 }}>No players in this category for this matchup yet.</div>}
           {rows.map((r, i) => {
-            const d = r.diffPct;
+            const d = proppaDiff(r);
+            const pv = proppa(r);
             const big = cat.seasonGrain ? r.seasonTotal : r.l5Avg;
             return (
               <div key={r.playerId} className="h2h-row" onClick={() => onOpen(r)} title="Open player page and build a ticket"
@@ -196,8 +200,16 @@ function BoardTable({ cat, game, sort, teamFilter, onOpen }: { cat: BoardCat; ga
                 <span style={{ ...cell, color: r.line === null ? H.mute : H.text, lineHeight: 1.15 }}>
                   {r.line === null ? "—" : <>{num(r.line)}<br /><span style={{ fontSize: 10, color: H.mute }}>O {am(r.overPrice)} · U {am(r.underPrice)}</span></>}
                 </span>
-                <span style={{ ...cell, fontWeight: 800, color: "#fff", background: r.bpl === null || r.line === null ? H.edge : r.bpl > r.line ? "#15803d" : r.bpl < r.line ? "#b91c1c" : H.edge, borderRadius: 8, padding: "6px 0" }}>{num(r.bpl)}</span>
+                <span title={r.jev ? "JEV projection" : "Big Proppa Line (JEV read still loading)"} style={{ ...cell, fontWeight: 800, color: "#fff", background: pv === null || r.line === null ? H.edge : pv > r.line ? "#15803d" : pv < r.line ? "#b91c1c" : H.edge, borderRadius: 8, padding: "5px 0", opacity: r.jev ? 1 : 0.65, lineHeight: 1.05 }}>
+                  {num(pv)}<br /><span style={{ fontSize: 8, letterSpacing: "0.12em", opacity: 0.8 }}>{r.jev ? "JEV" : "BPL"}</span>
+                </span>
                 <span style={{ ...cell, fontWeight: 700, color: d === null ? H.mute : d > 0 ? H.green : d < 0 ? H.red : H.text }}>{d === null ? "—" : `${d > 0 ? "+" : ""}${d.toFixed(1)}%`}</span>
+                {r.jev && r.jev.safeLine !== null && r.jev.safeP !== null ? (
+                  <span title={`Over ${r.jev.safeLine} (line cut 15%): JEV ${Math.round(r.jev.safeP * 100)}%`} style={{ ...cell, display: "flex", flexDirection: "column", gap: 1, alignItems: "center", padding: "4px 0", borderRadius: 8, border: `1px solid ${r.jev.safeProfitZone ? H.green : H.edge}`, background: r.jev.safeProfitZone ? "rgba(34,197,94,0.14)" : "transparent" }}>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: r.jev.safeProfitZone ? H.green : H.text }}>O {num(r.jev.safeLine)}</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: r.jev.safeProfitZone ? H.green : r.jev.safeP >= 0.7 ? H.gold : H.mute }}>{Math.round(r.jev.safeP * 100)}%{r.jev.safeProfitZone ? " ★ ZONE" : ""}</span>
+                  </span>
+                ) : <span style={{ ...cell, color: H.mute }}>—</span>}
               </div>
             );
           })}
@@ -229,8 +241,14 @@ export default function HeadToHead({ onOpenPlayer }: { onOpenPlayer: (playerId: 
     if (!gameId) return;
     let alive = true;
     setBoards(null); setErr(""); setTeamFilter("BOTH");
-    api.h2hGame(gameId).then((b: Boards) => { if (!alive) return; if (b.ok) setBoards(b); else setErr(b.error ?? "Could not load this matchup."); }).catch(() => alive && setErr("Could not load this matchup."));
-    return () => { alive = false; };
+    let tries = 0, timer: ReturnType<typeof setTimeout> | undefined;
+    const load = () => api.h2hGame(gameId).then((b: Boards) => {
+      if (!alive) return;
+      if (b.ok) { setBoards(b); if ((b.jevPending ?? 0) > 0 && tries++ < 5) timer = setTimeout(load, 10000); }
+      else setErr(b.error ?? "Could not load this matchup.");
+    }).catch(() => alive && setErr("Could not load this matchup."));
+    load();
+    return () => { alive = false; if (timer) clearTimeout(timer); };
   }, [gameId]);
 
   function pick(id: string) {

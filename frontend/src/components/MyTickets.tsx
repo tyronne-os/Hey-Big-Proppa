@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api";
-import { H, MONO, GOLD_TEXT, DAY_LABEL, am, money, num, useToken, TokenPrompt, type Ticket, type TicketLeg } from "./h2hShared";
+import { H, MONO, GOLD_TEXT, DAY_LABEL, am, money, num, useToken, TokenPrompt, ConfidenceBar, ZoneChip, type Ticket, type TicketLeg } from "./h2hShared";
 
 const STATUS_COLOR: Record<string, string> = {
   HIT: H.green, WON: H.green, "ON PACE": H.green, BEHIND: H.amber, "AT RISK": H.amber, BUSTED: H.red, LOST: H.red, PENDING: H.mute, LIVE: H.purpleSoft,
@@ -32,6 +32,7 @@ function LegRow({ leg, onRemove, canEdit }: { leg: TicketLeg; onRemove: () => vo
           <span style={{ fontSize: 11, color: H.mute }}>{leg.matchup} · {leg.kickoff} · {leg.book}</span>
         </div>
         <div style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: 3, alignItems: "flex-end" }}>
+          <ZoneChip conf={(leg.modelP ?? 0.5) * 100} />
           <span style={{ fontFamily: MONO, fontSize: 18, fontWeight: 800 }}>{leg.oddsText}</span>
           {leg.oddsEstimated && <span style={{ fontSize: 9, color: H.amber, fontFamily: MONO }}>EST. ALT PRICE</span>}
           <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 999, color: status === "PENDING" ? H.mute : "#04120c", background: status === "PENDING" ? H.edge : color }}>{status}</span>
@@ -46,7 +47,7 @@ function LegRow({ leg, onRemove, canEdit }: { leg: TicketLeg; onRemove: () => vo
         <div style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: 10, color: H.mute, flexWrap: "wrap", gap: 6 }}>
           <span>{started ? <><b style={{ color: H.text, fontSize: 12 }}>{num(cur)}</b> of {num(leg.line)}{lv?.pace !== null && lv?.pace !== undefined && lv.state !== "FINAL" ? ` · pace ${num(lv.pace)}` : ""}</> : `line ${num(leg.line)} · waiting for kickoff`}</span>
           <span>{started ? (lv?.state === "FINAL" ? "FINAL" : lv?.state === "HALFTIME" ? "HALFTIME" : `Q${lv?.period} ${lv?.clock}`) : ""} {started && lv?.score ? `· ${lv.score}` : ""}</span>
-          <span>model {Math.round(leg.modelP * 100)}%</span>
+          <span style={{ width: 90 }}><ConfidenceBar conf={leg.modelP * 100} compact /></span>
         </div>
       </div>
     </div>
@@ -100,6 +101,7 @@ export default function MyTickets({ day }: { day: "monday" | "thursday" | "sunda
               ["STAKE", ""],
               ["PAYS", money(t.payout)],
               [`WITH +${Math.round(t.boost * 100)}% BOOST`, money(t.boostedPayout)],
+              ["PROFIT ZONE LEGS", `${t.profitZoneLegs ?? 0} of ${t.legCount}`],
               ["MODEL HIT CHANCE", t.hitProbability === null ? "—" : `${(t.hitProbability * 100).toFixed(1)}%`],
             ].map(([k, v]) => (
               <div key={k} style={{ background: H.card2, border: `1px solid ${k.startsWith("WITH") ? H.goldDeep : H.edge}`, borderRadius: 10, padding: "8px 14px", minWidth: 96, display: "flex", flexDirection: "column", gap: 2 }}>

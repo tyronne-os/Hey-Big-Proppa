@@ -160,6 +160,7 @@ def _side_dicts(pid: str, name: str, team: str, game: dict, market: str, line: f
             "playerId": pid, "name": name, "team": team, "market": market,
             "direction": side, "line": line, "odds": int(px), "decimal": round(dec, 4),
             "modelP": round(p, 4), "bookP": round(book_p, 4), "recentHits": hits, "recentGames": len(recent),
+            "confidence": round(max(p, 1 - p) * 100, 1), "profitZone": p >= 0.85,
             "bpl": row["bpl"], "gapPct": gap, "gameId": game["gameId"], "week": game["week"],
             "prop": f"{side.upper()} {line:g} {MARKET_LABEL[market]}" + (" (ALT)" if alt else ""),
             "l5": row["seasonAvg"] or 0, "alt": alt,

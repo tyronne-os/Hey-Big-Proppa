@@ -191,6 +191,16 @@ def weight(group: str = "prop") -> float:
     return w
 
 
+def _zone(rows: list[dict]) -> dict:
+    """Calls graded at 85%+ confidence (either side), and how often the favored side actually hit."""
+    out = {}
+    for field in ("blendP", "jevP", "bplP"):
+        z = [r for r in rows if r.get(field) is not None and max(r[field], 1 - r[field]) >= 0.85]
+        wins = sum(r["hit"] if r[field] >= 0.5 else 1 - r["hit"] for r in z)
+        out[field.replace("P", "")] = {"calls": len(z), "hitRate": round(wins / len(z), 3) if z else None}
+    return out
+
+
 def report() -> dict:
     with _LOCK:
         rows = list(_load().values())
@@ -211,6 +221,8 @@ def report() -> dict:
             "hitRateWhenFavored": {"bpl": round(sum(r["hit"] for r in g if r["bplP"] >= 0.5) / max(1, sum(1 for r in g if r["bplP"] >= 0.5)), 3) if g else None,
                                    "jev": round(sum(r["hit"] for r in g if r["jevP"] >= 0.5) / max(1, sum(1 for r in g if r["jevP"] >= 0.5)), 3) if g else None},
             "jevCalibration": buckets,
+            "profitZone": _zone(g),
         }
+    out["profitZoneRule"] = "Confidence runs 50-100 for the favored side; 85+ is the profit zone. A healthy profit zone hits at 85% or better."
     out["note"] = "Lower Brier is better. The blend weight retunes itself once 40 rows in a group are graded."
     return out

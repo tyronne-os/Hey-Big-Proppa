@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import { H, MONO, GOLD_TEXT, DAY_LABEL, DAY_PATH, am, money, num, useToken, TokenPrompt, type Analysis, type Ticket, type TicketCtx } from "./h2hShared";
+import { H, MONO, GOLD_TEXT, DAY_LABEL, DAY_PATH, am, money, num, useToken, TokenPrompt, ConfidenceBar, ZoneChip, type Analysis, type Ticket, type TicketCtx } from "./h2hShared";
 
 const VERDICT_COLOR: Record<string, string> = { STRONG: H.green, LEAN: H.gold, PASS: H.mute, "NO PRICE": H.mute };
 
@@ -109,18 +109,32 @@ export default function TicketBuilder({ playerId, market, ctx, onBack }: { playe
             </span>
           </div>
 
+          {a.grade && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "10px 14px", borderRadius: 12, border: `1px solid ${a.grade.profitZone ? "#166534" : H.edge}`, background: a.grade.profitZone ? "rgba(34,197,94,0.07)" : H.card2 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.16em", color: H.gold }}>CONFIDENCE · {a.grade.pick.toUpperCase()} {num(a.fd.line)}</span>
+                <ZoneChip conf={a.grade.confidence} />
+              </div>
+              <ConfidenceBar conf={a.grade.confidence} />
+              {!a.grade.profitZone && a.profitZoneLine && (
+                <button onClick={() => { setSide(a.profitZoneLine!.direction); setAlt(a.profitZoneLine!.line === a.fd?.line ? null : a.profitZoneLine!.line); }}
+                  style={{ alignSelf: "flex-start", cursor: "pointer", padding: "6px 10px", borderRadius: 8, border: `1px solid ${H.green}`, background: "rgba(34,197,94,0.1)", color: H.green, fontSize: 11, fontWeight: 800, fontFamily: MONO }}>
+                  ★ PROFIT ZONE LINE: {a.profitZoneLine.direction.toUpperCase()} {num(a.profitZoneLine.line)} at about {Math.round(a.profitZoneLine.p * 100)}% (est. {am(a.profitZoneLine.american)})
+                </button>
+              )}
+              {!a.grade.profitZone && !a.profitZoneLine && <span style={{ fontSize: 11, color: H.mute }}>No line on the ladder reaches 85%. This player is not a profit-zone play today.</span>}
+            </div>
+          )}
+
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>{sideBtn("over")}{sideBtn("under")}</div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 10 }}>
             <Card title="1 · EDGE METER" tone={ev !== null && ev > 0 ? "#166534" : undefined}>
               {p !== null && implied !== null && dec !== null ? (
                 <>
-                  <div style={{ position: "relative", height: 12, background: H.edge, borderRadius: 6 }}>
-                    <span style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${Math.round(p * 100)}%`, background: p > implied ? H.green : H.red, borderRadius: 6 }} />
-                    <span title="Price implies" style={{ position: "absolute", left: `${Math.round(implied * 100)}%`, top: -3, bottom: -3, borderLeft: `2px solid ${H.gold}` }} />
-                  </div>
+                  <ConfidenceBar conf={p * 100} />
                   <div style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: 11, color: H.mute }}>
-                    <span>MODEL {Math.round(p * 100)}%</span><span style={{ color: H.gold }}>PRICE {Math.round(implied * 100)}%</span>
+                    <span>MODEL {Math.round(p * 100)}%</span><span style={{ color: H.gold }}>PRICE IMPLIES {Math.round(implied * 100)}%</span>
                   </div>
                   <span style={{ fontSize: 12 }}>{side?.toUpperCase()} {num(line)} at <b>{am(price)}</b>{altRow ? " (est.)" : ""}: $5 wins <b>{money(5 * dec - 5)}</b>, expected value <b style={{ color: (ev ?? 0) > 0 ? H.green : H.red }}>{(ev ?? 0) > 0 ? "+" : ""}{money(5 * (ev ?? 0))}</b> per $5. Fair price {am(p >= 0.5 ? Math.round((-100 * p) / (1 - p)) : Math.round((100 * (1 - p)) / p))}.</span>
                 </>

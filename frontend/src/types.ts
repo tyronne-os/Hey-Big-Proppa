@@ -198,7 +198,14 @@ export interface BplPlayerLine {
   bpl: number | null;
   diffPct: number | null;
   parts?: { raw: number; baseline: number; oppFactor: number; homeFactor: number; oppAllowed: number } | null;
+  jev?: JevOverlay | null;
   version: string;
+}
+
+/** JEV's projection (the BIG PROPPA column) and the SAFE BET: the line cut 15% with JEV's chance of clearing it. */
+export interface JevOverlay {
+  value: number; p: number; safeLine: number | null; safeP: number | null; safeProfitZone: boolean;
+  grade?: { pick: string; confidence: number; profitZone: boolean } | null;
 }
 
 export interface DivisionStanding {
@@ -212,6 +219,7 @@ export interface LeadersResponse {
   sourceStatus: SourceStatus;
   rows?: LeaderRow[];
   bplVersion?: string | null;
+  jevPending?: number;
   divisions?: { division: string; standings: DivisionStanding[] }[];
 }
 

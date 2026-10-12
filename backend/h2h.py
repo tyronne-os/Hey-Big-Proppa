@@ -367,8 +367,16 @@ def boards(game_id: str) -> dict:
                 top = [(r["l5Avg"] if r["l5Avg"] is not None else r["seasonTotal"]) or 0 for r in kept if _lake(r["team"]) == t][:3]
                 split[t] = round(sum(top), 1)
             cats.append({"category": cat, "unit": unit, "market": market, "seasonGrain": src in SEASON_GRAIN, "rows": kept, "teamSplit": split})
-        return {"ok": True, "game": g, "categories": cats}
-    return _cached(f"boards:{game_id}", 60, build)
+        import jev
+        items = [(r["playerId"] + ":" + r["market"], r["playerId"], r["name"], r["team"], r["market"], r["line"])
+                 for c in cats for r in c["rows"] if r.get("market") and r.get("line")]
+        ov, pending = jev.leader_overlay(items, wait=6.0)
+        for c in cats:
+            for r in c["rows"]:
+                if r.get("market") and r["playerId"] + ":" + r["market"] in ov:
+                    r["jev"] = ov[r["playerId"] + ":" + r["market"]]
+        return {"ok": True, "game": g, "categories": cats, "jevPending": pending}
+    return _cached(f"boards:{game_id}", 20, build)
 
 
 # ---------------------------------------------------------------------------
@@ -471,7 +479,7 @@ def analyze(player_id: str, market: str, game_id: str | None = None) -> dict:
             sides[d_] = None
             continue
         ev = p_ * _dec(px) - 1
-        sides[d_] = {"p": round(p_, 3), "price": px, "priceText": _fmt_am(px), "implied": round(_implied(px), 3), "edge": round(p_ - _implied(px), 3),
+        sides[d_] = {"p": round(p_, 3), "profitZone": p_ >= 0.85, "price": px, "priceText": _fmt_am(px), "implied": round(_implied(px), 3), "edge": round(p_ - _implied(px), 3),
                      "ev": round(ev, 3), "fairAmerican": _am_from_p(p_), "payout5": round(WAGER * _dec(px), 2)}
     live = [s for s in (("over", sides["over"]), ("under", sides["under"])) if s[1]]
     best = max(live, key=lambda s: s[1]["ev"]) if live else None
@@ -497,6 +505,15 @@ def analyze(player_id: str, market: str, game_id: str | None = None) -> dict:
         if cands:
             pick = max(cands, key=lambda a: _dec(a["overAmerican"] if best[0] == "over" else a["underAmerican"]))
             sweet = {"direction": best[0], "line": pick["line"], "p": pick[key], "american": pick["overAmerican"] if best[0] == "over" else pick["underAmerican"]}
+    # profit zone: the line on the favored side where the hit chance reaches 85%+, paying the most
+    fav = "over" if p_over >= 0.5 else "under"
+    pz_key = "pOver" if fav == "over" else "pUnder"
+    pz = [a_ for a_ in alts if a_[pz_key] >= 0.85]
+    pz_line = None
+    if pz:
+        pick = max(pz, key=lambda a_: _dec(a_["overAmerican"] if fav == "over" else a_["underAmerican"]))
+        pz_line = {"direction": fav, "line": pick["line"], "p": pick[pz_key], "american": pick["overAmerican"] if fav == "over" else pick["underAmerican"],
+                   "est": not pick["base"]}
     warn = [thin] if thin else []
     if out["injury"] and out["injury"]["badge"] in ("OUT", "IR"):
         warn.append(f"{name} is listed {out['injury']['status'].upper()}. Do not build on him.")
@@ -511,6 +528,8 @@ def analyze(player_id: str, market: str, game_id: str | None = None) -> dict:
                jev=None if not jev_read else {"p": jev_read["p"], "expected": jev_read["expected"], "weight": w, "factors": jev_read.get("factors", []),
                                                "bands": [{"label": l, "p": round(p_, 3)} for l, p_ in zip(jev_read["labels"], jev_read["bands"])]},
                sides=sides, recommended=best[0] if best else None, verdict=verdict,
+               grade={"pick": fav, "confidence": round(max(p_over, 1 - p_over) * 100, 1), "profitZone": max(p_over, 1 - p_over) >= 0.85},
+               profitZoneLine=pz_line,
                hits={"l5Over": sum(1 for v in l5 if v > line), "l5": len(l5), "seasonOver": sum(1 for v in vals if v > line), "season": len(vals)},
                alts=alts, sweet=sweet, warnings=warn)
     return out
@@ -638,6 +657,7 @@ def _summarize(day: str, tk: dict, live: bool = True) -> dict:
     m = compute_parlay(odds, wager=stake, boost=BOOST) if odds else None
     p = math.prod(l.get("modelP") or 0.5 for l in legs) if legs else None
     return {"day": day, "stake": stake, "boost": BOOST, "legs": out_legs, "legCount": len(legs),
+            "profitZoneLegs": sum(1 for l in legs if (l.get("modelP") or 0) >= 0.85),
             "combinedDecimal": m.combined_decimal if m else 1.0, "payout": m.payout if m else stake, "boostedPayout": m.boosted_payout if m else stake,
             "boostedAmerican": m.boosted_american if m else 0, "hitProbability": None if p is None else round(p, 4),
             "notes": _correlation(legs), "anyLive": any((l.get("live") or {}).get("state") in ("LIVE", "HALFTIME") for l in out_legs),
@@ -671,7 +691,7 @@ def add_leg(player_id: str, market: str, direction: str, game_id: str | None = N
     day = day if day in DAYS else (a.get("day") or "monday")
     leg = {"id": f"{player_id}:{market}", "playerId": player_id, "name": a["name"], "team": a["team"], "pos": a["pos"], "photoUrl": a["photoUrl"],
            "market": market, "prop": MARKET_LABEL[market], "direction": direction, "line": line, "odds": price, "oddsText": _fmt_am(price),
-           "oddsEstimated": est, "book": a["fd"]["book"], "modelP": p, "verdict": a["verdict"], "gameId": a["gameId"], "matchup": a["matchup"],
+           "oddsEstimated": est, "book": a["fd"]["book"], "modelP": p, "confidence": round(p * 100, 1), "profitZone": p >= 0.85, "verdict": a["verdict"], "gameId": a["gameId"], "matchup": a["matchup"],
            "kickoff": a["kickoff"], "addedAt": dt.datetime.now(CT).isoformat(timespec="seconds")}
     with _FILE_LOCK:
         db = _load()

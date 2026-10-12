@@ -58,7 +58,15 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
     try { sessionStorage.setItem("bp_leaders_cat", category); } catch { /* */ }
     if (category === "TARGETS" || category === "HEAD TO HEAD") return;
     setData(null);
-    api.leaders(category).then(setData).catch(() => setData(null));
+    let alive = true, tries = 0, timer: ReturnType<typeof setTimeout> | undefined;
+    const load = () => api.leaders(category).then((d) => {
+      if (!alive) return;
+      setData(d);
+      // JEV reads that missed the first wait keep running on the server; pick them up shortly
+      if ((d.jevPending ?? 0) > 0 && tries++ < 5) timer = setTimeout(load, 10000);
+    }).catch(() => alive && setData(null));
+    load();
+    return () => { alive = false; if (timer) clearTimeout(timer); };
   }, [category]);
 
   return (
@@ -180,7 +188,14 @@ function RowsView({ rows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: Le
   );
 }
 
-const BPL_COLS = "44px minmax(260px,3fr) minmax(84px,1fr) minmax(130px,1.4fr) minmax(96px,1fr) minmax(110px,1.2fr) minmax(90px,1fr) minmax(160px,2fr)";
+const BPL_COLS = "44px minmax(260px,3fr) minmax(84px,1fr) minmax(130px,1.4fr) minmax(96px,1fr) minmax(110px,1.2fr) minmax(90px,1fr) minmax(130px,1.4fr) minmax(160px,2fr)";
+
+// The BIG PROPPA column is JEV's projection once its read is in; until then the Big Proppa Line fills the cell.
+const proppaValue = (b: BplPlayerLine): number | null => b.jev?.value ?? b.bpl;
+const proppaDiff = (b: BplPlayerLine): number | null => {
+  const v = proppaValue(b), sl = b.sportsbookLine;
+  return v === null || sl === null || sl === 0 ? b.diffPct : ((v - sl) / sl) * 100;
+};
 
 type SortMode = "rank" | "reverse" | "greens" | "reds";
 const SORTS: { id: SortMode; label: string; hint: string }[] = [
@@ -191,7 +206,7 @@ const SORTS: { id: SortMode; label: string; hint: string }[] = [
 ];
 
 function sortRows(rows: LeaderRow[], mode: SortMode): LeaderRow[] {
-  const diff = (r: LeaderRow) => r.bpl?.diffPct ?? null;
+  const diff = (r: LeaderRow) => (r.bpl ? proppaDiff(r.bpl) : null);
   const out = rows.filter((r) => r.bpl);
   if (mode === "rank") return out;
   if (mode === "reverse") return [...out].reverse();
@@ -206,12 +221,30 @@ function sortRows(rows: LeaderRow[], mode: SortMode): LeaderRow[] {
 }
 
 function BplCell({ b }: { b: BplPlayerLine }) {
-  if (b.bpl === null) return <span style={{ textAlign: "center", color: C.mute, fontFamily: MONO }}>—</span>;
+  const v = proppaValue(b);
+  if (v === null) return <span style={{ textAlign: "center", color: C.mute, fontFamily: MONO }}>—</span>;
   const sl = b.sportsbookLine;
-  const bg = sl === null || b.bpl === sl ? C.edge : b.bpl > sl ? "#15803d" : "#b91c1c";
+  const bg = sl === null || v === sl ? C.edge : v > sl ? "#15803d" : "#b91c1c";
   return (
-    <span style={{ textAlign: "center", fontFamily: MONO, fontSize: 18, fontWeight: 800, color: "#fff", background: bg, borderRadius: 8, padding: "7px 0" }}>
-      {fmt(b.bpl)}
+    <span title={b.jev ? "JEV projection" : "Big Proppa Line (JEV read still loading)"} style={{ textAlign: "center", fontFamily: MONO, fontSize: 18, fontWeight: 800, color: "#fff", background: bg, borderRadius: 8, padding: "7px 0", opacity: b.jev ? 1 : 0.65, display: "flex", flexDirection: "column", lineHeight: 1.05 }}>
+      {fmt(v)}
+      <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.12em", opacity: 0.8 }}>{b.jev ? "JEV" : "BPL"}</span>
+    </span>
+  );
+}
+
+/** SAFE BET: the line cut 15% and JEV's chance of clearing it. 85%+ is the profit zone. */
+function SafeCell({ b }: { b: BplPlayerLine }) {
+  const j = b.jev;
+  if (!j || j.safeLine === null || j.safeP === null) return <span style={{ textAlign: "center", color: C.mute, fontFamily: MONO }}>—</span>;
+  const pct = Math.round(j.safeP * 100);
+  const zone = j.safeProfitZone;
+  return (
+    <span title={`Over ${j.safeLine} (the line cut 15%): JEV gives it ${pct}%${zone ? ", inside the 85%+ profit zone" : ""}`}
+      style={{ textAlign: "center", fontFamily: MONO, display: "flex", flexDirection: "column", gap: 2, alignItems: "center", padding: "5px 0", borderRadius: 8,
+        border: `1px solid ${zone ? C.green : C.edge}`, background: zone ? "rgba(34,197,94,0.14)" : "transparent" }}>
+      <span style={{ fontSize: 16, fontWeight: 800, color: zone ? C.green : C.text }}>O {fmt(j.safeLine)}</span>
+      <span style={{ fontSize: 10, fontWeight: 800, color: zone ? C.green : j.safeP >= 0.7 ? C.gold : C.mute }}>{pct}%{zone ? " ★ ZONE" : ""}</span>
     </span>
   );
 }
@@ -246,7 +279,7 @@ function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version:
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, justifyContent: "space-between" }}>
         <span style={{ fontSize: 13, color: C.mute }}>
-          <b style={GOLD_TEXT}>BIG PROPPA LINE</b> · {version} · built from the lake only, never from a sportsbook · green = BPL above the book, red = below
+          <b style={GOLD_TEXT}>BIG PROPPA = JEV</b> · projection read from the lake and live ESPN, {version} fills in until JEV loads · SAFE BET cuts the line 15% for a safer over · green = above the book, red = below
         </span>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {SORTS.map((s) => {
@@ -264,20 +297,21 @@ function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version:
         </div>
       </div>
       <div style={{ background: C.card, border: `1px solid ${C.edge}`, borderRadius: 16, overflowX: "auto" }}>
-        <div style={{ minWidth: 980 }}>
+        <div style={{ minWidth: 1120 }}>
           <div style={{ display: "grid", gridTemplateColumns: BPL_COLS, gap: 14, alignItems: "center", padding: "12px 18px", borderBottom: `1px solid ${C.edge}` }}>
             <span style={{ ...head, textAlign: "left" }}>RK</span>
             <span style={{ ...head, textAlign: "left" }}>PLAYER</span>
             <span style={head} title="Season average per game">SEASON AVG</span>
             <span style={head} title="Next opponent and its defense rank in this stat (1 = stingiest)">NEXT DEF [NFL RANK]</span>
             <span style={head} title="Sportsbook line (median across books)">SPORTSBOOK LINE</span>
-            <span style={head}>BIG PROPPA</span>
-            <span style={head} title="(BPL - SL) / SL">DIFF</span>
+            <span style={head} title="JEV's projection for this game (Big Proppa Line until JEV's read loads)">BIG PROPPA</span>
+            <span style={head} title="(Big Proppa - SL) / SL">DIFF</span>
+            <span style={head} title="The sportsbook line cut 15% to raise the chance of clearing it, with JEV's probability. 85%+ is the profit zone.">SAFE BET<br /><span style={{ fontSize: 9, color: C.mute }}>LINE −15%</span></span>
             <span style={{ ...head, textAlign: "left" }}>L5</span>
           </div>
           {shown.map((r) => {
             const b = r.bpl!;
-            const d = b.diffPct;
+            const d = proppaDiff(b);
             return (
               <div key={r.playerId} className="ld-row" onClick={() => onOpenPlayer(r.playerId, b.market)} title="Open player page"
                 style={{ display: "grid", gridTemplateColumns: BPL_COLS, gap: 14, alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.edge}`, cursor: "pointer" }}>
@@ -299,6 +333,7 @@ function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version:
                 <span style={{ ...cell, fontWeight: 700, color: d === null ? C.mute : d > 0 ? C.green : d < 0 ? C.red : C.text }}>
                   {d === null ? "—" : `${d > 0 ? "+" : ""}${d.toFixed(1)}%`}
                 </span>
+                <SafeCell b={b} />
                 <L5Bars b={b} />
               </div>
             );

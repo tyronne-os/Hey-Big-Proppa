@@ -81,6 +81,16 @@ def leaders(category: str) -> dict:
         if str(r.get("playerId", "")).startswith("00-"):
             r["name"] = dim.get(r["playerId"], {}).get("name") or r["name"]
             r.setdefault("photoUrl", data.photo_url(r["playerId"]))
+    # BIG PROPPA column = JEV's projection, SAFE BET = the line cut 15% with JEV's chance of clearing it
+    items = [(r["playerId"], r["playerId"], r["name"], r["team"], r["bpl"]["market"], r["bpl"]["sportsbookLine"])
+             for r in out.get("rows") or [] if r.get("bpl") and r["bpl"].get("sportsbookLine") and r["bpl"].get("market")]
+    if items:
+        import jev
+        ov, pending = jev.leader_overlay(items)
+        for r in out["rows"]:
+            if r["playerId"] in ov:
+                r["bpl"]["jev"] = ov[r["playerId"]]
+        out["jevPending"] = pending
     return out
 
 
