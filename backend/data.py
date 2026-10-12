@@ -37,7 +37,25 @@ def _read_csv(name: str) -> list[dict]:
     if not path.exists():
         return []
     with path.open(newline="", encoding="utf-8") as fh:
-        return list(csv.DictReader(fh))
+        rows = list(csv.DictReader(fh))
+    if name == "schedule":
+        _alias_schedule(rows)
+    return rows
+
+
+# The schedule is refreshed straight from nflverse, whose column names differ from the ones
+# the backend reads. Alias them in so either layout works.
+_SCHEDULE_ALIASES = {
+    "game_date": "gameday", "game_time_local": "gametime", "result_margin": "result",
+    "total_points": "total", "temp_actual": "temp", "wind_actual": "wind",
+}
+
+
+def _alias_schedule(rows: list[dict]) -> None:
+    for r in rows:
+        for want, have in _SCHEDULE_ALIASES.items():
+            if not r.get(want) and r.get(have) not in (None, ""):
+                r[want] = r[have]
 
 
 @lru_cache(maxsize=64)

@@ -4,7 +4,6 @@ import { Link, useLocation } from "react-router-dom";
 const TOP_TABS = [
   { id: "leaders", label: "LEADERS · TARGETS", href: "/leaders?cat=targets" },
   { id: "parlay",  label: "PARLAY",             href: "/parlay" },
-  { id: "queries", label: "QUERIES",            href: "/queries" },
   { id: "myboo",   label: "MY BOO",             href: "/myboo" },
 ] as const;
 
@@ -20,6 +19,7 @@ const ODDS_MENU = [
   { id: "sunday",       label: "SUNDAY SLIPS",       href: "/parlays" },
   { id: "engine",       label: "ENGINE",             href: "/engine" },
   { id: "news",         label: "NEWS",               href: "/news" },
+  { id: "queries",      label: "QUERIES",            href: "/queries" },
 ] as const;
 
 type NavBarProps = { activeTab?: string };
