@@ -10,7 +10,7 @@ h=h.replace('INJECT_TABLE_DATA',json.dumps(d))
 h=h.replace("""    <button class="cat-tab active" onclick="setCategory('Rushing Yds',this)">""","""    <button class="cat-tab active" onclick="setCategory('Targets',this)">Targets</button>
     <button class="cat-tab" onclick="setCategory('Rushing Yds',this)">""")
 h=h.replace("""<button class="cat-tab" onclick="setCategory('Rushing Yds',this)">""","""<button class="cat-tab" onclick="setCategory('Rushing Yds',this)">""")
-h=h.replace("let currentCat = 'Rushing Yds';","let currentCat = 'Targets';\nconst TCOLS=[COLS[0],{key:'name',label:'Player',align:'left',fmt:'tplayer'},{key:'tgtPerGame',label:'Tgt/G',align:'right',fmt:'num1'},...COLS.slice(2).filter(c=>c.key!=='over_odds'&&c.key!=='under_odds').map(c=>c.key==='line'?{...c,label:'Avg Line'}:c)];\nfunction cols(){return currentCat==='Targets'?TCOLS:COLS;}")
+h=h.replace("let currentCat = 'Rushing Yds';","let currentCat = 'Targets';\nconst TCOLS=[COLS[0],{key:'name',label:'Player',align:'left',fmt:'tplayer'},{key:'tgtPerGame',label:'Tgt/G',align:'right',fmt:'num1'},...COLS.slice(3).filter(c=>c.key!=='over_odds'&&c.key!=='under_odds').map(c=>c.key==='line'?{...c,label:'Avg Line'}:c)];\nfunction cols(){return currentCat==='Targets'?TCOLS:COLS;}")
 h=h.replace("let sortKey    = 'diff';","let sortKey    = 'tgtPerGame';")
 h=h.replace("""  btn.classList.add('active');
   populateGameFilter();""","""  btn.classList.add('active');

@@ -142,6 +142,7 @@ td:first-child,td:nth-child(2){text-align:left;}
 @keyframes bppulse{0%,100%{filter:drop-shadow(0 0 3px rgba(245,166,35,.35))}50%{filter:drop-shadow(0 0 9px rgba(255,214,102,.9))}}
 @media (prefers-reduced-motion:reduce){.bp-th{animation:none;}}
 td.td-proj{color:#f5c542;}
+.td-safe{color:#22c55e;font-weight:700;}
 </style>
 
 <div class="page-hdr">
@@ -190,9 +191,11 @@ const ALL = INJECT_TABLE_DATA;
 const COLS = [
   { key: 'team',       label: 'Team',      align: 'left',  fmt: 'team'    },
   { key: 'name',       label: 'Player',    align: 'left',  fmt: 'player'  },
+  { key: 'seasonAvg',  label: 'Avg/G',     align: 'right', fmt: 'num1'    },
   { key: 'line',       label: 'Line',      align: 'right', fmt: 'line'    },
   { key: 'proj',       label: 'Big Proppa',      align: 'right', fmt: 'proj'    },
   { key: 'diff',       label: 'Diff %',    align: 'right', fmt: 'diff' },
+  { key: 'safe',       label: 'Safe Bet',  align: 'right', fmt: 'safe'    },
   { key: 'over_odds',  label: 'Over',      align: 'right', fmt: 'odds'    },
   { key: 'under_odds', label: 'Under',     align: 'right', fmt: 'odds'    },
   { key: 'nextOppRank',label: 'D Rank',    align: 'center', fmt: 'drank'   },
@@ -204,7 +207,7 @@ const COLS = [
 
 // Over/Under are the real posted prices (best across books) from the same pull as the line
 function augment(rows) {
-  return rows.map(r => ({...r, over_odds: r.overPrice ?? null, under_odds: r.underPrice ?? null}));
+  return rows.map(r => ({...r, over_odds: r.overPrice ?? null, under_odds: r.underPrice ?? null, safe: r.proj != null ? Math.round(r.proj * 0.85 * 10) / 10 : null}));
 }
 
 let currentCat = 'Rushing Yds';
@@ -265,6 +268,8 @@ function fmtCell(col, row) {
       const stale = row.lineLive === false;
       return stale ? `<td class="td-num" style="color:var(--fg3);font-style:italic" title="Last posted line (vs ${row.lineOpp||'prior opponent'}) - this week's line is not posted yet">${v}†</td>` : `<td class="td-num">${v}</td>`;
     }
+    case 'safe':
+      return `<td class="td-num td-safe">${v != null ? v.toFixed(1) : '—'}</td>`;
     case 'num1':
       return `<td class="td-num">${v != null ? v : '—'}</td>`;
     case 'proj':
