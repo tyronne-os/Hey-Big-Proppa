@@ -1,0 +1,9 @@
+fastapi>=0.115
+pandas==3.0.6
+typesafe-sdk==0.7.1
+anthropic>=0.40.0
+httpx>=0.27.0
+requests>=2.31.0
+tzdata>=2024.1
+huggingface_hub>=0.24
+uvicorn[standard]>=0.30
