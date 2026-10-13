@@ -217,11 +217,11 @@ a:hover{color:#f1dc92}
         <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
           <div style="display:flex;flex-direction:column;gap:6px">
             <span id="tn-eyebrow" style="font-family:var(--font-mono);font-size:11px;letter-spacing:.32em;color:#6e6878">LIVE · REFRESHES EVERY FEW MINUTES</span>
-            <span id="tn-title" style="font-size:clamp(28px,3.6vw,46px);line-height:.95;font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 58%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">Tonight's parlays</span>
+            <span id="tn-title" style="font-size:clamp(28px,3.6vw,46px);line-height:.95;font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 58%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">Today's parlays</span>
           </div>
           <a id="tn-open" href="/monday" style="padding:8px 16px;border:1px solid #d9b45a;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.08em;color:#d9b45a;text-decoration:none">OPEN FULL PAGE ↗</a>
         </div>
-        <iframe id="tn-frame" title="Tonight's parlays" src="about:blank" style="width:100%;height:min(88vh,1000px);border:1px solid #2a1e36;border-radius:20px;background:#0b0512"></iframe>
+        <iframe id="tn-frame" title="Today's parlays" src="about:blank" style="width:100%;height:min(88vh,1000px);border:1px solid #2a1e36;border-radius:20px;background:#0b0512"></iframe>
       </div>
 
       <div id="topgun" style="max-width:1120px;margin:0 auto;padding:24px 32px 96px;display:flex;flex-direction:column;gap:36px">
@@ -525,20 +525,29 @@ class Component extends DCLogic {
 }
 </script>
 <script>
+/* TODAY'S PARLAYS: always points at the next game day. The API (/api/prop-of-the-day) lists the upcoming game days from the
+   schedule (today counts); each day maps to its parlay page. Before the API answers, the weekday picks a sensible default. */
 (function () {
   try {
-    var day = new Date().toLocaleString('en-US', { timeZone: 'America/Chicago', weekday: 'long' });
-    var night = day === 'Monday' ? ['/monday', 'MONDAY NIGHT THROWDOWN'] : day === 'Sunday' ? ['/sunday-night', 'SUNDAY NIGHT THROWDOWN'] : ['/throwdown', 'THURSDAY NIGHT THROWDOWN'];
+    var PAGE = { THUR: ['/throwdown', 'THURSDAY'], SUN: ['/parlays', 'SUNDAY'], MON: ['/monday', 'MONDAY NIGHT'], FRI: ['/throwdown', 'FRIDAY'], SAT: ['/parlays', 'SATURDAY'] };
+    var wd = new Date().toLocaleString('en-US', { timeZone: 'America/Chicago', weekday: 'long' });
+    var guess = { Monday: 'MON', Tuesday: 'THUR', Wednesday: 'THUR', Thursday: 'THUR', Friday: 'SUN', Saturday: 'SUN', Sunday: 'SUN' }[wd] || 'THUR';
+    var cur = { page: PAGE[guess], note: '' };
     var set = function () {
       var f = document.getElementById('tn-frame');
       if (!f) { return false; }
-      if (f.getAttribute('src') === 'about:blank') { f.setAttribute('src', night[0]); }
-      var e = document.getElementById('tn-eyebrow'); if (e) { e.textContent = night[1] + ' · LIVE · REFRESHES EVERY FEW MINUTES'; }
-      var o = document.getElementById('tn-open'); if (o) { o.setAttribute('href', night[0]); }
-      var n = document.getElementById('nav-tonight'); if (n) { n.setAttribute('href', night[0]); }
+      if (f.getAttribute('src') !== cur.page[0]) { f.setAttribute('src', cur.page[0]); }
+      var e = document.getElementById('tn-eyebrow'); if (e) { e.textContent = cur.page[1] + (cur.note ? ' · ' + cur.note : '') + ' · LIVE · REFRESHES EVERY FEW MINUTES'; }
+      var o = document.getElementById('tn-open'); if (o) { o.setAttribute('href', cur.page[0]); }
       return true;
     };
     var tries = 0, t = setInterval(function () { if (set() || ++tries > 40) { clearInterval(t); } }, 150);
+    fetch(window.location.origin + '/api/prop-of-the-day').then(function (r) { return r.json(); }).then(function (d) {
+      var c = d && d.days && d.days[0]; if (!c || !PAGE[c.day]) { return; }
+      var when = c.date ? new Date(c.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() : '';
+      cur = { page: PAGE[c.day], note: (when ? when + ' · ' : '') + c.game };
+      set();
+    }).catch(function () {});
   } catch (err) { /* the full-page links still work */ }
 })();
 </script>
