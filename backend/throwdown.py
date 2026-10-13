@@ -766,6 +766,18 @@ def latest_game(weekday: str) -> Optional[dict]:
     return todays[-1]
 
 
+def next_game(weekday: str) -> Optional[str]:
+    """The coming `weekday` primetime game (today counts), latest kickoff that day."""
+    today = bpl.today_central()
+    rows = [r for r in data.load("schedule")
+            if r.get("game_type") == "REG" and r.get("game_date", "") >= today
+            and datetime.date.fromisoformat(r["game_date"]).strftime("%A") == weekday]
+    if not rows:
+        return None
+    day = min(r["game_date"] for r in rows)
+    return sorted((r for r in rows if r["game_date"] == day), key=lambda r: r.get("game_time_local", "20:00"))[-1]["game_id"]
+
+
 def save_snapshot(res: dict) -> None:
     """Freeze a live build so the page can be reopened after the game."""
     if not res.get("active"):
@@ -803,6 +815,37 @@ def archived(weekday: str) -> dict:
     return {**res, "archived": True} if res.get("active") else res
 
 
+QUALITY_DAYS = {"Thursday"}     # MY BOO's quality card: five tickets, 3 and 5 legs, built under her rules (boo_quality)
+
+
+def _quality_build(game_id, info, brand, away, home, away_ml, home_ml, total_line, away_qb, home_qb, weekday) -> dict:
+    import boo_quality
+    q = boo_quality.card(game_id, info)
+    slips = {}
+    for key, title, legs, note in q["plan"]:
+        sl = _slip(key.replace("_", "-"), title, legs, note)
+        sl["estimated"] = any(l.get("oddsEstimated") for l in legs)
+        for lg in sl["legs"]:
+            lg["gameId"] = game_id
+        slips[key] = sl
+    week = int(info["week"]) if info and info.get("week") else 0
+    try:   # only fully priced tickets go on MY BOO's ledger; estimated ones would be re-logged when real prices post
+        import myboo
+        real = {k: sl for k, sl in slips.items() if sl["legs"] and not sl["estimated"]}
+        meta = myboo.track_slips([{**sl, "id": f"TD-{k}"} for k, sl in real.items()], 2026, week, "THROWDOWN")
+        for k, sl in real.items():
+            sl.update(meta.get(f"TD-{k}", {}))
+    except Exception:
+        pass
+    return {
+        "active": True, "quality": True, "brand": brand,
+        "game": {"gameId": game_id, "away": away, "home": home, "awayML": away_ml, "homeML": home_ml, "totalLine": total_line,
+                 "awayQB": away_qb, "homeQB": home_qb, "weekday": weekday, "week": week, "gameTimeUTC": _game_time_utc(info)},
+        "slips": slips, "boost": BOOST, "orders": q["orders"], "priced": q["priced"], "estimated": q["estimated"],
+        "boostCallout": "FanDuel 50% SGP BOOST: every ticket here is a same-game parlay from this one game.",
+    }
+
+
 def build(game_id: Optional[str] = None) -> dict:
     """
     Build the full THROWDOWN THURSDAY deep-dive for `game_id`.
@@ -829,6 +872,9 @@ def build(game_id: Optional[str] = None) -> dict:
     total_line = info.get("total_line") if info else None
     away_qb = info.get("away_qb_name", "") if info else ""
     home_qb = info.get("home_qb_name", "") if info else ""
+
+    if weekday in QUALITY_DAYS:
+        return _quality_build(game_id, info, brand, away, home, away_ml, home_ml, total_line, away_qb, home_qb, weekday)
 
     pool = _pool(game_id)
     td_legs = _td_legs(game_id, "anytd")

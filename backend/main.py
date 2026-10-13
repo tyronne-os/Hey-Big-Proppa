@@ -1468,6 +1468,10 @@ def api_throwdown(game_id: str | None = None):
         from zoneinfo import ZoneInfo
         import datetime as _dt
         weekday = _dt.datetime.now(ZoneInfo("America/Chicago")).strftime("%A")
+        if weekday in ("Tuesday", "Wednesday"):
+            nxt = throwdown_mod.next_game("Thursday")       # after Monday night: build the coming Thursday's card
+            if nxt:
+                return throwdown_mod.build(nxt)
         if weekday != "Thursday":
             return throwdown_mod.archived("Thursday")   # between games: the last Thursday's frozen page
     res = throwdown_mod.build(game_id)

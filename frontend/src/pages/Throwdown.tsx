@@ -6,13 +6,14 @@ type Leg = {
   playerId?: string; name: string; team: string; prop: string; market: string;
   odds: number; probability: number; l5?: number;
   pos?: string; photoUrl?: string | null;
+  oddsEstimated?: boolean; rule?: string; jevP?: number | null;
 };
 type Slip = {
   id: string; title: string; legs: Leg[];
   wager: number; boost: number;
   boostedPayout: number; boostedAmericanOdds: number;
   hitProbability?: number; note?: string;
-  ticketId?: string; taken?: boolean;
+  ticketId?: string; taken?: boolean; estimated?: boolean;
 };
 export type ThrowdownData = {
   active: boolean;
@@ -25,6 +26,8 @@ export type ThrowdownData = {
     gameTimeUTC?: string | null;
   };
   slips: Record<string, Slip>;
+  quality?: boolean; priced?: boolean; estimated?: boolean;
+  orders?: { from?: string; evaluation?: string; rules?: string[] };
   boost: number;
 };
 
@@ -36,6 +39,9 @@ const ORDER = [
   "qb_power","kicker_night","upset","homework",
   "defense_wins",
 ];
+// MY BOO's quality card (Thursday): five tickets at most, 3 and 5 legs, built under her rules
+const Q_ORDER = ["q_core3", "q_grail5", "q_td3", "q_kings3", "q_ml3"];
+
 const WHY: Record<string, string> = {
   diff_3:       "The three biggest green differentials from the Leaders board. Big Proppa sees these clearing the line by the widest margin.",
   diff_5:       "Every green differential playing tonight, one leg per player. No touchdown scorers.",
@@ -255,7 +261,8 @@ function SlipCard({ slip, id, hero }: { slip: Slip; id: string; hero?: boolean }
                   <PlayerLink leg={l} name={l.name}>{l.name}</PlayerLink>
                   {l.team && l.team !== "TOTAL" && <span style={{ fontSize: 10, color: "#6e6878", marginLeft: 5 }}>{l.team}</span>}
                 </div>
-                <div style={{ fontSize: 11, color: "#b8b0c0" }}>{l.prop}</div>
+                <div style={{ fontSize: 11, color: "#b8b0c0" }}>{l.prop}{l.jevP != null ? <span style={{ color: "#a78bfa" }}> · JEV {Math.round(l.jevP * 100)}%</span> : null}</div>
+                {l.rule && <div style={{ fontSize: 9, color: "#6e6878", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.rule}</div>}
               </div>
               <span style={{
                 justifySelf: "end", ...mono, fontSize: 11, fontWeight: 800,
@@ -266,6 +273,7 @@ function SlipCard({ slip, id, hero }: { slip: Slip; id: string; hero?: boolean }
               </span>
               <span style={{ textAlign: "right", ...mono, fontSize: 12, color: "#ece6f2" }}>
                 {am(l.odds)}
+                {l.oddsEstimated && <div style={{ fontSize: 8, color: "#f5a623", letterSpacing: "0.08em" }}>EST.</div>}
               </span>
             </div>
           ))}
@@ -337,8 +345,29 @@ export default function Throwdown({ data, matchup }: { data: ThrowdownData; matc
 
       {matchup && <MatchupHeatMap data={matchup} />}
 
+      {data.quality && (
+        <div style={{ border: "1.5px solid #d9b45a", borderRadius: 18, padding: "16px 18px", background: "linear-gradient(180deg, rgba(217,180,90,0.07), rgba(0,0,0,0.15))", display: "flex", flexDirection: "column", gap: 10 }}>
+          <span style={{ ...mono, fontSize: 10, letterSpacing: "0.22em", color: "#d9b45a" }}>MY BOO&apos;S ORDERS{data.orders?.from ? ` · FROM HER ${data.orders.from} REPORT` : ""}</span>
+          {data.orders?.evaluation && <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: "#ece6f2" }}>{data.orders.evaluation}</p>}
+          <div style={{ fontSize: 12, color: "#b8b0c0", lineHeight: 1.6 }}>
+            Jimmy built this card under her rules, with JEV breaking ties: essential players only · one player, one prop across the whole card · no prediction on more than 3 tickets · 3-leg tickets plus one 5-leg · the game total + 2 props leads · a ticket that can&apos;t be filled under the rules is dropped, not padded.
+          </div>
+          {data.estimated && (
+            <div style={{ fontSize: 12, color: "#f5a623" }}>
+              <b>EST.</b> FanDuel hasn&apos;t posted player props for this game yet, so prop lines are set from each player&apos;s own 2026 numbers and the prices marked EST. are estimates. The card rebuilds with real prices the moment they post.
+            </div>
+          )}
+        </div>
+      )}
+
+      {data.quality && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: 18, alignItems: "start" }}>
+          {Q_ORDER.map((k) => data.slips[k] && <SlipCard key={k} slip={data.slips[k]} id={k} />)}
+        </div>
+      )}
+
       {/* Crazy Horse hero */}
-      {horse && horse.legs.length > 0 && (
+      {!data.quality && horse && horse.legs.length > 0 && (
         <div>
           <div style={{ ...mono, fontSize: 11, letterSpacing: "0.3em", color: "#d9b45a", marginBottom: 8 }}>
             WHERE IS THE CRAZY HORSE TONIGHT
@@ -349,7 +378,7 @@ export default function Throwdown({ data, matchup }: { data: ThrowdownData; matc
 
       {/* All other slips */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: 18, alignItems: "start" }}>
-        {ORDER.map((k) => data.slips[k] && <SlipCard key={k} slip={data.slips[k]} id={k} />)}
+        {!data.quality && ORDER.map((k) => data.slips[k] && <SlipCard key={k} slip={data.slips[k]} id={k} />)}
       </div>
     </div>
   );
