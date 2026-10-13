@@ -331,9 +331,9 @@ def api_boo_postgame(game_id: str | None = None):
 
 @app.get("/api/prop-of-the-day")
 def api_prop_of_the_day():
-    """The landing page's slip card: the best 3-leg ticket for the next primetime game, rebuilt from the lake."""
+    """The landing page's slip cards: one best ticket per upcoming game day, rebuilt from the lake."""
     import boo_grail
-    return boo_grail.prop_of_the_day()
+    return boo_grail.props_of_the_day()
 
 
 @app.get("/api/boo/reports")
