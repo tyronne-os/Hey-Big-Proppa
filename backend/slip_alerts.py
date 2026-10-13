@@ -436,7 +436,8 @@ def audit_recent(days: int = 21) -> dict:
     out = {"games": 0, "changed": [], "ticketsResettled": 0}
     for gid in sorted(gids):
         g = sched.get(gid)
-        if not g or (g.get("game_date") or "") < cutoff or (g.get("game_date") or "9") > date.today().isoformat():
+        day = (g or {}).get("gameday") or (g or {}).get("game_date") or ""      # the lake schedule's column is gameday
+        if not g or day < cutoff or day > date.today().isoformat():
             continue
         r = regrade_game(gid)
         if r["checked"]:
