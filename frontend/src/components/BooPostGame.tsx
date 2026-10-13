@@ -164,8 +164,89 @@ function TemplateDesk({ t }: { t: any }) {
   );
 }
 
-export default function BooPostGame() {
-  const [gameId, setGameId] = useState<string | undefined>(undefined);
+function BlueprintSection({ bp }: { bp: any }) {
+  if (!bp) return null;
+  return (
+      <Section title="NEXT GAME BLUEPRINT" sub={bp.game ? `What MY BOO would change for ${bp.game}, each rule with the numbers behind it.` : "Rules for the next primetime game."} accent={C.green}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {bp.rules.map((r: any, i: number) => (
+            <div key={r.rule} style={{ display: "grid", gridTemplateColumns: "24px minmax(0,1fr)", gap: 8 }}>
+              <span style={{ fontFamily: MONO, fontWeight: 900, color: C.green }}>{i + 1}</span>
+              <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <b style={{ fontSize: 13 }}>{r.rule}</b>
+                <span style={{ fontSize: 12, color: C.mute }}>{r.why}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+        {bp.candidates?.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 6 }}>
+            <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.14em", color: C.gold }}>CANDIDATE LEGS THAT FIT THE BLUEPRINT</span>
+            {bp.candidates.map((c: any) => (
+              <span key={c.slot + c.leg} style={{ fontSize: 12 }}><b style={{ color: C.goldHi }}>{c.slot}</b> · {c.leg} · {c.odds > 0 ? `+${c.odds}` : c.odds} · model {pct(c.modelP)}{c.jevP != null ? ` · JEV ${pct(c.jevP)}` : ""}{c.safeLine != null ? ` · safe line ${c.safeLine}` : ""}</span>
+            ))}
+          </div>
+        ) : bp.candidatesNote && <span style={{ fontSize: 12, color: C.mute }}>{bp.candidatesNote}</span>}
+      </Section>
+  );
+}
+
+export function BooReportRail({ selected, onSelect }: { selected?: string; onSelect: (id: string) => void }) {
+  const [rows, setRows] = useState<any[]>([]);
+  const [older, setOlder] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    const load = () => api.booReports().then((r: any) => { if (alive) setRows(r.reports ?? []); }).catch(() => {});
+    load();
+    const t = window.setInterval(load, 120000);
+    return () => { alive = false; window.clearInterval(t); };
+  }, []);
+  useEffect(() => { if (!selected && rows.length) onSelect((rows.find((x) => x.current) ?? rows[rows.length - 1]).gameId); }, [rows, selected, onSelect]);
+  const shown = older ? rows : rows.slice(-4);
+  const STATE: Record<string, string> = { FINAL: C.green, LIVE: "#22c55e", UPCOMING: C.amber };
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: C.purple }}>MY BOO REPORTS</span>
+      {rows.length > 4 && <button onClick={() => setOlder((o) => !o)} style={{ all: "unset", cursor: "pointer", fontFamily: MONO, fontSize: 10, color: C.mute }}>{older ? "▲ HIDE OLDER" : `▼ ${rows.length - 4} OLDER REPORTS`}</button>}
+      {shown.map((r) => {
+        const on = r.gameId === selected;
+        return (
+          <button key={r.gameId} onClick={() => onSelect(r.gameId)} style={{ all: "unset", cursor: "pointer", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 3, padding: "10px 12px", borderRadius: 12, border: `1.5px solid ${on ? C.gold : C.edge}`, background: on ? "rgba(217,180,90,0.08)" : "rgba(0,0,0,0.2)" }}>
+            <span style={{ fontSize: 13, fontWeight: 900, color: on ? C.goldHi : C.fg }}>{r.label}</span>
+            <span style={{ fontSize: 11, color: C.mute }}>{r.away} @ {r.home}</span>
+            <span style={{ display: "flex", gap: 8, alignItems: "center", fontFamily: MONO, fontSize: 9, letterSpacing: "0.1em" }}>
+              <span style={{ color: STATE[r.status] ?? C.mute, fontWeight: 800 }}>{r.status === "UPCOMING" ? "PLAN" : r.status}</span>
+              {r.current && <span style={{ color: C.gold }}>● CURRENT</span>}
+              <span style={{ color: C.mute }}>{r.tickets} tickets</span>
+            </span>
+          </button>
+        );
+      })}
+      <span style={{ fontSize: 10, color: C.mute, lineHeight: 1.4 }}>Every game we bet gets this report, built by code each cycle. The newest final sits in the middle; when the next game goes final it takes over and this one stays here.</span>
+    </div>
+  );
+}
+
+function PregameView({ d }: { d: any }) {
+  const e = d.entry;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, color: C.fg }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.24em", color: C.purple }}>MY BOO · PRE-GAME PLAN</span>
+        <span style={{ fontSize: 26, fontWeight: 900, color: C.goldHi }}>{e.label} <span style={{ fontSize: 14, color: C.mute, fontWeight: 600 }}>{e.away} @ {e.home} · {e.date}</span></span>
+        <span style={{ fontSize: 12, color: C.mute }}>{d.placed > 0 ? `${d.placed} tickets placed so far.` : "No tickets placed yet."} This becomes the full post-game report the moment the game goes final: every leg graded, contagion, the grail slip, the tally.</span>
+      </div>
+      <TallyDesk t={d.tally} />
+      <BlueprintSection bp={d.blueprint} />
+      <TemplateDesk t={d.template} />
+      {d.tdPolicy && !d.tdPolicy.error && (
+        <span style={{ fontSize: 12, color: C.mute }}>Touchdown legs are allowed for essential players only (QB1 or top-3 usage starter): {pct(d.tdPolicy.essential.rate)} scored in {d.tdPolicy.essential.games} games vs {pct(d.tdPolicy.others.rate)} for everyone else.</span>
+      )}
+    </div>
+  );
+}
+
+export default function BooPostGame({ gameId }: { gameId?: string }) {
   const [d, setD] = useState<any>(null);
   const [err, setErr] = useState("");
   const [showTickets, setShowTickets] = useState(false);
@@ -173,13 +254,14 @@ export default function BooPostGame() {
   useEffect(() => {
     let alive = true;
     setD(null); setErr("");
-    api.booPostgame(gameId).then((r: any) => { if (!alive) return; if (r.ok) setD(r); else setErr(r.error ?? "No report yet."); })
+    api.booReport(gameId).then((r: any) => { if (!alive) return; if (r.ok) setD(r); else setErr(r.error ?? "No report yet."); })
       .catch(() => alive && setErr("MY BOO could not build the report."));
     return () => { alive = false; };
   }, [gameId]);
 
   if (err) return <div style={{ color: C.mute, padding: 20 }}>{err}</div>;
   if (!d) return <div style={{ color: C.mute, padding: 20 }}>MY BOO is grading every leg on every ticket…</div>;
+  if (d.mode === "PREGAME") return <PregameView d={d} />;
   const n = d.night, L = n.legs, T = n.tickets, lab = d.lab, bp = d.blueprint, j = d.jev;
   const profit = T.returned - T.staked;
 
@@ -193,10 +275,6 @@ export default function BooPostGame() {
             {n.facts.map((f: string) => <span key={f} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 999, border: `1px solid ${C.edge}`, color: C.fg }}>{f}</span>)}
           </span>
         </div>
-        <select value={gameId ?? n.gameId} onChange={(e) => setGameId(e.target.value)}
-          style={{ height: 32, borderRadius: 8, background: "rgba(0,0,0,0.3)", color: C.fg, border: `1px solid ${C.edge}`, padding: "0 10px", fontSize: 12 }}>
-          {d.games.map((g: any) => <option key={g.gameId} value={g.gameId}>{g.weekday} {g.date} · {g.away} @ {g.home} · {g.tickets} tickets</option>)}
-        </select>
       </div>
 
       {d.corrections?.length > 0 && (
@@ -220,27 +298,7 @@ export default function BooPostGame() {
       <GrailDesk g={d.grail} tp={d.tdPolicy} />
       <TemplateDesk t={d.template} />
 
-      <Section title="THURSDAY BLUEPRINT" sub={bp.game ? `What MY BOO would change for ${bp.game}, each rule with the numbers behind it.` : "Rules for the next primetime game."} accent={C.green}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {bp.rules.map((r: any, i: number) => (
-            <div key={r.rule} style={{ display: "grid", gridTemplateColumns: "24px minmax(0,1fr)", gap: 8 }}>
-              <span style={{ fontFamily: MONO, fontWeight: 900, color: C.green }}>{i + 1}</span>
-              <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <b style={{ fontSize: 13 }}>{r.rule}</b>
-                <span style={{ fontSize: 12, color: C.mute }}>{r.why}</span>
-              </span>
-            </div>
-          ))}
-        </div>
-        {bp.candidates?.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 6 }}>
-            <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.14em", color: C.gold }}>CANDIDATE LEGS THAT FIT THE BLUEPRINT</span>
-            {bp.candidates.map((c: any) => (
-              <span key={c.slot + c.leg} style={{ fontSize: 12 }}><b style={{ color: C.goldHi }}>{c.slot}</b> · {c.leg} · {c.odds > 0 ? `+${c.odds}` : c.odds} · model {pct(c.modelP)}{c.jevP != null ? ` · JEV ${pct(c.jevP)}` : ""}{c.safeLine != null ? ` · safe line ${c.safeLine}` : ""}</span>
-            ))}
-          </div>
-        ) : bp.candidatesNote && <span style={{ fontSize: 12, color: C.mute }}>{bp.candidatesNote}</span>}
-      </Section>
+      <BlueprintSection bp={bp} />
 
       <Section title="WHAT SANK THE TICKETS" sub="A prediction copied onto many tickets fails once and takes all of them down together.">
         <div style={{ overflowX: "auto" }}>

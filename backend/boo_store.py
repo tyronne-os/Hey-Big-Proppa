@@ -16,7 +16,7 @@ from pathlib import Path
 _GOLD = Path(__file__).parent.parent / "lake/gold/nfl"
 REPO = "AIBRUH/big-proppa-lake"
 FILES = ["myboo_tickets.csv", "myboo_legs.csv", "myboo_thesis.json", "myboo_recaps.json", "myboo_alerts.json", "myboo_counter.txt",
-         "jimmy_lessons.json", "myboo_jev_ledger.jsonl", "myboo_jev_reports.json"]
+         "jimmy_lessons.json", "myboo_jev_ledger.jsonl", "myboo_jev_reports.json", "myboo_reports.json"]
 TRAIN_DIR = _GOLD / "boo_training"          # the weekly training package (jsonl), batch log and latest report
 _state = {"last_push": 0.0, "pushes": 0, "last_error": None}
 _lock = threading.Lock()

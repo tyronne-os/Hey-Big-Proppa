@@ -329,6 +329,20 @@ def api_boo_postgame(game_id: str | None = None):
     return boo_postgame.report(game_id)
 
 
+@app.get("/api/boo/reports")
+def api_boo_reports():
+    """The right-panel list: every game MY BOO has bets on, plus the next primetime game, oldest first."""
+    import boo_reports
+    return {"reports": boo_reports.catalog()}
+
+
+@app.get("/api/boo/reports/{game_id}")
+def api_boo_report(game_id: str):
+    """One report for the middle panel: the full post-game report for a final game, the pre-game plan otherwise."""
+    import boo_reports
+    return boo_reports.report(game_id)
+
+
 @app.get("/api/boo/stats-report")
 def api_boo_stats_report(limit: int = 10):
     """MY BOO's Stats Reporter: post-game reports grading JEV and the Big Proppa Line against ESPN finals, plus the running scorecard."""

@@ -243,6 +243,11 @@ def stats_reporter() -> str:
     return jev_reports.run()
 
 
+def report_desk() -> str:
+    import boo_reports
+    return boo_reports.run()
+
+
 def hermes_liaison() -> str:
     """Export the staff as a manifest Hermes agents can read: who does what, how often, and which endpoint serves it."""
     man = {"director": "MY BOO", "updated": time.time(), "api_base": "/api",
@@ -266,6 +271,7 @@ AGENTS = [
     {"id": "standings_actuary", "name": "Standings Actuary", "fn": standings_actuary, "live": 1800, "idle": 3600, "duty": "Standings and the live ESPN-derived power rating Jimmy falls back on", "endpoint": "/api/espn/standings", "reads": "ESPN standings"},
     {"id": "data_auditor", "name": "Data Auditor", "fn": data_auditor, "live": 300, "idle": 600, "duty": "Checks every agent for staleness and repeated errors", "endpoint": "/api/boo/staff", "reads": "staff_status.json"},
     {"id": "stats_reporter", "name": "Stats Reporter", "fn": stats_reporter, "live": 300, "idle": 1800, "duty": "Re-checks every ticket grade against the ESPN final, grades JEV, files the post-game stats report, retunes the blend weight", "endpoint": "/api/boo/stats-report", "reads": "JEV ledger + ESPN finals"},
+    {"id": "report_desk", "name": "Report Desk", "fn": report_desk, "live": 300, "idle": 1800, "duty": "Every game we bet gets the full MY BOO report: voids cross-game tickets, re-grades against the final, files the post-game report (contagion, killers, grail slip, tally, blueprint) or the pre-game plan. Plain code, no LLM", "endpoint": "/api/boo/reports", "reads": "MY BOO ledger + ESPN finals"},
     {"id": "director", "name": "MY BOO — Director", "fn": director, "live": 300, "idle": 3600, "duty": "Writes the briefing from what the staff found", "endpoint": "/api/boo/staff", "reads": "all snapshots"},
     {"id": "hermes_liaison", "name": "Hermes Liaison", "fn": hermes_liaison, "live": 21600, "idle": 21600, "duty": "Exports the staff manifest for Hermes agents", "endpoint": "/api/boo/staff/manifest", "reads": "AGENTS"},
 ]

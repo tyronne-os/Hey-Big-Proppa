@@ -4,7 +4,8 @@ import BooHero from "./BooHero";
 import StaffPanel from "./StaffPanel";
 import { useBooAlerts } from "../hooks/useBooAlerts";
 import type { BooAlert, SlipRecap, MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem, MyBooReport, MyBooPickDetail, MyBooFactor } from "../api";
-import BooPostGame from "./BooPostGame";
+import BooPostGame, { BooReportRail } from "./BooPostGame";
+import LiveTicker from "./LiveTicker";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -1222,6 +1223,7 @@ type BooTab = (typeof BOO_TABS)[number];
 
 export default function MyBooTab() {
   const [tab, setTab] = useState<BooTab>("POST-GAME REPORT");
+  const [reportId, setReportId] = useState<string | undefined>(undefined);
   const [powTickets, setPowTickets] = useState<MyBooTicket[]>([]);
   const [simTickets, setSimTickets] = useState<MyBooTicket[]>([]);
   const [loadingPow, setLoadingPow] = useState(true);
@@ -1246,7 +1248,9 @@ export default function MyBooTab() {
   useEffect(() => { if (tab === "ALERTS") markRead(); }, [tab, markRead]);
 
   return (
-    <div style={{ display: "flex", gap: 20, alignItems: "flex-start", height: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: 10 }}>
+    <LiveTicker />
+    <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flex: 1, minHeight: 0 }}>
     <BooHero alerts={alerts} unread={unread} />
     <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%", flex: 1, minWidth: 0 }}>
       {/* MY BOO header */}
@@ -1286,7 +1290,7 @@ export default function MyBooTab() {
       <div style={{ flex: 1, display: "flex", gap: 16, minHeight: 0 }}>
 
         {/* ── left panel ── */}
-        <div style={{ flex: tab === "POST-GAME REPORT" ? "1 1 100%" : "0 0 58%", minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: tab === "POST-GAME REPORT" ? "1 1 72%" : "0 0 58%", minWidth: 0, display: "flex", flexDirection: "column" }}>
           {/* inner tabs */}
           <div style={{ display: "flex", gap: 4, marginBottom: 12, flexWrap: "wrap", flexShrink: 0 }}>
             {BOO_TABS.map(t => (
@@ -1336,20 +1340,20 @@ export default function MyBooTab() {
             {tab === "RECAPS" && <RecapsTab />}
             {tab === "ALERTS" && <AlertsTab alerts={alerts} />}
             {tab === "DESK" && <DeskTab />}
-            {tab === "POST-GAME REPORT" && <BooPostGame />}
+            {tab === "POST-GAME REPORT" && <BooPostGame gameId={reportId} />}
             {tab === "STAFF" && <StaffPanel />}
             {tab === "JIMMY LESSONS" && <LessonsTab />}
           </div>
         </div>
 
         {/* ── right panel: recent reports ── */}
-        <div hidden={tab === "POST-GAME REPORT"} style={{
-          flex: "0 0 40%", minWidth: 0,
+        <div style={{
+          flex: tab === "POST-GAME REPORT" ? "0 0 26%" : "0 0 40%", minWidth: 0,
           borderLeft: "1px solid var(--bp-border)",
           paddingLeft: 16,
           display: "flex", flexDirection: "column",
         }}>
-          <ReportsPanel />
+          {tab === "POST-GAME REPORT" ? <BooReportRail selected={reportId} onSelect={setReportId} /> : <ReportsPanel />}
         </div>
       </div>
 
@@ -1357,6 +1361,7 @@ export default function MyBooTab() {
 
       {/* ── TANK01 API USAGE DASHBOARD ── */}
       <ApiUsageDashboard />
+    </div>
     </div>
     </div>
   );
