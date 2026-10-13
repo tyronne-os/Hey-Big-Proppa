@@ -512,6 +512,11 @@ def blueprint(n: dict, lab: dict) -> dict:
             "candidates": cands, "candidatesNote": note}
 
 
+def _next_week(game_id: str) -> int | None:
+    g = next((x for x in data.load("schedule") if x["game_id"] == game_id), None)
+    return int(g["week"]) + 1 if g else None
+
+
 def report(game_id: str | None = None) -> dict:
     game_id = game_id or default_game()
     if not game_id:
@@ -529,5 +534,12 @@ def report(game_id: str | None = None) -> dict:
         corrections = []
     out = {"ok": True, "owner": "MY BOO", "night": n, "lab": lab, "jev": _jev_summary(game_id), "blueprint": blueprint(n, lab),
            "games": games()[:12], "corrections": corrections}
+    import boo_grail
+    for key, fn in (("grail", lambda: boo_grail.hindsight(game_id)), ("tally", boo_grail.tally),
+                    ("contagion", lambda: boo_grail.contagion(n)), ("template", lambda: boo_grail.template(_next_week(game_id))), ("tdPolicy", boo_grail.td_policy)):
+        try:
+            out[key] = fn()
+        except Exception as exc:                      # a failed add-on never takes the report down
+            out[key] = {"error": type(exc).__name__}
     _CACHE[key] = (time.time() + 120, out)
     return out

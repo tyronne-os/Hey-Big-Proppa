@@ -44,6 +44,126 @@ function RateBar({ label, passed, n }: { label: string; passed: number; n: numbe
 const RES = (s: string) => (s === "HIT" ? { t: "PASS", c: C.green } : s === "MISS" ? { t: "FAIL", c: C.red } : { t: s, c: C.mute });
 const OUT: Record<string, string> = { WON: C.green, LOST: C.red, ALIVE: C.amber, OPEN: C.mute };
 
+
+const money = (v: number) => `$${v.toFixed(2)}`;
+const am = (a: number) => (a > 0 ? `+${a}` : String(a));
+const MARKET: Record<string, string> = { recyds: "rec yds", rushyds: "rush yds", passyds: "pass yds", recs: "receptions", kickpts: "kicking pts", anytd: "anytime TD" };
+
+function Avatar({ url, name, size = 72, ring = "#7a1020" }: { url?: string | null; name: string; size?: number; ring?: string }) {
+  const [bad, setBad] = useState(false);
+  const box = { width: size, height: size, borderRadius: "50%", border: `2px solid ${ring}`, background: "#12060b", flex: `0 0 ${size}px`, overflow: "hidden" as const };
+  if (url && !bad) return <img src={url} alt={name} referrerPolicy="no-referrer" onError={() => setBad(true)} style={{ ...box, objectFit: "cover", objectPosition: "center top", filter: "grayscale(.45)" }} />;
+  return <span style={{ ...box, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: MONO, fontSize: size / 4, color: C.mute }}>{name.split(" ").map((w) => w[0]).join("").slice(0, 2)}</span>;
+}
+
+function ContagionHero({ c }: { c: any }) {
+  const z = c.zero;
+  return (
+    <section style={{ position: "relative", overflow: "hidden", border: "2px solid #7a1020", borderRadius: 20, padding: "26px 22px", background: "radial-gradient(900px 400px at 15% -10%,#3b0610,#0a0206 70%)", display: "flex", flexDirection: "column", gap: 16 }}>
+      <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.3em", color: "#ff5d73" }}>☣ {c.kicker}</span>
+      <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 900, fontSize: "clamp(40px,9vw,88px)", lineHeight: 0.92, letterSpacing: "-0.02em", textTransform: "uppercase", color: "#f4eee8", textShadow: "0 0 28px rgba(255,40,70,.55)" }}>
+        {c.headline}<span style={{ display: "block", color: "#ff2d4a" }}>{c.sub}</span>
+      </h2>
+      <div style={{ display: "flex", gap: 22, flexWrap: "wrap", alignItems: "flex-start" }}>
+        <div style={{ textAlign: "center", width: 190, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          <img src={z.photoUrl} alt={z.name} referrerPolicy="no-referrer" style={{ width: 170, height: 170, borderRadius: 14, border: "3px solid #ff2d4a", objectFit: "cover", objectPosition: "center top", filter: "saturate(.6) contrast(1.1)", boxShadow: "0 0 32px rgba(255,45,74,.5)", background: "#12060b" }} />
+          <span style={{ fontSize: 20, fontWeight: 900 }}>{z.name}</span>
+          <span style={{ fontSize: 12, color: C.mute }}>{z.label.replace(z.name + " ", "")} · finished <b style={{ color: "#ff5d73" }}>{num(z.actual)}</b></span>
+          <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.2em", border: "2px solid #ff2d4a", color: "#ff2d4a", padding: "3px 10px", transform: "rotate(-3deg)" }}>PATIENT ZERO</span>
+          <span style={{ fontFamily: MONO, fontSize: 40, fontWeight: 800, color: "#ff2d4a" }}>{z.tickets}</span>
+          <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.3em", color: "#ff5d73" }}>TICKETS INFECTED</span>
+        </div>
+        <div style={{ flex: "1 1 320px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12, fontSize: 14, lineHeight: 1.6 }}>
+          {c.commentary.map((p: string, i: number) => <p key={i} style={{ margin: 0 }}>{p}</p>)}
+        </div>
+      </div>
+      <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.3em", color: "#ff5d73" }}>THE INFECTED</span>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10 }}>
+        {c.infected.map((i: any) => (
+          <div key={i.name} style={{ background: "#12060b", border: "1px solid #5a1220", borderRadius: 12, padding: 10, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+            <Avatar url={i.photoUrl} name={i.name} />
+            <b style={{ fontFamily: MONO, fontSize: 18 }}>{i.tickets}</b>
+            <small style={{ color: C.mute, fontSize: 11, lineHeight: 1.3 }}>{i.name}<br />{i.label.replace(i.name + " ", "")} · {num(i.actual)}</small>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TallyDesk({ t }: { t: any }) {
+  if (!t || t.error) return null;
+  const Card = ({ title, r }: { title: string; r: any }) => (
+    <div style={{ background: "rgba(0,0,0,0.25)", border: `1px solid ${C.edge}`, borderRadius: 12, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 4, minWidth: 190 }}>
+      <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.14em", color: C.mute }}>{title}</span>
+      <span style={{ fontFamily: MONO, fontSize: 22, fontWeight: 800, color: C.goldHi }}>{r.ticketPct}% <span style={{ fontSize: 12, color: C.mute }}>tickets {r.tw}-{r.tl}</span></span>
+      <span style={{ fontFamily: MONO, fontSize: 16, fontWeight: 800, color: C.green }}>{r.legPct}% <span style={{ fontSize: 12, color: C.mute }}>legs {r.lw}-{r.ll}</span></span>
+    </div>
+  );
+  const cur = t.weeks[t.weeks.length - 1];
+  return (
+    <Section title="WIN / LOSS TALLY" sub={t.note}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        {cur && <Card title={`THIS WEEK · WEEK ${cur.week}`} r={cur} />}
+        <Card title="SEASON TO DATE" r={t.season} />
+        {t.weeks.slice(0, -1).reverse().map((w: any) => <Card key={w.week} title={`WEEK ${w.week}`} r={w} />)}
+      </div>
+    </Section>
+  );
+}
+
+function GrailDesk({ g, tp }: { g: any; tp: any }) {
+  if (!g || g.error) return null;
+  return (
+    <Section title="THE GRAIL SLIP" sub={`Time machine: knowing the final, the best three tickets (3 to 5 legs, $${g.stake} each, +${g.boost * 100}% boost, one leg per player, no leg reused). ${g.note}`} accent={C.purple}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+        {g.tickets.map((t: any) => (
+          <div key={t.name} style={{ border: `1px solid ${C.edge}`, borderRadius: 14, padding: 14, display: "flex", flexDirection: "column", gap: 8, background: "rgba(0,0,0,0.2)" }}>
+            <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.14em", color: C.gold }}>{t.name} · {t.signals}/{t.legs.length} SIGNAL</span>
+            <span style={{ fontFamily: MONO, fontSize: 26, fontWeight: 800, color: C.green }}>{money(t.pays)}</span>
+            {t.legs.map((l: any) => (
+              <div key={l.player + l.market} style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 12 }}>
+                <span><b>{l.player}</b> <span style={{ color: C.mute }}>{MARKET[l.market] ?? l.market}{l.market === "anytd" ? "" : ` ${l.dirn} ${l.line}`}</span><br /><small style={{ color: C.mute }}>{l.sign} · finished {num(l.actual)}</small></span>
+                <span style={{ textAlign: "right" }}><b style={{ fontFamily: MONO }}>{am(l.odds)}</b><br /><small style={{ fontFamily: MONO, fontSize: 9, fontWeight: 800, padding: "1px 7px", borderRadius: 99, color: "#04120c", background: l.kind === "SIGNAL" ? C.green : C.purple }}>{l.kind}</small></span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      {tp && !tp.error && (
+        <span style={{ fontSize: 12, color: C.mute }}>
+          Touchdown legs are back for essential players only (the QB1, or a top-3 usage starter): they scored in <b style={{ color: C.green }}>{pct(tp.essential.rate)}</b> of {tp.essential.games} games this season, everyone else in <b style={{ color: C.red }}>{pct(tp.others.rate)}</b> of {tp.others.games}. Still under 50%, so a TD leg is a coin flip at a good price, never a lock.
+        </span>
+      )}
+    </Section>
+  );
+}
+
+function TemplateDesk({ t }: { t: any }) {
+  if (!t || t.error) return null;
+  return (
+    <Section title={`GRAIL ALERT · WEEK ${t.week} TEMPLATE WATCH`} sub={`${t.rule}. ${t.backtest.note}`} accent={C.green}>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 560 }}>
+          <thead><tr style={{ color: C.gold, textAlign: "left" }}>{["GAME", "DAY", "SCORE", "TARGET HOGS", "QB ATTEMPTS / G", "DEFENSE YDS PER TARGET"].map((h) => <th key={h} style={{ padding: "6px 8px", fontSize: 10, letterSpacing: "0.1em" }}>{h}</th>)}</tr></thead>
+          <tbody>
+            {t.games.slice(0, 8).map((g: any) => (
+              <tr key={g.gameId} style={{ borderTop: `1px solid ${C.edge}` }}>
+                <td style={{ padding: "6px 8px", fontWeight: 700 }}>{g.game} {g.alert && <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 800, padding: "1px 7px", borderRadius: 99, color: "#04120c", background: C.green }}>GRAIL WATCH</span>}</td>
+                <td style={{ padding: "6px 8px" }}>{(g.day ?? "").slice(0, 3)}</td>
+                <td style={{ padding: "6px 8px", fontFamily: MONO, color: g.alert ? C.green : C.mute, fontWeight: 800 }}>{g.score}/8</td>
+                <td style={{ padding: "6px 8px" }}>{g.sides.map((s: any) => `${s.hog} ${Math.round(s.share * 100)}%`).join(" · ")}</td>
+                <td style={{ padding: "6px 8px", fontFamily: MONO }}>{g.sides.map((s: any) => s.att).join(" · ")}</td>
+                <td style={{ padding: "6px 8px", fontFamily: MONO }}>{g.sides.map((s: any) => s.oppYpt).join(" · ")}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Section>
+  );
+}
+
 export default function BooPostGame() {
   const [gameId, setGameId] = useState<string | undefined>(undefined);
   const [d, setD] = useState<any>(null);
@@ -86,6 +206,9 @@ export default function BooPostGame() {
         </div>
       )}
 
+      {d.contagion && <ContagionHero c={d.contagion} />}
+      <TallyDesk t={d.tally} />
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <Tile k="PREDICTIONS PASSED" v={`${L.passed}/${L.graded}`} sub={`${pct(L.rate)} of unique legs`} color={L.rate >= 0.55 ? C.green : C.amber} />
         <Tile k="TICKETS CASHED" v={`${T.won}`} sub={`${T.lost} lost · ${T.alive} alive · ${T.distinct} distinct`} color={C.green} />
@@ -93,6 +216,9 @@ export default function BooPostGame() {
         <Tile k="$5 ON EVERY DECIDED TICKET" v={`${profit >= 0 ? "+" : "−"}$${Math.abs(profit).toFixed(0)}`} sub={`$${T.staked.toFixed(0)} staked · $${T.returned.toFixed(0)} back`} color={profit >= 0 ? C.green : C.red} />
         {j && <Tile k="JEV vs BIG PROPPA LINE" v={`${j.jevRight}-${j.bplRight}`} sub={`right calls on ${j.graded} graded reads`} color={C.purple} />}
       </div>
+
+      <GrailDesk g={d.grail} tp={d.tdPolicy} />
+      <TemplateDesk t={d.template} />
 
       <Section title="THURSDAY BLUEPRINT" sub={bp.game ? `What MY BOO would change for ${bp.game}, each rule with the numbers behind it.` : "Rules for the next primetime game."} accent={C.green}>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
