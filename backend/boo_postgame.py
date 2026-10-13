@@ -143,11 +143,13 @@ def night(game_id: str) -> dict:
     tickets, legs = _ledger()
     sched = {g["game_id"]: g for g in data.load("schedule")}
     g = sched.get(game_id, {})
-    tids = {l["ticket_id"] for l in legs if l["game_id"] == game_id}
-    by_t: dict[str, list[dict]] = defaultdict(list)
+    # one game, one night: a ticket counts only if every leg is this game and it was not voided as a cross-game error
+    all_by_t: dict[str, list[dict]] = defaultdict(list)
     for l in legs:
-        if l["ticket_id"] in tids:
-            by_t[l["ticket_id"]].append(l)
+        all_by_t[l["ticket_id"]].append(l)
+    tids = {tid for tid, ls in all_by_t.items()
+            if ls and {x["game_id"] for x in ls} == {game_id} and tickets[tid]["status"] != "PUSH_VOID"}
+    by_t: dict[str, list[dict]] = {tid: all_by_t[tid] for tid in tids}
 
     # distinct tickets: the board regenerates through the day, so identical leg sets are one ticket shown N times
     distinct: dict[tuple, dict] = {}

@@ -574,9 +574,16 @@ def log_to_myboo(slips: list[dict]) -> None:
     import myboo
     season = bpl._current_season()
     for s in slips:
-        myboo.create_ticket(
-            "SIM", s["title"] + f" · {s['id']}",
-            [{"player_name": l["name"], "team": l["team"], "market": l["market"], "direction": l["direction"],
-              "line": l["line"], "odds": l["odds"], "probability": l["probability"], "game_date": ""} for l in s["legs"]],
-            season, s["week"], s["boostedAmericanOdds"], s["wager"], f"JIMMY {({'SPY_BOY': 'SPY BOY', 'CRAZY_HORSE': 'CRAZY HORSE'}).get(s['correlationType'], 'BPL')} · EV {s['expectedValue']:+.0%}",
-        )
+        try:
+            _log_one(myboo, season, s)
+        except myboo.MultiGameTicket:
+            continue
+
+
+def _log_one(myboo, season, s) -> None:
+    myboo.create_ticket(
+        "SIM", s["title"] + f" · {s['id']}",
+        [{"player_name": l["name"], "team": l["team"], "market": l["market"], "direction": l["direction"],
+          "line": l["line"], "odds": l["odds"], "probability": l["probability"], "game_date": ""} for l in s["legs"]],
+        season, s["week"], s["boostedAmericanOdds"], s["wager"], f"JIMMY {({'SPY_BOY': 'SPY BOY', 'CRAZY_HORSE': 'CRAZY HORSE'}).get(s['correlationType'], 'BPL')} · EV {s['expectedValue']:+.0%}",
+    )

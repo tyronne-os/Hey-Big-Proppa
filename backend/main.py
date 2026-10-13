@@ -962,6 +962,7 @@ def api_myboo_create_ticket(payload: dict):
             payout_odds=float(payload.get("payout_odds", 0)),
             stake_units=float(payload.get("stake_units", 1)),
             note=payload.get("note", ""),
+            allow_multi_game=True,          # hand-built by the owner
         )
         try:
             import slip_recap

@@ -300,7 +300,7 @@ def record_ticket(ticket_id: str, ev: dict, lives: dict[str, dict]) -> dict:
                 l["actual_value"] = "" if r["actual"] is None else r["actual"]
         mine = [l for l in legs if l["ticket_id"] == ticket_id]
         t = next(x for x in tickets if x["ticket_id"] == ticket_id)
-        if t["status"] not in ("SETTLED_WIN", "SETTLED_LOSS"):
+        if t["status"] not in ("SETTLED_WIN", "SETTLED_LOSS", "PUSH_VOID"):
             if any(x["status"] == "MISS" for x in mine):
                 t["status"], t["result_units"], t["settled_at"] = "SETTLED_LOSS", "0", now
             elif all(x["status"] == "HIT" for x in mine):
@@ -395,7 +395,7 @@ def regrade_game(game_id: str) -> dict:
             for l in legs:
                 by_t.setdefault(l["ticket_id"], []).append(l)
             for t in tickets:
-                if t["ticket_id"] not in touched:
+                if t["ticket_id"] not in touched or t["status"] == "PUSH_VOID":
                     continue
                 ls = by_t.get(t["ticket_id"], [])
                 if any(x["status"] == "MISS" for x in ls):

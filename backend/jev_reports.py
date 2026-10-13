@@ -108,7 +108,11 @@ def run() -> str:
     went final, refresh the scorecard, back it up."""
     audit_note = ""
     try:
+        import myboo
         import slip_alerts
+        voided = myboo.void_cross_game_open()
+        if voided:
+            audit_note += f"; voided {len(voided)} cross-game tickets placed in error"
         a = slip_alerts.audit_recent()
         if a["changed"]:
             audit_note = f"; corrected {len(a['changed'])} leg grades on {a['games']} games ({a['ticketsResettled']} tickets re-settled)"

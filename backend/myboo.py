@@ -91,6 +91,36 @@ def _resolve_game(leg: dict, week: int) -> dict:
     return {"game_id": hit["game_id"], "game_date": hit["game_date"], "team": team} if hit else {}
 
 
+class MultiGameTicket(ValueError):
+    pass
+
+
+def void_cross_game_open() -> list[str]:
+    """Void every unsettled automatic (SIM) ticket whose legs span more than one game. They were placed in error:
+    they tie one game's result to other games' props. Returns the voided ticket ids. Idempotent."""
+    _ensure_files()
+    with open(_TICKETS_FILE, newline="") as f:
+        tickets = list(csv.DictReader(f))
+    with open(_LEGS_FILE, newline="") as f:
+        legs = list(csv.DictReader(f))
+    games: dict[str, set] = {}
+    for l in legs:
+        if l.get("game_id"):
+            games.setdefault(l["ticket_id"], set()).add(l["game_id"])
+    out = []
+    for t in tickets:
+        if t["order_type"] == "SIM" and t["status"] in ("OPEN", "IN_PROGRESS") and len(games.get(t["ticket_id"], ())) > 1:
+            t["status"], t["result_units"] = "PUSH_VOID", ""
+            t["settled_at"] = datetime.now(timezone.utc).isoformat()
+            t["note"] = ((t.get("note") or "") + " | VOID: cross-game ticket placed in error").strip(" |")
+            out.append(t["ticket_id"])
+    if out:
+        with open(_TICKETS_FILE, "w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=_TICKET_COLS, extrasaction="ignore", restval="")
+            w.writeheader(); w.writerows(tickets)
+    return out
+
+
 def create_ticket(
     order_type: str,          # "POW" or "SIM"
     name: str,
@@ -100,9 +130,13 @@ def create_ticket(
     payout_odds: float = 0.0,
     stake_units: float = 1.0,
     note: str = "",
+    allow_multi_game: bool = False,
 ) -> str:
     """
     Create a new parlay ticket and its legs. Returns the ticket_id.
+
+    One game, one slate: a ticket may span several games only when the owner builds it by hand
+    (allow_multi_game=True). Automatic boards never mix games.
 
     Each leg dict must have:
       player_name, team, market, direction, line, odds, probability, game_date
@@ -116,6 +150,8 @@ def create_ticket(
             if (t["name"], str(t["season"]), str(t["week"])) == (name, str(season), str(week)):
                 return t["ticket_id"]
     legs = [{**l, **_resolve_game(l, week)} for l in legs]
+    if not allow_multi_game and len({l.get("game_id") for l in legs if l.get("game_id")}) > 1:
+        raise MultiGameTicket("automatic tickets stay inside one game; cross-game parlays are built by hand")
     ticket_id = _next_ticket_id(order_type, week, season)
     now = datetime.now(timezone.utc).isoformat()
 
@@ -867,7 +903,10 @@ def track_slips(slips: list[dict], season: int, week: int, source: str = "BOARD"
                 continue
             legs = [p for l in sl["legs"] for p in _expand(l)]
             name = f"{sl.get('title', 'SLIP')} · {sl.get('id', '')} · {_fingerprint(sl['legs'])}"
-            tid = create_ticket("SIM", name, legs, season, week, sl.get("boostedAmericanOdds", 0), STAKE, f"{source}")
+            try:
+                tid = create_ticket("SIM", name, legs, season, week, sl.get("boostedAmericanOdds", 0), STAKE, f"{source}")
+            except MultiGameTicket:
+                continue
             order = next((t["order_type"] for t in load_tickets_raw() if t["ticket_id"] == tid), "SIM")
             out[str(sl.get("id"))] = {"ticketId": tid, "taken": order == "POW"}
     try:
@@ -1032,7 +1071,7 @@ def settle() -> dict:
             by_t.setdefault(l["ticket_id"], []).append(l)
         for t in tickets:
             ls = by_t.get(t["ticket_id"], [])
-            if not ls or t["status"] in ("SETTLED_WIN", "SETTLED_LOSS"):
+            if not ls or t["status"] in ("SETTLED_WIN", "SETTLED_LOSS", "PUSH_VOID"):
                 continue
             if any(x["status"] == "MISS" for x in ls):
                 t["status"], t["result_units"] = "SETTLED_LOSS", "0"
