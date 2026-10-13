@@ -248,6 +248,11 @@ def report_desk() -> str:
     return boo_reports.run()
 
 
+def lake_clerk() -> str:
+    import lake_sync
+    return lake_sync.agent()
+
+
 def hermes_liaison() -> str:
     """Export the staff as a manifest Hermes agents can read: who does what, how often, and which endpoint serves it."""
     man = {"director": "MY BOO", "updated": time.time(), "api_base": "/api",
@@ -269,6 +274,7 @@ AGENTS = [
     {"id": "sec_reporter", "name": "SEC Beat Reporter", "fn": sec_reporter, "live": 900, "idle": 1800, "duty": "SEC news and matchup news attached to each SEC game", "endpoint": "/api/cfb/espn", "reads": "ESPN news + search"},
     {"id": "injury_desk", "name": "Injury Desk", "fn": injury_desk, "live": 1800, "idle": 3600, "duty": "NFL injury report snapshot and changes", "endpoint": "/api/espn/injuries", "reads": "ESPN game summaries"},
     {"id": "standings_actuary", "name": "Standings Actuary", "fn": standings_actuary, "live": 1800, "idle": 3600, "duty": "Standings and the live ESPN-derived power rating Jimmy falls back on", "endpoint": "/api/espn/standings", "reads": "ESPN standings"},
+    {"id": "lake_clerk", "name": "Lake Clerk", "fn": lake_clerk, "live": 1800, "idle": 3600, "duty": "Pulls nflverse (schedule, weekly stats, depth charts, official injuries, headshots) into the lake, rolls the site to the current week, clears stale caches, checks every open slip has a photo and a player page", "endpoint": "/api/lake/sync", "reads": "nflverse releases"},
     {"id": "data_auditor", "name": "Data Auditor", "fn": data_auditor, "live": 300, "idle": 600, "duty": "Checks every agent for staleness and repeated errors", "endpoint": "/api/boo/staff", "reads": "staff_status.json"},
     {"id": "stats_reporter", "name": "Stats Reporter", "fn": stats_reporter, "live": 300, "idle": 1800, "duty": "Re-checks every ticket grade against the ESPN final, grades JEV, files the post-game stats report, retunes the blend weight", "endpoint": "/api/boo/stats-report", "reads": "JEV ledger + ESPN finals"},
     {"id": "report_desk", "name": "Report Desk", "fn": report_desk, "live": 300, "idle": 1800, "duty": "Every game we bet gets the full MY BOO report: voids cross-game tickets, re-grades against the final, files the post-game report (contagion, killers, grail slip, tally, blueprint) or the pre-game plan. Plain code, no LLM", "endpoint": "/api/boo/reports", "reads": "MY BOO ledger + ESPN finals"},

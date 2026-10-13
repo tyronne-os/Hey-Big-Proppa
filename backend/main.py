@@ -1184,6 +1184,19 @@ def api_espn_lines():
     return boo_staff._read("line_history.json", {})
 
 
+@app.get("/api/lake/sync")
+def api_lake_sync():
+    """What the nflverse sync last did, the current week, and slip photo/player-page checks."""
+    import lake_sync
+    return lake_sync.status()
+
+
+@app.post("/api/lake/sync")
+def api_lake_sync_run(body: dict | None = None):
+    import lake_sync
+    return lake_sync.run(force=bool((body or {}).get("force")))
+
+
 @app.get("/api/boo/staff")
 def api_boo_staff():
     """MY BOO's staff roster: each agent's duty, cadence, last run, health, plus the director's briefing."""
