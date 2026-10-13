@@ -542,6 +542,10 @@ def report(game_id: str | None = None) -> dict:
         except Exception as exc:                      # a failed add-on never takes the report down
             out[key] = {"error": type(exc).__name__}
     try:
+        out["graph"] = boo_grail.knowledge_graph(n, out.get("contagion"), out.get("template"), out.get("blueprint"))
+    except Exception:
+        out["graph"] = None
+    try:
         import boo_eval
         out["evaluation"] = boo_eval.evaluate(out)
     except Exception as exc:

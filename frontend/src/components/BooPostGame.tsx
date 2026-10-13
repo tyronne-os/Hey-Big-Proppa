@@ -175,6 +175,77 @@ function Evaluation({ e }: { e: any }) {
   );
 }
 
+function Ring({ value, max, color, label, sub }: { value: number; max: number; color: string; label: string; sub: string }) {
+  const R = 42, C2 = 2 * Math.PI * R, frac = Math.max(0, Math.min(1, max ? value / max : 0));
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: 14, borderRadius: 16, border: `1px solid ${C.edge}`, background: "rgba(0,0,0,0.2)", textAlign: "center" }}>
+      <svg width="110" height="110" viewBox="0 0 110 110" role="img" aria-label={`${sub}: ${label}`}>
+        <circle cx="55" cy="55" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="11" />
+        <circle cx="55" cy="55" r={R} fill="none" stroke={color} strokeWidth="11" strokeLinecap="round" strokeDasharray={`${C2 * frac} ${C2}`} transform="rotate(-90 55 55)" />
+        <text x="55" y="61" textAnchor="middle" fontFamily="monospace" fontWeight="800" fontSize="19" fill="currentColor">{label}</text>
+      </svg>
+      <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.12em", color: C.mute, textTransform: "uppercase" }}>{sub}</span>
+    </div>
+  );
+}
+
+function RingsRow({ n }: { n: any }) {
+  const L = n.legs, T = n.tickets;
+  const small = T.bySize.filter((s: any) => s.legs <= 3), big = T.bySize.filter((s: any) => s.legs > 3);
+  const sum = (a: any[], k: string) => a.reduce((x, s) => x + s[k], 0);
+  const sw = sum(small, "won"), st = sum(small, "tickets"), bw = sum(big, "won"), bt = sum(big, "tickets");
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+      <Ring value={L.passed} max={L.graded} color={C.green} label={`${L.passed}/${L.graded}`} sub="predictions passed" />
+      <Ring value={T.won} max={T.distinct} color={C.gold} label={`${T.won}/${T.distinct}`} sub="tickets cashed" />
+      <Ring value={T.lostByOne} max={T.lost} color={C.red} label={`${T.lostByOne}/${T.lost}`} sub="losses by one leg" />
+      <Ring value={sw} max={st} color={C.purple} label={`${sw}/${st}`} sub="3 legs or fewer cashed" />
+      <Ring value={bw} max={bt} color={C.red} label={`${bw}/${bt}`} sub="4+ legs cashed" />
+    </div>
+  );
+}
+
+const KG_COLOR: Record<string, string> = { miss: "#ff5d73", lesson: "#a779e8", rule: "#d9b45a", target: "#2ee6a6" };
+const KG_TITLE = ["WHAT MISSED", "WHAT WE LEARNED", "THE RULES", "NEXT GAME TARGETS"];
+
+function KnowledgeGraph({ g }: { g: any }) {
+  const [hot, setHot] = useState<string | null>(null);
+  if (!g || !g.nodes?.length) return null;
+  const W = 1000, X = [110, 370, 630, 880];
+  const layers: any[][] = [[], [], [], []];
+  g.nodes.forEach((nd: any) => layers[nd.layer].push(nd));
+  const H = Math.max(360, Math.max(...layers.map((l) => l.length)) * 78 + 60);
+  const pos: Record<string, { x: number; y: number }> = {};
+  layers.forEach((l, i) => l.forEach((nd, j) => { pos[nd.id] = { x: X[i], y: 70 + (l.length === 1 ? (H - 90) / 2 : ((H - 120) / (l.length - 1)) * j) }; }));
+  const linked = new Set<string>(hot ? [hot] : []);
+  if (hot) g.edges.forEach(([a, b]: string[]) => { if (a === hot || b === hot) { linked.add(a); linked.add(b); } });
+  const trunc = (t: string, n = 26) => (t.length > n ? t.slice(0, n - 1) + "…" : t);
+  return (
+    <Section title="KNOWLEDGE GRAPH · HOW THIS GAME TURNS INTO THE NEXT" sub="Misses, what they taught us, the rules that came out of it, and the targets those rules point at next. Hover a node to trace its links." accent={C.purple}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", background: "#09040f", borderRadius: 14, border: `1px solid ${C.edge}` }}>
+        {KG_TITLE.map((t, i) => <text key={t} x={X[i]} y={26} textAnchor="middle" fontFamily="monospace" fontSize="10" letterSpacing="2" fill="#8a8290">{t}</text>)}
+        {g.edges.map(([a, b]: string[], i: number) => {
+          const A = pos[a], B = pos[b];
+          if (!A || !B) return null;
+          const mx = (A.x + B.x) / 2;
+          return <path key={i} d={`M${A.x} ${A.y} C${mx} ${A.y},${mx} ${B.y},${B.x} ${B.y}`} fill="none" stroke="#8a8290" strokeOpacity={hot ? (a === hot || b === hot ? 0.9 : 0.06) : 0.35} />;
+        })}
+        {g.nodes.map((nd: any) => {
+          const p = pos[nd.id], col = KG_COLOR[nd.kind] ?? "#8a8290", r = 9 + Math.min(9, (nd.weight || 1));
+          const dim = hot && !linked.has(nd.id);
+          return (
+            <g key={nd.id} transform={`translate(${p.x},${p.y})`} style={{ cursor: "pointer", opacity: dim ? 0.12 : 1 }} onMouseEnter={() => setHot(nd.id)} onMouseLeave={() => setHot(null)}>
+              <circle r={r} fill={col} fillOpacity="0.25" stroke={col} strokeWidth="2" />
+              <circle r={r / 3} fill={col} />
+              <text y={r + 15} textAnchor="middle" fontSize="11" fontWeight="600" fill="#ece6f2">{trunc(nd.label)}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </Section>
+  );
+}
+
 function BlueprintSection({ bp }: { bp: any }) {
   if (!bp) return null;
   return (
@@ -290,6 +361,9 @@ export default function BooPostGame({ gameId }: { gameId?: string }) {
       </div>
 
       <Evaluation e={d.evaluation} />
+
+      <RingsRow n={n} />
+      <KnowledgeGraph g={d.graph} />
 
       {d.corrections?.length > 0 && (
         <div style={{ padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.amber}`, background: "rgba(245,166,35,0.08)", fontSize: 12 }}>

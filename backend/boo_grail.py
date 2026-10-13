@@ -512,3 +512,81 @@ def prop_of_the_day() -> dict:
     """Back-compat: the first upcoming day's card."""
     d = props_of_the_day()
     return d["days"][0] if d.get("days") else {"ok": False}
+
+
+# ---------------------------------------------------------------------------------------------- knowledge graph
+def _short_leg(label: str) -> str:
+    out = label
+    for a, b in ((" over ", " o"), (" under ", " u"), ("receptions", "rec"), ("rec yds", "rec yds"), ("rush yds", "rush"), ("pass yds", "pass"),
+                 ("kicking pts", "kick")):
+        out = out.replace(a, b)
+    return out
+
+
+def knowledge_graph(night: dict, contagion: dict | None, template: dict | None, blueprint: dict | None) -> dict | None:
+    """How this game's misses turn into the next game's tickets, as a graph: misses -> what we learned -> rules -> next targets.
+    Every node and edge is derived from the measured report, so it rebuilds for every game."""
+    if not night or not contagion:
+        return None
+    nodes: list[dict] = []
+    edges: list[list[str]] = []
+    persons = [contagion["zero"]] + contagion["infected"]
+    ks = night.get("killers") or []
+    seen = set()
+    miss_ids: dict[str, str] = {}
+    for p in persons:
+        if p["name"] in seen or len(seen) >= 5:
+            continue
+        seen.add(p["name"])
+        nid = f"m{len(miss_ids)}"
+        miss_ids[p["name"]] = nid
+        nodes.append({"id": nid, "label": _short_leg(p.get("label") or p["name"]), "layer": 0, "weight": p.get("tickets", 1), "kind": "miss"})
+    T = night["tickets"]
+    big = [s for s in T["bySize"] if s["legs"] > 3]
+    small = [s for s in T["bySize"] if s["legs"] <= 3]
+    bw, bt = sum(s["won"] for s in big), sum(s["tickets"] for s in big)
+    sw, st = sum(s["won"] for s in small), sum(s["tickets"] for s in small)
+
+    def lesson(lid, label, sources):
+        nodes.append({"id": lid, "label": label, "layer": 1, "weight": 1, "kind": "lesson"})
+        for s in sources:
+            edges.append([s, lid])
+
+    low_depth = [miss_ids[p["name"]] for p in persons if p["name"] in miss_ids and str(p.get("depth") or "0").isdigit() and int(p["depth"]) >= 3]
+    low_use = [miss_ids[p["name"]] for p in persons if p["name"] in miss_ids and str(p.get("usageRank") or "0").isdigit() and int(p["usageRank"]) >= 5]
+    by_name: dict[str, int] = {}
+    for k in ks:
+        nm = k["label"].split(" over ")[0].split(" under ")[0]
+        by_name[nm] = by_name.get(nm, 0) + 1
+    dups = [miss_ids[n] for n, c in by_name.items() if c > 1 and n in miss_ids]
+    top_id = next(iter(miss_ids.values()), None)
+    if low_depth:
+        lesson("l_depth", "Low on the depth chart", low_depth)
+    if low_use and set(low_use) - set(low_depth):
+        lesson("l_use", "Low-usage legs", low_use)
+    if dups or top_id:
+        lesson("l_dup", "Same prop on many tickets", dups or [top_id])
+    if bt:
+        nodes.append({"id": "m_long", "label": f"4+ leg tickets ({bw}/{bt})", "layer": 0, "weight": bt, "kind": "miss"})
+        lesson("l_size", f"Long tickets die ({sw}/{st} short vs {bw}/{bt} long)", ["m_long"])
+    rules = [("r_one", "1 player = 1 prop", ["l_dup"]), ("r_target", "Target-driven legs only", ["l_depth", "l_use"]),
+             ("r_three", "3 legs max", ["l_size"]), ("r_core", "Total + 2 props core", ["l_size", "l_dup"])]
+    ids = {n["id"] for n in nodes}
+    for rid, label, srcs in rules:
+        srcs = [s for s in srcs if s in ids]
+        if srcs:
+            nodes.append({"id": rid, "label": label, "layer": 2, "weight": 1, "kind": "rule"})
+            for s in srcs:
+                edges.append([s, rid])
+    targets = []
+    for g in ((template or {}).get("games") or [])[:3]:
+        best = max(g["sides"], key=lambda s: s["share"] * s["oppYpt"], default=None)
+        if best:
+            targets.append((g["game"], best))
+    for i, (game, s) in enumerate(targets):
+        tid = f"t{i}"
+        nodes.append({"id": tid, "label": f"{s['hog']} · {round(s['share'] * 100)}% of {s['team']} targets · {game}", "layer": 3, "weight": 1, "kind": "target"})
+        for rid in ("r_target", "r_core"):
+            if any(n["id"] == rid for n in nodes):
+                edges.append([rid, tid])
+    return {"nodes": nodes, "edges": edges}
