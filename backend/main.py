@@ -329,6 +329,13 @@ def api_boo_postgame(game_id: str | None = None):
     return boo_postgame.report(game_id)
 
 
+@app.get("/api/prop-of-the-day")
+def api_prop_of_the_day():
+    """The landing page's slip card: the best 3-leg ticket for the next primetime game, rebuilt from the lake."""
+    import boo_grail
+    return boo_grail.prop_of_the_day()
+
+
 @app.get("/api/boo/reports")
 def api_boo_reports():
     """The right-panel list: every game MY BOO has bets on, plus the next primetime game, oldest first."""

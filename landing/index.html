@@ -157,6 +157,7 @@ a:hover{color:#f1dc92}
                 <span style="font-size:14px;font-weight:900;background:linear-gradient(180deg,#f7e7a6,#c9a54e 50%,#8a6224);-webkit-background-clip:text;background-clip:text;color:transparent">HEY BIG PROPPA!</span>
                 <span style="width:30px;height:30px"></span>
               </div>
+              <div id="potd">
               <div style="display:flex;align-items:center;justify-content:space-between;margin:0 16px 10px;padding:10px 14px;border:1px solid #3a2610;border-radius:14px;background:#160c22">
                 <div style="display:flex;flex-direction:column;gap:2px">
                   <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;color:#8a8290">WEEK 4 · 4-LEG PARLAY</span>
@@ -216,6 +217,7 @@ a:hover{color:#f1dc92}
                 <span style="font-size:34px;line-height:1;font-weight:900;color:#2ee6a6">$3,986.68</span>
               </div>
               <div style="padding:6px 14px 16px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:#6e6878;text-align:center">FG MADE THRU WK 3 · SAMPLE ODDS</div>
+              </div>
             </div>
           </div>
         </div>
@@ -548,6 +550,46 @@ class Component extends DCLogic {
     };
     var tries = 0, t = setInterval(function () { if (set() || ++tries > 40) { clearInterval(t); } }, 150);
   } catch (err) { /* the full-page links still work */ }
+})();
+</script>
+<script>
+/* PROP OF THE DAY: the slip card is rebuilt from /api/prop-of-the-day (best 3-leg ticket for the next primetime game).
+   The static card above stays as the fallback if the API is unreachable. */
+(function(){
+  function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function am(n){return n>0?'+'+n:String(n);}
+  function money(n){return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function render(d){
+    var host=document.getElementById('potd'); if(!host||!d||!d.ok||!d.legs||!d.legs.length) return;
+    var rows=d.legs.map(function(l){
+      var parts=String(l.name).split(' '), first=parts.shift(), last=parts.join(' ');
+      var photo=l.photoUrl?"background-image:url('"+esc(l.photoUrl)+"');background-size:150%;background-position:center 15%;background-repeat:no-repeat;":'';
+      return '<div style="display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 16px;border-top:1px solid #241e2c">'
+        +'<div style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:2px solid #d9b45a;background-color:'+esc(l.color)+';'+photo+'"></div>'
+        +'<div style="display:flex;flex-direction:column;gap:2px;min-width:0">'
+        +'<span style="font-size:13px;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:#ece6f2">'+esc(first)+'</span> <span style="color:#d9b45a">'+esc(last)+'</span></span>'
+        +'<span style="font-size:11px;color:#b8b0c0">'+esc(l.team)+' · '+esc(l.prop)+'</span>'
+        +'<span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:#6e6878;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(l.note)+'</span></div>'
+        +'<span style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:#2ee6a6">'+am(l.odds)+'</span></div>';
+    }).join('');
+    host.innerHTML=
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin:0 16px 10px;padding:10px 14px;border:1px solid #3a2610;border-radius:14px;background:#160c22">'
+      +'<div style="display:flex;flex-direction:column;gap:2px"><span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;color:#8a8290">'+esc(d.label)+' · '+d.legs.length+'-LEG PARLAY</span>'
+      +'<span style="font-size:15px;font-weight:900;color:#ece6f2">PROP OF THE <span style="color:#d9b45a">DAY</span></span></div>'
+      +'<span style="padding:5px 10px;border-radius:999px;background:#2ee6a6;font-size:10px;font-weight:900;color:#0b0512">+'+d.boost+'% PROFIT BOOST</span></div>'
+      +rows
+      +'<div style="margin:4px 16px 0;padding:14px 0 6px;border-top:2px dashed #3a2610;display:flex;justify-content:space-between;align-items:center"><span style="font-family:var(--font-mono);font-size:10px;color:#8a8290">PARLAY ODDS</span><span style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:#d9b45a">'+am(d.parlayOdds)+'</span></div>'
+      +'<div style="margin:0 16px;display:flex;justify-content:space-between;align-items:center;padding:4px 0"><span style="font-family:var(--font-mono);font-size:10px;color:#8a8290">PROFIT · BOOSTED '+d.boost+'%</span><span style="font-family:var(--font-mono);font-size:12px;color:#b8b0c0"><span style="text-decoration:line-through;color:#6e6878">'+money(d.profit)+'</span>  '+money(d.boostedProfit)+'</span></div>'
+      +'<div style="margin:10px 12px 12px;padding:16px;border-radius:18px;background:linear-gradient(180deg,#1a2a1f,#0f1a14);border:1px solid #1f6b4e;display:flex;justify-content:space-between;align-items:flex-end"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#8a8290">$'+d.stake+' WAGER PAYS</span><span style="font-size:11px;color:#b8b0c0">'+esc(d.game)+' · '+Math.round(d.hitChance*1000)/10+'% to hit</span></div><span style="font-size:34px;line-height:1;font-weight:900;color:#2ee6a6">'+money(d.pays)+'</span></div>'
+      +'<div style="padding:6px 14px 16px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:#6e6878;text-align:center">'+esc(d.footer)+'</div>';
+  }
+  var tries=0;
+  function go(){
+    if(!document.getElementById('potd')){ if(tries++<40) return setTimeout(go,250); return; }
+    fetch(window.location.origin+'/api/prop-of-the-day').then(function(r){return r.json();}).then(render).catch(function(){});
+    setTimeout(go,600000);
+  }
+  go();
 })();
 </script>
 </body>

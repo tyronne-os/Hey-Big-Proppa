@@ -369,3 +369,107 @@ def num(v) -> str:
     except (TypeError, ValueError):
         return "?"
     return str(int(f)) if f == int(f) else f"{f:.1f}"
+
+
+# ---------------------------------------------------------------------------------------------- prop of the day
+TEAM_COLOR = {"ARI": "#97233F", "ATL": "#A71930", "BAL": "#241773", "BUF": "#00338D", "CAR": "#0085CA", "CHI": "#0B162A", "CIN": "#FB4F14",
+              "CLE": "#311D00", "DAL": "#041E42", "DEN": "#FB4F14", "DET": "#0076B6", "GB": "#203731", "HOU": "#03202F", "IND": "#002C5F",
+              "JAX": "#006778", "KC": "#E31837", "LV": "#000000", "LAC": "#0080C6", "LA": "#003594", "MIA": "#008E97", "MIN": "#4F2683",
+              "NE": "#002244", "NO": "#D3BC8D", "NYG": "#0B2265", "NYJ": "#125740", "PHI": "#004C54", "PIT": "#FFB612", "SEA": "#002244",
+              "SF": "#AA0000", "TB": "#D50A0A", "TEN": "#0C2340", "WAS": "#5A1414"}
+PHOTO_TTL = 900
+
+
+def _am(dec: float) -> int:
+    return round((dec - 1) * 100) if dec >= 2 else -round(100 / (dec - 1))
+
+
+def _price(p: float) -> int:
+    """Estimated American price for a probability, with a 10% house edge built in."""
+    return _am(1 / (p * 1.10))
+
+
+def prop_of_the_day() -> dict:
+    """The best 3-leg ticket for the next primetime game, built the same way every day from the lake: the
+    highest-probability legs (target hog yardage at 70% of his own average, QB and lead-back yardage, TD only for
+    essential players), one prop per player, mixed markets. Prices are ESTIMATED until the book posts lines."""
+    def build():
+        import boo_reports
+        cat = boo_reports.catalog()
+        nxt = next((c for c in cat if c["status"] != "FINAL"), None)
+        if not nxt:
+            return {"ok": False}
+        dim = data.player_dimension()
+        rec, pas, rus = (_rows(f) for f in ("player_receiving_week.csv", "player_passing_week.csv", "player_rushing_week.csv"))
+        yds, tg = defaultdict(float), defaultdict(float)
+        for r in rec:
+            yds[r["opponent_team"]] += _f(r["receiving_yards"])
+            tg[r["opponent_team"]] += _f(r["targets"])
+        ypt = {k: yds[k] / tg[k] for k in tg if tg[k]}
+        td = [r for r in csv.DictReader(open(data.GOLD / "td_log.csv", newline="")) if r["season"] == "2026" and r["is_offensive_td"] == "True"]
+
+        def top(rows, team, col):
+            c = Counter()
+            for r in rows:
+                if r["team"] == team:
+                    c[r["player_id"]] += _f(r[col])
+            return c.most_common(1)[0][0] if c else None
+
+        def avg(rows, pid, col):
+            v = [_f(r[col]) for r in rows if r["player_id"] == pid]
+            return (sum(v) / len(v), len(v)) if v else (0.0, 0)
+
+        cands = []
+        for team, opp in ((nxt["away"], nxt["home"]), (nxt["home"], nxt["away"])):
+            leaky = ypt.get(opp, 0) >= 7.5
+            tt = sum(_f(r["targets"]) for r in rec if r["team"] == team)
+            weeks = len({r["week"] for r in rec if r["team"] == team}) or 1
+            pid = top(rec, team, "targets")
+            if pid:
+                a, n = avg(rec, pid, "receiving_yards")
+                share = sum(_f(r["targets"]) for r in rec if r["team"] == team and r["player_id"] == pid) / max(tt, 1)
+                line = math.floor(a * 0.7 * 2) / 2 + 0.5
+                cands.append({"pid": pid, "team": team, "mkt": "Rec Yds", "line": line, "p": 0.67 if leaky else 0.54,
+                              "note": f"{share * 100:.0f}% of {team} targets · {opp} allow {ypt.get(opp, 0):.1f} yds/tgt", "pos": "WR"})
+            pid = top(pas, team, "attempts")
+            if pid:
+                a, n = avg(pas, pid, "passing_yards")
+                cands.append({"pid": pid, "team": team, "mkt": "Pass Yds", "line": math.floor(a * 0.8 / 5) * 5 + 0.5, "p": 0.66,
+                              "note": f"averages {a:.0f} pass yds in {n} games", "pos": "QB"})
+            pid = top(rus, team, "carries")
+            if pid:
+                a, n = avg(rus, pid, "rushing_yards")
+                cands.append({"pid": pid, "team": team, "mkt": "Rush Yds", "line": math.floor(a * 0.7 * 2) / 2 + 0.5, "p": 0.62,
+                              "note": f"lead back, averages {a:.0f} rush yds", "pos": "RB"})
+                nm = dim.get(pid, {}).get("name", "")
+                if nm and red_zone.essential_td_ok(nm, team):
+                    tds = sum(1 for r in td if r["scorer_player_name"] == _short(nm) and r["scoring_team"] == team)
+                    g = len({r["week"] for r in rus if r["team"] == team}) or 1
+                    p = max(0.2, min(0.62, (tds + 0.8) / (g + 1.6)))
+                    cands.append({"pid": pid, "team": team, "mkt": "Anytime TD", "line": None, "p": p,
+                                  "note": f"essential starter · {tds} offensive TDs in {g} games", "pos": "RB"})
+        picks, used = [], set()
+        for c in sorted(cands, key=lambda x: -x["p"]):
+            if c["pid"] in used or sum(1 for p in picks if p["mkt"] == c["mkt"]) >= 1 or sum(1 for p in picks if p["team"] == c["team"]) >= 2:
+                continue
+            picks.append(c)
+            used.add(c["pid"])
+            if len(picks) == 3:
+                break
+        legs, dec = [], 1.0
+        for c in picks:
+            d = dim.get(c["pid"], {})
+            odds = _price(c["p"])
+            dec *= _dec(odds)
+            legs.append({"name": d.get("name", c["pid"]), "team": c["team"], "color": TEAM_COLOR.get(c["team"], "#241e2c"),
+                         "prop": c["mkt"] if c["line"] is None else f"{c['mkt']} {math.ceil(c['line'])}+", "note": c["note"], "odds": odds,
+                         "p": round(c["p"], 2), "photoUrl": data.photo_url(c["pid"])})
+        stake = 10.0
+        profit = stake * (dec - 1)
+        boosted = profit * (1 + BOOST)
+        return {"ok": True, "label": nxt["label"], "game": f"{nxt['away']} @ {nxt['home']}", "date": nxt["date"], "legs": legs,
+                "boost": int(BOOST * 100), "parlayOdds": _am(dec), "stake": stake, "profit": round(profit, 2), "boostedProfit": round(boosted, 2),
+                "pays": round(stake + boosted, 2), "hitChance": round(math.prod(l["p"] for l in legs), 3), "estimated": True,
+                "footer": "ESTIMATED ODDS · LINES POST THIS WEEK · MODEL BUILT"}
+
+    return _cached("potd", PHOTO_TTL, build)
