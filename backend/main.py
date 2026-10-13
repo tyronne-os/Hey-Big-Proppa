@@ -1618,6 +1618,33 @@ def api_matchup(game_id: str | None = None, day: str = "thursday"):
                                                 info.get("away_qb_name", ""), info.get("home_qb_name", ""))}
 
 
+@app.get("/api/jimmy/seasons")
+def api_jimmy_seasons():
+    """List available seasons for JIMMY backtester."""
+    return {"seasons": [2024, 2025]}
+
+
+@app.post("/api/jimmy/start")
+def api_jimmy_start(year: int, slips_per_week: int):
+    """Start a new JIMMY season simulation."""
+    if year not in (2024, 2025):
+        raise HTTPException(400, "Only 2024 and 2025 supported")
+    if slips_per_week < 1 or slips_per_week > 5:
+        raise HTTPException(400, "Must select 1-5 slips per week")
+
+    from jimmy_backtester import JimmyBacktester
+    backtester = JimmyBacktester(year, slips_per_week)
+    return backtester.get_state_dict()
+
+
+@app.get("/api/jimmy/state/{year}/{slips_per_week}")
+def api_jimmy_state(year: int, slips_per_week: int):
+    """Get current season state (would be persisted in session storage)."""
+    from jimmy_backtester import JimmyBacktester
+    backtester = JimmyBacktester(year, slips_per_week)
+    return backtester.get_state_dict()
+
+
 # React app still accessible at /app/* via the StaticFiles mount below.
 from fastapi.responses import FileResponse as _FileResponse
 

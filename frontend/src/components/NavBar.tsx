@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 const TOP_TABS = [
   { id: "leaders", label: "LEADERS", href: "/leaders?cat=targets" },
   { id: "parlay",  label: "PARLAY",  href: "/parlay" },
+  { id: "jimmy",   label: "JIMMY",   href: "/jimmy" },
   { id: "myboo",   label: "MY BOO",  href: "/myboo" },
 ] as const;
 
@@ -26,6 +27,7 @@ export default function NavBar({ activeTab }: NavBarProps) {
   const p = location.pathname;
   const currentTab = activeTab ?? (p.startsWith("/leaders") || p.startsWith("/player") ? "leaders"
     : p === "/parlay" || p === "/throwdown" || p === "/monday" || p === "/sunday-night" || p === "/parlays" ? "parlay"
+    : p.startsWith("/jimmy") ? "jimmy"
     : p.startsWith("/myboo") ? "myboo" : "");
 
   return (
