@@ -280,7 +280,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
             {tab === "odds" && <OddsTab />}
           </div>
 
-          {tab !== "leaders" && (
+          {tab !== "leaders" && tab !== "myboo" && (
             <Composer
               targets={targets}
               target={target}

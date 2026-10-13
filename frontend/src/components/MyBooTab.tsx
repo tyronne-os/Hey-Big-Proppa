@@ -868,7 +868,7 @@ function ReportsPanel() {
         <span style={{ fontSize: 10, color: "var(--bp-muted)" }}>— daily bet analysis</span>
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+      <div style={{ flex: 1 }}>
         {loading && (
           <div style={{ color: "var(--bp-muted)", fontSize: 12, padding: "20px 0" }}>Generating reports…</div>
         )}
@@ -1267,10 +1267,10 @@ export default function MyBooTab() {
   useEffect(() => { if (tab === "ALERTS") markRead(); }, [tab, markRead]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: 10 }}>
-    <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flex: 1, minHeight: 0 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
     <BooHero alerts={alerts} unread={unread} />
-    <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%", flex: 1, minWidth: 0 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 0, flex: 1, minWidth: 0 }}>
       {/* MY BOO header */}
       <div style={{ padding: "16px 0 12px", borderBottom: "1px solid var(--bp-border)", marginBottom: 14, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
@@ -1306,7 +1306,7 @@ export default function MyBooTab() {
       </div>
 
       {/* two-column body: left = tabs, right = reports */}
-      <div style={{ flex: 1, display: "flex", gap: 16, minHeight: 0 }}>
+      <div style={{ flex: 1, display: "flex", gap: 16 }}>
 
         {/* ── left panel ── */}
         <div style={{ flex: tab === "POST-GAME REPORT" ? "1 1 72%" : "0 0 58%", minWidth: 0, display: "flex", flexDirection: "column" }}>
