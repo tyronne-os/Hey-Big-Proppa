@@ -5,7 +5,6 @@ import StaffPanel from "./StaffPanel";
 import { useBooAlerts } from "../hooks/useBooAlerts";
 import type { BooAlert, SlipRecap, MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem, MyBooReport, MyBooPickDetail, MyBooFactor } from "../api";
 import BooPostGame, { BooReportRail } from "./BooPostGame";
-import LiveTicker from "./LiveTicker";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -1218,12 +1217,32 @@ function RecapsTab() {
 
 // ─── main MY BOO component ───────────────────────────────────────────────────
 
+/** MY BOO's own address. A Hugging Face Space page keeps its own URL in the bar, so this shows the direct link to copy. */
+function BooLink() {
+  const [done, setDone] = useState(false);
+  const url = `${window.location.origin}/myboo`;
+  const copy = () => {
+    const ok = () => { setDone(true); window.setTimeout(() => setDone(false), 2000); };
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(ok).catch(() => window.prompt("Copy MY BOO's link:", url));
+    else window.prompt("Copy MY BOO's link:", url);
+  };
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+      <a href={url} target="_top" style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: "#d9b45a", textDecoration: "none", wordBreak: "break-all" }}>{url.replace(/^https?:\/\//, "")}</a>
+      <button onClick={copy} style={{ height: 24, padding: "0 10px", borderRadius: 999, border: "1px solid #6b4a1c", background: "transparent", color: "#d9b45a", fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", cursor: "pointer" }}>
+        {done ? "COPIED ✓" : "COPY MY BOO LINK"}
+      </button>
+    </div>
+  );
+}
+
 const BOO_TABS = ["POST-GAME REPORT", "POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK", "STAFF", "JIMMY LESSONS"] as const;
 type BooTab = (typeof BOO_TABS)[number];
 
 export default function MyBooTab() {
   const [tab, setTab] = useState<BooTab>("POST-GAME REPORT");
   const [reportId, setReportId] = useState<string | undefined>(undefined);
+  useEffect(() => { const t = document.title; document.title = "MY BOO · Hey Big Proppa"; return () => { document.title = t; }; }, []);
   const [powTickets, setPowTickets] = useState<MyBooTicket[]>([]);
   const [simTickets, setSimTickets] = useState<MyBooTicket[]>([]);
   const [loadingPow, setLoadingPow] = useState(true);
@@ -1249,7 +1268,6 @@ export default function MyBooTab() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: 10 }}>
-    <LiveTicker />
     <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flex: 1, minHeight: 0 }}>
     <BooHero alerts={alerts} unread={unread} />
     <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%", flex: 1, minWidth: 0 }}>
@@ -1267,6 +1285,7 @@ export default function MyBooTab() {
             <div style={{ fontSize: 11, color: "var(--bp-muted)", marginTop: 2 }}>
               Data Scientist &amp; Sportsbook Analytics Engine · Tue 6AM – Tue 6AM settlement window
             </div>
+            <BooLink />
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {[
