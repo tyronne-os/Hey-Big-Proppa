@@ -119,8 +119,15 @@ def _pregame(entry: dict) -> dict:
             blueprint = boo_postgame.blueprint(night, boo_postgame.structure_lab())
         except Exception:
             blueprint = None
+    evaluation = None
+    if prev:
+        try:
+            import boo_eval
+            evaluation = boo_eval.evaluate(boo_postgame.report(prev["gameId"]), prev["label"])
+        except Exception:
+            evaluation = None
     return {"ok": True, "mode": "PREGAME", "entry": entry, "blueprint": blueprint, "template": boo_grail.template(entry["week"]),
-            "tally": boo_grail.tally(), "tdPolicy": boo_grail.td_policy(), "placed": entry["tickets"]}
+            "tally": boo_grail.tally(), "tdPolicy": boo_grail.td_policy(), "placed": entry["tickets"], "evaluation": evaluation}
 
 
 def report(game_id: str | None = None) -> dict:

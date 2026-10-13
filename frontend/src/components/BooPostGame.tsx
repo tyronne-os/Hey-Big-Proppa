@@ -164,6 +164,17 @@ function TemplateDesk({ t }: { t: any }) {
   );
 }
 
+function Evaluation({ e }: { e: any }) {
+  if (!e) return null;
+  return (
+    <section style={{ border: `1.5px solid ${C.gold}`, borderRadius: 18, padding: "18px 20px", background: "linear-gradient(180deg, rgba(217,180,90,0.07), rgba(0,0,0,0.15))", display: "flex", flexDirection: "column", gap: 10 }}>
+      <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.22em", color: C.gold }}>{e.title}</span>
+      {e.paragraphs.map((p: string, i: number) => <p key={i} style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: C.fg, maxWidth: 820 }}>{p}</p>)}
+      <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: C.mute }}>WRITTEN BY MY BOO · {e.words} WORDS · BUILT BY CODE FROM THE GRADES BELOW, SO IT READS THE SAME EVERY TIME</span>
+    </section>
+  );
+}
+
 function BlueprintSection({ bp }: { bp: any }) {
   if (!bp) return null;
   return (
@@ -236,6 +247,7 @@ function PregameView({ d }: { d: any }) {
         <span style={{ fontSize: 26, fontWeight: 900, color: C.goldHi }}>{e.label} <span style={{ fontSize: 14, color: C.mute, fontWeight: 600 }}>{e.away} @ {e.home} · {e.date}</span></span>
         <span style={{ fontSize: 12, color: C.mute }}>{d.placed > 0 ? `${d.placed} tickets placed so far.` : "No tickets placed yet."} This becomes the full post-game report the moment the game goes final: every leg graded, contagion, the grail slip, the tally.</span>
       </div>
+      <Evaluation e={d.evaluation} />
       <TallyDesk t={d.tally} />
       <BlueprintSection bp={d.blueprint} />
       <TemplateDesk t={d.template} />
@@ -276,6 +288,8 @@ export default function BooPostGame({ gameId }: { gameId?: string }) {
           </span>
         </div>
       </div>
+
+      <Evaluation e={d.evaluation} />
 
       {d.corrections?.length > 0 && (
         <div style={{ padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.amber}`, background: "rgba(245,166,35,0.08)", fontSize: 12 }}>
