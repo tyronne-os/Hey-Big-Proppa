@@ -204,7 +204,7 @@ def hindsight(game_id: str) -> dict | None:
 
         def sign(x):
             if x["market"] == "anytd":
-                return ("SIGNAL", "essential starter: QB1 or top-3 usage")
+                return ("SIGNAL", "essential starter: QB1 or top-3 usage", None, 0)
             if x["market"] in wk:
                 fn, col = wk[x["market"]]
                 rows = cache.setdefault(fn, _rows(fn))
@@ -214,15 +214,15 @@ def hindsight(game_id: str) -> dict | None:
                 if v:
                     avg = sum(v) / len(v)
                     cleared = avg > x["line"] if x["dirn"] == "over" else avg < x["line"]
-                    return ("SIGNAL" if cleared else "LOTTERY", f"averaged {avg:.1f} over {len(v)} games vs a {x['line']:g} line")
-            return ("LOTTERY", "no pre-game read on this one")
+                    return ("SIGNAL" if cleared else "LOTTERY", f"averaged {avg:.1f} over {len(v)} games vs a {x['line']:g} line", round(avg, 1), len(v))
+            return ("LOTTERY", "no pre-game read on this one", None, 0)
 
         tix = []
         for i, (dec, c) in enumerate(sol):
             lg = []
             for x in c:
-                kind, why = sign(x)
-                lg.append({**x, "kind": kind, "sign": why})
+                kind, why, avg, gms = sign(x)
+                lg.append({**x, "kind": kind, "sign": why, "avg": avg, "games": gms})
             tix.append({"name": ["5-LEG GRAIL", "4-LEG", "3-LEG"][i], "decimal": round(dec, 2), "pays": _pay(dec),
                         "signals": sum(1 for x in lg if x["kind"] == "SIGNAL"), "legs": lg})
         return {"stake": STAKE, "boost": BOOST, "tdFromBox": bool(box), "tickets": tix,

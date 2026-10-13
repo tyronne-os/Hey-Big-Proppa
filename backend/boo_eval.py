@@ -144,4 +144,10 @@ def evaluate(r: dict, of_label: str | None = None) -> dict | None:
         k += 1
     paras = [" ".join(s for _, s in p).strip() for p in P if p]
     words = sum(len(x.split()) for x in paras)
-    return {"title": f"MY BOO'S EVALUATION · {label}", "paragraphs": paras, "words": words}
+    if leg_pct >= 50 and tick_pct < leg_pct:
+        lede = "Right on more than half the calls, still lost most of the tickets. That is a construction problem, not a prediction problem."
+    elif leg_pct >= 50:
+        lede = "The calls and the tickets agreed. The work now is repeating the process, not reinventing it."
+    else:
+        lede = "Wrong on too many calls, and no ticket structure fixes a bad read. The legs get fixed first."
+    return {"title": f"MY BOO'S EVALUATION · {label}", "lede": lede, "paragraphs": paras, "words": words}

@@ -4,7 +4,8 @@ import BooHero from "./BooHero";
 import StaffPanel from "./StaffPanel";
 import { useBooAlerts } from "../hooks/useBooAlerts";
 import type { BooAlert, SlipRecap, MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem, MyBooReport, MyBooPickDetail, MyBooFactor } from "../api";
-import BooPostGame, { BooReportRail } from "./BooPostGame";
+import BooPostGame from "./BooPostGame";
+import BooAvatar from "./BooAvatar";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -1269,7 +1270,9 @@ export default function MyBooTab() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
     <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-    <BooHero alerts={alerts} unread={unread} />
+    {tab === "POST-GAME REPORT"
+      ? <div style={{ flex: "0 0 375px", width: 375, alignSelf: "flex-start" }} className="boo-avatar-col"><BooAvatar /></div>
+      : <BooHero alerts={alerts} unread={unread} />}
     <div style={{ display: "flex", flexDirection: "column", gap: 0, flex: 1, minWidth: 0 }}>
       {/* MY BOO header */}
       <div style={{ padding: "16px 0 12px", borderBottom: "1px solid var(--bp-border)", marginBottom: 14, flexShrink: 0 }}>
@@ -1309,7 +1312,7 @@ export default function MyBooTab() {
       <div style={{ flex: 1, display: "flex", gap: 16 }}>
 
         {/* ── left panel ── */}
-        <div style={{ flex: tab === "POST-GAME REPORT" ? "1 1 72%" : "0 0 58%", minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: tab === "POST-GAME REPORT" ? "1 1 100%" : "0 0 58%", minWidth: 0, display: "flex", flexDirection: "column" }}>
           {/* inner tabs */}
           <div style={{ display: "flex", gap: 4, marginBottom: 12, flexWrap: "wrap", flexShrink: 0 }}>
             {BOO_TABS.map(t => (
@@ -1359,21 +1362,22 @@ export default function MyBooTab() {
             {tab === "RECAPS" && <RecapsTab />}
             {tab === "ALERTS" && <AlertsTab alerts={alerts} />}
             {tab === "DESK" && <DeskTab />}
-            {tab === "POST-GAME REPORT" && <BooPostGame gameId={reportId} />}
+            {tab === "POST-GAME REPORT" && <BooPostGame gameId={reportId} onSelect={setReportId} />}
             {tab === "STAFF" && <StaffPanel />}
             {tab === "JIMMY LESSONS" && <LessonsTab />}
           </div>
         </div>
 
-        {/* ── right panel: recent reports ── */}
+        {tab !== "POST-GAME REPORT" && (
         <div style={{
-          flex: tab === "POST-GAME REPORT" ? "0 0 26%" : "0 0 40%", minWidth: 0,
+          flex: "0 0 40%", minWidth: 0,
           borderLeft: "1px solid var(--bp-border)",
           paddingLeft: 16,
           display: "flex", flexDirection: "column",
         }}>
-          {tab === "POST-GAME REPORT" ? <BooReportRail selected={reportId} onSelect={setReportId} /> : <ReportsPanel />}
+          <ReportsPanel />
         </div>
+        )}
       </div>
 
       {showModal && <NewTicketModal onClose={() => setShowModal(false)} onCreated={loadTickets} />}
