@@ -1,28 +1,32 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 
-const C = { card: "var(--bp-card-bg)", edge: "var(--bp-border)", mute: "var(--bp-muted)", fg: "var(--bp-fg)", gold: "#d9b45a", goldHi: "#f1dc92", green: "#22c55e", red: "#ef4444", amber: "#f5a623", purple: "#a78bfa" };
-const MONO = "var(--font-mono, monospace)";
+const C = { card: "#140a20", edge: "#2a1e36", mute: "#8a8290", fg: "#ece6f2", gold: "#d9b45a", goldHi: "#f1dc92", green: "#2ee6a6", red: "#ef4444", amber: "#f5a623", purple: "#a78bfa" };
+const MONO = "'Geist Mono', var(--font-mono, ui-monospace, monospace)";
+const SANS = "'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 const pct = (v: number | null | undefined) => (v === null || v === undefined ? "—" : `${Math.round(v * 100)}%`);
 const num = (v: number | null | undefined) => (v === null || v === undefined ? "—" : Number.isInteger(v) ? String(v) : v.toFixed(1));
 
-function Section({ title, sub, children, accent = C.gold }: { title: string; sub?: string; children: React.ReactNode; accent?: string }) {
+/** A report card: gold mono eyebrow, big white headline, content. */
+function Section({ title, sub, heading, children, accent = C.gold }: { title: string; sub?: string; heading?: string; children: React.ReactNode; accent?: string }) {
   return (
-    <section style={{ background: C.card, border: `1px solid ${C.edge}`, borderTop: `3px solid ${accent}`, borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: "0.16em", color: accent }}>{title}</span>
-        {sub && <span style={{ fontSize: 12, color: C.mute }}>{sub}</span>}
+    <section style={{ background: C.card, border: `1px solid ${C.edge}`, borderRadius: 16, padding: "20px 22px", display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: accent }}>{title}</span>
+        {heading && <span style={{ fontSize: "clamp(22px,2.6vw,30px)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1, color: C.fg }}>{heading}</span>}
+        {sub && <span style={{ fontSize: 12, color: C.mute, lineHeight: 1.5 }}>{sub}</span>}
       </div>
       {children}
     </section>
   );
 }
 
-function Tile({ k, v, sub, color }: { k: string; v: string; sub?: string; color?: string }) {
+function Tile({ k, v, sub, color, children }: { k: string; v?: string; sub?: string; color?: string; children?: React.ReactNode }) {
   return (
-    <div style={{ background: "rgba(0,0,0,0.25)", border: `1px solid ${C.edge}`, borderRadius: 10, padding: "10px 14px", minWidth: 120, display: "flex", flexDirection: "column", gap: 2 }}>
-      <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.14em", color: C.mute }}>{k}</span>
-      <span style={{ fontFamily: MONO, fontSize: 22, fontWeight: 800, color: color ?? C.fg }}>{v}</span>
+    <div style={{ background: C.card, border: `1px solid ${C.edge}`, borderRadius: 16, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+      <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", color: C.gold }}>{k}</span>
+      {v !== undefined && <span style={{ fontFamily: MONO, fontSize: 30, fontWeight: 800, color: color ?? C.fg, lineHeight: 1 }}>{v}</span>}
+      {children}
       {sub && <span style={{ fontSize: 11, color: C.mute }}>{sub}</span>}
     </div>
   );
@@ -56,6 +60,13 @@ function Avatar({ url, name, size = 72, ring = "#7a1020" }: { url?: string | nul
   return <span style={{ ...box, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: MONO, fontSize: size / 4, color: C.mute }}>{name.split(" ").map((w) => w[0]).join("").slice(0, 2)}</span>;
 }
 
+function ZeroPhoto({ url, name }: { url?: string | null; name: string }) {
+  const [bad, setBad] = useState(false);
+  const box = { width: 170, height: 170, borderRadius: 14, border: "3px solid #ff2d4a", boxShadow: "0 0 32px rgba(255,45,74,.5)", background: "#12060b" } as const;
+  if (url && !bad) return <img src={url} alt={name} referrerPolicy="no-referrer" onError={() => setBad(true)} style={{ ...box, objectFit: "cover", objectPosition: "center top", filter: "saturate(.6) contrast(1.1)" }} />;
+  return <span style={{ ...box, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: MONO, fontSize: 40, color: "#ff5d73" }}>{name.split(" ").map((w) => w[0]).join("").slice(0, 2)}</span>;
+}
+
 function ContagionHero({ c }: { c: any }) {
   const z = c.zero;
   return (
@@ -66,12 +77,16 @@ function ContagionHero({ c }: { c: any }) {
       </h2>
       <div style={{ display: "flex", gap: 22, flexWrap: "wrap", alignItems: "flex-start" }}>
         <div style={{ textAlign: "center", width: 190, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-          <img src={z.photoUrl} alt={z.name} referrerPolicy="no-referrer" style={{ width: 170, height: 170, borderRadius: 14, border: "3px solid #ff2d4a", objectFit: "cover", objectPosition: "center top", filter: "saturate(.6) contrast(1.1)", boxShadow: "0 0 32px rgba(255,45,74,.5)", background: "#12060b" }} />
+          <ZeroPhoto url={z.photoUrl} name={z.name} />
           <span style={{ fontSize: 20, fontWeight: 900 }}>{z.name}</span>
           <span style={{ fontSize: 12, color: C.mute }}>{z.label.replace(z.name + " ", "")} · finished <b style={{ color: "#ff5d73" }}>{num(z.actual)}</b></span>
           <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.2em", border: "2px solid #ff2d4a", color: "#ff2d4a", padding: "3px 10px", transform: "rotate(-3deg)" }}>PATIENT ZERO</span>
           <span style={{ fontFamily: MONO, fontSize: 40, fontWeight: 800, color: "#ff2d4a" }}>{z.tickets}</span>
           <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.3em", color: "#ff5d73" }}>TICKETS INFECTED</span>
+          <span style={{ display: "flex", flexWrap: "wrap", gap: 4, justifyContent: "center", maxWidth: 190 }} title={`${z.alone} tickets where he was the only dead leg, ${z.tickets - z.alone} where others died with him`}>
+            {Array.from({ length: z.tickets }).map((_, i) => <span key={i} style={{ width: 16, height: 16, borderRadius: 3, background: i < z.alone ? "#ef4444" : "#7a1f2b" }} />)}
+          </span>
+          <span style={{ fontSize: 10, color: "#a68f95" }}><b style={{ color: "#ef4444" }}>■</b> only dead leg ({z.alone}) · <b style={{ color: "#7a1f2b" }}>■</b> died with others ({z.tickets - z.alone})</span>
         </div>
         <div style={{ flex: "1 1 320px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12, fontSize: 14, lineHeight: 1.6 }}>
           {c.commentary.map((p: string, i: number) => <p key={i} style={{ margin: 0 }}>{p}</p>)}
@@ -93,21 +108,32 @@ function ContagionHero({ c }: { c: any }) {
 
 function TallyDesk({ t }: { t: any }) {
   if (!t || t.error) return null;
-  const Card = ({ title, r }: { title: string; r: any }) => (
-    <div style={{ background: "rgba(0,0,0,0.25)", border: `1px solid ${C.edge}`, borderRadius: 12, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 4, minWidth: 190 }}>
-      <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.14em", color: C.mute }}>{title}</span>
-      <span style={{ fontFamily: MONO, fontSize: 22, fontWeight: 800, color: C.goldHi }}>{r.ticketPct}% <span style={{ fontSize: 12, color: C.mute }}>tickets {r.tw}-{r.tl}</span></span>
-      <span style={{ fontFamily: MONO, fontSize: 16, fontWeight: 800, color: C.green }}>{r.legPct}% <span style={{ fontSize: 12, color: C.mute }}>legs {r.lw}-{r.ll}</span></span>
-    </div>
+  const rows = [
+    ...(t.weeks.length ? [{ label: "THIS WEEK", r: t.weeks[t.weeks.length - 1], bold: true }] : []),
+    { label: "SEASON", r: t.season, bold: true },
+    ...t.weeks.slice(0, -1).reverse().map((w: any) => ({ label: `WEEK ${w.week}`, r: w, bold: false })),
+  ];
+  const bar = (p: number, color: string) => (
+    <span style={{ height: 9, background: "rgba(255,255,255,0.07)", borderRadius: 5, overflow: "hidden", display: "block" }}>
+      <span style={{ display: "block", height: "100%", width: `${Math.max(p, 2)}%`, background: color, borderRadius: 5 }} />
+    </span>
   );
-  const cur = t.weeks[t.weeks.length - 1];
   return (
-    <Section title="WIN / LOSS TALLY" sub={t.note}>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        {cur && <Card title={`THIS WEEK · WEEK ${cur.week}`} r={cur} />}
-        <Card title="SEASON TO DATE" r={t.season} />
-        {t.weeks.slice(0, -1).reverse().map((w: any) => <Card key={w.week} title={`WEEK ${w.week}`} r={w} />)}
+    <Section title="WIN / LOSS TALLY" heading="Legs hit, tickets don't" sub={t.note}>
+      <div style={{ display: "flex", gap: 14, fontFamily: MONO, fontSize: 10, color: C.mute, justifyContent: "flex-end" }}>
+        <span><b style={{ color: C.gold }}>■</b> TICKETS</span><span><b style={{ color: C.green }}>■</b> LEGS</span>
       </div>
+      {rows.map(({ label, r, bold }) => (
+        <div key={label} style={{ display: "grid", gridTemplateColumns: "76px minmax(0,1fr) 92px", gap: 10, alignItems: "center", fontFamily: MONO, fontSize: 11 }}>
+          <span style={{ color: bold ? C.fg : C.mute, fontWeight: bold ? 800 : 500, letterSpacing: "0.08em" }}>{label}</span>
+          <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>{bar(r.ticketPct, C.gold)}{bar(r.legPct, C.green)}</span>
+          <span style={{ display: "flex", flexDirection: "column", gap: 2, textAlign: "right", color: C.mute }}>
+            <span><b style={{ color: C.fg }}>{r.ticketPct}%</b> · {r.tw}-{r.tl}</span>
+            <span><b style={{ color: C.fg }}>{r.legPct}%</b> · {r.lw}-{r.ll}</span>
+          </span>
+        </div>
+      ))}
+      <span style={{ fontSize: 11, color: C.mute }}>The gap between the gold and green bars is the cost of construction: legs hit, tickets don&apos;t.</span>
     </Section>
   );
 }
@@ -115,7 +141,7 @@ function TallyDesk({ t }: { t: any }) {
 function GrailDesk({ g, tp }: { g: any; tp: any }) {
   if (!g || g.error) return null;
   return (
-    <Section title="THE GRAIL SLIP" sub={`Time machine: knowing the final, the best three tickets (3 to 5 legs, $${g.stake} each, +${g.boost * 100}% boost, one leg per player, no leg reused). ${g.note}`} accent={C.purple}>
+    <Section title="THE GRAIL SLIP · HINDSIGHT" heading="The Grail Slip" sub={`Time machine: knowing the final, the best three tickets (3 to 5 legs, $${g.stake} each, +${g.boost * 100}% boost, one leg per player, no leg reused). ${g.note}`} accent={C.purple}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
         {g.tickets.map((t: any) => (
           <div key={t.name} style={{ border: `1px solid ${C.edge}`, borderRadius: 14, padding: 14, display: "flex", flexDirection: "column", gap: 8, background: "rgba(0,0,0,0.2)" }}>
@@ -166,11 +192,18 @@ function TemplateDesk({ t }: { t: any }) {
 
 function Evaluation({ e }: { e: any }) {
   if (!e) return null;
+  const [first, ...rest] = e.paragraphs as string[];
+  const lede = first.split(/(?<=[.!?])\s+/).slice(0, 2).join(" ");
+  const body = [first.slice(lede.length).trim(), ...rest].filter(Boolean);
   return (
-    <section style={{ border: `1.5px solid ${C.gold}`, borderRadius: 18, padding: "18px 20px", background: "linear-gradient(180deg, rgba(217,180,90,0.07), rgba(0,0,0,0.15))", display: "flex", flexDirection: "column", gap: 10 }}>
-      <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.22em", color: C.gold }}>{e.title}</span>
-      {e.paragraphs.map((p: string, i: number) => <p key={i} style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: C.fg, maxWidth: 820 }}>{p}</p>)}
-      <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: C.mute }}>WRITTEN BY MY BOO · {e.words} WORDS · BUILT BY CODE FROM THE GRADES BELOW, SO IT READS THE SAME EVERY TIME</span>
+    <section style={{ background: C.card, border: `1px solid ${C.edge}`, borderRadius: 16, padding: "20px 22px", display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
+      <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", color: C.purple }}>MY BOO&apos;S READ</span>
+      <span style={{ fontSize: "clamp(22px,2.6vw,30px)", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.1 }}>The evaluation</span>
+      <p style={{ margin: 0, fontSize: 17, fontWeight: 700, lineHeight: 1.4, color: C.fg }}>{lede}</p>
+      <div style={{ columnWidth: 260, columnGap: 28, fontSize: 13.5, lineHeight: 1.65, color: "#cfc6da" }}>
+        {body.map((p, i) => <p key={i} style={{ margin: "0 0 12px", breakInside: "avoid-column" }}>{p}</p>)}
+      </div>
+      <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.12em", color: C.mute }}>{e.words} WORDS · BUILT BY CODE FROM THE GRADES, SO IT READS THE SAME EVERY TIME</span>
     </section>
   );
 }
@@ -243,6 +276,75 @@ function KnowledgeGraph({ g }: { g: any }) {
         })}
       </svg>
     </Section>
+  );
+}
+
+/** Tickets by number of legs: the redesign's column chart. Shorter tickets cash. */
+function LegsChart({ T }: { T: any }) {
+  const rows = T.bySize as { legs: number; tickets: number; won: number }[];
+  const small = rows.filter((r) => r.legs <= 3), big = rows.filter((r) => r.legs > 3);
+  const sum = (a: any[], k: string) => a.reduce((x, r) => x + r[k], 0);
+  return (
+    <Section title="TICKETS BY NUMBER OF LEGS · THIS GAME" heading="Shorter tickets cash" sub={`≤3 legs ${sum(small, "won")}/${sum(small, "tickets")} · 4+ legs ${sum(big, "won")}/${sum(big, "tickets")}`}>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 190, paddingTop: 22 }}>
+        {rows.map((r) => {
+          const p = r.tickets ? r.won / r.tickets : 0;
+          const col = p >= 0.6 ? C.green : p > 0 ? C.gold : C.red;
+          return (
+            <div key={r.legs} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", gap: 4 }}>
+              <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, color: col }}>{Math.round(p * 100)}%</span>
+              <span style={{ width: "100%", height: `${Math.max(p * 100, 3)}%`, background: col, borderRadius: "5px 5px 0 0", minHeight: 3 }} />
+              <span style={{ fontFamily: MONO, fontSize: 10, color: C.mute }}>{r.won}/{r.tickets}</span>
+              <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800 }}>{r.legs}L</span>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", borderTop: `1px solid ${C.edge}`, paddingTop: 8, fontFamily: MONO, fontSize: 10, color: C.mute }}>
+        <span>LEGS PER TICKET →</span><span>Every extra leg multiplies the chance of one dead leg.</span>
+      </div>
+    </Section>
+  );
+}
+
+/** How we would have won: each scenario as a bar of tickets saved. */
+function HowWon({ items }: { items: any[] }) {
+  const max = Math.max(1, ...items.map((w) => w.ticketsSaved));
+  return (
+    <Section title="HOW WE WOULD HAVE WON · TICKETS SAVED" heading="How we would have won" accent={C.purple}>
+      {items.map((w) => (
+        <div key={w.title} title={w.detail} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(70px,120px) 34px", gap: 10, alignItems: "center", fontSize: 13 }}>
+          <span style={{ fontWeight: 600, lineHeight: 1.3 }}>{w.title}</span>
+          <span style={{ height: 9, background: "rgba(255,255,255,0.07)", borderRadius: 5, overflow: "hidden" }}>
+            <span style={{ display: "block", height: "100%", width: `${Math.max(6, (w.ticketsSaved / max) * 100)}%`, background: w.ticketsSaved === max ? C.green : C.gold, borderRadius: 5 }} />
+          </span>
+          <b style={{ fontFamily: MONO, textAlign: "right", color: w.ticketsSaved ? C.green : C.mute }}>+{w.ticketsSaved}</b>
+        </div>
+      ))}
+      <span style={{ fontSize: 11, color: C.mute }}>Each scenario replays the same tickets with one change. Cutting to 3 legs saves more than every single-leg removal combined.</span>
+    </Section>
+  );
+}
+
+function ScoreHeader({ n }: { n: any }) {
+  const m = /Final: (\w+) (\d+) - (\d+) (\w+)/.exec((n.facts ?? [])[0] ?? "");
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", color: C.gold }}>MY BOO&apos;S EVALUATION · {n.label ?? n.game} · {n.date}</span>
+        <span style={{ fontSize: "clamp(32px,5vw,56px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>Parlay Performance Report</span>
+        <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {(n.facts ?? []).slice(1).map((x: string) => <span key={x} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 999, border: `1px solid ${C.edge}`, color: C.mute }}>{x}</span>)}
+        </span>
+      </div>
+      {m && (
+        <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 18px", borderRadius: 14, border: `1px solid ${C.edge}`, background: C.card, fontFamily: MONO }}>
+          <span style={{ color: C.mute, fontSize: 12 }}>{m[1]}</span><b style={{ fontSize: 28, color: +m[2] > +m[3] ? C.goldHi : C.fg }}>{m[2]}</b>
+          <span style={{ color: C.mute, fontSize: 10, letterSpacing: "0.2em" }}>FINAL</span>
+          <b style={{ fontSize: 28, color: +m[3] > +m[2] ? C.goldHi : C.fg }}>{m[3]}</b><span style={{ color: C.mute, fontSize: 12 }}>{m[4]}</span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -335,6 +437,15 @@ export default function BooPostGame({ gameId }: { gameId?: string }) {
   const [showTickets, setShowTickets] = useState(false);
 
   useEffect(() => {
+    if (!document.getElementById("boo-geist")) {
+      const l = document.createElement("link");
+      l.id = "boo-geist"; l.rel = "stylesheet";
+      l.href = "https://fonts.googleapis.com/css2?family=Geist:wght@400;600;800&family=Geist+Mono:wght@500;800&display=swap";
+      document.head.appendChild(l);
+    }
+  }, []);
+
+  useEffect(() => {
     let alive = true;
     setD(null); setErr("");
     api.booReport(gameId).then((r: any) => { if (!alive) return; if (r.ok) setD(r); else setErr(r.error ?? "No report yet."); })
@@ -348,39 +459,47 @@ export default function BooPostGame({ gameId }: { gameId?: string }) {
   const n = d.night, L = n.legs, T = n.tickets, lab = d.lab, bp = d.blueprint, j = d.jev;
   const profit = T.returned - T.staked;
 
+  const grid2 = { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,430px),1fr))", gap: 16, alignItems: "start" } as const;
+  const seasonT = d.tally?.season;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, color: C.fg }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.24em", color: C.purple }}>MY BOO · POST-GAME REPORT</span>
-          <span style={{ fontSize: 26, fontWeight: 900, color: C.goldHi }}>{n.game} <span style={{ fontSize: 14, color: C.mute, fontWeight: 600 }}>{n.date}</span></span>
-          <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {n.facts.map((f: string) => <span key={f} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 999, border: `1px solid ${C.edge}`, color: C.fg }}>{f}</span>)}
-          </span>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, color: C.fg, fontFamily: SANS }}>
+      <ScoreHeader n={n} />
+
+      {d.corrections?.length > 0 && (
+        <div style={{ display: "flex", gap: 14, alignItems: "baseline", flexWrap: "wrap", padding: "10px 16px", borderRadius: 12, border: `1px solid ${C.edge}`, background: C.card, fontSize: 12, color: "#cfc6da" }}>
+          <b style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.16em", color: C.amber }}>GRADES CORRECTED</b>
+          <span>{d.corrections[0].legs} leg grades fixed against the ESPN final, {d.corrections[0].tickets} tickets re-settled. The live grader had read the Rams as a different team (ESPN files them as LAR), so every Rams leg was recorded as 0. Every number uses the corrected grades.</span>
         </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+        <Tile k="PREDICTIONS PASSED" v={`${L.passed}/${L.graded}`} sub={`${pct(L.rate)} of unique legs`} color={C.green} />
+        <Tile k="TICKETS CASHED" v={`${T.won}`} sub={`${T.lost} lost · ${T.distinct} distinct`} color={C.goldHi} />
+        <Tile k="LOST BY ONE LEG" v={`${T.lostByOne}`} sub={`of ${T.lost} losing tickets`} color={C.red} />
+        <Tile k="$5 ON EVERY TICKET" v={`${profit >= 0 ? "+" : "−"}$${Math.abs(profit).toFixed(0)}`} sub={`$${T.staked.toFixed(0)} staked · $${T.returned.toFixed(0)} back`} color={profit >= 0 ? C.green : C.red} />
+        {seasonT && <Tile k="SEASON TICKETS" v={`${seasonT.ticketPct}%`} sub={`${seasonT.tw}-${seasonT.tl} · legs ${seasonT.legPct}% (${seasonT.lw}-${seasonT.ll})`} />}
+        {j && (
+          <Tile k="JEV vs BIG PROPPA LINE" sub={`right calls · ${j.graded} graded reads`}>
+            <span style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: 26, fontWeight: 800 }}><span style={{ color: C.purple }}>{j.jevRight}</span><span style={{ color: C.gold }}>{j.bplRight}</span></span>
+            <span style={{ display: "flex", height: 6, borderRadius: 3, overflow: "hidden" }}><span style={{ flex: j.jevRight, background: C.purple }} /><span style={{ flex: j.bplRight, background: C.gold }} /></span>
+          </Tile>
+        )}
       </div>
 
-      <Evaluation e={d.evaluation} />
+      <style>{`.boo-eval-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}@media(max-width:900px){.boo-eval-grid{grid-template-columns:1fr}}`}</style>
+      <div className="boo-eval-grid">
+        <Evaluation e={d.evaluation} />
+        <TallyDesk t={d.tally} />
+      </div>
 
       <RingsRow n={n} />
       <KnowledgeGraph g={d.graph} />
 
-      {d.corrections?.length > 0 && (
-        <div style={{ padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.amber}`, background: "rgba(245,166,35,0.08)", fontSize: 12 }}>
-          <b style={{ color: C.amber }}>MY BOO CORRECTED HER OWN GRADES</b> · {d.corrections[0].at}: {d.corrections[0].legs} leg grades fixed against the ESPN final, {d.corrections[0].tickets} tickets re-settled.
-          The live grader had read the Rams as a different team (ESPN files them as LAR), so every Rams leg was recorded as 0. Every number below uses the corrected grades.
-        </div>
-      )}
-
       {d.contagion && <ContagionHero c={d.contagion} />}
-      <TallyDesk t={d.tally} />
 
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Tile k="PREDICTIONS PASSED" v={`${L.passed}/${L.graded}`} sub={`${pct(L.rate)} of unique legs`} color={L.rate >= 0.55 ? C.green : C.amber} />
-        <Tile k="TICKETS CASHED" v={`${T.won}`} sub={`${T.lost} lost · ${T.alive} alive · ${T.distinct} distinct`} color={C.green} />
-        <Tile k="LOST BY ONE LEG" v={`${T.lostByOne}`} sub={`of ${T.lost} losing tickets`} color={C.amber} />
-        <Tile k="$5 ON EVERY DECIDED TICKET" v={`${profit >= 0 ? "+" : "−"}$${Math.abs(profit).toFixed(0)}`} sub={`$${T.staked.toFixed(0)} staked · $${T.returned.toFixed(0)} back`} color={profit >= 0 ? C.green : C.red} />
-        {j && <Tile k="JEV vs BIG PROPPA LINE" v={`${j.jevRight}-${j.bplRight}`} sub={`right calls on ${j.graded} graded reads`} color={C.purple} />}
+      <div style={grid2}>
+        <LegsChart T={T} />
+        <HowWon items={n.whatIf} />
       </div>
 
       <GrailDesk g={d.grail} tp={d.tdPolicy} />
@@ -388,7 +507,7 @@ export default function BooPostGame({ gameId }: { gameId?: string }) {
 
       <BlueprintSection bp={bp} />
 
-      <Section title="WHAT SANK THE TICKETS" sub="A prediction copied onto many tickets fails once and takes all of them down together.">
+      <Section title="WHAT SANK THE TICKETS" heading="One miss, many dead tickets" sub="A prediction copied onto many tickets fails once and takes all of them down together.">
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 620 }}>
             <thead><tr style={{ color: C.gold, textAlign: "left" }}>{["FAILED PREDICTION", "ON TICKETS", "ONLY MISS ON", "ALSO MISSED WITH OTHERS", "RESULT", "MODEL", "JEV"].map((h) => <th key={h} style={{ padding: "6px 8px", fontSize: 10, letterSpacing: "0.1em" }}>{h}</th>)}</tr></thead>
@@ -412,18 +531,7 @@ export default function BooPostGame({ gameId }: { gameId?: string }) {
         </span>
       </Section>
 
-      <Section title="HOW WE WOULD HAVE WON" sub="Each scenario replays the same tickets with one change." accent={C.purple}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 10 }}>
-          {n.whatIf.map((w: any) => (
-            <div key={w.title} style={{ border: `1px solid ${w.ticketsSaved ? "#166534" : C.edge}`, borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><b style={{ fontSize: 13 }}>{w.title}</b><span style={{ fontFamily: MONO, fontWeight: 900, color: w.ticketsSaved ? C.green : C.mute }}>+{w.ticketsSaved}</span></span>
-              <span style={{ fontSize: 12, color: C.mute }}>{w.detail}</span>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="STRUCTURE LAB" sub={`Ticket shapes replayed on MY BOO's ${lab.predictions} graded predictions from ${lab.games} games. ${lab.note}`}>
+      <Section title="STRUCTURE LAB · TICKET SHAPES REPLAYED" heading="Structure lab" sub={`Ticket shapes replayed on MY BOO's ${lab.predictions} graded predictions from ${lab.games} games. ${lab.note}`}>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 620 }}>
             <thead><tr style={{ color: C.gold, textAlign: "left" }}>{["TICKET SHAPE", "GAMES", "TICKETS REPLAYED", "CASHED", "EV PER $5"].map((h) => <th key={h} style={{ padding: "6px 8px", fontSize: 10, letterSpacing: "0.1em" }}>{h}</th>)}</tr></thead>
@@ -440,17 +548,17 @@ export default function BooPostGame({ gameId }: { gameId?: string }) {
             </tbody>
           </table>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 16 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.14em", color: C.gold }}>SEASON PASS RATE BY LEG TYPE</span>
-            {lab.legTypes.map((x: any) => <RateBar key={x.type} label={x.type} passed={x.passed} n={x.n} />)}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.14em", color: C.gold }}>THIS GAME: TICKETS BY NUMBER OF LEGS (WON/TOTAL)</span>
-            {T.bySize.map((s: any) => <RateBar key={s.legs} label={`${s.legs}-leg tickets`} passed={s.won} n={s.tickets} />)}
-          </div>
-        </div>
       </Section>
+
+      <div style={grid2}>
+        <Section title="SEASON PASS RATE BY LEG TYPE" heading="Pass rate by leg type">
+          {lab.legTypes.map((x: any) => <RateBar key={x.type} label={x.type} passed={x.passed} n={x.n} />)}
+        </Section>
+        <Section title="CALIBRATION · DID 60% MEAN 60%?" heading="Model calibration">
+          {L.byConfidence.map((b2: any) => <RateBar key={b2.band} label={`model said ${b2.band}`} passed={b2.passed} n={b2.n} />)}
+          {Object.entries(L.bySide).map(([k, v]: any) => <RateBar key={k} label={`${k.toUpperCase()} legs`} passed={v.passed} n={v.n} />)}
+        </Section>
+      </div>
 
       <Section title="EVERY PREDICTION, JUDGED ALONE" sub={`${L.graded} unique predictions on ${T.distinct} tickets. Did each one pass, by how much, and how many tickets carried it?`}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 16 }}>
