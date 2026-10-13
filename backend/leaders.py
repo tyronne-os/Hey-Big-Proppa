@@ -62,7 +62,7 @@ def _rank(totals: dict[str, dict]) -> list[dict]:
 
 
 BPL_ROWS = 100
-CATEGORY_ROWS = {"RUSHING": 50}
+CATEGORY_ROWS = {}                 # every BPL category returns 100 so the page can show 50, 75 or 100
 
 CATEGORY_SOURCES = {
     "RUSHING": ("player_rushing_week", "rushing_yards"),

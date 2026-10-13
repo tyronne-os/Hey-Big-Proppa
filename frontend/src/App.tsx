@@ -280,14 +280,16 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
             {tab === "odds" && <OddsTab />}
           </div>
 
-          <Composer
-            targets={targets}
-            target={target}
-            onTargetChange={setTarget}
-            onSubmit={handleSubmit}
-            onClear={handleClear}
-            counter={results.length}
-          />
+          {tab !== "leaders" && (
+            <Composer
+              targets={targets}
+              target={target}
+              onTargetChange={setTarget}
+              onSubmit={handleSubmit}
+              onClear={handleClear}
+              counter={results.length}
+            />
+          )}
 
           {adminOpen && (
             <AdminPanel

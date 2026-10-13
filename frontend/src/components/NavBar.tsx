@@ -129,9 +129,11 @@ export default function NavBar({ activeTab }: NavBarProps) {
           </div>
         )}
       </div>
-      <Link to="/monday" style={pill(currentTab === "monday")}>
-        MONDAY NIGHT
-      </Link>
+      {currentTab !== "leaders" && (
+        <Link to="/monday" style={pill(currentTab === "monday")}>
+          MONDAY NIGHT
+        </Link>
+      )}
     </div>
   );
 }

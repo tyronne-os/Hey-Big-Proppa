@@ -120,11 +120,11 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
       )}
 
       {data && data.sourceStatus === "ok" && data.rows && data.bplVersion && (
-        <BplTable rows={data.rows} version={data.bplVersion} onOpenPlayer={onOpenPlayer} />
+        <BplTable key={category} rows={data.rows} version={data.bplVersion} onOpenPlayer={onOpenPlayer} />
       )}
 
       {data && data.sourceStatus === "ok" && data.rows && !data.bplVersion && (
-        <RowsView rows={data.rows} onOpenPlayer={onOpenPlayer} scoreLabel={SCORE_LABEL[category]} isTeam={category === "DEFENSE TOXICITY"} />
+        <RowsView key={category} rows={data.rows} onOpenPlayer={onOpenPlayer} scoreLabel={SCORE_LABEL[category]} isTeam={category === "DEFENSE TOXICITY"} />
       )}
       </>}
     </div>
@@ -133,7 +133,9 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
 
 const ROW_COLS = "44px minmax(0,1fr) 64px 90px minmax(90px,240px)";
 
-function RowsView({ rows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string, market?: string) => void; scoreLabel?: string; isTeam?: boolean }) {
+function RowsView({ rows: allRows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string, market?: string) => void; scoreLabel?: string; isTeam?: boolean }) {
+  const [limit, setLimit] = useState<number>(50);
+  const rows = allRows.slice(0, limit);
   const top = rows[0];
   const showRole = Boolean(scoreLabel);
   return (
@@ -154,6 +156,8 @@ function RowsView({ rows, onOpenPlayer, scoreLabel, isTeam = false }: { rows: Le
           </div>
         </div>
       )}
+
+      {allRows.length > 50 && <LimitPicker limit={limit} total={allRows.length} onChange={setLimit} />}
 
       <div style={{ background: C.card, border: `1px solid ${C.edge}`, borderRadius: 16, overflow: "hidden" }}>
         <div style={{ display: "grid", gridTemplateColumns: ROW_COLS, gap: 14, alignItems: "center", padding: "12px 18px", borderBottom: `1px solid ${C.edge}`, fontSize: 12, fontWeight: 800, letterSpacing: "0.1em", color: C.gold }}>
@@ -196,6 +200,28 @@ const proppaDiff = (b: BplPlayerLine): number | null => {
   const v = proppaValue(b), sl = b.sportsbookLine;
   return v === null || sl === null || sl === 0 ? b.diffPct : ((v - sl) / sl) * 100;
 };
+
+const LIMITS = [50, 75, 100] as const;
+
+/** How many players to list: opens on the best 50 in the NFL for the category, with 75 and 100 one tap away. */
+function LimitPicker({ limit, total, onChange }: { limit: number; total: number; onChange: (n: number) => void }) {
+  return (
+    <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+      <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.12em", color: C.mute }}>SHOW</span>
+      {LIMITS.map((n) => {
+        const on = limit === n;
+        return (
+          <button key={n} onClick={() => onChange(n)}
+            style={{ padding: "8px 13px", fontSize: 12, fontWeight: 800, letterSpacing: "0.06em", cursor: "pointer", borderRadius: 8,
+              border: `1px solid ${on ? C.gold : C.edge}`, background: on ? `linear-gradient(180deg, ${C.goldHi}, ${C.gold})` : C.card, color: on ? "#1a0d05" : C.mute }}>
+            {n}
+          </button>
+        );
+      })}
+      <span style={{ fontFamily: MONO, fontSize: 11, color: C.mute }}>of {total}</span>
+    </div>
+  );
+}
 
 type SortMode = "rank" | "reverse" | "greens" | "reds";
 const SORTS: { id: SortMode; label: string; hint: string }[] = [
@@ -272,7 +298,9 @@ function L5Bars({ b }: { b: BplPlayerLine }) {
 
 function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version: string; onOpenPlayer: (playerId: string, market?: string) => void }) {
   const [mode, setMode] = useState<SortMode>("rank");
-  const shown = sortRows(rows, mode);
+  const [limit, setLimit] = useState<number>(50);
+  const sorted = sortRows(rows, mode);
+  const shown = sorted.slice(0, limit);
   const head = { fontSize: 12, fontWeight: 800, letterSpacing: "0.06em", lineHeight: 1.25, color: C.gold, textAlign: "center" as const };
   const cell = { textAlign: "center" as const, fontFamily: MONO, fontSize: 16 };
   return (
@@ -281,6 +309,8 @@ function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version:
         <span style={{ fontSize: 13, color: C.mute }}>
           <b style={GOLD_TEXT}>BIG PROPPA = JEV</b> · projection read from the lake and live ESPN, {version} fills in until JEV loads · SAFE BET cuts the line 15% for a safer over · green = above the book, red = below
         </span>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+        <LimitPicker limit={limit} total={sorted.length} onChange={setLimit} />
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {SORTS.map((s) => {
             const on = mode === s.id;
@@ -294,6 +324,7 @@ function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version:
               </button>
             );
           })}
+        </div>
         </div>
       </div>
       <div style={{ background: C.card, border: `1px solid ${C.edge}`, borderRadius: 16, overflowX: "auto" }}>
