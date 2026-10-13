@@ -441,13 +441,7 @@ def prop_of_the_day() -> dict:
                 a, n = avg(rus, pid, "rushing_yards")
                 cands.append({"pid": pid, "team": team, "mkt": "Rush Yds", "line": math.floor(a * 0.7 * 2) / 2 + 0.5, "p": 0.62,
                               "note": f"lead back, averages {a:.0f} rush yds", "pos": "RB"})
-                nm = dim.get(pid, {}).get("name", "")
-                if nm and red_zone.essential_td_ok(nm, team):
-                    tds = sum(1 for r in td if r["scorer_player_name"] == _short(nm) and r["scoring_team"] == team)
-                    g = len({r["week"] for r in rus if r["team"] == team}) or 1
-                    p = max(0.2, min(0.62, (tds + 0.8) / (g + 1.6)))
-                    cands.append({"pid": pid, "team": team, "mkt": "Anytime TD", "line": None, "p": p,
-                                  "note": f"essential starter · {tds} offensive TDs in {g} games", "pos": "RB"})
+
         picks, used = [], set()
         for c in sorted(cands, key=lambda x: -x["p"]):
             if c["pid"] in used or sum(1 for p in picks if p["mkt"] == c["mkt"]) >= 1 or sum(1 for p in picks if p["team"] == c["team"]) >= 2:
@@ -456,6 +450,24 @@ def prop_of_the_day() -> dict:
             used.add(c["pid"])
             if len(picks) == 3:
                 break
+        # the anytime TD: the single highest-probability scorer among ESSENTIAL players in this game, any position
+        usage = [u for u in csv.DictReader(open(data.GOLD / "player_usage.csv", newline="")) if u["season"] == "2026"]
+        best_td = None
+        for u in usage:
+            team = {"LAR": "LA"}.get(u["team"], u["team"])
+            if team not in (nxt["away"], nxt["home"]) or u["player_id"] in used or not red_zone.essential_td_ok(u["player_name"], team):
+                continue
+            try:
+                g = int(u["games"])
+            except ValueError:
+                continue
+            tds = sum(1 for r in td if r["scorer_player_name"] == u["player_name"] and r["scoring_team"] == team)
+            p = max(0.2, min(0.65, (tds + 0.8) / (g + 1.6)))
+            if not best_td or p > best_td["p"]:
+                best_td = {"pid": u["player_id"], "team": team, "mkt": "Anytime TD", "line": None, "p": p, "pos": u["position"],
+                           "note": f"essential {u['position']} · {tds} offensive TDs in {g} games"}
+        if best_td:
+            picks.append(best_td)
         legs, dec = [], 1.0
         for c in picks:
             d = dim.get(c["pid"], {})
