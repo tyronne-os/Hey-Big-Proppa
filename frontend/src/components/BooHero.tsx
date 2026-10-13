@@ -7,7 +7,7 @@ import { api, type BooAlert, type SlipRecap } from "../api";
  * that always shows her latest call, and three dials (process held, bankroll, slips live).
  * Her portrait is /my-boo.png (frontend/public). Until that file exists a drawn eye stands in.
  */
-const PORTRAIT = "/my-boo.png";
+const PORTRAIT = "/my-boo.png?v=2";   // new avatar 2026-10-13; bump v to bust the cache
 
 function Ring({ pct, label, value, color }: { pct: number; label: string; value: string; color: string }) {
   const r = 26, c = 2 * Math.PI * r;
