@@ -212,6 +212,64 @@ def game_lines(away: str, home: str) -> dict:
     }
 
 
+def prediction(away: str, home: str, rows: list[dict], lines: dict) -> dict | None:
+    """BIG PROPPA'S PICK: always names a winner. Projected margin and total come from the Big Proppa Line's team-points
+    model, blended with JEV's read at JEV's earned weight; a dead-even margin is broken by who wins more of the matchup
+    categories, then by the market favourite. Spread and total picks are taken against the posted FanDuel numbers."""
+    import math
+    import bpl
+    import jev_ledger
+    import jimmy_nfl_games
+    m = next((t for t in bpl.nfl_game_totals() if t["home"] == home and t["away"] == away), None)
+    if not m:
+        return None
+    margin, total = m["homePoints"] - m["awayPoints"], m["homePoints"] + m["awayPoints"]
+    jg = (lines or {}).get("jevGame")
+    w = jev_ledger.weight("game") if jg else 0.0
+    if jg:
+        margin = (1 - w) * margin + w * jg["expectedHomeMargin"]
+        total = (1 - w) * total + w * jg["expectedTotal"]
+    aw = sum(1 for r in rows if r["away"] and r["home"] and r["away"]["rank"] < r["home"]["rank"])
+    hw = sum(1 for r in rows if r["away"] and r["home"] and r["home"]["rank"] < r["away"]["rank"])
+    if abs(margin) < 0.5:          # never a pick'em: categories first, then the market favourite
+        fav_home = (lines or {}).get("moneylines", [{}])[0].get("team") == home if lines else True
+        margin = 0.5 if (hw > aw or (hw == aw and fav_home)) else -0.5
+    winner, loser = (home, away) if margin > 0 else (away, home)
+    p_win = 0.5 * (1 + math.erf(abs(margin) / jimmy_nfl_games.SIGMA / math.sqrt(2)))
+    hs, as_ = round((total + margin) / 2), round((total - margin) / 2)
+    if (hs > as_) != (margin > 0) or hs == as_:     # the projected score always agrees with the pick
+        if margin > 0:
+            hs = as_ + 1 if hs <= as_ else hs
+        else:
+            as_ = hs + 1 if as_ <= hs else as_
+    raw = next((r for r in jimmy_nfl_games._games() if {r["home"], r["away"]} == {home, away}), None)
+    fd = raw["fd"] if raw else {}
+    out = {"winner": winner, "loser": loser, "winProb": round(p_win, 3), "margin": round(abs(margin), 1),
+           "score": {away: as_, home: hs}, "scoreText": f"{winner} {max(hs, as_)}, {loser} {min(hs, as_)}",
+           "projectedTotal": round(total, 1), "categories": {away: aw, home: hw}, "jevWeight": round(w, 2), "jevUsed": bool(jg)}
+    ml = {c["team"]: c for c in (lines or {}).get("moneylines", [])}
+    if winner in ml:
+        out["moneyline"] = {"team": winner, "price": ml[winner]["display"], "prob": round(p_win, 3)}
+    try:
+        s_h = float(fd.get("homeTeamSpread"))
+    except (TypeError, ValueError):
+        s_h = None
+    if s_h is not None:
+        home_cover = 0.5 * (1 + math.erf((margin + s_h) / jimmy_nfl_games.SIGMA / math.sqrt(2)))
+        if home_cover >= 0.5:
+            out["spread"] = {"team": home, "line": f"{s_h:+g}", "prob": round(home_cover, 3)}
+        else:
+            out["spread"] = {"team": away, "line": f"{-s_h:+g}", "prob": round(1 - home_cover, 3)}
+    try:
+        t_line = float(fd.get("totalOver"))
+    except (TypeError, ValueError):
+        t_line = None
+    if t_line is not None:
+        p_over = 0.5 * (1 + math.erf((total - t_line) / jimmy_nfl_games.SIGMA / math.sqrt(2)))
+        out["total"] = {"side": "OVER" if p_over >= 0.5 else "UNDER", "line": t_line, "prob": round(max(p_over, 1 - p_over), 3)}
+    return out
+
+
 def build(away: str, home: str, away_qb: str = "", home_qb: str = "") -> dict:
     tbl = _team_table()
     teams = list(tbl)
@@ -253,4 +311,5 @@ def build(away: str, home: str, away_qb: str = "", home_qb: str = "") -> dict:
         "home": {"team": home, "qb": _qb(home, home_qb)},
         "rows": rows,
         "gameLines": lines,
+        "prediction": prediction(away, home, rows, lines),
     }

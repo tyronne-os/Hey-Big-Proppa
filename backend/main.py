@@ -1595,6 +1595,11 @@ def api_matchup(game_id: str | None = None, day: str = "thursday"):
             gid = last["game_id"] if last else None
     else:
         gid = game_id or throwdown_mod.detect_throwdown_game()
+        if not gid and day == "thursday":
+            from zoneinfo import ZoneInfo
+            import datetime as _dt
+            if _dt.datetime.now(ZoneInfo("America/Chicago")).strftime("%A") in ("Tuesday", "Wednesday"):
+                gid = throwdown_mod.next_game("Thursday")     # same rule as the page: the coming Thursday
         if not gid:
             last = throwdown_mod.latest_game("Monday" if day == "monday" else "Thursday")
             gid = last["game_id"] if last else None

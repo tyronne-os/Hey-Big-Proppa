@@ -19,7 +19,44 @@ export type MatchupData = {
   home: { team: string; qb: { name: string; photoUrl?: string | null } };
   rows: { key: string; label: string; unit: string; away: MatchupCell; home: MatchupCell }[];
   gameLines?: GameLines;
+  prediction?: Prediction | null;
 };
+
+type Prediction = {
+  winner: string; loser: string; winProb: number; margin: number; scoreText: string; projectedTotal: number;
+  categories: Record<string, number>; jevUsed: boolean;
+  moneyline?: { team: string; price: string; prob: number };
+  spread?: { team: string; line: string; prob: number };
+  total?: { side: string; line: number; prob: number };
+};
+
+const pc = (v: number) => `${Math.round(v * 100)}%`;
+
+function PickPanel({ p }: { p: Prediction }) {
+  const row = (k: string, v: string, sub: string) => (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "10px 12px", minWidth: 150, flex: "1 1 150px", borderRadius: 12, background: "#f6f2fa", border: "1px solid #e3dce9" }}>
+      <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 10, letterSpacing: "0.2em", color: "#6e6878" }}>{k}</span>
+      <b style={{ fontSize: 22, fontWeight: 900, color: "#17101f", lineHeight: 1.1 }}>{v}</b>
+      <span style={{ fontSize: 11, color: "#6e6878" }}>{sub}</span>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+      <div style={{ textAlign: "center", fontSize: "clamp(22px,4vw,34px)", fontWeight: 900, color: "#17101f", lineHeight: 1.1 }}>
+        BIG PROPPA&apos;S PICK: <span style={{ color: "#0d7a3a" }}>{p.winner} WINS</span>
+      </div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+        {p.moneyline && row("MONEYLINE", `${p.moneyline.team} ${p.moneyline.price}`, `${pc(p.moneyline.prob)} to win`)}
+        {p.spread && row("SPREAD", `${p.spread.team} ${p.spread.line}`, `${pc(p.spread.prob)} to cover`)}
+        {row("FINAL SCORE", p.scoreText, `projected total ${p.projectedTotal}`)}
+        {p.total && row("TOTAL", `${p.total.side} ${p.total.line}`, `${pc(p.total.prob)}`)}
+      </div>
+      <div style={{ textAlign: "center", fontSize: 11, color: "#6e6878" }}>
+        {p.winner} wins {p.categories[p.winner]} of {(p.categories[p.winner] ?? 0) + (p.categories[p.loser] ?? 0)} matchup categories below · projected margin {p.margin} · Big Proppa Line team-points model{p.jevUsed ? " blended with JEV" : ""}
+      </div>
+    </div>
+  );
+}
 
 // Winner takes all: better rank = full deep green, loser = full deep red. No gradient between.
 const WIN  = { bg: "#0d4a1e", border: "#16a34a", text: "#bbf7d0", sub: "#4ade80" };
@@ -221,6 +258,8 @@ export default function MatchupHeatMap({ data }: { data: MatchupData }) {
       <div style={{ textAlign: "center", fontFamily: "var(--font-mono, monospace)", fontSize: 11, letterSpacing: "0.3em", color: "#6e6878", marginBottom: 20 }}>
         THE MATCHUP — WINNER TAKES ALL
       </div>
+
+      {data.prediction && <PickPanel p={data.prediction} />}
 
       {/* QB photos */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 12, marginBottom: 20 }}>
