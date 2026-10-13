@@ -213,6 +213,17 @@ a:hover{color:#f1dc92}
         </div>
       </div>
 
+      <div id="boo-report" style="max-width:1120px;margin:0 auto;padding:8px 32px 40px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-family:var(--font-mono);font-size:11px;letter-spacing:.32em;color:#6e6878">MY BOO · DATA REPORTING · UPDATES EVERY GAME</span>
+            <span style="font-size:clamp(28px,3.6vw,46px);line-height:.95;font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;background:linear-gradient(180deg,#f7e7a6 0%,#d9b45a 40%,#8a6224 58%,#f1dc92 100%);-webkit-background-clip:text;background-clip:text;color:transparent">The current report</span>
+          </div>
+          <a href="/myboo" style="padding:8px 16px;border:1px solid #d9b45a;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.08em;color:#d9b45a;text-decoration:none">ALL REPORTS ↗</a>
+        </div>
+        <iframe id="boo-frame" title="MY BOO current report" src="/report?embed=1" style="width:100%;height:1400px;border:1px solid #2a1e36;border-radius:20px;background:#0b0512"></iframe>
+      </div>
+
       <div id="tonight" style="max-width:1120px;margin:0 auto;padding:8px 32px 64px;display:flex;flex-direction:column;gap:16px">
         <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
           <div style="display:flex;flex-direction:column;gap:6px">
@@ -609,6 +620,13 @@ class Component extends DCLogic {
   }
   go();
 })();
+</script>
+<script>
+/* The report frame grows to its content (the embedded page reports its height), so visitors read it without an inner scroll. */
+window.addEventListener('message', function (e) {
+  if (!e.data || e.data.type !== 'boo-report-height') { return; }
+  var f = document.getElementById('boo-frame'); if (f) { f.style.height = Math.max(400, e.data.height + 8) + 'px'; }
+});
 </script>
 </body>
 </html>
