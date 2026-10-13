@@ -123,13 +123,13 @@ export function KnowledgeGraph({ g }: { g: any }) {
           const A = pos[a], B = pos[b];
           if (!A || !B) return null;
           const mx = (A.x + B.x) / 2;
-          return <path key={i} d={`M${A.x} ${A.y} C${mx} ${A.y},${mx} ${B.y},${B.x} ${B.y}`} fill="none" stroke="#8a8290" strokeOpacity={hot ? (a === hot || b === hot ? 0.9 : 0.06) : 0.35} />;
+          return <path key={i} data-a={a} data-b={b} className="kg-e" d={`M${A.x} ${A.y} C${mx} ${A.y},${mx} ${B.y},${B.x} ${B.y}`} fill="none" stroke="#8a8290" strokeOpacity={hot ? (a === hot || b === hot ? 0.9 : 0.06) : 0.35} />;
         })}
         {g.nodes.map((nd: any) => {
           const p = pos[nd.id], col = KG_COLOR[nd.kind] ?? "#8a8290", r = 9 + Math.min(9, (nd.weight || 1));
           const dim = hot && !linked.has(nd.id);
           return (
-            <g key={nd.id} transform={`translate(${p.x},${p.y})`} style={{ cursor: "pointer", opacity: dim ? 0.12 : 1 }} onMouseEnter={() => setHot(nd.id)} onMouseLeave={() => setHot(null)}>
+            <g key={nd.id} data-kg={nd.id} className="kg-n" transform={`translate(${p.x},${p.y})`} style={{ cursor: "pointer", opacity: dim ? 0.12 : 1 }} onMouseEnter={() => setHot(nd.id)} onMouseLeave={() => setHot(null)}>
               <circle r={r} fill={col} fillOpacity="0.25" stroke={col} strokeWidth="2" />
               <circle r={r / 3} fill={col} />
               <text y={r + 15} textAnchor="middle" fontSize="11" fontWeight="600" fill="#ece6f2">{trunc(nd.label)}</text>
