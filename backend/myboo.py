@@ -95,8 +95,26 @@ class MultiGameTicket(ValueError):
     pass
 
 
+# IMMUTABLE RULE: Sunday is the only day automatic boards (Jimmy's board logging, the slip tracker) may cross games.
+# Every other night (Thursday, Monday, any single-game slate) is ONE game, with nothing tied to any other game.
+# Cross-game parlays on those nights exist only when the owner builds them by hand. Do not add a bypass.
+CROSS_GAME_DAY = "Sunday"
+
+
+def crossing_allowed(game_ids) -> bool:
+    ids = {g for g in game_ids if g}
+    if len(ids) <= 1:
+        return True
+    sched = _GOLD / "schedule.csv"
+    if not sched.exists():
+        return False
+    with open(sched, newline="") as f:
+        day = {r["game_id"]: r.get("weekday") for r in csv.DictReader(f) if r["game_id"] in ids}
+    return len(day) == len(ids) and all(d == CROSS_GAME_DAY for d in day.values())
+
+
 def void_cross_game_open() -> list[str]:
-    """Void every unsettled automatic (SIM) ticket whose legs span more than one game. They were placed in error:
+    """Void every unsettled automatic (SIM) ticket that crosses games on a non-Sunday slate. They were placed in error:
     they tie one game's result to other games' props. Returns the voided ticket ids. Idempotent."""
     _ensure_files()
     with open(_TICKETS_FILE, newline="") as f:
@@ -109,7 +127,7 @@ def void_cross_game_open() -> list[str]:
             games.setdefault(l["ticket_id"], set()).add(l["game_id"])
     out = []
     for t in tickets:
-        if t["order_type"] == "SIM" and t["status"] in ("OPEN", "IN_PROGRESS") and len(games.get(t["ticket_id"], ())) > 1:
+        if t["order_type"] == "SIM" and t["status"] in ("OPEN", "IN_PROGRESS") and not crossing_allowed(games.get(t["ticket_id"], ())):
             t["status"], t["result_units"] = "PUSH_VOID", ""
             t["settled_at"] = datetime.now(timezone.utc).isoformat()
             t["note"] = ((t.get("note") or "") + " | VOID: cross-game ticket placed in error").strip(" |")
@@ -150,8 +168,8 @@ def create_ticket(
             if (t["name"], str(t["season"]), str(t["week"])) == (name, str(season), str(week)):
                 return t["ticket_id"]
     legs = [{**l, **_resolve_game(l, week)} for l in legs]
-    if not allow_multi_game and len({l.get("game_id") for l in legs if l.get("game_id")}) > 1:
-        raise MultiGameTicket("automatic tickets stay inside one game; cross-game parlays are built by hand")
+    if not allow_multi_game and not crossing_allowed(l.get("game_id") for l in legs):
+        raise MultiGameTicket("only Sunday boards cross games; every other night is one game, and cross-game parlays are built by hand")
     ticket_id = _next_ticket_id(order_type, week, season)
     now = datetime.now(timezone.utc).isoformat()
 
