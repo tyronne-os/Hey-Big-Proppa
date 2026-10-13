@@ -33,6 +33,54 @@ EFFORT_MARKET = {"RB": "rushyds", "QB": "rushyds", "WR": "recyds", "TE": "recyds
 LABEL = {"rushyds": "RUSHING YARDS", "recyds": "RECEIVING YARDS", "passyds": "PASSING YARDS"}
 
 
+# POLICY CHANGE 2026-10-13 (owner directive): the touchdown ban is lifted for ESSENTIAL players only -- the QB1, or the
+# depth-chart starter who is top-3 on his team in usage (Josh Allen, Derrick Henry, a team's WR1/RB1), with 3+ games
+# of 2026 usage. Everyone else (a backup back, a WR3, a rotational body) still cannot carry a touchdown leg.
+# Automatic generators (parlay_engine, jimmy_hunt, throwdown) still swap TD legs for effort legs until each is
+# wired to essential_td_ok; ticket intake (myboo.create_ticket) already accepts essential TD legs.
+_ESSENTIAL: dict | None = None
+
+
+def _tm(t: str) -> str:
+    return {"LAR": "LA", "JAC": "JAX", "WSH": "WAS"}.get((t or "").upper(), (t or "").upper())
+
+
+def _essential_index() -> dict:
+    global _ESSENTIAL
+    if _ESSENTIAL is None:
+        import csv
+        idx = {}
+        try:
+            with open(data.GOLD / "player_usage.csv", newline="") as f:
+                for u in csv.DictReader(f):
+                    if u["season"] != "2026" or "1" not in (u.get("depth_rank"), u.get("usage_rank_in_pos_group")):
+                        continue
+                    try:
+                        g, tr = int(u["games"]), int(u["usage_rank_on_team"])
+                    except (ValueError, KeyError):
+                        continue
+                    if g >= 3 and (u["position"] == "QB" or tr <= 3):
+                        idx[(u["player_name"], _tm(u["team"]))] = True
+        except OSError:
+            pass
+        _ESSENTIAL = idx
+    return _ESSENTIAL
+
+
+def essential_td_ok(name: str, team: str) -> bool:
+    """True when this player may carry a touchdown leg. Accepts 'Josh Allen' or 'J.Allen'."""
+    parts = (name or "").split()
+    if not parts:
+        return False
+    short = name if "." in parts[0] else f"{parts[0][0]}.{' '.join(parts[1:])}"
+    return (short, _tm(team)) in _essential_index()
+
+
+def td_leg_ok(leg: dict) -> bool:
+    """A leg may enter a ticket if it has no TD in it, or its player is essential."""
+    return (not _has_td(leg)) or essential_td_ok(leg.get("player_name") or leg.get("name", ""), leg.get("team", ""))
+
+
 def td_props_off(week: int | None, sport: str = "NFL") -> bool:
     return sport == "NFL" and week is not None and int(week) >= TD_PROPS_OFF_FROM_WEEK
 

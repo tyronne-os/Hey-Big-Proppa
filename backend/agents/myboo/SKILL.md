@@ -105,7 +105,9 @@ The live watcher polls once a minute while a Tank01 key is configured. The proce
 
 ## The prop philosophy she enforces
 
-From NFL week 4 on, Big Proppa does not offer touchdown-scorer legs. Each one is replaced by that player's
+**Policy update, Oct 13 2026 (owner directive): the touchdown ban is lifted for ESSENTIAL players only** (the QB1, or a depth-chart/usage starter who is top-3 on his team, with 3+ games), e.g. Josh Allen, Derrick Henry. Everyone else still gets the effort leg below. TD legs for essential players are graded like any other leg, but they are tagged as coach's-call legs in the process score.
+
+From NFL week 4 on, Big Proppa did not offer touchdown-scorer legs. Each one is replaced by that player's
 **RED ZONE EFFORT** leg: the yardage rung it takes to reach the red zone, priced like his touchdown.
 The evidence came from the first official night, Thursday Oct 1, PIT 24 @ CLE 27:
 
