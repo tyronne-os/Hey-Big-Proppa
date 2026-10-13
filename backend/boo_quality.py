@@ -279,5 +279,78 @@ def card(game_id: str, game: dict) -> dict:
         fav = ml[0]["team"]
         add("q_ml3", "MONEYLINE + 2", take([p for p in props if p["team"] == fav] + props, 3, list(ml)), 3,
             f"{ml[0]['name']} to win plus two props: the best-paying well-sampled shape.")
+    one = one_man(game, props, tds)
+    if one:
+        legs, who = one
+        for l in legs:
+            used[(l["playerId"], l["market"], l["line"])] += 1
+        plan.append(("q_oneman", f"ONE-MAN SHOW: {who.upper()}", legs,
+                     f"Every leg rides the most productive player in this game. The one exception to one-player-one-prop, like the Crazy Horse: "
+                     f"same-player legs move together, so FanDuel will price the ticket below the number shown."))
     est = any(l.get("oddsEstimated") for _, _, sl, _ in plan for l in sl)
     return {"plan": plan, "priced": priced, "estimated": est, "orders": _orders()}
+
+
+def one_man(game: dict, props: list[dict], tds: list[dict]) -> tuple[list[dict], str] | None:
+    """The single most productive essential player in the game (scrimmage yards a game plus 20 per touchdown a game),
+    and a 3-to-5-leg ticket built only on him: his yardage, his catches or carries, his touchdown."""
+    away, home = game["away_team"], game["home_team"]
+    dim = data.player_dimension()
+    rec, rus, pas = _rows("player_receiving_week.csv"), _rows("player_rushing_week.csv"), _rows("player_passing_week.csv")
+    td = [r for r in csv.DictReader(open(data.GOLD / "td_log.csv", newline="")) if r["season"] == "2026" and r["is_offensive_td"] == "True"]
+    yd, games, catches, carries = defaultdict(float), defaultdict(set), defaultdict(float), defaultdict(float)
+    for r in rec:
+        if r["team"] in (away, home):
+            yd[(r["player_id"], r["team"])] += _f(r["receiving_yards"])
+            catches[r["player_id"]] += _f(r["receptions"])
+            games[r["player_id"]].add(r["week"])
+    for r in rus:
+        if r["team"] in (away, home):
+            yd[(r["player_id"], r["team"])] += _f(r["rushing_yards"])
+            carries[r["player_id"]] += _f(r["carries"])
+            games[r["player_id"]].add(r["week"])
+    qbs = {pid for pid, d in dim.items() if d.get("position") == "QB"}      # a receiver who threw one trick pass is not a QB
+    best = None
+    for (pid, team), y in yd.items():
+        name = dim.get(pid, {}).get("name", "")
+        if pid in qbs or not name or not red_zone.essential_td_ok(name, team):
+            continue
+        g = len(games[pid]) or 1
+        n_td = sum(1 for r in td if r["scorer_player_name"] == _short(name) and r["scoring_team"] == team)
+        score = y / g + 20 * n_td / g
+        if not best or score > best[0]:
+            best = (score, pid, team, name, g, n_td)
+    if not best:
+        return None
+    _, pid, team, name, g, n_td = best
+    pos = dim.get(pid, {}).get("position", "")
+    legs = []
+    base = {"playerId": pid, "name": name, "team": team, "pos": pos, "direction": "over", "photoUrl": data.photo_url(pid), "jevP": None}
+
+    def posted(market):
+        return next((l for l in props if l["playerId"] == pid and l["market"] == market and not l.get("oddsEstimated")), None)
+
+    rec_y = sum(_f(r["receiving_yards"]) for r in rec if r["player_id"] == pid) / g
+    rush_y = sum(_f(r["rushing_yards"]) for r in rus if r["player_id"] == pid) / g
+    main = "recyds" if rec_y >= rush_y else "rushyds"
+    avg_main = rec_y if main == "recyds" else rush_y
+    for market, avg_v, p, why in ((main, avg_main, 0.62, f"averages {avg_main:.0f} {LABEL[main]} a game; line at 70%"),
+                                  ("recs", catches[pid] / g, 0.62, f"averages {catches[pid] / g:.1f} catches; line at 70%")):
+        if avg_v <= 0 or (market == "recs" and catches[pid] / g < 2.5):
+            continue
+        real = posted(market)
+        if real:
+            legs.append({**real, "rule": real.get("rule", "posted line")})
+            continue
+        line = max(1.5, math.floor(avg_v * 0.7) + 0.5) if market == "recs" else math.floor(avg_v * 0.7 * 2) / 2 + 0.5
+        legs.append({**base, "market": market, "line": line, "prop": f"Over {line:g} {LABEL[market]}", "odds": _price(p), "probability": p,
+                     "l5": p, "oddsEstimated": True, "rule": why})
+    if main == "recyds" and rush_y >= 15:
+        line = math.floor(rush_y * 0.7 * 2) / 2 + 0.5
+        legs.append({**base, "market": "rushyds", "line": line, "prop": f"Over {line:g} rush yds", "odds": _price(0.58), "probability": 0.58,
+                     "l5": 0.58, "oddsEstimated": True, "rule": f"also averages {rush_y:.0f} rush yds"})
+    t = next((l for l in tds if l["playerId"] == pid), None)
+    if t:
+        legs.append(t)
+    legs = legs[:5]
+    return (legs, name) if len(legs) >= 3 else None

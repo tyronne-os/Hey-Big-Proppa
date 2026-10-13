@@ -40,7 +40,7 @@ const ORDER = [
   "defense_wins",
 ];
 // MY BOO's quality card (Thursday): five tickets at most, 3 and 5 legs, built under her rules
-const Q_ORDER = ["q_core3", "q_grail5", "q_td3", "q_kings3", "q_ml3"];
+const Q_ORDER = ["q_core3", "q_oneman", "q_grail5", "q_td3", "q_kings3", "q_ml3"];
 
 const WHY: Record<string, string> = {
   diff_3:       "The three biggest green differentials from the Leaders board. Big Proppa sees these clearing the line by the widest margin.",
@@ -240,7 +240,7 @@ function SlipCard({ slip, id, hero }: { slip: Slip; id: string; hero?: boolean }
           <div style={{ ...mono, fontSize: 22, fontWeight: 800, color: "#2ee6a6" }}>{am(slip.boostedAmericanOdds)}</div>
           <div style={{ ...mono, fontSize: 10, color: "#6e6878" }}>{slip.legs.length}-LEG</div>
           {slip.hitProbability != null && (
-            <div style={{ ...mono, fontSize: 9, color: "#4a3a20" }}>hit {Math.round((slip.hitProbability ?? 0) * 100)}%</div>
+            <div style={{ ...mono, fontSize: 10, fontWeight: 800, color: "#f1dc92", marginTop: 2 }}>PROBABILITY SCORE {Math.round((slip.hitProbability ?? 0) * 100)}%</div>
           )}
         </div>
       </div>
