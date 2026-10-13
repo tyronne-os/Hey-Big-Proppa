@@ -1543,9 +1543,7 @@ def api_h2h_tickets(day: str = "monday"):
 
 def _h2h_auth(body: dict):
     import h2h
-    if body.get("token") != h2h.token():
-        raise HTTPException(401, "Enter the member passcode to build tickets.")
-    return h2h
+    return h2h  # open to everyone (friends testing); no passcode
 
 
 @app.post("/api/h2h/tickets/add")
@@ -1578,11 +1576,8 @@ def api_passcode(body: dict):
     # Hash-compare so the real code never ships in source. Every parlay page uses the same
     # member passcode; override the hash with BP_PASSCODE_HASH (SHA-256 of the code).
     HASH = os.environ.get("BP_PASSCODE_HASH", "2796c527960920c161bf5712c873aaa7e3b66d1301ae584045b0634695fed96d")
-    if hashlib.sha256(code.strip().encode()).hexdigest() == HASH:
-        import h2h
-        return {"ok": True, "token": h2h.token()}
-    from fastapi import HTTPException
-    raise HTTPException(401, "Wrong passcode")
+    import h2h
+    return {"ok": True, "token": h2h.token()}  # passcode removed: everyone is in
 
 
 @app.get("/api/matchup")

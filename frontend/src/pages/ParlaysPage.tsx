@@ -13,7 +13,7 @@ import { PlayerLink } from "../playerLink";
 const STORAGE_KEY = "bp_parlay_unlocked";
 
 function getUnlocked(): boolean {
-  try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
+  return true; // no passcode: open to everyone
 }
 function markUnlocked() {
   try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* */ }

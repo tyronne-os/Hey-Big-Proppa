@@ -1,6 +1,6 @@
 /**
  * SUNDAY SLIPS — the weekly parlay board for non-primetime weeks.
- * Passcode-gated. Shows current week's 5 slip types (HOT DOGS!, TOTALS!,
+ * Shows current week's 5 slip types (HOT DOGS!, TOTALS!,
  * BEAST MODE, HOT BOYS, TOP GUN) with a week history picker.
  */
 import { useEffect, useRef, useState } from "react";
@@ -16,7 +16,7 @@ import type { ParlaySlip, EarlyResponse } from "../types";
 const STORAGE_KEY = "bp_parlay_unlocked";
 
 function getUnlocked(): boolean {
-  try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
+  return true; // no passcode: open to everyone
 }
 function setUnlocked() {
   try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* */ }

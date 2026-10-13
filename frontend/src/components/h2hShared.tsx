@@ -77,7 +77,7 @@ export const num = (v: number | null | undefined, d = 1) => (v === null || v ===
 
 /** Member passcode token for ticket writes (issued by /api/passcode, kept in this browser). */
 export function useToken(): [string, (t: string) => void] {
-  const [t, setT] = useState(h2hToken.get());
+  const [t, setT] = useState(h2hToken.get() || "open");
   return [t, (v: string) => { h2hToken.set(v); setT(v); }];
 }
 
