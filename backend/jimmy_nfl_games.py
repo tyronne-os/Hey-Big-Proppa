@@ -112,7 +112,7 @@ def nfl_sides() -> list[dict]:
     import jev_ledger
     games = [r for r in _games() if not (r["epoch"] and r["epoch"] < cutoff)]
     reads = {}
-    if jev.available():
+    if jev.ready():
         def job(r):
             reads[(r["home"], r["away"])] = jev.game_read(r["away"], r["home"], _f(r["fd"].get("totalOver")), _f(r["fd"].get("homeTeamSpread")))
         jev.prefetch([lambda r=r: job(r) for r in games])

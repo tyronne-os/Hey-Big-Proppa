@@ -196,7 +196,7 @@ def _scored_sides() -> list[dict]:
     # Warm JEV's scouting reads in parallel (one per player and market, anchored at FanDuel's main line)
     # so scoring never waits on calls one at a time.
     import jev as _jev
-    if _jev.available():
+    if _jev.ready():
         jobs = []
         _JEV_ANCHOR.clear()
         for r in data.load("prop_line_rotowire"):

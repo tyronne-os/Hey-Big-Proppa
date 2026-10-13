@@ -182,7 +182,7 @@ def game_lines(away: str, home: str) -> dict:
     # Alternate under lines: JEV must agree. One game read (full scouting file) prices every rung.
     alt_unders = []
     jev_game = None
-    if total and _jev.available():
+    if total and _jev.ready():
         read = _jev.game_read(away, home, total, _f(fd.get("homeTeamSpread")))
         if read:
             jev_game = {"expectedTotal": read["expectedTotal"], "expectedHomeMargin": read["expectedHomeMargin"], "pOver": read["pOver"],

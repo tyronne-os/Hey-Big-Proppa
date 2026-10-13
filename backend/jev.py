@@ -27,8 +27,11 @@ the sole basis for a probability.
 """
 from __future__ import annotations
 
+import json
 import os
+import threading
 import time
+from pathlib import Path
 from functools import lru_cache
 
 try:
@@ -57,6 +60,11 @@ def _new_client():
 
 def available() -> bool:
     return _client() is not None
+
+
+def ready() -> bool:
+    """JEV can answer: live, or from its stored reads (see _durable). Use this to gate reads; available() means live."""
+    return available() or bool(_store())
 
 
 def diagnose() -> dict:
@@ -260,14 +268,63 @@ def _memo(key: str, fn) -> dict | None:
     return val
 
 
+# ── JEV, always available: every good read is kept on disk (and backed up with MY BOO's records), so when the API is
+#    down, rate-limited, or the key is missing in a dev box, the last read for that exact game or prop still answers.
+_STORE_FILE = Path(__file__).resolve().parent.parent / "lake" / "gold" / "nfl" / "jev_reads.json"
+_STORE: dict | None = None
+_STORE_LOCK = threading.Lock()
+
+
+def _store() -> dict:
+    global _STORE
+    if _STORE is None:
+        try:
+            _STORE = json.loads(_STORE_FILE.read_text())
+        except (OSError, ValueError):
+            _STORE = {}
+    return _STORE
+
+
+def _store_put(key: str, val: dict) -> None:
+    with _STORE_LOCK:
+        st = _store()
+        st[key] = {**val, "readAt": time.time()}
+        if len(st) > 4000:                                   # keep the newest reads
+            for k in sorted(st, key=lambda k: st[k].get("readAt", 0))[: len(st) - 4000]:
+                st.pop(k, None)
+        try:
+            _STORE_FILE.parent.mkdir(parents=True, exist_ok=True)
+            tmp = _STORE_FILE.with_suffix(".tmp")
+            tmp.write_text(json.dumps(st))
+            tmp.replace(_STORE_FILE)
+        except OSError:
+            pass
+
+
+def _durable(stable: str, live) -> dict | None:
+    """Live read when JEV is reachable (and remember it); otherwise the last read for the same game or prop, marked stale."""
+    if available() and Noul is not None and Score is not None:
+        val = live()
+        if val is not None:
+            _store_put(stable, val)
+            return val
+    old = _store().get(stable)
+    if old:
+        _STATS["fromStore"] = _STATS.get("fromStore", 0) + 1
+        return {**old, "stale": True}
+    return None
+
+
 def _hash(obj) -> str:
     return hashlib.sha1(json.dumps(obj, sort_keys=True, default=str).encode()).hexdigest()[:16]
 
 
 def prop_read(player_id: str, name: str, team: str, market: str, line: float) -> dict | None:
     """JEV's read on one player prop at its posted line: P(over), a 7-band outcome distribution, expected value."""
-    if not available() or Noul is None or Score is None:
-        return None
+    return _durable(f"prop:{player_id}:{market}:{float(line):g}", lambda: _prop_read_live(player_id, name, team, market, line))
+
+
+def _prop_read_live(player_id: str, name: str, team: str, market: str, line: float) -> dict | None:
     import jev_brain
     state = jev_brain.prop_state(player_id, name, team, market, float(line))
     if not state:
@@ -313,8 +370,13 @@ def prop_p_over(read: dict, x: float) -> float:
 
 def game_read(away: str, home: str, total: float | None, spread_home: float | None) -> dict | None:
     """JEV's read on a game: P(over total), P(home covers), P(home wins), plus total and margin distributions."""
-    if not available() or Noul is None or Score is None or total is None:
+    if total is None:
         return None
+    stable = f"game:{away}@{home}:{float(total):g}:{spread_home if spread_home is not None else 0:g}"
+    return _durable(stable, lambda: _game_read_live(away, home, total, spread_home))
+
+
+def _game_read_live(away: str, home: str, total: float, spread_home: float | None) -> dict | None:
     import jev_brain
     state = jev_brain.game_state(away, home)
     sp = spread_home if spread_home is not None else 0.0
@@ -361,7 +423,7 @@ def game_p_home_covers(read: dict, spread_home: float) -> float:
 
 def prefetch(jobs: list) -> None:
     """Run many reads in parallel (each job is a zero-arg callable) so the cache is warm before scoring."""
-    if available() and jobs:
+    if ready() and jobs:
         list(_POOL.map(lambda j: j(), jobs))
 
 
@@ -408,7 +470,7 @@ def _overlay(read: dict, line: float) -> dict:
 def leader_overlay(items: list[tuple], wait: float = 8.0) -> tuple[dict, int]:
     """items: (key, player_id, name, team, market, line). Returns ({key: overlay}, reads still running).
     Reads that miss the wait budget keep running and fill the cache, so the next load has them."""
-    if not available() or Noul is None or Score is None or not items:
+    if not ready() or not items:
         return {}, 0
     from concurrent.futures import wait as _wait
     futs = {it[0]: _POOL.submit(prop_read, it[1], it[2], it[3], it[4], float(it[5])) for it in items}

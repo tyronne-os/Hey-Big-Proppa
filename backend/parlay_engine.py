@@ -403,7 +403,7 @@ def _leg(player_id: str, name: str, team: str, market: str, direction: str,
     # gate -- not the broad scan every finder runs first. Keeps usage to one
     # call per final leg (cached per player+market+direction), never per
     # candidate examined.
-    if jev.available():
+    if jev.ready():
         usage_score = float(_usage_by_player().get(player_id, {}).get("usage_index_score") or 0) or None
         edge = jimmy.leg_edge(player_id, market, direction)
         opponent = jimmy.next_opponent(player_id)
