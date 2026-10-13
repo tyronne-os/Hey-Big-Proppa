@@ -4,6 +4,7 @@ import BooHero from "./BooHero";
 import StaffPanel from "./StaffPanel";
 import { useBooAlerts } from "../hooks/useBooAlerts";
 import type { BooAlert, SlipRecap, MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem, MyBooReport, MyBooPickDetail, MyBooFactor } from "../api";
+import BooPostGame from "./BooPostGame";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -1216,11 +1217,11 @@ function RecapsTab() {
 
 // ─── main MY BOO component ───────────────────────────────────────────────────
 
-const BOO_TABS = ["POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK", "STAFF", "JIMMY LESSONS"] as const;
+const BOO_TABS = ["POST-GAME REPORT", "POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK", "STAFF", "JIMMY LESSONS"] as const;
 type BooTab = (typeof BOO_TABS)[number];
 
 export default function MyBooTab() {
-  const [tab, setTab] = useState<BooTab>("DESK");
+  const [tab, setTab] = useState<BooTab>("POST-GAME REPORT");
   const [powTickets, setPowTickets] = useState<MyBooTicket[]>([]);
   const [simTickets, setSimTickets] = useState<MyBooTicket[]>([]);
   const [loadingPow, setLoadingPow] = useState(true);
@@ -1285,7 +1286,7 @@ export default function MyBooTab() {
       <div style={{ flex: 1, display: "flex", gap: 16, minHeight: 0 }}>
 
         {/* ── left panel ── */}
-        <div style={{ flex: "0 0 58%", minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: tab === "POST-GAME REPORT" ? "1 1 100%" : "0 0 58%", minWidth: 0, display: "flex", flexDirection: "column" }}>
           {/* inner tabs */}
           <div style={{ display: "flex", gap: 4, marginBottom: 12, flexWrap: "wrap", flexShrink: 0 }}>
             {BOO_TABS.map(t => (
@@ -1335,13 +1336,14 @@ export default function MyBooTab() {
             {tab === "RECAPS" && <RecapsTab />}
             {tab === "ALERTS" && <AlertsTab alerts={alerts} />}
             {tab === "DESK" && <DeskTab />}
+            {tab === "POST-GAME REPORT" && <BooPostGame />}
             {tab === "STAFF" && <StaffPanel />}
             {tab === "JIMMY LESSONS" && <LessonsTab />}
           </div>
         </div>
 
         {/* ── right panel: recent reports ── */}
-        <div style={{
+        <div hidden={tab === "POST-GAME REPORT"} style={{
           flex: "0 0 40%", minWidth: 0,
           borderLeft: "1px solid var(--bp-border)",
           paddingLeft: 16,

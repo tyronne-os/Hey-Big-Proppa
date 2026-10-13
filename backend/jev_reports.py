@@ -104,7 +104,23 @@ def build_game_report(espn_id: str) -> dict | None:
 
 
 def run() -> str:
-    """The staff agent: grade, report on any game that just went final, refresh the scorecard, back it up."""
+    """The staff agent: audit her own ticket grades against ESPN finals, grade JEV, report on any game that just
+    went final, refresh the scorecard, back it up."""
+    audit_note = ""
+    try:
+        import slip_alerts
+        a = slip_alerts.audit_recent()
+        if a["changed"]:
+            audit_note = f"; corrected {len(a['changed'])} leg grades on {a['games']} games ({a['ticketsResettled']} tickets re-settled)"
+            with _LOCK:
+                db = _load()
+                db.setdefault("corrections", []).append({"at": datetime.now(_CT).strftime("%a %b %-d, %-I:%M %p CT"),
+                                                         "legs": len(a["changed"]), "tickets": a["ticketsResettled"],
+                                                         "sample": a["changed"][:12]})
+                db["corrections"] = db["corrections"][-20:]
+                _save(db)
+    except Exception as exc:
+        audit_note = f"; grade audit failed: {type(exc).__name__}"
     graded = jev_ledger.settle()
     changed = False
     with _LOCK:
@@ -129,8 +145,8 @@ def run() -> str:
         except Exception:
             pass
     if changed:
-        return f"graded {graded} reads, new stats report: {db['reports'][-1]['game']}"
-    return f"{rep['open']} reads waiting on finals, {rep['settled']} graded, {len(db['reports'])} reports filed"
+        return f"graded {graded} reads, new stats report: {db['reports'][-1]['game']}{audit_note}"
+    return f"{rep['open']} reads waiting on finals, {rep['settled']} graded, {len(db['reports'])} reports filed{audit_note}"
 
 
 def latest(limit: int = 10) -> dict:
@@ -138,6 +154,7 @@ def latest(limit: int = 10) -> dict:
         db = _load()
     reps = list(reversed(db.get("reports", [])))[:limit]
     return {"owner": "MY BOO", "agent": "Stats Reporter", "updated": db.get("updated"), "latest": reps[0] if reps else None, "reports": reps,
+            "corrections": list(reversed(db.get("corrections", [])))[:5],
             "scorecard": db.get("scorecard") or jev_ledger.report(),
             "note": "Grades every JEV read against the ESPN final. The first report posts after tonight's final." if not reps else None}
 

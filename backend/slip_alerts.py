@@ -348,6 +348,104 @@ def rebuild_recaps(game_id: str, source: Callable[[dict], dict | None] = tank01_
     return n
 
 
+def final_box(game_id: str) -> dict | None:
+    """The ESPN final for a lake game (any week, by the schedule's ESPN id), in the lake's team codes."""
+    g = next((r for r in slip_recap._rows("schedule") if r["game_id"] == game_id), None)
+    if not g:
+        return None
+    eid = g.get("espn") or espn.find_espn_event(g)
+    s = espn.get_game_summary(str(eid)) if eid else None
+    if not s or s.get("status") != "FINAL":
+        return None
+    s["game_id"] = game_id
+    return espn.to_lake_codes(s, g)
+
+
+def regrade_game(game_id: str) -> dict:
+    """Re-check every leg on one finished game against the ESPN final and correct any grade that is wrong
+    (a leg locked while a team code mismatched, a stat read as 0, a moneyline or spread scored for the wrong side).
+    Tickets touching a corrected leg are re-settled and their recaps rebuilt. Returns what changed."""
+    live = final_box(game_id)
+    if not live:
+        return {"game_id": game_id, "checked": 0, "changed": []}
+    changed, touched = [], set()
+    now = datetime.now().astimezone().isoformat()
+    with myboo._LOCK:
+        myboo._ensure_files()
+        with open(myboo._LEGS_FILE, newline="") as f:
+            legs = list(csv.DictReader(f))
+        with open(myboo._TICKETS_FILE, newline="") as f:
+            tickets = list(csv.DictReader(f))
+        mine = [l for l in legs if l["game_id"] == game_id]
+        for l in mine:
+            r = eval_leg(l, live)
+            if r["state"] not in ("HIT", "MISS"):
+                continue
+            old_a = _f(l.get("actual_value"), None)
+            new_a = r["actual"]
+            if l["status"] != r["state"] or (new_a is not None and (old_a is None or abs(old_a - new_a) > 0.5)):
+                changed.append({"leg_id": l["leg_id"], "player": l["player_name"], "team": l["team"], "market": l["market"],
+                                "direction": l.get("direction"), "line": l.get("line"), "was": l["status"], "was_actual": old_a,
+                                "now": r["state"], "actual": new_a})
+                l["status"], l["graded_at"] = r["state"], now
+                l["actual_value"] = "" if new_a is None else new_a
+                touched.add(l["ticket_id"])
+        if touched:
+            by_t: dict[str, list[dict]] = {}
+            for l in legs:
+                by_t.setdefault(l["ticket_id"], []).append(l)
+            for t in tickets:
+                if t["ticket_id"] not in touched:
+                    continue
+                ls = by_t.get(t["ticket_id"], [])
+                if any(x["status"] == "MISS" for x in ls):
+                    t["status"], t["result_units"] = "SETTLED_LOSS", "0"
+                elif ls and all(x["status"] == "HIT" for x in ls):
+                    t["status"] = "SETTLED_WIN"
+                    t["result_units"] = str(myboo._gross(_f(t["stake_units"], myboo.STAKE), _f(t["payout_odds"])))
+                else:
+                    t["status"], t["result_units"] = ("IN_PROGRESS" if any(x["status"] == "HIT" for x in ls) else "OPEN"), ""
+                t["settled_at"] = now if t["status"].startswith("SETTLED") else ""
+            with open(myboo._LEGS_FILE, "w", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=myboo._LEG_COLS, extrasaction="ignore", restval="")
+                w.writeheader(); w.writerows(legs)
+            with open(myboo._TICKETS_FILE, "w", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=myboo._TICKET_COLS)
+                w.writeheader(); w.writerows(tickets)
+    if touched:
+        try:
+            rebuild_recaps(game_id, source=lambda g: live)
+        except Exception:
+            pass
+        try:
+            import boo_store
+            boo_store.push(force=True)
+        except Exception:
+            pass
+    return {"game_id": game_id, "checked": len(mine), "changed": changed, "ticketsResettled": len(touched)}
+
+
+def audit_recent(days: int = 21) -> dict:
+    """MY BOO checks her own grades: every finished game with ledger legs in the last `days` is re-read from the
+    ESPN final and any wrong grade is corrected. Cheap -- finished-game summaries are cached."""
+    from datetime import date, timedelta
+    cutoff = (date.today() - timedelta(days=days)).isoformat()
+    sched = {g["game_id"]: g for g in slip_recap._rows("schedule")}
+    with open(myboo._LEGS_FILE, newline="") as f:
+        gids = {l["game_id"] for l in csv.DictReader(f) if l.get("game_id")}
+    out = {"games": 0, "changed": [], "ticketsResettled": 0}
+    for gid in sorted(gids):
+        g = sched.get(gid)
+        if not g or (g.get("game_date") or "") < cutoff or (g.get("game_date") or "9") > date.today().isoformat():
+            continue
+        r = regrade_game(gid)
+        if r["checked"]:
+            out["games"] += 1
+            out["changed"] += r["changed"]
+            out["ticketsResettled"] += r.get("ticketsResettled", 0)
+    return out
+
+
 def _refresh_partials(lives: dict[str, dict]) -> int:
     """Rewrite early-record recaps from the full stat line once every game on the slip is final."""
     saved = slip_recap._load_json(slip_recap._RECAPS_FILE)

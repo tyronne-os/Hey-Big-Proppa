@@ -321,6 +321,14 @@ def api_jev_game_brain(away: str, home: str, read: bool = False):
     return out
 
 
+@app.get("/api/boo/postgame")
+def api_boo_postgame(game_id: str | None = None):
+    """MY BOO's post-game report: every leg graded, tickets and their killers, what would have won,
+    ticket shapes replayed on her whole ledger, JEV vs the Big Proppa Line, and the next primetime blueprint."""
+    import boo_postgame
+    return boo_postgame.report(game_id)
+
+
 @app.get("/api/boo/stats-report")
 def api_boo_stats_report(limit: int = 10):
     """MY BOO's Stats Reporter: post-game reports grading JEV and the Big Proppa Line against ESPN finals, plus the running scorecard."""

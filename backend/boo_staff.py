@@ -265,7 +265,7 @@ AGENTS = [
     {"id": "injury_desk", "name": "Injury Desk", "fn": injury_desk, "live": 1800, "idle": 3600, "duty": "NFL injury report snapshot and changes", "endpoint": "/api/espn/injuries", "reads": "ESPN game summaries"},
     {"id": "standings_actuary", "name": "Standings Actuary", "fn": standings_actuary, "live": 1800, "idle": 3600, "duty": "Standings and the live ESPN-derived power rating Jimmy falls back on", "endpoint": "/api/espn/standings", "reads": "ESPN standings"},
     {"id": "data_auditor", "name": "Data Auditor", "fn": data_auditor, "live": 300, "idle": 600, "duty": "Checks every agent for staleness and repeated errors", "endpoint": "/api/boo/staff", "reads": "staff_status.json"},
-    {"id": "stats_reporter", "name": "Stats Reporter", "fn": stats_reporter, "live": 300, "idle": 1800, "duty": "Grades every JEV read against the ESPN final, files the post-game stats report, retunes the blend weight", "endpoint": "/api/boo/stats-report", "reads": "JEV ledger + ESPN finals"},
+    {"id": "stats_reporter", "name": "Stats Reporter", "fn": stats_reporter, "live": 300, "idle": 1800, "duty": "Re-checks every ticket grade against the ESPN final, grades JEV, files the post-game stats report, retunes the blend weight", "endpoint": "/api/boo/stats-report", "reads": "JEV ledger + ESPN finals"},
     {"id": "director", "name": "MY BOO — Director", "fn": director, "live": 300, "idle": 3600, "duty": "Writes the briefing from what the staff found", "endpoint": "/api/boo/staff", "reads": "all snapshots"},
     {"id": "hermes_liaison", "name": "Hermes Liaison", "fn": hermes_liaison, "live": 21600, "idle": 21600, "duty": "Exports the staff manifest for Hermes agents", "endpoint": "/api/boo/staff/manifest", "reads": "AGENTS"},
 ]

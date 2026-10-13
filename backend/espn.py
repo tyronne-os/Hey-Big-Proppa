@@ -333,6 +333,16 @@ def espn_source(lake_game: dict) -> dict | None:
         return None
     # Patch the game_id back to the lake's format so eval_slip can match
     summary["game_id"] = lake_game.get("game_id", eid)
+    return to_lake_codes(summary, lake_game)
+
+
+def to_lake_codes(summary: dict, lake_game: dict) -> dict:
+    """Speak the lake's team codes. ESPN files the Rams as LAR and Washington as WSH, but every MY BOO leg is
+    keyed by the lake's code (LA, WAS); without this a whole team looked stat-less and its legs graded as 0."""
+    by_canon = {_canon(lake_game.get(k, "")): lake_game.get(k, "") for k in ("home_team", "away_team") if lake_game.get(k)}
+    fix = lambda t: by_canon.get(_canon(t or ""), t)  # noqa: E731
+    summary["home"], summary["away"] = fix(summary.get("home", "")), fix(summary.get("away", ""))
+    summary["players"] = {(name, fix(team)): stats for (name, team), stats in (summary.get("players") or {}).items()}
     return summary
 
 

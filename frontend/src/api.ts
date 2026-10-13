@@ -42,6 +42,7 @@ export const h2hToken = {
 
 export const api = {
   booStatsReport: () => get<any>("/api/boo/stats-report"),
+  booPostgame: (gameId?: string) => get<any>(`/api/boo/postgame${gameId ? `?game_id=${encodeURIComponent(gameId)}` : ""}`),
   h2hSlate: () => get<any>("/api/h2h/slate"),
   h2hGame: (id: string) => get<any>(`/api/h2h/game?game_id=${encodeURIComponent(id)}`),
   h2hPlayer: (pid: string, market: string, gameId?: string | null) =>
