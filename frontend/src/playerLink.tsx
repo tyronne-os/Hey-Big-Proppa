@@ -18,11 +18,14 @@ function legMarket(leg: LegLike): string | null {
   return BY_POS[(leg.pos ?? "").toUpperCase()] ?? "recyds";
 }
 
-/** Link from a ticket leg to that player's single-player page, opened on the leg's stat. Game and team legs have none. */
+const BOARD: Record<string, string> = { recs: "Receptions", recyds: "Receiving Yds", rushyds: "Rushing Yds", passyds: "Passing Yds" };
+
+/** Link from a ticket leg to the single-player page (the leaders page's player panel) on that leg's board.
+ *  Game and team legs have none. */
 export function playerHref(leg: LegLike): string | null {
   if (!leg.playerId || !PLAYER_ID.test(leg.playerId)) return null;
   const m = legMarket(leg);
-  return m ? `/player?pid=${encodeURIComponent(leg.playerId)}&market=${m}&from=ticket` : null;
+  return m ? `/leaders-player.html?cat=${encodeURIComponent(BOARD[m])}&pid=${encodeURIComponent(leg.playerId)}&from=ticket` : null;
 }
 
 export function PlayerLink({ leg, name, children }: { leg: LegLike; name: string; children: ReactNode }) {

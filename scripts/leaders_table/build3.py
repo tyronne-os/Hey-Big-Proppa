@@ -89,8 +89,8 @@ function pctTile(k,v,hi,mid){ if (v==null) return statTile(k,null); const c = v>
 function coachesPanel(row){
   const c = row.cs;
   if (!c) return `<div class="panel"><div class="ptitle">DEPENDABILITY RANKING</div><div style="color:var(--p-fg2);font-size:12px">No usage data in the lake for this player yet.</div></div>`;
-  const badge = c.qualifies ? '<span style="background:#22c55e;color:#000;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;margin-left:8px;letter-spacing:.05em">DEPENDABILITY RANKING</span>' : '';
-  const ROLE_LABEL = {"PRIMARY":"PRIMARY TARGET","TRUSTED UNDER PRESSURE":"HIGH PRESSURE USAGE","VOLUME STACK":"VOLUME STACK","IB CASCADE":"IB CASCADE"};
+  const badge = c.qualifies ? '<span style="background:#22c55e;color:#000;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;margin-left:8px;letter-spacing:.05em">QUALIFIES</span>' : '';
+  const ROLE_LABEL = {"PRIMARY -- TRUSTED UNDER PRESSURE":"PRIMARY OPTION · DEPENDABLE WHEN IT'S TIGHT","ROTATIONAL CONTRIBUTOR":"ROTATION PLAYER","RISING -- OUT-EARNING DEPTH CHART":"RISING · OUT-PRODUCING HIS DEPTH SPOT","VOLUME ONLY -- BENCHED WHEN IT TIGHTENS":"VOLUME ONLY · LESS USED WHEN IT'S TIGHT","CLOSER -- SMALL ROLE, BIG MOMENTS":"CLOSER · SMALL ROLE, BIG MOMENTS","INSUFFICIENT SAMPLE":"NOT ENOUGH GAMES YET","FRINGE":"FRINGE ROLE"};
   const fa = c.fan || {};
   const roleLabel = ROLE_LABEL[c.role] || c.role || '';
   return `<div class="panel"><div class="ptitle">DEPENDABILITY RANKING${badge}</div>
