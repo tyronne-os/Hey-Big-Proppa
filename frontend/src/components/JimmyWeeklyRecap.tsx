@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { API_BASE } from "../api";
-import { ThemeMusic, loadVoices, say, speechAvailable, splitSentences } from "./boothAudio";
+import { ThemeMusic, loadVoices, say, speechAvailable } from "./boothAudio";
 import "./JimmyWeeklyRecap.css";
 
 interface Segment { speaker: string; role: string; text: string; word_count: number }
+interface Turn { speaker: string; text: string; beat: "say" | "react" }
 interface Pick {
   player_id: string; player_name: string; team: string; headshot: string; label: string; line: number;
   is_over: boolean; confidence: number; why: string; actual: number | null; result: boolean | null;
 }
 interface Recap {
-  week: number; title: string; arc: string; segments: Segment[]; total_words: number; error?: string;
+  week: number; title: string; arc: string; segments: Segment[]; turns: Turn[]; total_words: number; error?: string;
   bankroll_delta: number; slips_cashed: number; slips_total: number; key_stat: string;
   play_of_week: null | {
     kind: "heartbreaker" | "clutch" | "bust"; player_name: string; team: string; headshot: string; label: string;
@@ -47,21 +48,48 @@ async function jx(path: string, init?: RequestInit) {
   return d;
 }
 
+async function fetchClip(host: string, text: string): Promise<string | null> {
+  try {
+    const r = await fetch(`${API_BASE}/api/jimmy/voice`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ host, text }),
+    });
+    if (!r.ok) return null;
+    return URL.createObjectURL(await r.blob());
+  } catch {
+    return null;
+  }
+}
+
+function playClip(url: string): { done: Promise<void>; cancel: () => void } {
+  const a = new Audio(url);
+  let resolve: () => void = () => {};
+  const done = new Promise<void>((res) => { resolve = res; });
+  a.onended = () => resolve();
+  a.onerror = () => resolve();
+  a.play().catch(() => resolve());
+  return { done, cancel: () => { a.pause(); resolve(); } };
+}
+
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
   sid: string; week: number; onClose: () => void; onState: (s: any) => void;
 }) {
   const [recap, setRecap] = useState<Recap | null>(null);
   const [err, setErr] = useState("");
-  const [seg, setSeg] = useState(0);
-  const [sentence, setSentence] = useState(-1);
+  const [cur, setCur] = useState(-1);
   const [playing, setPlaying] = useState(false);
-  const [voiceOn, setVoiceOn] = useState(speechAvailable());
+  const [voiceOn, setVoiceOn] = useState(true);
+  const [studio, setStudio] = useState<"studio" | "browser" | "off">("studio");
   const [vol, setVol] = useState(0.35);
   const [tailed, setTailed] = useState<string | null>(null);
   const [tailErr, setTailErr] = useState("");
   const music = useRef(new ThemeMusic());
   const run = useRef(0);
   const cancel = useRef<() => void>(() => {});
+  const clips = useRef(new Map<number, Promise<string | null>>());
+  const urls = useRef<string[]>([]);
+  const feed = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     jx(`/api/jimmy/recap/${sid}/${week}`)
@@ -72,44 +100,83 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
       .catch((e) => setErr(e.message));
     loadVoices();
     const m = music.current;
+    const pending = clips.current;
+    const made = urls.current;
     return () => {
       run.current++;
       cancel.current();
       m.stop();
+      pending.clear();
+      made.forEach((u) => URL.revokeObjectURL(u));
     };
   }, [sid, week]);
 
-  const segments = recap?.segments ?? [];
+  useEffect(() => {
+    if (cur >= 0) feed.current?.querySelector(`[data-turn="${cur}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [cur]);
+
+  const turns = recap?.turns ?? [];
+
+  function clipFor(i: number): Promise<string | null> {
+    const t = turns[i];
+    if (!t) return Promise.resolve(null);
+    if (!clips.current.has(i)) {
+      const p = fetchClip(t.speaker, t.text).then((u) => {
+        if (u) urls.current.push(u);
+        return u;
+      });
+      clips.current.set(i, p);
+    }
+    return clips.current.get(i)!;
+  }
 
   async function playFrom(start: number) {
-    if (!segments.length) return;
+    if (!turns.length) return;
     const id = ++run.current;
     cancel.current();
     setPlaying(true);
     music.current.start(vol);
-    for (let i = start; i < segments.length; i++) {
+    let useStudio = studio === "studio" && voiceOn;
+    let prevSpeaker: string | null = null;
+    for (let i = start; i < turns.length; i++) {
       if (run.current !== id) return;
-      setSeg(i);
-      setSentence(-1);
-      music.current.duck(false);
-      if (i === start) await wait(1600);
-      else music.current.stinger();
-      await wait(i === start ? 0 : 900);
+      const t = turns[i];
+      setCur(i);
+      if (i === start) await wait(1200);
+      if (prevSpeaker && prevSpeaker !== t.speaker) {
+        music.current.stinger();
+        await wait(700);
+      }
+      prevSpeaker = t.speaker;
       if (run.current !== id) return;
       music.current.duck(true);
-      const parts = splitSentences(segments[i].text);
-      for (let k = 0; k < parts.length; k++) {
-        if (run.current !== id) return;
-        setSentence(k);
-        const s = say(parts[k], segments[i].speaker, voiceOn);
+      clipFor(i + 1);
+      clipFor(i + 2);
+      let url: string | null = null;
+      if (useStudio) {
+        url = await clipFor(i);
+        if (!url) {
+          useStudio = false;
+          setStudio("browser");
+        }
+      }
+      if (run.current !== id) return;
+      if (url) {
+        const c = playClip(url);
+        cancel.current = c.cancel;
+        await c.done;
+      } else if (voiceOn && studio !== "off" && speechAvailable()) {
+        const s = say(t.text, t.speaker, true);
         cancel.current = s.cancel;
         await s.done;
+      } else {
+        await wait(Math.max(1200, (t.text.split(/\s+/).length / 3) * 1000));
       }
     }
     if (run.current !== id) return;
     music.current.duck(false);
     music.current.stinger();
-    setSentence(-1);
+    setCur(-1);
     await wait(2600);
     if (run.current === id) {
       music.current.stop();
@@ -122,7 +189,7 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
     cancel.current();
     music.current.stop();
     setPlaying(false);
-    setSentence(-1);
+    setCur(-1);
   }
 
   async function tail(host: string) {
@@ -138,9 +205,9 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
     }
   }
 
-  const active = segments[seg];
   const pow = recap?.play_of_week;
   const story = recap?.storylines;
+  const voiceLabel = studio === "studio" ? "Studio voices" : studio === "browser" ? "Browser voices" : "Captions";
 
   return (
     <div className="booth-overlay" onClick={(e) => e.target === e.currentTarget && (stop(), onClose())}>
@@ -189,11 +256,14 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
             <section className="booth-stage">
               <div className="booth-desk">
                 {ORDER.map((h) => {
-                  const i = segments.findIndex((s) => s.speaker === h);
-                  const on = playing && seg === i && sentence >= 0;
+                  const on = cur >= 0 && turns[cur]?.speaker === h;
                   return (
-                    <button key={h} className={`host ${seg === i ? "sel" : ""} ${on ? "talking" : ""}`}
-                      style={{ ["--host" as any]: HOSTS[h].color }} onClick={() => (playing ? playFrom(i) : setSeg(i))}>
+                    <button key={h} className={`host ${on ? "sel talking" : ""}`}
+                      style={{ ["--host" as any]: HOSTS[h].color }}
+                      onClick={() => {
+                        const i = turns.findIndex((t) => t.speaker === h);
+                        if (i >= 0) if (playing) playFrom(i);
+                      }}>
                       <div className="host-avatar">{HOSTS[h].initials}</div>
                       <div className="host-name">{h}</div>
                       <div className="host-role">{HOSTS[h].title}</div>
@@ -202,21 +272,27 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
                   );
                 })}
               </div>
-              {active && (
-                <p className="transcript" style={{ ["--host" as any]: HOSTS[active.speaker]?.color }}>
-                  <b>{HOSTS[active.speaker]?.short ?? active.speaker}:</b>{" "}
-                  {splitSentences(active.text).map((s, k) => (
-                    <span key={k} className={k === sentence ? "now" : k < sentence ? "said" : ""}>{s} </span>
+
+              {turns.length > 0 && (
+                <div className="feed" ref={feed} aria-live="off">
+                  {turns.map((t, i) => (
+                    <p key={i} data-turn={i}
+                      className={`line ${i === cur ? "now" : i < cur ? "said" : ""} ${t.beat === "react" ? "react" : ""}`}
+                      style={{ ["--host" as any]: HOSTS[t.speaker]?.color }}>
+                      <b>{HOSTS[t.speaker]?.short ?? t.speaker}</b>
+                      <span>{t.text}</span>
+                    </p>
                   ))}
-                </p>
+                </div>
               )}
+
               <div className="booth-controls">
                 {!playing
-                  ? <button className="bc-play" onClick={() => playFrom(seg)}>▶ {seg === 0 ? "Play the show" : `Play from ${HOSTS[segments[seg]?.speaker]?.short}`}</button>
+                  ? <button className="bc-play" onClick={() => playFrom(Math.max(0, cur, 0))}>▶ {cur > 0 ? "Resume the show" : "Play the show"}</button>
                   : <button className="bc-stop" onClick={stop}>■ Stop</button>}
-                <label className="bc-toggle">
-                  <input type="checkbox" checked={voiceOn} disabled={!speechAvailable()} onChange={(e) => setVoiceOn(e.target.checked)} />
-                  Voices
+                <label className="bc-toggle" title="Studio voices are generated on the server">
+                  <input type="checkbox" checked={voiceOn} onChange={(e) => { setVoiceOn(e.target.checked); setStudio(e.target.checked ? "studio" : "off"); }} />
+                  {voiceLabel}
                 </label>
                 <label className="bc-vol">
                   Theme
@@ -299,10 +375,6 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
       </div>
     </div>
   );
-}
-
-function wait(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
 }
 
 function Meter({ actual, line, over }: { actual: number; line: number; over: boolean }) {

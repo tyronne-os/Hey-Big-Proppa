@@ -342,6 +342,48 @@ def _julian(r: random.Random, week: int, slips: list[Slip], story: dict, record:
     return " ".join(out)
 
 
+# ---------------------------------------------------------------- the conversation
+
+_REACT = [
+    "{prev}, love the energy. Let me put some numbers behind it.",
+    "{prev}, that's the story. Now the receipts.",
+    "Easy, {prev}. Let's see if the numbers agree with you.",
+    "{prev}, hold that thought. I want to show the work first.",
+]
+_INTERRUPT = {
+    "Perfect Week": ["Clean sheet, and I'll say it: that's discipline, not luck.", "Perfect week. Don't go getting loose now."],
+    "Winning Week": ["Good week, but I'd still look at the miss.", "Winning is fine. Repeatable is better."],
+    "Split Decision": ["Split decision. Let's figure out which half to keep.", "Half right is still a lesson."],
+    "Rough Sunday": ["Rough one. Let's not pretend otherwise.", "Nothing's going to make that week feel good. Let's make it useful."],
+}
+
+
+def booth_turns(segments: list[dict], arc: str, r: random.Random) -> list[dict]:
+    """Turn the three monologues into a conversation: sentence-sized turns, each host answering the last."""
+    turns: list[dict] = []
+    prev = None
+    for i, seg in enumerate(segments):
+        speaker = seg["speaker"]
+        if prev is not None:
+            if i == 1:
+                line = r.choice(_INTERRUPT.get(arc, _INTERRUPT["Split Decision"]))
+            else:
+                line = r.choice(_REACT).format(prev=HOST_NAME.get(prev, prev))
+            turns.append({"speaker": speaker, "text": line, "beat": "react"})
+        for sentence in split_sentences(seg["text"]):
+            turns.append({"speaker": speaker, "text": sentence, "beat": "say"})
+        prev = speaker
+    return turns
+
+
+HOST_NAME = {"Jonah Jacques": "Jonah", "MY BOO": "MY BOO", "Julian Feltus": "Julian"}
+
+
+def split_sentences(text: str) -> list[str]:
+    import re
+    return [t.strip() for t in re.split(r"(?<=[.!?])\s+", text) if t.strip()]
+
+
 # ---------------------------------------------------------------- entry point
 
 def generate_weekly_recap(bt: JimmyBacktester, week: int) -> dict:
@@ -388,6 +430,7 @@ def generate_weekly_recap(bt: JimmyBacktester, week: int) -> dict:
         "bankroll_delta": round(delta, 2), "slips_cashed": cashed, "slips_total": n,
         "cashed_pct": round(100 * cashed / n) if n else 0,
         "key_stat": "UNDEFEATED" if n and cashed == n else f"{cashed}/{n} SLIPS CASHED",
+        "turns": booth_turns(segments, arc, random.Random(st.year * 1000 + week + 7)),
         "play_of_week": pow_, "storylines": story,
         "booth": {"picks": picks, "record": st.booth_record, "last_week": last_booth, "tailed_last_week": tailed,
                   "tailed_next_week": st.booth_tails.get(week + 1), "pick_week": week + 1},

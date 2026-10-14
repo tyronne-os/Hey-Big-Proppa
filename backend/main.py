@@ -1700,6 +1700,22 @@ def api_jimmy_advance(sid: str):
     return {"session_id": sid, **bt.get_state_dict()}
 
 
+@app.post("/api/jimmy/voice")
+def api_jimmy_voice(body: dict):
+    """One booth line as WAV. Cached by host and text, so replays cost nothing."""
+    import booth_voice
+    from fastapi.responses import FileResponse
+    text = str(body.get("text") or "").strip()[:600]
+    host = str(body.get("host") or "")
+    if not text or host not in booth_voice.VOICES:
+        raise HTTPException(400, "Need a booth host and a line of text")
+    try:
+        path = booth_voice.clip(host, text)
+    except booth_voice.VoiceUnavailable as e:
+        raise HTTPException(503, str(e))
+    return FileResponse(str(path), media_type="audio/wav", headers={"Cache-Control": "public, max-age=86400"})
+
+
 # React app still accessible at /app/* via the StaticFiles mount below.
 from fastapi.responses import FileResponse as _FileResponse
 

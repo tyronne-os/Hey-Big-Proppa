@@ -141,3 +141,15 @@
 @media (prefers-reduced-motion: reduce) {
   .booth, .pow, .meter-fill, .eq i, .booth-live.on { animation: none; }
 }
+
+.feed {
+  margin: 16px 0 0; max-height: 300px; overflow-y: auto; padding: 4px 4px 4px 2px;
+  scroll-behavior: smooth; mask-image: linear-gradient(transparent 0, #000 16px, #000 calc(100% - 16px), transparent);
+}
+.line { margin: 0 0 10px; font-size: 15px; line-height: 1.55; color: #7d7491; transition: color 0.25s, transform 0.25s; }
+.line b { display: inline-block; min-width: 62px; margin-right: 8px; color: var(--host); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; vertical-align: top; padding-top: 3px; }
+.line span { color: inherit; }
+.line.said { color: #a89fb8; }
+.line.react { font-style: italic; }
+.line.now { color: #fff; transform: translateX(4px); }
+.line.now span { background: color-mix(in srgb, var(--host) 20%, transparent); border-radius: 4px; padding: 1px 4px; }
