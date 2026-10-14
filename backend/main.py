@@ -1645,6 +1645,33 @@ def api_jimmy_state(year: int, slips_per_week: int):
     return backtester.get_state_dict()
 
 
+@app.post("/api/jimmy/recap")
+def api_jimmy_recap(body: dict):
+    """Generate weekly recap with three voices (MY BOO, Jonah Jacques, Julian Feltus)."""
+    from jimmy_recap import generate_weekly_recap
+    from jimmy_backtester import SeasonState
+
+    # body should contain { "state": {...}, "week": N }
+    state_dict = body.get("state", {})
+    week = body.get("week", 1)
+
+    # Reconstruct SeasonState from dict (simplified for now)
+    try:
+        state = SeasonState(
+            year=state_dict.get("year", 2024),
+            slips_per_week=state_dict.get("slips_per_week", 1),
+            current_week=state_dict.get("current_week", 1),
+            bankroll=state_dict.get("bankroll", 100.0),
+            win_streak=state_dict.get("win_streak", 0),
+            slips=[],
+            achievements_unlocked=state_dict.get("achievements_unlocked", []),
+        )
+        recap = generate_weekly_recap(state, week)
+        return recap
+    except Exception as e:
+        raise HTTPException(400, f"Failed to generate recap: {str(e)}")
+
+
 # React app still accessible at /app/* via the StaticFiles mount below.
 from fastapi.responses import FileResponse as _FileResponse
 

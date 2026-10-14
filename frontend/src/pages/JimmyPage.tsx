@@ -13,6 +13,7 @@
  * - Ticket editing unlocks at 3+ win streaks
  */
 import React, { useState, useEffect } from "react";
+import JimmyWeeklyRecap from "../components/JimmyWeeklyRecap";
 import "./JimmyPage.css";
 
 interface SeasonState {
@@ -46,6 +47,7 @@ export default function JimmyPage() {
   const [state, setState] = useState<SeasonState | null>(null);
   const [loading, setLoading] = useState(false);
   const [cstTime, setCSTTime] = useState(getCSTTime());
+  const [showRecap, setShowRecap] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => setCSTTime(getCSTTime()), 1000);
@@ -144,7 +146,15 @@ export default function JimmyPage() {
           onBuilderClick={() => setPage("builder")}
           onGameflowClick={() => setPage("ticker")}
           onEndClick={() => setPage("end")}
+          onRecapClick={() => setShowRecap(true)}
         />
+        {showRecap && (
+          <JimmyWeeklyRecap
+            state={state}
+            week={state.current_week}
+            onClose={() => setShowRecap(false)}
+          />
+        )}
       </>
     );
   }
@@ -203,7 +213,7 @@ const SPECIAL_TICKETS = [
   },
 ];
 
-function JimmyDashboard({ state, cstTime, onBuilderClick, onGameflowClick, onEndClick }: any) {
+function JimmyDashboard({ state, cstTime, onBuilderClick, onGameflowClick, onEndClick, onRecapClick }: any) {
   const roi = ((state.bankroll - 100) / 100 * 100).toFixed(1);
   const cashRate = state.slips.length > 0
     ? (state.slips.filter((s: any) => s.result).length / state.slips.length * 100).toFixed(0)
@@ -329,6 +339,11 @@ function JimmyDashboard({ state, cstTime, onBuilderClick, onGameflowClick, onEnd
         <button onClick={onGameflowClick} className="btn-secondary">
           Gameflow Ticker
         </button>
+        {state.current_week > 1 && (
+          <button onClick={onRecapClick} className="btn-recap">
+            🎙️ Watch Weekly Recap
+          </button>
+        )}
         {state.current_week >= 17 && (
           <button onClick={onEndClick} className="btn-success">
             View Season Summary
