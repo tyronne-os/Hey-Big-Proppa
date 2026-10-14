@@ -9,6 +9,7 @@ import SundayParlaysPage from "./pages/SundayParlaysPage";
 import ReportPage from "./pages/ReportPage";
 import JimmyPage from "./pages/JimmyPage";
 import BetterversePage from "./pages/BetterversePage";
+import ContactPage from "./pages/ContactPage";
 import "reactflow/dist/style.css";
 import "./theme.css";
 
@@ -45,6 +46,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Route path="/report"    element={<ReportPage />} />
           <Route path="/jimmy"     element={<JimmyPage />} />
           <Route path="/betterverse" element={<BetterversePage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/targets"   element={<Navigate to="/leaders?cat=targets" replace />} />
           {(["player", "leaders", "matchups", "ramp", "college", "engine", "news", "queries", "myboo", "odds"] as const).map((t) => (
             <Route key={t} path={`/${t}`} element={<App initialTab={t} />} />

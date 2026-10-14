@@ -550,6 +550,40 @@ def _betterverse_nodes() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------- BETTER-VERSE
+# ---------------------------------------------------------------------------- Contact Us + waitlist inbox
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for", "")
+    return (fwd.split(",")[0].strip() if fwd else (request.client.host if request.client else "unknown")) or "unknown"
+
+
+async def _inbox(kind: str, request: Request):
+    import inbox
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "Send the form as JSON.")
+    try:
+        return inbox.submit(kind, body if isinstance(body, dict) else {}, _client_ip(request))
+    except inbox.InboxError as e:
+        raise HTTPException(429 if "Too many" in str(e) else 400, str(e))
+
+
+@app.post("/api/contact")
+async def api_contact(request: Request):
+    return await _inbox("contact", request)
+
+
+@app.post("/api/waitlist")
+async def api_waitlist(request: Request):
+    return await _inbox("waitlist", request)
+
+
+@app.get("/api/inbox/health")
+def api_inbox_health():
+    import inbox
+    return inbox.health()
+
+
 @app.get("/api/betterverse/archetypes")
 def api_mv_archetypes():
     import betterverse_bettors

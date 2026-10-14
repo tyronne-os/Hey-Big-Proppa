@@ -181,6 +181,7 @@ export default function BetterversePage() {
           from the full Friday board and every leg is graded against what really happened. The leaderboard ranks <b>proof</b>, not luck,
           and whatever wins, loses, or never cashes becomes MY BOO training data for JIMMY and JEV.
         </p>
+        <p className="bv-jimmy-note"><a href="/jimmy">Want to play a season yourself? Open the JIMMY season game →</a></p>
       </header>
 
       <section className="bv-panel">

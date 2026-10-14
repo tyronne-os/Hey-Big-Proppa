@@ -1,39 +1,60 @@
-"""Gradio-SDK Space in raw mode: serves the Big Proppa React app (incl. React Flow) untouched.
+"""Gradio-SDK Space in RAW mode: serves the Big Proppa FastAPI app and the built React app, and nothing else.
 
-Gradio supplies only the SDK runtime. The page everyone sees is the built frontend/dist plus the
-landing page, served by the same FastAPI backend as the Docker Space. Gradio itself is mounted at
-/__gradio as a status page and never replaces a route.
+Gradio supplies only the SDK runtime. No Gradio UI is created or mounted, so there is no Gradio queue, reload watcher,
+analytics call or share-link thread that could fail and restart the container.
+
+Anti-loop rules:
+  * If the backend fails to import, a tiny fallback app serves the traceback (HTTP 503) and /healthz (200). The Space
+    stays up and the error is readable; it does not crash, restart, and crash again.
+  * uvicorn runs once with reload off and a single worker. If it cannot start, the process exits once and logs why.
 """
 import os
 import sys
+import traceback
 from pathlib import Path
 
-import gradio as gr
-import uvicorn
+os.environ.setdefault("GRADIO_ANALYTICS_ENABLED", "False")   # raw mode: never phone home or start Gradio helpers
+os.environ.setdefault("GRADIO_SSR_MODE", "False")
+os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+os.environ.setdefault("PYTHONUNBUFFERED", "1")
 
 ROOT = Path(__file__).resolve().parent
 BACKEND = ROOT / "backend"
 sys.path.insert(0, str(BACKEND))
 os.chdir(BACKEND)
 
-import main as bp  # noqa: E402  the existing FastAPI app, unchanged
 
-with gr.Blocks(title="Big Proppa runtime") as status:
-    gr.Markdown("Big Proppa is running. The app is at the site root.")
+def _fallback(error: str):
+    from fastapi import FastAPI
+    from fastapi.responses import PlainTextResponse
 
-app = gr.mount_gradio_app(bp.app, status, path="/__gradio", ssr_mode=False)
+    app = FastAPI()
 
-def _diag() -> None:
-    import subprocess
-    keys = {k: v for k, v in os.environ.items() if k.startswith(("GRADIO", "PORT", "SYSTEM", "SPACE"))}
-    print("DIAG env", {k: v for k, v in keys.items() if "TOKEN" not in k and "KEY" not in k}, flush=True)
-    print("DIAG name", __name__, "argv", sys.argv, flush=True)
-    print(subprocess.run("ps -eo pid,args | cut -c1-200", shell=True, capture_output=True, text=True).stdout, flush=True)
+    @app.get("/healthz")
+    def healthz():
+        return {"ok": False, "mode": "fallback"}
+
+    @app.get("/{path:path}")
+    def broken(path: str):
+        return PlainTextResponse("Big Proppa failed to start. Fix the error below and redeploy.\n\n" + error, status_code=503)
+
+    return app
+
+
+try:
+    import main as bp   # the existing FastAPI app, unchanged
+    app = bp.app
+except BaseException:   # noqa: BLE001  any import-time failure must degrade, never crash-loop
+    _err = traceback.format_exc()
+    print("STARTUP FAILED (serving fallback app):\n" + _err, flush=True)
+    app = _fallback(_err)
 
 
 if __name__ == "__main__":
+    import uvicorn
+
     try:
-        uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 7860)))
-    except BaseException:
-        _diag()
-        raise
+        uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 7860)), reload=False, workers=1, timeout_keep_alive=30)
+    except BaseException as exc:   # noqa: BLE001
+        print(f"uvicorn stopped: {type(exc).__name__}: {exc}", flush=True)
+        raise SystemExit(1)

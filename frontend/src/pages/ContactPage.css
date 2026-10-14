@@ -1,0 +1,20 @@
+.ct-root { min-height: 100vh; background: #0b0512; color: #ece6f2; }
+.ct-wrap { max-width: 640px; margin: 0 auto; padding: 40px 16px 80px; box-sizing: border-box; }
+.ct-kicker { color: #d9b45a; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 800; }
+.ct-wrap h1 { margin: 8px 0 10px; font-size: clamp(28px, 5vw, 42px); font-weight: 900; text-wrap: balance;
+  background: linear-gradient(180deg, #f7e7a6, #d9b45a 55%, #b88a2c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ct-lead { color: #b8b0c0; line-height: 1.6; margin: 0 0 24px; }
+.ct-form { display: flex; flex-direction: column; gap: 16px; background: #140d22; border: 1px solid #2a1e40; border-radius: 14px; padding: 20px; }
+.ct-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.ct-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #9d93bb; min-width: 0; }
+.ct-form input, .ct-form select, .ct-form textarea {
+  background: #0d0818; border: 1px solid #2a1e40; border-radius: 8px; color: #ece6f2; padding: 11px 12px; font: inherit; font-size: 15px;
+  letter-spacing: 0; text-transform: none; width: 100%; box-sizing: border-box; }
+.ct-form input:focus, .ct-form select:focus, .ct-form textarea:focus { outline: 2px solid #8b5cf6; outline-offset: 1px; }
+.ct-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.ct-send { align-self: flex-start; height: 46px; padding: 0 28px; border: 0; border-radius: 999px; font-weight: 800; font-size: 15px; color: #0b0512; background: #d9b45a; cursor: pointer; }
+.ct-send:disabled { opacity: 0.7; cursor: progress; }
+.ct-err { color: #f87171; font-size: 14px; }
+.ct-done { background: #140d22; border: 1px solid #34d399; border-radius: 14px; padding: 24px; }
+.ct-done h2 { margin: 0 0 8px; color: #34d399; }
+.ct-done button { margin-top: 12px; background: none; border: 1px solid #2a1e40; color: #c4b5fd; border-radius: 8px; padding: 8px 14px; cursor: pointer; }

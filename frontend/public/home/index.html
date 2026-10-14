@@ -151,7 +151,8 @@ a:hover{color:#f1dc92}
           <p style="margin:0;font-size:clamp(18px,1.8vw,22px);line-height:1.4;font-weight:700;color:#ece6f2;text-wrap:pretty;max-width:520px">Big Proppa is the only sports performance predictive model where you can speak directly to Big Proppa for real-time strategy and sports data analytics for parlays.</p>
           <p style="margin:0;font-size:16px;line-height:1.6;color:#b8b0c0;text-wrap:pretty;max-width:480px">The real predictive parlay analytics for professional sports bettors. Stop guessing and start knowing.</p>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
-            <button style="display:flex;align-items:center;gap:8px;height:48px;padding:0 24px;border:0;border-radius:999px;font-family:inherit;font-size:15px;font-weight:800;color:#0b0512;background:#d9b45a;cursor:pointer">Join the Waitlist</button>
+            <button id="bp-waitlist-btn" type="button" style="display:flex;align-items:center;gap:8px;height:48px;padding:0 24px;border:0;border-radius:999px;font-family:inherit;font-size:15px;font-weight:800;color:#0b0512;background:#d9b45a;cursor:pointer">Join the Waitlist</button>
+            <a href="/contact" style="display:flex;align-items:center;height:48px;padding:0 22px;border:1px solid #d9b45a;border-radius:999px;font-size:15px;font-weight:700;color:#d9b45a;text-decoration:none">Contact Us</a>
           </div>
         </div>
 
@@ -527,6 +528,52 @@ class Component extends DCLogic {
     };
   }
 }
+</script>
+
+<div id="bp-wl" role="dialog" aria-modal="true" aria-labelledby="bp-wl-title" hidden style="position:fixed;inset:0;z-index:10000;background:rgba(5,2,10,.78);display:none;align-items:center;justify-content:center;padding:16px">
+  <form id="bp-wl-form" style="width:100%;max-width:420px;background:#140d22;border:1px solid #3a2a48;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 80px rgba(0,0,0,.6);font-family:inherit;color:#ece6f2">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div><h2 id="bp-wl-title" style="margin:0;font-size:22px;font-weight:900;color:#d9b45a">Join the Waitlist</h2>
+      <p style="margin:6px 0 0;font-size:14px;line-height:1.5;color:#b8b0c0">Be first in when Big Proppa opens. No spam, ever.</p></div>
+      <button type="button" id="bp-wl-x" aria-label="Close" style="background:none;border:0;color:#9d93bb;font-size:26px;line-height:1;cursor:pointer">&times;</button>
+    </div>
+    <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9d93bb">Email
+      <input id="bp-wl-email" type="email" required maxlength="200" autocomplete="email" placeholder="you@example.com" style="background:#0d0818;border:1px solid #2a1e40;border-radius:8px;color:#ece6f2;padding:12px;font:inherit;font-size:15px;letter-spacing:0;text-transform:none">
+    </label>
+    <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9d93bb">Name (optional)
+      <input id="bp-wl-name" maxlength="100" autocomplete="name" style="background:#0d0818;border:1px solid #2a1e40;border-radius:8px;color:#ece6f2;padding:12px;font:inherit;font-size:15px;letter-spacing:0;text-transform:none">
+    </label>
+    <input id="bp-wl-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
+    <div id="bp-wl-msg" role="status" style="min-height:18px;font-size:14px"></div>
+    <button id="bp-wl-go" type="submit" style="height:46px;border:0;border-radius:999px;font-family:inherit;font-size:15px;font-weight:800;color:#0b0512;background:#d9b45a;cursor:pointer">Join the Waitlist</button>
+  </form>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById("bp-waitlist-btn"), wrap = document.getElementById("bp-wl");
+  if (!btn || !wrap) return;
+  var form = document.getElementById("bp-wl-form"), email = document.getElementById("bp-wl-email"),
+      msg = document.getElementById("bp-wl-msg"), go = document.getElementById("bp-wl-go");
+  function open() { wrap.hidden = false; wrap.style.display = "flex"; msg.textContent = ""; go.disabled = false; setTimeout(function () { email.focus(); }, 30); }
+  function close() { wrap.style.display = "none"; wrap.hidden = true; btn.focus(); }
+  btn.addEventListener("click", open);
+  document.getElementById("bp-wl-x").addEventListener("click", close);
+  wrap.addEventListener("click", function (e) { if (e.target === wrap) close(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !wrap.hidden) close(); });
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    go.disabled = true; msg.style.color = "#b8b0c0"; msg.textContent = "Sending…";
+    fetch("/api/waitlist", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.value, name: document.getElementById("bp-wl-name").value, website: document.getElementById("bp-wl-hp").value }) })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j && res.j.detail || "Something went wrong. Please try again.");
+        msg.style.color = "#34d399"; msg.textContent = "You're on the list. Watch your inbox.";
+        form.reset(); setTimeout(close, 2200);
+      })
+      .catch(function (err) { msg.style.color = "#f87171"; msg.textContent = err.message || "Something went wrong. Please try again."; go.disabled = false; });
+  });
+})();
 </script>
 </body>
 </html>
