@@ -376,21 +376,50 @@ _INTERRUPT = {
 }
 
 
-def booth_turns(segments: list[dict], arc: str, r: random.Random) -> list[dict]:
-    """Turn the three monologues into a conversation: sentence-sized turns, each host answering the last."""
+_CLOSERS = [
+    "That's the board. Tail whoever you trust, and bring the receipts next week.",
+    "Three picks, one tail. Choose wisely.",
+    "That's the card. Pick your voice and lock it in.",
+]
+_BOO_TAGS = ["Receipts are my love language.", "I'll be checking these on Sunday night.", "Numbers don't have feelings, and neither do I."]
+_SIGNOFFS = ["That's the Big Proppa booth. Go cash something.", "I'm Jonah Jacques, and that was the Big Proppa booth. Stay disciplined.",
+             "That's the show. Keep your slips short and your reads sharp."]
+
+
+def booth_turns(segments: list[dict], arc: str, r: random.Random, picks: Optional[dict] = None,
+                week: int = 0, has_pow: bool = False) -> list[dict]:
+    """Turn the three monologues into a podcast: chapters, sentence-sized turns where each host answers
+    the last, and one Bet the Booth finale where the picks are debated and the show signs off."""
+    chapters = ["The Play of the Week" if has_pow else "The Week That Was", "By the Numbers", "The Strategy Room"]
     turns: list[dict] = []
     prev = None
     for i, seg in enumerate(segments):
-        speaker = seg["speaker"]
+        speaker, chapter = seg["speaker"], chapters[min(i, len(chapters) - 1)]
         if prev is not None:
             if i == 1:
                 line = r.choice(_INTERRUPT.get(arc, _INTERRUPT["Split Decision"]))
             else:
                 line = r.choice(_REACT).format(prev=HOST_NAME.get(prev, prev))
-            turns.append({"speaker": speaker, "text": line, "beat": "react"})
+            turns.append({"speaker": speaker, "text": line, "beat": "react", "chapter": chapter})
         for sentence in split_sentences(seg["text"]):
-            turns.append({"speaker": speaker, "text": sentence, "beat": "say"})
+            turns.append({"speaker": speaker, "text": sentence, "beat": "say", "chapter": chapter})
         prev = speaker
+
+    if picks and all(h in picks for h in ("Jonah Jacques", "MY BOO", "Julian Feltus")):
+        jon, boo, jul = picks["Jonah Jacques"], picks["MY BOO"], picks["Julian Feltus"]
+        nxt = week + 1
+        script = [
+            ("Jonah Jacques", r.choice(["Alright, the part you came for. Bet the booth.", "Time to bet the booth.", "And now, the picks."])
+             + f" Three plays for Week {nxt}, and you can tail one."),
+            ("MY BOO", f"I'll go first. {_pick_line(boo)}. I've got it at {boo['confidence']} percent. {boo['why']}"),
+            ("Julian Feltus", f"I'm taking a different road. {_pick_line(jul)}. {jul['why']}"),
+            ("Jonah Jacques", f"And I'm riding {_pick_line(jon)}. {jon['why']}"),
+            ("MY BOO", r.choice(_CLOSERS) + " " + r.choice(_BOO_TAGS)),
+            ("Jonah Jacques", r.choice(_SIGNOFFS)),
+        ]
+        for speaker, text in script:
+            for sentence in split_sentences(text):
+                turns.append({"speaker": speaker, "text": sentence, "beat": "say", "chapter": "Bet the Booth"})
     return turns
 
 
@@ -437,9 +466,9 @@ def generate_weekly_recap(bt: JimmyBacktester, week: int) -> dict:
         title += f" / {pow_['player_name']} {pow_['headline'].title()}"
 
     texts = [
-        ("Jonah Jacques", "Play-by-Play", _jonah(r, week, pow_, story, cashed, n, delta, last_booth, tailed, (picks or {}).get("Jonah Jacques"), smash)),
-        ("MY BOO", "Analyst", _myboo(r, week, slips, story, cashed, n, bt.calculate_wager_size(), (picks or {}).get("MY BOO"))),
-        ("Julian Feltus", "Strategy", _julian(r, week, slips, story, st.booth_record, picks, [s for s in st.slips if s.week <= week])),
+        ("Jonah Jacques", "Play-by-Play", _jonah(r, week, pow_, story, cashed, n, delta, last_booth, tailed, None, smash)),
+        ("MY BOO", "Analyst", _myboo(r, week, slips, story, cashed, n, bt.calculate_wager_size(), None)),
+        ("Julian Feltus", "Strategy", _julian(r, week, slips, story, st.booth_record, None, [s for s in st.slips if s.week <= week])),
     ]
     segments = [{"speaker": s, "role": role, "text": t, "word_count": len(t.split())} for s, role, t in texts]
     return {
@@ -448,7 +477,7 @@ def generate_weekly_recap(bt: JimmyBacktester, week: int) -> dict:
         "bankroll_delta": round(delta, 2), "slips_cashed": cashed, "slips_total": n,
         "cashed_pct": round(100 * cashed / n) if n else 0,
         "key_stat": "UNDEFEATED" if n and cashed == n else f"{cashed}/{n} SLIPS CASHED",
-        "turns": booth_turns(segments, arc, random.Random(st.year * 1000 + week + 7)),
+        "turns": booth_turns(segments, arc, random.Random(st.year * 1000 + week + 7), picks, week, bool(pow_)),
         "play_of_week": pow_, "storylines": story,
         "booth": {"picks": picks, "record": st.booth_record, "last_week": last_booth, "tailed_last_week": tailed,
                   "tailed_next_week": st.booth_tails.get(week + 1), "pick_week": week + 1},

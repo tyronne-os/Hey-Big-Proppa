@@ -168,3 +168,94 @@
 .booth-share img { width: 100%; max-width: 100%; aspect-ratio: 1200 / 630; border-radius: 8px; background: #0b0814; display: block; }
 .bs-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 12px; }
 .bs-row .bv-note { margin: 0; }
+
+/* ---------------- podcast studio ---------------- */
+.studio { position: relative; margin: 0 20px 14px; border-radius: 14px; overflow: hidden; border: 1px solid #2c2440; isolation: isolate; min-height: 300px; display: flex; flex-direction: column; justify-content: flex-end; }
+.studio-wall {
+  position: absolute; inset: 0; z-index: -2;
+  background:
+    radial-gradient(ellipse 60% 55% at 14% 6%, rgba(255, 150, 60, 0.26), transparent 62%),
+    radial-gradient(ellipse 60% 55% at 92% 4%, rgba(120, 70, 255, 0.24), transparent 62%),
+    linear-gradient(180deg, rgba(8, 5, 14, 0) 55%, rgba(8, 5, 14, 0.7)),
+    conic-gradient(from 45deg at 50% 50%, #281c3a 25%, #150e20 0 50%, #281c3a 0 75%, #150e20 0) 0 0 / 40px 40px;
+}
+.studio-sign { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-weight: 900; letter-spacing: 0.34em; font-size: 13px; color: #ffe2a0; text-shadow: 0 0 6px #ffb81c, 0 0 18px rgba(255, 184, 28, 0.7); white-space: nowrap; animation: neon 6s infinite; }
+.studio-sign span { color: #fff; }
+@keyframes neon { 0%, 18%, 22%, 100% { opacity: 1 } 20% { opacity: 0.55 } 62% { opacity: 0.9 } }
+.on-air { position: absolute; top: 10px; right: 14px; padding: 5px 11px; border-radius: 4px; font-size: 11px; font-weight: 900; letter-spacing: 0.2em; color: #5c1a1a; background: #2a1215; border: 1px solid #3d1c20; transition: all 0.3s; }
+.on-air.on { color: #fff; background: #dc2626; border-color: #ff6b6b; box-shadow: 0 0 18px rgba(255, 60, 60, 0.75); animation: tally 1.6s ease-in-out infinite; }
+.studio-banner { position: absolute; top: 48px; left: 50%; transform: translateX(-50%); z-index: 6; padding: 8px 18px; border-radius: 999px; background: rgba(8, 5, 14, 0.78); border: 1px solid #ffb81c; color: #ffb81c; font-size: 12px; font-weight: 900; letter-spacing: 0.2em; white-space: nowrap; animation: bannerIn 2.3s ease both; }
+@keyframes bannerIn { 0% { opacity: 0; transform: translate(-50%, -8px) } 12%, 82% { opacity: 1; transform: translate(-50%, 0) } 100% { opacity: 0; transform: translate(-50%, 4px) } }
+
+.seats { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 84px 10px 10px; align-items: end; }
+.seat { position: relative; display: flex; flex-direction: column; align-items: center; background: none; border: 0; color: inherit; cursor: pointer; padding: 0 0 4px; font-family: inherit; min-width: 0; }
+.seat .host-avatar.lg { width: 112px; height: 112px; font-size: 34px; border: 3px solid rgba(255, 255, 255, 0.16); position: relative; z-index: 2; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); transition: border-color 0.2s, transform 0.2s; margin-right: 0; }
+.seat.talking .host-avatar.lg { border-color: var(--host); transform: scale(1.04); }
+
+.orb { --lvl: 0; position: absolute; top: -2px; left: 50%; width: 112px; height: 112px; margin-left: -56px; z-index: 1; pointer-events: none; }
+.orb i { position: absolute; border-radius: 50%; display: block; }
+.orb-glow { inset: -52px; background: radial-gradient(circle, var(--host) 0%, color-mix(in srgb, var(--host) 40%, transparent) 38%, transparent 68%); filter: blur(16px); opacity: calc(0.18 + var(--lvl) * 0.8); transform: scale(calc(0.78 + var(--lvl) * 0.75)); animation: breathe 4.6s ease-in-out infinite; }
+.orb-core { inset: -10px; border: 2px solid var(--host); opacity: calc(0.22 + var(--lvl) * 0.9); transform: scale(calc(1 + var(--lvl) * 0.3)); box-shadow: 0 0 calc(8px + var(--lvl) * 46px) var(--host), inset 0 0 calc(6px + var(--lvl) * 30px) color-mix(in srgb, var(--host) 55%, transparent); }
+.orb-ring { inset: 0; border: 2px solid var(--host); opacity: 0; }
+.seat.talking .orb-ring { animation: ripple 1.7s ease-out infinite; }
+.seat.talking .orb-ring.r2 { animation-delay: 0.85s; }
+@keyframes ripple { 0% { opacity: 0.8; transform: scale(1) } 100% { opacity: 0; transform: scale(1.9) } }
+@keyframes breathe { 50% { scale: 1.07 } }
+
+.mic { position: absolute; z-index: 3; width: 24px; bottom: 36px; left: calc(50% + 40px); transform: rotate(-9deg); filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6)); }
+.seat-name { position: relative; z-index: 3; margin-top: 10px; font-weight: 800; font-size: 14px; }
+.seat-role { position: relative; z-index: 3; font-size: 10px; letter-spacing: 0.16em; color: #c9b8a0; }
+.studio-desk { position: absolute; left: 0; right: 0; bottom: 0; height: 64px; z-index: 1; background: linear-gradient(180deg, #5a3f27 0, #3b2918 14%, #261a10 100%); border-top: 2px solid #7a5736; box-shadow: 0 -14px 28px rgba(0, 0, 0, 0.45); }
+
+.studio-start {
+  position: absolute; inset: 0; z-index: 8; border: 0; cursor: pointer; font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(circle at center, rgba(8, 5, 14, 0.45), rgba(8, 5, 14, 0.8));
+  color: #ffb81c; font-weight: 900; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.studio-start > span {
+  display: grid; place-items: center; width: 76px; height: 76px; margin-bottom: 14px; padding-left: 4px;
+  border-radius: 50%; background: #ffb81c; color: #120b00; font-size: 28px;
+  box-shadow: 0 0 0 8px rgba(255, 184, 28, 0.18), 0 12px 40px rgba(255, 184, 28, 0.4); transition: transform 0.2s;
+}
+.studio-start:hover > span { transform: scale(1.08); }
+
+.caption { --host: #4b4060; margin: 0 20px 12px; min-height: 66px; padding: 14px 16px; border-left: 4px solid var(--host); border-radius: 4px 10px 10px 4px; background: #100c1a; font-size: clamp(16px, 2.6vw, 19px); line-height: 1.5; color: #fff; display: flex; align-items: center; }
+.caption b { color: var(--host); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; margin-right: 10px; }
+.caption-idle { color: #8d84a0; font-size: 15px; }
+
+.player { margin: 0 20px 14px; padding: 14px; background: #100c1a; border: 1px solid #2c2440; border-radius: 10px; }
+.player-bar { position: relative; height: 10px; border-radius: 5px; background: #241b35; cursor: pointer; margin-bottom: 14px; }
+.player-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #d98a00, #ffb81c); transition: width 0.35s; }
+.player-tick { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #0b0814; }
+.player-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.pc { width: 42px; height: 42px; border-radius: 50%; border: 1px solid #3a2f52; background: #241b35; color: #f1ecf8; font-size: 15px; cursor: pointer; display: grid; place-items: center; font-family: inherit; }
+.pc:hover { border-color: #ffb81c; }
+.pc-main { width: 54px; height: 54px; background: #ffb81c; border-color: #ffb81c; color: #120b00; font-size: 17px; }
+.pc-text { width: auto; padding: 0 14px; border-radius: 999px; font-weight: 800; font-size: 12px; letter-spacing: 0.06em; }
+.pc-text.on { border-color: #ffb81c; color: #ffb81c; }
+.chapters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chapter { border: 1px solid #3a2f52; background: transparent; color: #cfc6dd; padding: 7px 12px; border-radius: 999px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.chapter em { font-style: normal; color: #ffb81c; font-weight: 900; margin-right: 8px; }
+.chapter.now { border-color: #ffb81c; background: rgba(255, 184, 28, 0.12); color: #fff; }
+
+.transcript-box { margin: 0 20px 18px; }
+.transcript-box summary { cursor: pointer; color: #a89fb8; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; padding: 6px 0; }
+.transcript-box .feed { margin-top: 10px; }
+
+@media (max-width: 640px) {
+  .studio { min-height: 250px; }
+  .seats { padding-top: 70px; gap: 2px; }
+  .seat .host-avatar.lg { width: 78px; height: 78px; font-size: 24px; }
+  .orb { width: 78px; height: 78px; margin-left: -39px; }
+  .orb-glow { inset: -36px; }
+  .mic { width: 18px; left: calc(50% + 26px); bottom: 34px; }
+  .seat-name { font-size: 12px; }
+  .seat-role { display: none; }
+  .studio-desk { height: 52px; }
+  .studio-sign { font-size: 11px; letter-spacing: 0.2em; left: 14px; transform: none; top: 16px; }
+  .player-row { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-sign, .on-air.on, .orb-glow, .seat.talking .orb-ring { animation: none; }
+}
