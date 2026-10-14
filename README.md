@@ -13,7 +13,7 @@ pinned: false
 [![Live app](https://img.shields.io/badge/live-aibruh--big--proppa--live.hf.space-7c3aed)](https://aibruh-big-proppa-live.hf.space)
 [![BETTER-VERSE](https://img.shields.io/badge/BETTER--VERSE-docs-ffb81c)](docs/BETTER-VERSE.md)
 
-**Jump to:** [BETTER-VERSE](docs/BETTER-VERSE.md) · [Latest updates](#latest-updates) · [Deployment](#deployment) · [Repo index](INDEX.md)
+**Jump to:** [Playbook: how to play](docs/PLAYBOOK.md) · [BETTER-VERSE](docs/BETTER-VERSE.md) · [Latest updates](#latest-updates) · [Deployment](#deployment) · [Repo index](INDEX.md)
 
 An NFL analytics and parlay app built on a real, self-built data lake -- no consensus lines, no
 outside picks. Everything the app says is either raw box-score data or a documented, backtested
@@ -43,6 +43,7 @@ see `docs/HANDOFF.md` and each pond's own module docstring for method and number
 
 | Date | Update |
 |---|---|
+| 2026-10-14 | **[Playbook](docs/PLAYBOOK.md)** (how to play and read the data) and an **Obsidian vault export** of the Strategy Lab report: a linked-note graph of tiers, strategies, slip shapes and winners. |
 | 2026-10-14 | **BETTER-VERSE Strategy Lab**: pools many universes across both real seasons to show which parlay strategies make money (95% intervals), $5/$10 table limits, and a leaderboard of real winnings. |
 | 2026-10-14 | **[BETTER-VERSE](docs/BETTER-VERSE.md)**: named betters in four skill tiers, career view and per-better deep dive; replaces JIMMY in the nav. |
 | 2026-10-14 | **Contact Us** page and a working **Join the Waitlist** form on the home page; every submission is stored and emailed to the owner. |

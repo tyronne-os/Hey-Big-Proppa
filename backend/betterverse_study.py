@@ -7,6 +7,8 @@ a handful. Nothing is filtered: lucky and unlucky betters all count, exactly as 
 
 For every strategy (style x tier, tier, style, legs per slip, same-game vs cross-game, exact slip shape) it reports
   * pooled ROI (profit per $ staked) with a 95% confidence interval from a bootstrap over bettor-seasons,
+  * probability rankings: P(profit), P(profit in BOTH seasons) and P(beat the field) from the same bootstrap, slip hit probability with a 95% Wilson range
+    against the probability the price implies, and an overall rank by P(profit),
   * profit per slip, slip hit rate, share of bettor-seasons that finished in profit,
   * ROI in each real season, whether it beat the whole field in BOTH seasons, and whether it was in profit in both.
 
@@ -28,6 +30,7 @@ import numpy as np
 import pandas as pd
 
 import betterverse_bettors as mb
+import betterverse_obsidian as ob
 import betterverse_sim as sim
 
 OUT = sim.md._GOLD / "betterverse_studies"
@@ -58,7 +61,7 @@ def _table(g: pd.DataFrame, col: str, label, min_slips: int, rng: np.random.Gene
     rows = []
     for key in keys.index:
         d = g[g[col] == key]
-        u = d.groupby("unit", sort=False).agg(stake=("stake", "sum"), ret=("payout", "sum"))
+        u = d.groupby("unit", sort=False).agg(stake=("stake", "sum"), ret=("payout", "sum"), season=("season", "first"))
         st, rt = u["stake"].to_numpy(), u["ret"].to_numpy()
         tot_s, tot_r = st.sum(), rt.sum()
         roi = (tot_r - tot_s) / tot_s
@@ -67,7 +70,24 @@ def _table(g: pd.DataFrame, col: str, label, min_slips: int, rng: np.random.Gene
         lo, hi = np.percentile(boot, [2.5, 97.5])
         seas = {int(sn): float((dd["payout"].sum() - dd["stake"].sum()) / dd["stake"].sum()) for sn, dd in d.groupby("season")}
         both = len(seas) == len(field_by_season) and all(seas[s] > field_by_season[s] for s in seas)
+        useason = u["season"].to_numpy()
+        p_by = {}
+        for sn in np.unique(useason):                      # resample inside each real season on its own
+            m = useason == sn
+            s_, r_ = st[m], rt[m]
+            ii = rng.integers(0, len(s_), (BOOT, len(s_)))
+            p_by[int(sn)] = float((((r_[ii].sum(1) - s_[ii].sum(1)) / s_[ii].sum(1)) > 0).mean())
+        p_both = float(np.prod(list(p_by.values()))) if len(p_by) == len(field_by_season) else float((boot > 0).mean())
+        n, hr = len(d), float(d["won"].mean())
+        z = 1.96
+        wc = (hr + z * z / (2 * n)) / (1 + z * z / n)
+        wh = z * np.sqrt(hr * (1 - hr) / n + z * z / (4 * n * n)) / (1 + z * z / n)
+        implied = float(d["imp"].mean())
         rows.append(dict(
+            p_profit=round(float((boot > 0).mean()), 4), p_both_seasons=round(p_both, 4),
+            p_profit_by_season={str(k): round(v, 4) for k, v in p_by.items()}, p_beat_field=round(float((boot > field_roi).mean()), 4),
+            hit_lo=round(float(max(0.0, wc - wh)), 4), hit_hi=round(float(min(1.0, wc + wh)), 4),
+            implied=round(implied, 4), edge_pts=round(hr - implied, 4),
             key=str(key), label=label(key), slips=int(len(d)), units=int(len(u)), staked=round(float(tot_s), 2),
             roi=round(float(roi), 4), ci_lo=round(float(lo), 4), ci_hi=round(float(hi), 4),
             edge_vs_field=round(float(roi - field_roi), 4), profit_per_slip=round(float((tot_r - tot_s) / len(d)), 3),
@@ -76,6 +96,8 @@ def _table(g: pd.DataFrame, col: str, label, min_slips: int, rng: np.random.Gene
             beats_field_both_seasons=bool(both), beats_field_95=bool(lo > field_roi), profitable_95=bool(lo > 0),
             profitable_both_seasons=bool(len(seas) == len(field_by_season) and all(v > 0 for v in seas.values()))))
     rows.sort(key=lambda r: -r["roi"])
+    for i, r in enumerate(sorted(rows, key=lambda r: (-r["p_both_seasons"], -r["p_profit"], -r["roi"])), start=1):
+        r["rank_p"] = i                                  # 1 = most likely to make money in BOTH real seasons
     return rows
 
 
@@ -98,6 +120,7 @@ def run_study(universes: int = 20, bettors: int = 150, seed: int = 100, progress
                 progress(done / total, f"universe {u + 1}/{universes} · {season}")
     g = pd.concat(frames, ignore_index=True)
     ident = pd.concat(idents, ignore_index=True)
+    g["imp"] = 1.0 / g["decimal_odds"]
     g["unit"] = g["universe"].astype(str) + "-" + g["season"].astype(str) + "-" + g["bettor_id"].astype(str)
     g["style_tier"] = g["archetype"] + "|" + g["tier"]
     g["sgp_label"] = np.where(g["sgp"], "sgp", "cross")
@@ -119,7 +142,7 @@ def run_study(universes: int = 20, bettors: int = 150, seed: int = 100, progress
         "archetype": _table(g, "archetype", lambda k: arch_label[k], 150, rng, field_roi, field_by_season),
         "n_legs": _table(g, "n_legs_k", lambda k: f"{k}{'+' if k == 8 else ''}-leg slip", 150, rng, field_roi, field_by_season),
         "sgp": _table(g, "sgp_label", lambda k: "Same-game parlay" if k == "sgp" else "Cross-game slip", 150, rng, field_roi, field_by_season),
-        "shape": _table(g, "combo_signature", lambda k: k, 150, rng, field_roi, field_by_season, top=60),
+        "shape": _table(g, "combo_signature", ob._shape, 150, rng, field_roi, field_by_season, top=60),
     }
 
     net = g.groupby(["universe", "season", "bettor_id"]).agg(slips=("won", "size"), staked=("stake", "sum"), returned=("payout", "sum")).reset_index()
@@ -131,6 +154,14 @@ def run_study(universes: int = 20, bettors: int = 150, seed: int = 100, progress
     cols = ["username", "tier_label", "label", "unit", "season", "universe", "final_bankroll", "net", "slips", "best_signature", "best_odds", "best_payout"]
     top_winners = w.sort_values("net", ascending=False).head(25)[cols].round(2).to_dict("records")
     rookie_winners = w[w["tier"].isin(["casual", "degen"])].sort_values("net", ascending=False).head(15)[cols].round(2).to_dict("records")
+
+    ss = g.groupby(["style_tier", "combo_signature"]).agg(slips=("won", "size"), staked=("stake", "sum"), ret=("payout", "sum"), wins=("won", "sum")).reset_index()
+    ss = ss[ss["slips"] >= 30]
+    style_shapes = {}
+    for key, d in ss.groupby("style_tier"):
+        d = d.sort_values("slips", ascending=False).head(6)
+        style_shapes[key] = [dict(shape=r.combo_signature, slips=int(r.slips), wins=int(r.wins), roi=round(float((r.ret - r.staked) / r.staked), 4))
+                             for r in d.itertuples()]
 
     st = dims["style_tier"]
     proven = [r for r in st if r["profitable_both_seasons"] and r["profitable_95"]]
@@ -150,6 +181,11 @@ def run_study(universes: int = 20, bettors: int = 150, seed: int = 100, progress
         headlines.append("No strategy turned a profit with 95% confidence at these prices.")
     if proven:
         headlines.append("Made money with 95% confidence AND finished in profit in both real seasons: " + ", ".join(r["label"] for r in proven[:4]) + ".")
+    ranked = sorted(dims["shape"] + st, key=lambda r: (-r["p_both_seasons"], -r["p_profit"], -r["roi"]))
+    if ranked:
+        t = ranked[0]
+        headlines.append(f"Most likely to make money: {t['label']} "
+                         f"({t['p_both_seasons']:.0%} chance of profit in both real seasons, {t['hit_rate']:.0%} of slips hit vs {t['implied']:.0%} implied by the price).")
     if st:
         worst = st[-1]
         headlines.append(f"Money losers: {worst['label']} ({worst['roi']:+.1%} ROI, {worst['hit_rate']:.0%} slip hit rate).")
@@ -159,7 +195,7 @@ def run_study(universes: int = 20, bettors: int = 150, seed: int = 100, progress
         seasons=list(SEASONS), seed=seed, bettor_seasons=int(len(w)), slips=int(len(g)), seconds=round(time.time() - t0, 1),
         created=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         field=dict(roi=round(field_roi, 4), by_season={str(k): round(v, 4) for k, v in field_by_season.items()}),
-        headlines=headlines, dims=dims, top_winners=top_winners, rookie_winners=rookie_winners,
+        headlines=headlines, dims=dims, style_shapes=style_shapes, top_winners=top_winners, rookie_winners=rookie_winners,
         caveat="Every universe replays the same two real NFL seasons, so more universes average out the betters' randomness, "
                "not what actually happened in 2024-25. Trust strategies that win in both seasons."))
 

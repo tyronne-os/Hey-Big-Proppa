@@ -654,6 +654,18 @@ def api_bv_study_get(study_id: str):
     return s
 
 
+@app.get("/api/betterverse/study/{study_id}/obsidian")
+def api_bv_study_obsidian(study_id: str):
+    import betterverse_obsidian
+    import betterverse_study
+    from fastapi.responses import Response
+    s = betterverse_study.load(study_id)
+    if s is None:
+        raise HTTPException(404, "study not found")
+    return Response(betterverse_obsidian.zip_bytes(s), media_type="application/zip",
+                    headers={"Content-Disposition": f'attachment; filename="{study_id}-obsidian-vault.zip"'})
+
+
 @app.post("/api/betterverse/study/{study_id}/ingest")
 def api_bv_study_ingest(study_id: str):
     import boo_training

@@ -6,6 +6,7 @@ type Row = {
   key: string; label: string; slips: number; units: number; roi: number; ci_lo: number; ci_hi: number; edge_vs_field: number;
   profit_per_slip: number; hit_rate: number; profitable_share: number; by_season: Record<string, number>;
   beats_field_both_seasons: boolean; beats_field_95: boolean; profitable_95: boolean; profitable_both_seasons: boolean;
+  p_profit_by_season?: Record<string, number>; p_profit: number; p_both_seasons: number; p_beat_field: number; rank_p: number; implied: number; edge_pts: number; hit_lo: number; hit_hi: number;
 };
 type Winner = { username: string; tier_label: string; label: string; unit: number; season: number; final_bankroll: number; net: number; slips: number; best_signature: string; best_odds: number; best_payout: number };
 type Study = {
@@ -31,6 +32,7 @@ export default function StrategyLab() {
   const [seed, setSeed] = useState(100);
   const [study, setStudy] = useState<Study | null>(null);
   const [dim, setDim] = useState("style_tier");
+  const [sortBy, setSortBy] = useState<"roi" | "prob">("prob");
   const [prog, setProg] = useState<{ p: number; label: string } | null>(null);
   const [err, setErr] = useState("");
   const [sent, setSent] = useState("");
@@ -68,7 +70,8 @@ export default function StrategyLab() {
     } catch { setSent("MY BOO couldn't ingest this study."); }
   }
 
-  const rows = study ? study.dims[dim] ?? [] : [];
+  const raw = study ? study.dims[dim] ?? [] : [];
+  const rows = [...raw].sort(sortBy === "prob" ? (a, b) => a.rank_p - b.rank_p : (a, b) => b.roi - a.roi);
   const lo = Math.max(-1, Math.min(-0.05, ...rows.map((r) => r.ci_lo)));
   const hi = Math.min(1.5, Math.max(0.05, ...rows.map((r) => r.ci_hi)));
   const pos = (v: number) => `${((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * 100}%`;
@@ -101,21 +104,32 @@ export default function StrategyLab() {
           <div className="bv-boo">
             <button onClick={send}>Send study to MY BOO →</button>
             <span>{sent || "Files the proven money-makers and money-losers as priors."}</span>
+            <a className="bv-dl" href={`${API_BASE}/api/betterverse/study/${study.study_id}/obsidian`} download>Download Obsidian vault ↓</a>
           </div>
+          <p className="bv-note">The vault is a folder of linked notes: unzip it, open it in Obsidian, and press Ctrl/Cmd+G for the graph of tiers, strategies, slip shapes and winners.</p>
 
+          <div className="bv-filters">
+            <span className="bv-sortlabel">Rank by</span>
+            <button className={sortBy === "prob" ? "on" : ""} onClick={() => setSortBy("prob")} title="Chance of making money in BOTH real seasons">Chance of profit</button>
+            <button className={sortBy === "roi" ? "on" : ""} onClick={() => setSortBy("roi")}>ROI</button>
+          </div>
           <div className="bv-filters">
             {DIMS.map(([k, l]) => <button key={k} className={dim === k ? "on" : ""} onClick={() => setDim(k)}>{l}</button>)}
           </div>
           <div className="bv-scroll">
             <table className="bv-table lab">
               <thead>
-                <tr><th>Strategy</th><th>Slips</th><th>ROI · 95% range</th><th>Per slip</th><th>Hit</th><th>Up</th><th>2024</th><th>2025</th><th></th></tr>
+                <tr><th>#</th><th>Strategy</th><th>Slips</th><th title="Chance of profit in BOTH real seasons">P(profit)</th><th>ROI · 95% range</th><th>Per slip</th><th>Hit</th><th>Up</th><th>2024</th><th>2025</th><th></th></tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.key}>
+                    <td>{r.rank_p}</td>
                     <td className="bv-lab-name">{label(r)}</td>
                     <td>{r.slips.toLocaleString()}</td>
+                    <td title={`2024 ${pct(r.p_profit_by_season?.["2024"], 0)} · 2025 ${pct(r.p_profit_by_season?.["2025"], 0)} · overall ${pct(r.p_profit, 0)}`}>
+                      <b className={r.p_both_seasons >= 0.5 ? "pos" : "neg"}>{pct(r.p_both_seasons, 0)}</b>
+                    </td>
                     <td className="bv-ci-cell">
                       <div className="bv-ci" aria-label={`ROI ${sgn(r.roi)}, 95% range ${sgn(r.ci_lo)} to ${sgn(r.ci_hi)}`}>
                         <i className="bv-ci-zero" style={{ left: pos(0) }} />
@@ -139,7 +153,7 @@ export default function StrategyLab() {
               </tbody>
             </table>
           </div>
-          <p className="bv-note">Bar = 95% range of ROI (bootstrap over bettor-seasons); the line marks break-even. “Up” = share of bettor-seasons that finished in profit.</p>
+          <p className="bv-note">P(profit) = the chance this strategy makes money in <b>both</b> real seasons (each season resampled on its own, then multiplied), so a one-season fluke ranks low. The # is its rank on that measure. Bar = 95% range of ROI; the line marks break-even. “Up” = share of bettor-seasons that finished in profit.</p>
 
           <div className="bv-two tight">
             <WinnerList title="Biggest winners, anyone" rows={study.top_winners.slice(0, 10)} />

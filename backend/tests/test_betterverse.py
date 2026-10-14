@@ -96,3 +96,37 @@ def test_career_pools_two_seasons_with_same_betters():
     c = sim.career([sim.run_id(2024, 40, 21, None), sim.run_id(2025, 40, 21, None)])
     assert c and len(c["leaderboard"]) == 40 and c["leaderboard"][0]["unit"] in (5, 10)
     assert len(c["leaderboard"][0]["by_season"]) == 2
+
+
+def test_obsidian_vault_links_resolve_and_graph_is_colored():
+    import io
+    import json
+    import re
+    import zipfile
+    import betterverse_obsidian as ob
+    import betterverse_study as st
+    study = st.run_study(2, 40, 3)
+    notes = ob.build(study)
+    assert "00 Home.md" in notes and ".obsidian/graph.json" in notes
+    have = {p[:-3] for p in notes if p.endswith(".md")}
+    missing = []
+    for path, text in notes.items():
+        for target in re.findall(r"\[\[([^\]|\\]+)\\?(?:\|[^\]]*)?\]\]", text):
+            if target not in have:
+                missing.append((path, target))
+    assert not missing, missing[:5]
+    assert all(not re.search(r'[\\:*?"<>|#^\[\]]', p.split("/")[-1]) for p in notes)
+    graph = json.loads(notes[".obsidian/graph.json"])
+    assert {g["query"] for g in graph["colorGroups"]} >= {"tag:#tier/sharp", "tag:#proven", "tag:#loser"}
+    assert "```mermaid" in notes["00 Home.md"] and "xychart-beta" in notes["00 Home.md"]
+    assert any(p.startswith("Strategies/") for p in notes) and any(p.startswith("Betters/") for p in notes)
+    assert "tag:#top5" in {g["query"] for g in graph["colorGroups"]}
+    rank = notes["Rankings/Parlay Shape Ranking.md"]
+    assert "quadrantChart" in rank and "BOTH real seasons" in rank and "Rankings/Top Parlays.md" in notes
+    assert any("top5" in t.splitlines()[2] for p, t in notes.items() if p.startswith("Shapes/"))
+    for path, text in notes.items():                                   # alias pipes inside table rows must be escaped
+        for line in text.splitlines():
+            if line.startswith("|"):
+                assert not re.search(r"\[\[[^\]]*[^\\]\|[^\]]*\]\]", line), (path, line[:80])
+    z = zipfile.ZipFile(io.BytesIO(ob.zip_bytes(study)))
+    assert f"{ob.ROOT}/00 Home.md" in z.namelist()

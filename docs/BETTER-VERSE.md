@@ -6,7 +6,7 @@
 
 - Live page: <https://aibruh-big-proppa-live.hf.space/betterverse>
 - Source: [`backend/betterverse_*.py`](../backend), [`frontend/src/pages/BetterversePage.tsx`](../frontend/src/pages/BetterversePage.tsx)
-- Back to the [project README](../README.md)
+- Back to the [project README](../README.md) · How to play and read the data: [PLAYBOOK.md](PLAYBOOK.md)
 
 ## Why it exists
 
@@ -53,7 +53,7 @@ a deep dive: ideology, rules, base bet, bankroll curve, what they actually bet, 
 One roster is one lucky or unlucky sample, so the Strategy Lab pools **many universes** (different rosters, different random picks) across **both real
 seasons**: 20 universes × 150 betters × 2 seasons = 6,000 bettor-seasons and about 127,000 slips in under a minute. For every strategy (style × tier,
 tier, style, legs per slip, same-game vs cross-game, exact slip shape) it reports pooled ROI with a **95% confidence interval** (bootstrap over
-bettor-seasons), profit per slip, slip hit rate, share of bettor-seasons in profit, ROI in each season, and flags for **proven $** (the whole interval
+bettor-seasons), profit per slip, slip hit rate, share of bettor-seasons in profit, ROI in each season, and a **probability ranking** (chance of profit in each season and in both, chance of beating the field, slip hit probability vs the price-implied probability), and flags for **proven $** (the whole interval
 is above zero), **$ both seasons**, and **beat field**. It also lists the biggest winners and the biggest rookie (Casual/Degen) winners with the slip
 that won it.
 
@@ -63,9 +63,17 @@ happened in 2024-25. Trust strategies that win in **both** seasons.
 ## What it has found so far (20 universes, 150 betters each)
 
 - The house kept about **19.6%** of every dollar staked (14.8% in 2024, 24.3% in 2025).
-- **Game-total overs** (2-4 legs, cross-game) were the only strategy with a profit the 95% interval supports: Overs Only · Grinder **+9.8% ROI (95% CI +0.5% to +18.7%)**, positive in both 2024 and 2025. Note this partly reflects how those two real seasons played out.
+- **Game-total overs** (2-4 legs, cross-game) were the only strategy with a profit the 95% interval supports: Overs Only · Grinder **+9.8% ROI (95% CI +2.0% to +17.3%)**, though 2025 was flat (-0.4%), so its chance of profit in both seasons is 43%.
+- The **most consistent parlay types** by probability of profit in both seasons: **2-leg rushing-yards unders (80%)**, **3-leg game-total overs (70%)**, **2-leg game-total overs (66%)**. 5-leg favorite spreads had the biggest ROI (+16.8%) but only a 36% chance of profit in both seasons (+43% in 2024, -7% in 2025). Note this partly reflects how those two real seasons played out.
 - **Same-game parlays** returned -46.8% vs -16.1% for cross-game slips; **6+ leg slips** lost 74-89%; **Lottery Ticket · Degen** was the worst at -73.8%.
-- The biggest single winners were rookies hitting **4-5 leg anytime-TD tickets at 147x-491x**, yet TD Scorer Stackers lose money overall (-19% to -39%). Rookie wins are real, they just don't repeat.
+- The biggest single winners were rookies hitting **4-5 leg anytime-TD tickets at roughly 150x to over 700x**, yet TD Scorer Stackers lose money overall (-19% to -39%). Rookie wins are real, they just don't repeat.
+
+## Obsidian vault export
+
+The Strategy Lab can export its report as an **Obsidian vault**: linked notes for every tier, style, strategy, slip shape and big winner, with
+Mermaid charts and a pre-colored graph (gold = proven money-maker, red = confident loser, white = a winning better). Download it from the Strategy Lab
+(or `GET /api/betterverse/study/{study_id}/obsidian`), unzip, open the folder as a vault in Obsidian, then open Graph view. Code:
+[`backend/betterverse_obsidian.py`](../backend/betterverse_obsidian.py). Step by step: [PLAYBOOK.md](PLAYBOOK.md#3-see-the-connections-the-obsidian-vault).
 
 ## Data it writes (ready to ingest)
 
@@ -91,7 +99,7 @@ them when a leg has no recent-form read. Live lessons always outrank simulated o
 `GET /api/betterverse/priors` · `GET /api/betterverse/archetypes`
 
 Strategy Lab: `POST /api/betterverse/study` · `GET /api/betterverse/study/status/{study_id}` · `GET /api/betterverse/study/{study_id}` ·
-`GET /api/betterverse/studies` · `POST /api/betterverse/study/{study_id}/ingest`
+`GET /api/betterverse/studies` · `POST /api/betterverse/study/{study_id}/ingest` · `GET /api/betterverse/study/{study_id}/obsidian`
 
 ## Run it
 
@@ -104,6 +112,7 @@ cd backend && uvicorn main:app --port 8000                    # then open /bette
 
 | Date | Change |
 |---|---|
+| 2026-10-14 | **Obsidian vault export** of the Strategy Lab report, and [PLAYBOOK.md](PLAYBOOK.md) (how to play, how to read the data). |
 | 2026-10-14 | **Strategy Lab** (pooled universes, 95% intervals, proven/consistency flags), **$5/$10 table limits** ($10 until $500, $20 until $1,000, then free), leaderboard now ranks **real winnings** (luck-adjusted view kept as an option). |
 | 2026-10-14 | Renamed from "The Bookie Multiverse" to **BETTER-VERSE**. Named betters, skill tiers, proof score, career view, deep dive. Nav: BETTER-VERSE replaces JIMMY. |
 | 2026-10-14 | First version: 500-bettor season simulator, FD/DK legality rules, realistic pricing, MY BOO ingest, node cluster on the Lake Canvas. |

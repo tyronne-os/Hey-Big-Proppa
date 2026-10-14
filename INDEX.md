@@ -16,6 +16,8 @@ Everything below is either in this repo or a backup of it. Update this file when
 | SQL schemas | `sql/` | GitHub |
 | Data source registry (Utility Room) | `junk_drawer/sources.yaml`, `docs/UTILITY_ROOM.md` | GitHub |
 | BETTER-VERSE simulator | `backend/betterverse_*.py`, page `frontend/src/pages/BetterversePage.tsx`, write-up [`docs/BETTER-VERSE.md`](docs/BETTER-VERSE.md) | GitHub; run output `lake/gold/nfl/betterverse/` is gitignored, mirrored to HF dataset `AIBRUH/big-proppa-lake` |
+| Player guide + data-reading tips | [`docs/PLAYBOOK.md`](docs/PLAYBOOK.md) | GitHub |
+| Obsidian vault export | `backend/betterverse_obsidian.py` (route `GET /api/betterverse/study/{id}/obsidian`) | GitHub; generated vaults are downloads, not stored |
 | Contact Us + waitlist inbox | `backend/inbox.py`, `frontend/src/pages/ContactPage.tsx`, waitlist form in `frontend/public/home/index.html` + `landing/index.html` | Code on GitHub; submissions in `lake/gold/nfl/inbox.jsonl` are gitignored, mirrored to the private HF dataset |
 | Build / backtest scripts | `scripts/` | GitHub |
 | Docs and handoffs | `docs/` (start with `docs/HANDOFF.md`; old sync log `docs/SYNC_LOG.md`) | GitHub |
