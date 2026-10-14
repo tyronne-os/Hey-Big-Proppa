@@ -16,6 +16,7 @@ export type LakeCanvasNodeData = Pick<CanvasNode, "type" | "name" | "sub" | "chi
 const FRAME = {
   lake: "linear-gradient(160deg,#5a5f68,#3a3e46 55%,#26292f)",
   expert: "linear-gradient(160deg,#d9b45a,#8a6224 55%,#5a3e14)",
+  sim: "linear-gradient(160deg,#8b5cf6,#5b2bb5 55%,#2e1466)",
 };
 
 export default function LakeCanvasNode({ data }: NodeProps<LakeCanvasNodeData>) {
@@ -36,7 +37,7 @@ export default function LakeCanvasNode({ data }: NodeProps<LakeCanvasNodeData>) 
       <Handle type="target" position={Position.Top} style={{ background: "#e0782f", border: "1.5px solid #3a2410" }} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: "0.32em", color: "rgba(255,255,255,0.85)" }}>
-          {isLake ? "LAKE" : "HARNESS"}
+          {isLake ? "LAKE" : data.type === "sim" ? "MULTIVERSE" : "HARNESS"}
         </span>
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
           {!isLake && data.onSettings && (
@@ -83,7 +84,7 @@ export default function LakeCanvasNode({ data }: NodeProps<LakeCanvasNodeData>) 
               padding: "2px 5px",
             }}
           >
-            {isLake ? "DATA" : "EXEC"}
+            {isLake ? "DATA" : data.type === "sim" ? "SIM" : "EXEC"}
           </span>
           <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 8, color: "#6e6878" }}>MODE</span>
         </div>

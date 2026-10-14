@@ -601,7 +601,24 @@ def score_components(player_id: str, hit_rate: float | None, market_slug: str | 
     except Exception:
         pass
 
+    # THE BOOKIE MULTIVERSE: how this market/side did across hundreds of simulated bettors' seasons
+    mv = multiverse_prior(market_slug, direction)
+    if mv is not None:
+        comp["multiverse"] = round(0.5 + 3 * mv["prior_edge"], 4)
+
     return comp
+
+
+def multiverse_prior(market_slug: str | None, direction: str = "over") -> dict | None:
+    """MY BOO's pooled simulation prior for one market side, or None until a run has been ingested."""
+    if not market_slug:
+        return None
+    try:
+        import boo_training
+        side = "yes" if market_slug == "anytd" else direction
+        return boo_training.multiverse_priors().get("markets", {}).get(market_slug, {}).get(side)
+    except Exception:
+        return None
 
 
 def jimmy_score(player_id: str, hit_rate: float | None, market_slug: str | None = None,

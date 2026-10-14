@@ -29,7 +29,16 @@ const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "college", "engine",
 type ViewTab = (typeof VIEW_TABS)[number];
 
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
-const nodeTypes: NodeTypes = { canvasNode: LakeCanvasNode };
+function MultiverseGroup({ data }: { data: { name: string; sub: string } }) {
+  return (
+    <div style={{ padding: "8px 12px", color: "#c4b5fd", pointerEvents: "none" }}>
+      <div style={{ fontWeight: 800, letterSpacing: "0.12em", fontSize: 13 }}>{data.name}</div>
+      <div style={{ fontSize: 11, opacity: 0.75 }}>{data.sub}</div>
+    </div>
+  );
+}
+
+const nodeTypes: NodeTypes = { canvasNode: LakeCanvasNode, mvGroup: MultiverseGroup };
 
 export const tabPath = (t: string) => `/${t}`;
 
@@ -85,7 +94,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
   // NFL RAMP top-left, CFB RAMP top-right (offset right by ~Jimmy's node width
   // to spread the converging edges), Jimmy centered below both.
   useEffect(() => {
-    api.canvasNodes().then(({ nodes }) => {
+    api.canvasNodes().then(({ nodes, groups = [], edges = [] }) => {
       const NODE_W = 210;
       const positions: Record<string, { x: number; y: number }> = {
         "ramp-nfl":        { x: 40,           y: 60  },
@@ -93,6 +102,10 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
         "jimmy-the-greek": { x: 40 + NODE_W + 15, y: 390 },
         // the authority: MY BOO sits right beside Jimmy, same row
         "my-boo":          { x: 40 + NODE_W + 15 + NODE_W + 30, y: 390 },
+        // THE BOOKIE MULTIVERSE cluster: positions are relative to the group frame
+        "mv-bettors":      { x: 20,                    y: 50 },
+        "mv-sim":          { x: 20 + NODE_W + 30,      y: 50 },
+        "mv-insights":     { x: 20 + 2 * (NODE_W + 30), y: 50 },
       };
 
       // edges: every lake node feeds into every expert node
@@ -104,17 +117,34 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
           fanEdges.push({ id: `${src}->${tgt}`, source: src, target: tgt, type: "animatedPulse" });
         }
       }
+      for (const e of edges) {
+        const id = `${e.source}->${e.target}`;
+        if (!fanEdges.some((f) => f.id === id)) fanEdges.push({ id, source: e.source, target: e.target, type: "animatedPulse" });
+      }
 
-      const built = nodes.map((n, i) => ({
+      const groupNodes = groups.map((g) => ({
+        id: g.id,
+        type: "mvGroup",
+        position: { x: 40, y: 760 },
+        data: { type: "sim" as const, name: g.name, sub: g.sub, chips: [] },
+        style: {
+          width: 3 * NODE_W + 100, height: 360, borderRadius: 14,
+          border: "2px dashed #8b5cf6", background: "rgba(124,58,237,0.08)",
+        },
+      }));
+
+      const built = [...groupNodes, ...nodes.map((n, i) => ({
         id: n.id,
         type: "canvasNode",
         position: positions[n.id] ?? { x: 40, y: 40 + i * 340 },
+        ...(n.group ? { parentNode: n.group, extent: "parent" as const } : {}),
         data: {
           type: n.type, name: n.name, sub: n.sub, chips: n.chips,
           ...(n.store ? { store: n.store } : {}),
           ...(n.type === "expert" ? { onSettings: () => (n.id === "my-boo" ? setBooPanelOpen(true) : setJimmyPanelOpen(true)) } : {}),
+          ...(n.type === "sim" ? { onSettings: () => { window.location.href = "/multiverse"; } } : {}),
         },
-      }));
+      }))];
 
       setRfNodes(built);
       setRfEdges(fanEdges);

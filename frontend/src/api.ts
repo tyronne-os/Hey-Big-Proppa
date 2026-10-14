@@ -1,3 +1,4 @@
+import type { CanvasNode } from "./types";
 import type {
   ChartIndexRow,
   EngineResponse,
@@ -89,9 +90,11 @@ export const api = {
   myBooAlerts: (since = 0) => get<{ latest: number; alerts: BooAlert[] }>(`/api/myboo/alerts?since=${since}`),
   myBooAlertsPoll: () => fetch(`${BASE}/api/myboo/alerts/poll`, { method: "POST" }).then(r => r.json()),
   myBooRecaps: (week?: number) => get<{ recaps: SlipRecap[] }>(`/api/myboo/recaps${week ? `?week=${week}` : ""}`),
-  canvasNodes: () => get<{ nodes: { id: string; type: "lake" | "expert"; name: string; sub: string; chips?: string[]; store?: string }[] }>(
-    "/api/canvas/nodes"
-  ),
+  canvasNodes: () => get<{
+    nodes: CanvasNode[];
+    groups?: { id: string; name: string; sub: string }[];
+    edges?: { source: string; target: string }[];
+  }>("/api/canvas/nodes"),
   teamAtsHeatmap: () =>
     get<{ sourceStatus: string; cells: { team: string; week: string; covered: boolean }[] }>(
       "/api/chart/team_ats_heatmap"

@@ -32,3 +32,5 @@ lake/gold/nfl/myboo_alerts.json
 # frontend build artifacts
 frontend/node_modules/
 frontend/dist/
+lake/gold/nfl/multiverse/
+lake/gold/nfl/multiverse_priors.json

@@ -1,6 +1,6 @@
 // Data shapes per frontend/design/HANDOFF_CLAUDE_CODE.md section 6.
 
-export type NodeType = "lake" | "expert";
+export type NodeType = "lake" | "expert" | "sim";
 
 export interface CanvasNode {
   id: string;
@@ -9,6 +9,7 @@ export interface CanvasNode {
   sub: string;
   chips?: string[];
   store?: string;
+  group?: string;
 }
 
 export interface GameBar {
