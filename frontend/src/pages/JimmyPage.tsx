@@ -4,7 +4,7 @@
  * already played, watch them grade against what really happened, then let the Big Proppa booth
  * break the week down and bet the booth on next week.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { API_BASE } from "../api";
 import JimmyWeeklyRecap from "../components/JimmyWeeklyRecap";
 import "./JimmyPage.css";
@@ -58,6 +58,8 @@ export default function JimmyPage() {
   const [err, setErr] = useState("");
   const [recapWeek, setRecapWeek] = useState<number | null>(null);
   const [watched, setWatched] = useState<Record<number, boolean>>({});
+  const [autoPlay, setAutoPlay] = useState(false);
+  const autoPlayRef = useRef(false);
   const cst = useCST();
 
   useEffect(() => {
@@ -108,6 +110,45 @@ export default function JimmyPage() {
     } catch (e: any) { setErr(e.message); }
   }
 
+  // Keep ref in sync so the async auto-play loop sees the latest value
+  useEffect(() => { autoPlayRef.current = autoPlay; }, [autoPlay]);
+
+  // Auto-play engine: runs whenever auto-play is on and we're on the dashboard with slips to build
+  useEffect(() => {
+    if (!autoPlay || !state || page !== "dashboard" || state.game_over) return;
+    if (state.slips_this_week >= state.slips_per_week) {
+      // all slips placed — wait a beat then advance
+      const t = setTimeout(async () => {
+        if (!autoPlayRef.current) return;
+        try {
+          const s = await post(`/api/jimmy/advance/${state.session_id}`);
+          adopt(s);
+          if (s.game_over) setPage("end");
+        } catch { /* ignore */ }
+      }, 2200);
+      return () => clearTimeout(t);
+    }
+    // fetch board and auto-pick top 3 by confidence
+    const t = setTimeout(async () => {
+      if (!autoPlayRef.current) return;
+      try {
+        const { props } = await jx(`/api/jimmy/board/${state.session_id}`);
+        if (!autoPlayRef.current) return;
+        // sort by confidence desc, pick top 3 overs
+        const sorted = [...props].sort((a: Prop, b: Prop) => b.confidence - a.confidence);
+        const legs = sorted.slice(0, 3).map((p: Prop) => ({
+          player_id: p.player_id, team: p.team, prop_type: p.prop_type, line: p.line,
+          is_over: true, confidence: p.confidence,
+        }));
+        if (!autoPlayRef.current) return;
+        const d = await post(`/api/jimmy/submit/${state.session_id}`, { legs });
+        adopt(d.state);
+      } catch { /* ignore */ }
+    }, 1500);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, state?.slips_this_week, state?.current_week, page]);
+
   function restart() {
     try { localStorage.removeItem(SID_KEY); localStorage.removeItem(SAVE_KEY); } catch { /* */ }
     setState(null);
@@ -143,8 +184,17 @@ export default function JimmyPage() {
               <input type="range" min="1" max="5" value={slipsPerWeek} onChange={(e) => setSlipsPerWeek(Number(e.target.value))} className="slip-slider" />
               <div className="slip-value">{slipsPerWeek} slip{slipsPerWeek !== 1 ? "s" : ""}</div>
             </div>
+            <div className="autoplay-toggle">
+              <label className="autoplay-label">
+                <input type="checkbox" checked={autoPlay} onChange={(e) => setAutoPlay(e.target.checked)} />
+                <span className="autoplay-track" />
+                <span className="autoplay-text">
+                  <b>Auto-Play</b> — Watch JIMMY run the whole season hands-free
+                </span>
+              </label>
+            </div>
             <button onClick={startSeason} disabled={!season || loading} className="btn-primary">
-              {loading ? "Loading the season…" : "Begin Season"}
+              {loading ? "Loading the season…" : autoPlay ? "▶ Auto-Play Season" : "Begin Season"}
             </button>
             {err && <p className="jimmy-err">{err}</p>}
             <div className="jimmy-info">
@@ -199,6 +249,7 @@ export default function JimmyPage() {
         onBuild={() => setPage("builder")} onResults={() => setPage("ticker")}
         onRecap={() => { setRecapWeek(wk); setWatched((w) => ({ ...w, [wk]: true })); }}
         recapFresh={placed > 0 && !watched[wk]}
+        autoPlay={autoPlay} onToggleAutoPlay={() => setAutoPlay((v) => !v)}
         onAdvance={advance} onEnd={() => setPage("end")} onRestart={restart} />
       {recapModal}
     </>
@@ -207,9 +258,9 @@ export default function JimmyPage() {
 
 const HOST_SHORT: Record<string, string> = { "MY BOO": "MY BOO", "Jonah Jacques": "Jonah", "Julian Feltus": "Julian" };
 
-function JimmyDashboard({ state, cst, err, onBuild, onResults, onRecap, recapFresh, onAdvance, onEnd, onRestart }: {
+function JimmyDashboard({ state, cst, err, onBuild, onResults, onRecap, recapFresh, autoPlay, onToggleAutoPlay, onAdvance, onEnd, onRestart }: {
   state: SeasonState; cst: string; err: string; onBuild: () => void; onResults: () => void; onRecap: () => void;
-  recapFresh: boolean; onAdvance: () => void; onEnd: () => void; onRestart: () => void;
+  recapFresh: boolean; autoPlay: boolean; onToggleAutoPlay: () => void; onAdvance: () => void; onEnd: () => void; onRestart: () => void;
 }) {
   const graded = state.slips.filter((s) => s.result !== null);
   const cashRate = graded.length ? Math.round((graded.filter((s) => s.result).length / graded.length) * 100) : 0;
@@ -228,7 +279,19 @@ function JimmyDashboard({ state, cst, err, onBuild, onResults, onRecap, recapFre
           <h1>JIMMY {state.year}</h1>
           <div className="cst-time">{cst} CST</div>
         </div>
-        <div className="week-badge">Week {wk}</div>
+        <div className="header-right">
+          {autoPlay && (
+            <button className="autoplay-badge" onClick={onToggleAutoPlay} title="Auto-play is running — click to pause">
+              ▶ AUTO
+            </button>
+          )}
+          {!autoPlay && (
+            <button className="autoplay-badge autoplay-off" onClick={onToggleAutoPlay} title="Click to enable auto-play">
+              ⏸ MANUAL
+            </button>
+          )}
+          <div className="week-badge">Week {wk}</div>
+        </div>
       </div>
 
       <div className="dashboard-grid">

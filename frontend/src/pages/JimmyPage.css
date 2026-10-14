@@ -253,6 +253,77 @@
   margin: 0;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Auto-play toggle on season select */
+.autoplay-toggle {
+  margin: 8px 0 16px;
+}
+.autoplay-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.autoplay-label input[type=checkbox] { display: none; }
+.autoplay-track {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--bpg-black, #07050c);
+  border: 2px solid var(--bpg-purple, #7c3aed);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.autoplay-track::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--bpg-purple, #7c3aed);
+  transition: transform 0.2s, background 0.2s;
+}
+.autoplay-label input:checked ~ .autoplay-track {
+  background: var(--bpg-purple, #7c3aed);
+}
+.autoplay-label input:checked ~ .autoplay-track::after {
+  transform: translateX(20px);
+  background: var(--bpg-gold, #ffb81c);
+}
+.autoplay-text { color: var(--jimmy-fg); font-size: 0.9rem; }
+.autoplay-text b { color: var(--bpg-gold, #ffb81c); }
+
+/* Auto-play badge in dashboard header */
+.autoplay-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 2px solid var(--bpg-gold, #ffb81c);
+  background: rgba(255, 184, 28, 0.15);
+  color: var(--bpg-gold, #ffb81c);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  animation: autoPulse 2s ease-in-out infinite;
+}
+.autoplay-badge.autoplay-off {
+  border-color: rgba(255,255,255,0.2);
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  animation: none;
+}
+@keyframes autoPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,184,28,0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(255,184,28,0); }
+}
+
 .week-badge {
   background: var(--jimmy-accent);
   color: var(--jimmy-bg);
