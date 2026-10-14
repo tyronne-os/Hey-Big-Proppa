@@ -30,7 +30,11 @@ def main() -> None:
             shutil.copytree(ROOT / src, out / dst, ignore=ign)
         for f in ("app.py", "README.md", "requirements.txt"):
             shutil.copy(ROOT / "space_gradio" / f, out / f)
-        api.upload_folder(folder_path=str(out), repo_id=SPACE_ID, repo_type="space")
+        # Only these paths are ever pruned, so stale files from older deploys disappear without
+        # touching the Space's own housekeeping files (.gitattributes, .gitignore, lake/gold/.gitkeep).
+        api.upload_folder(folder_path=str(out), repo_id=SPACE_ID, repo_type="space",
+                          delete_patterns=["backend/**", "landing/**", "lake/gold/nfl/**", "frontend/dist/**"],
+                          commit_message="Deploy: clean assembled tree")
     print(f"uploaded -> https://huggingface.co/spaces/{SPACE_ID}")
 
 

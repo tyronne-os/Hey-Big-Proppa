@@ -30,6 +30,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 def main():
+    if os.environ.get("ALLOW_FULL_UPLOAD") != "1":
+        print("This script uploads the WHOLE repo (including .dockerignore, docs, sql and any local .venv).")
+        print("That is what once left the Space with no React pages. Use the clean assembler instead:")
+        print("    python scripts/deploy_gradio_space.py")
+        print("Set ALLOW_FULL_UPLOAD=1 only if you really want the whole-repo upload.")
+        sys.exit(1)
     try:
         from huggingface_hub import HfApi, upload_folder
     except ImportError:
