@@ -305,10 +305,13 @@ def render(recap: dict, clip: ClipFn, out_path: Path, intro: float = 2.6, outro:
         wav = tmp_dir / "mix.wav"
         sf.write(str(wav), audio, SR)
         out_path.parent.mkdir(parents=True, exist_ok=True)
+        part = out_path.with_name(out_path.stem + ".part.mp4")
         cmd = [_ffmpeg(), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listing), "-i", str(wav),
                "-vf", f"fps={FPS},format=yuv420p", "-c:v", "libx264", "-preset", "veryfast", "-crf", "24",
-               "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", "-shortest", str(out_path)]
+               "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", "-shortest", str(part)]
         res = subprocess.run(cmd, capture_output=True, text=True)
         if res.returncode != 0:
+            part.unlink(missing_ok=True)
             raise RuntimeError(res.stderr[-600:] or "ffmpeg failed")
+        part.replace(out_path)
     return out_path
