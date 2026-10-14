@@ -1642,18 +1642,6 @@ def api_jimmy_start(year: int, slips_per_week: int):
     return {"session_id": sid, **bt.get_state_dict()}
 
 
-@app.get("/api/jimmy/_diag")
-def api_jimmy_diag():
-    import os
-    root = Path(__file__).resolve().parent.parent
-    d = root / "frontend" / "dist"
-    return {"file": str(Path(__file__).resolve()), "root": str(root), "cwd": os.getcwd(),
-            "dist_is_dir": d.is_dir(), "dist_index": (d / "index.html").exists(),
-            "dist_top": sorted(os.listdir(d))[:15] if d.is_dir() else None,
-            "frontend": sorted(os.listdir(root / "frontend"))[:20] if (root / "frontend").is_dir() else None,
-            "root_top": sorted(os.listdir(root))[:30]}
-
-
 @app.get("/api/jimmy/hosts")
 def api_jimmy_hosts():
     """Which booth hosts have a photo, as site-relative URLs (null = show initials)."""
