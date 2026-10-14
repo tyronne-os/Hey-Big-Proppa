@@ -1700,6 +1700,26 @@ def api_jimmy_advance(sid: str):
     return {"session_id": sid, **bt.get_state_dict()}
 
 
+@app.post("/api/jimmy/booth/prewarm/{sid}/{week}")
+def api_jimmy_booth_prewarm(sid: str, week: int):
+    """Synthesize a week's whole conversation in the background so playback never waits on the model."""
+    import threading
+    import booth_voice
+    from jimmy_recap import generate_weekly_recap
+    recap = generate_weekly_recap(_jimmy(sid), week)
+    turns = recap.get("turns") or []
+
+    def run():
+        for t in turns:
+            try:
+                booth_voice.clip(t["speaker"], t["text"])
+            except booth_voice.VoiceUnavailable:
+                return
+
+    threading.Thread(target=run, daemon=True).start()
+    return {"week": week, "turns": len(turns), "status": "warming"}
+
+
 @app.post("/api/jimmy/voice")
 def api_jimmy_voice(body: dict):
     """One booth line as WAV. Cached by host and text, so replays cost nothing."""

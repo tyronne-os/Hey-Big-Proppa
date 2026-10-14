@@ -96,6 +96,7 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
       .then((d: Recap) => {
         setRecap(d);
         setTailed(d.booth?.tailed_next_week ?? null);
+        fetch(`${API_BASE}/api/jimmy/booth/prewarm/${sid}/${week}`, { method: "POST" }).catch(() => {});
       })
       .catch((e) => setErr(e.message));
     loadVoices();
