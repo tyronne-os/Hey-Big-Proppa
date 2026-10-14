@@ -67,7 +67,7 @@ def main():
     # Build an ignore list — exclude things not needed in the Space
     ignore_patterns = [
         "README.md", "Dockerfile", "app.py",   # the Space's own raw-mode Gradio files (see RULE above)
-        "*.pyc", "__pycache__", ".venv", ".pylibs",
+        "*.pyc", "__pycache__", ".venv", ".pylibs", "**/.venv/**", "**/node_modules/**", "**/__pycache__/**",
         "*.db", "*.sqlite", "*.duckdb", "*.duckdb.wal",
         "*.pem", "*.key", "*_cookies.txt",
         "lake/bronze/", "lake/silver/",
@@ -82,7 +82,7 @@ def main():
         repo_id=space_id,
         repo_type="space",
         ignore_patterns=ignore_patterns,
-        commit_message="Deploy: week 4 — evening slate, passcode security, live ticker, ESPN photos",
+        commit_message="Deploy: JIMMY booth show with studio voices",
     )
 
     print()
