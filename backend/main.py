@@ -1642,6 +1642,13 @@ def api_jimmy_start(year: int, slips_per_week: int):
     return {"session_id": sid, **bt.get_state_dict()}
 
 
+@app.get("/api/jimmy/hosts")
+def api_jimmy_hosts():
+    """Which booth hosts have a photo, as site-relative URLs (null = show initials)."""
+    import booth_hosts
+    return booth_hosts.photo_urls()
+
+
 @app.post("/api/jimmy/restore")
 def api_jimmy_restore(body: dict):
     """Rebuild a season lost to a redeploy by replaying the action log the browser saved."""

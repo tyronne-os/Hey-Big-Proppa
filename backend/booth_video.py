@@ -146,14 +146,43 @@ def _headshot(url: str, size: int) -> Optional[Image.Image]:
         return None
 
 
-def _circle(im: Image.Image, xy, r: int, fill, ring=None, text="", font=None):
+def _circle(im: Image.Image, xy, r: int, fill, ring=None, text="", font=None, photo: Optional[Image.Image] = None):
     d = ImageDraw.Draw(im)
     x, y = xy
     if ring:
         d.ellipse((x - r - 5, y - r - 5, x + r + 5, y + r + 5), fill=ring)
     d.ellipse((x - r, y - r, x + r, y + r), fill=fill)
-    if text and font:
+    if photo is not None:
+        face = photo.resize((2 * r, 2 * r))
+        im.paste(face, (x - r, y - r), face)
+    elif text and font:
         d.text((x, y), text, font=font, fill=(255, 255, 255), anchor="mm")
+
+
+_PHOTOS: dict[tuple[str, int], Optional[Image.Image]] = {}
+
+
+def _host_photo(host: str, r: int) -> Optional[Image.Image]:
+    """The host's photo as a round RGBA avatar, or None to fall back to initials."""
+    key = (host, r)
+    if key not in _PHOTOS:
+        img = None
+        try:
+            import booth_hosts
+            path = booth_hosts.photo_path(host)
+            if path:
+                src = Image.open(path).convert("RGB")
+                side = min(src.size)
+                src = src.crop(((src.width - side) // 2, 0, (src.width - side) // 2 + side, side))   # keep the top: faces sit high
+                src = src.resize((2 * r, 2 * r), Image.LANCZOS)
+                mask = Image.new("L", (2 * r, 2 * r), 0)
+                ImageDraw.Draw(mask).ellipse((0, 0, 2 * r - 1, 2 * r - 1), fill=255)
+                src.putalpha(mask)
+                img = src
+        except Exception:
+            img = None
+        _PHOTOS[key] = img
+    return _PHOTOS[key]
 
 
 def _base(recap: dict, head: Optional[Image.Image]) -> Image.Image:
@@ -213,7 +242,8 @@ def _frame(base: Image.Image, recap: dict, turn: Optional[dict]) -> Image.Image:
         cx, cy = 230 + i * 410, 440
         info = HOSTS[h]
         on = h == active
-        _circle(im, (cx, cy), 44 if on else 38, info["color"], (255, 255, 255) if on else None, info["initials"], _font(30))
+        rad = 44 if on else 38
+        _circle(im, (cx, cy), rad, info["color"], (255, 255, 255) if on else None, info["initials"], _font(30), _host_photo(h, rad))
         d.text((cx + 64, cy - 14), info["short"], font=_font(24), fill=INK if on else DIM, anchor="lm")
         d.text((cx + 64, cy + 14), info["role"], font=_font(15), fill=DIM, anchor="lm")
     d.rounded_rectangle((28, 500, 1252, 696), radius=14, fill=PANEL)
@@ -254,7 +284,7 @@ def _outro_card(recap: dict) -> Image.Image:
             continue
         x0 = 28 + i * 414
         d.rounded_rectangle((x0, 100, x0 + 394, 640), radius=16, fill=PANEL)
-        _circle(im, (x0 + 197, 190), 48, HOSTS[h]["color"], None, HOSTS[h]["initials"], _font(32))
+        _circle(im, (x0 + 197, 190), 48, HOSTS[h]["color"], None, HOSTS[h]["initials"], _font(32), _host_photo(h, 48))
         d.text((x0 + 197, 262), HOSTS[h]["short"], font=_font(30), fill=INK, anchor="mm")
         w, l = (booth.get("record") or {}).get(h, [0, 0])
         d.text((x0 + 197, 296), f"{w}-{l} on the year", font=_font(20), fill=DIM, anchor="mm")

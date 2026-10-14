@@ -72,6 +72,20 @@ function playClip(url: string): { done: Promise<void>; cancel: () => void } {
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+let hostPhotos: Promise<Record<string, string | null>> | null = null;
+const loadHostPhotos = () => (hostPhotos ??= jx("/api/jimmy/hosts").catch(() => ({})));
+
+function HostFace({ host, small }: { host: string; small?: boolean }) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [bad, setBad] = useState(false);
+  useEffect(() => { loadHostPhotos().then((m) => setSrc(m[host] ?? null)); }, [host]);
+  return (
+    <div className={`host-avatar ${small ? "sm" : ""}`}>
+      {src && !bad ? <img src={src} alt="" onError={() => setBad(true)} /> : HOSTS[host].initials}
+    </div>
+  );
+}
+
 export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
   sid: string; week: number; onClose: () => void; onState: (s: any) => void;
 }) {
@@ -288,7 +302,7 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
                         const i = turns.findIndex((t) => t.speaker === h);
                         if (i >= 0) if (playing) playFrom(i);
                       }}>
-                      <div className="host-avatar">{HOSTS[h].initials}</div>
+                      <HostFace host={h} />
                       <div className="host-name">{h}</div>
                       <div className="host-role">{HOSTS[h].title}</div>
                       <div className="eq" aria-hidden><i /><i /><i /><i /></div>
@@ -392,7 +406,7 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
                     const [w, l] = recap.booth.record[h] ?? [0, 0];
                     return (
                       <div key={h} className={`btb-card ${tailed === h ? "tailed" : ""}`} style={{ ["--host" as any]: HOSTS[h].color }}>
-                        <div className="btb-host"><span className="host-avatar sm">{HOSTS[h].initials}</span>{HOSTS[h].short}<em>{w}-{l}</em></div>
+                        <div className="btb-host"><HostFace host={h} small />{HOSTS[h].short}<em>{w}-{l}</em></div>
                         <div className="btb-pick">
                           {p.headshot && <img src={p.headshot} alt="" />}
                           <div>
