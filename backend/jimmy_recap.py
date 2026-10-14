@@ -259,6 +259,16 @@ def _myboo(r: random.Random, week: int, slips: list[Slip], story: dict, cashed: 
                    f"{round(100 * survivors ** max(len(s.legs) for s in slips))} percent of the time. The legs were fine. The structure is the tax.")
     if voids:
         out.append(f"{voids} leg{'s' if voids > 1 else ''} voided because the player sat. Check the injury report Friday.")
+    walk = []
+    for sl in slips:
+        for l in sl.legs:
+            if l.result is None:
+                walk.append(f"{_name(l.player_name)} didn't play, so that leg voids")
+            else:
+                walk.append(f"{_name(l.player_name)}, {_side(l)} {_n(l.line)} {l.label.lower()}, finished with {_n(l.actual_value)}. "
+                            + ("Hit." if l.result else f"Miss by {_gap(l.margin, hist.PROPS[l.prop_type]['unit'])}."))
+    if walk:
+        out.append("Leg by leg. " + " ".join(walk[:8]))
     season = story["legs_season"]
     total = season["hit"] + season["miss"]
     if total:
@@ -288,8 +298,9 @@ def _myboo(r: random.Random, week: int, slips: list[Slip], story: dict, cashed: 
     return " ".join(out)
 
 
-def _julian(r: random.Random, week: int, slips: list[Slip], story: dict, record: dict, pick: Optional[dict],
+def _julian(r: random.Random, week: int, slips: list[Slip], story: dict, record: dict, picks: Optional[dict],
             all_slips: list[Slip]) -> str:
+    pick = (picks or {}).get("Julian Feltus")
     legs = [l for s in slips for l in s.legs if l.result is not None]
     out = [r.choice(["Let me zoom out, because the week only matters for what it teaches you.",
                      "I want to talk structure.",
@@ -337,6 +348,13 @@ def _julian(r: random.Random, week: int, slips: list[Slip], story: dict, record:
         out.append("Booth standings: " + ", ".join(parts) + ".")
     else:
         out.append("The booth's record starts now. All three of us are putting a pick on the line, and we keep score.")
+    if picks:
+        boo, jon = picks.get("MY BOO"), picks.get("Jonah Jacques")
+        if boo and jon:
+            out.append(f"Here's how I read the board. MY BOO took {_pick_line(boo)}, the highest-rated number. "
+                       f"Jonah is on {_pick_line(jon)}, riding the hot hand.")
+            out.append("Those two are both overs, so if the same game script hurts one, it can hurt both. Tailing two of us is not diversification." if boo["is_over"] and jon["is_over"]
+                       else "That's a healthy split between an over and an under. Tail one, don't tail both.")
     if pick:
         out.append(f"My pick: {_pick_line(pick)}. {pick['why']} Tail whoever you trust.")
     return " ".join(out)
@@ -421,7 +439,7 @@ def generate_weekly_recap(bt: JimmyBacktester, week: int) -> dict:
     texts = [
         ("Jonah Jacques", "Play-by-Play", _jonah(r, week, pow_, story, cashed, n, delta, last_booth, tailed, (picks or {}).get("Jonah Jacques"), smash)),
         ("MY BOO", "Analyst", _myboo(r, week, slips, story, cashed, n, bt.calculate_wager_size(), (picks or {}).get("MY BOO"))),
-        ("Julian Feltus", "Strategy", _julian(r, week, slips, story, st.booth_record, (picks or {}).get("Julian Feltus"), [s for s in st.slips if s.week <= week])),
+        ("Julian Feltus", "Strategy", _julian(r, week, slips, story, st.booth_record, picks, [s for s in st.slips if s.week <= week])),
     ]
     segments = [{"speaker": s, "role": role, "text": t, "word_count": len(t.split())} for s, role, t in texts]
     return {
