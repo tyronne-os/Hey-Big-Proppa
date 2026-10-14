@@ -442,10 +442,10 @@ def leg_probability(
         if r:
             p = r["p"]
             return round(p if direction == "over" else 1 - p, 3)
-    if hit_rate is None:                       # no recent-form read: fall back to the multiverse prior for this market side
+    if hit_rate is None:                       # no recent-form read: fall back to the betterverse prior for this market side
         try:
             import jimmy
-            mv = jimmy.multiverse_prior(market_slug, direction)
+            mv = jimmy.betterverse_prior(market_slug, direction)
             hit_rate = mv["implied"] + mv["prior_edge"] if mv else None
         except Exception:
             pass

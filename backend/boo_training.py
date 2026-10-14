@@ -391,34 +391,34 @@ def status() -> dict:
 
 
 # ---------------------------------------------------------------------------
-# THE BOOKIE MULTIVERSE: simulated seasons become priors for Jimmy and Jev.
+# BETTER-VERSE: simulated seasons become priors for Jimmy and Jev.
 # Live lessons (above) always outrank these: they are stored apart, shrunk harder, and capped at BIAS_CAP.
-MV_PRIORS = _GOLD / "multiverse_priors.json"
-MV_SLUG = {"pass_yds": "passyds", "pass_tds": "passtd", "completions": "comp", "pass_att": "passatt",
+BV_PRIORS = _GOLD / "betterverse_priors.json"
+BV_SLUG = {"pass_yds": "passyds", "pass_tds": "passtd", "completions": "comp", "pass_att": "passatt",
            "ints": "intsthrown", "rush_yds": "rushyds", "rec_yds": "recyds", "receptions": "recs",
            "rush_rec_yds": "rushrec", "anytime_td": "anytd", "spread": "spread", "ml": "ml", "total": "total"}
-MV_SHRINK = 400          # pseudo-legs of "no edge" every simulated edge is pulled toward
+BV_SHRINK = 400          # pseudo-legs of "no edge" every simulated edge is pulled toward
 
 
-def ingest_multiverse(run_id: str) -> dict:
-    """Pool every ingested multiverse run into per-market priors MY BOO hands to Jimmy (score signal) and Jev (hit-rate prior)."""
-    import multiverse_sim
-    if multiverse_sim.load_insights(run_id) is None:
+def ingest_betterverse(run_id: str) -> dict:
+    """Pool every ingested betterverse run into per-market priors MY BOO hands to Jimmy (score signal) and Jev (hit-rate prior)."""
+    import betterverse_sim
+    if betterverse_sim.load_insights(run_id) is None:
         raise FileNotFoundError(run_id)
     with _LOCK:
         try:
-            cur = json.loads(MV_PRIORS.read_text())
+            cur = json.loads(BV_PRIORS.read_text())
         except (OSError, ValueError):
             cur = {}
         ingested = list(dict.fromkeys(cur.get("runs", []) + [run_id]))
-        runs = [r for r in ingested if multiverse_sim.load_insights(r)]
+        runs = [r for r in ingested if betterverse_sim.load_insights(r)]
         pool: dict = defaultdict(lambda: {"n": 0, "hits": 0.0, "imp": 0.0})
         shapes: dict = defaultdict(lambda: {"n": 0, "wins": 0, "imp": 0.0, "stake_roi": []})
         arche: dict = defaultdict(list)
         for r in runs:
-            ins = multiverse_sim.load_insights(r)
+            ins = betterverse_sim.load_insights(r)
             for m in ins["markets"]:
-                p = pool[(MV_SLUG.get(m["market"], m["market"]), m["side"])]
+                p = pool[(BV_SLUG.get(m["market"], m["market"]), m["side"])]
                 p["n"] += m["n"]; p["hits"] += m["hit_rate"] * m["n"]; p["imp"] += m["implied"] * m["n"]
             for c in ins["combos"]:
                 s = shapes[c["signature"]]
@@ -431,7 +431,7 @@ def ingest_multiverse(run_id: str) -> dict:
                 continue
             hit, imp = p["hits"] / p["n"], p["imp"] / p["n"]
             edge = hit - imp
-            shrunk = max(-BIAS_CAP, min(BIAS_CAP, edge * p["n"] / (p["n"] + MV_SHRINK)))
+            shrunk = max(-BIAS_CAP, min(BIAS_CAP, edge * p["n"] / (p["n"] + BV_SHRINK)))
             markets[slug][side] = {"n": p["n"], "hit_rate": round(hit, 4), "implied": round(imp, 4),
                                    "edge": round(edge, 4), "prior_edge": round(shrunk, 4)}
         shape_rows = []
@@ -442,14 +442,15 @@ def ingest_multiverse(run_id: str) -> dict:
             shape_rows.append({"signature": sig, "n": s["n"], "wins": s["wins"], "hit_rate": round(hit, 4),
                                "implied": round(imp, 4), "edge": round(hit - imp, 4),
                                "roi": round(sum(s["stake_roi"]) / len(s["stake_roi"]), 4)})
-        out = {"source": "multiverse", "schema": "boo.mv_priors.v1", "updated": _now().isoformat(), "runs": runs,
-               "shrink_legs": MV_SHRINK, "cap": BIAS_CAP, "markets": markets,
+        out = {"source": "betterverse", "schema": "boo.bv_priors.v1", "updated": _now().isoformat(), "runs": runs,
+               "shrink_legs": BV_SHRINK, "cap": BIAS_CAP, "markets": markets,
                "never_won": sorted([s for s in shape_rows if s["wins"] == 0], key=lambda s: -s["n"]),
                "best_shapes": sorted([s for s in shape_rows if s["edge"] > 0], key=lambda s: -s["edge"])[:25],
-               "archetype_roi": {k: round(sum(v) / len(v), 4) for k, v in arche.items()}}
-        tmp = MV_PRIORS.with_suffix(".tmp")
+               "archetype_roi": {k: round(sum(v) / len(v), 4) for k, v in arche.items()},
+               "tier_roi": {t["tier"]: t["roi"] for r in runs for t in (betterverse_sim.load_insights(r) or {}).get("tiers", [])}}
+        tmp = BV_PRIORS.with_suffix(".tmp")
         tmp.write_text(json.dumps(out, indent=1))
-        tmp.replace(MV_PRIORS)
+        tmp.replace(BV_PRIORS)
     try:
         import boo_store
         boo_store.push(force=True)
@@ -458,8 +459,8 @@ def ingest_multiverse(run_id: str) -> dict:
     return out
 
 
-def multiverse_priors() -> dict:
+def betterverse_priors() -> dict:
     try:
-        return json.loads(MV_PRIORS.read_text())
+        return json.loads(BV_PRIORS.read_text())
     except (OSError, ValueError):
         return {}

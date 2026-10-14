@@ -1480,8 +1480,8 @@
 .jimmy-select .jimmy-hero h1 { background: linear-gradient(135deg, #a78bfa, #ffb81c); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .jimmy-select .jimmy-info h3 { color: var(--bpg-gold); }
 
-.mv-jimmy-link {
+.bv-jimmy-link {
   display: block; margin-top: 12px; text-align: center; color: #c4b5fd; font-weight: 700; font-size: 14px;
   border: 1px dashed #7c3aed; border-radius: 10px; padding: 10px 14px; text-decoration: none;
 }
-.mv-jimmy-link:hover { background: rgba(124, 58, 237, 0.12); }
+.bv-jimmy-link:hover { background: rgba(124, 58, 237, 0.12); }

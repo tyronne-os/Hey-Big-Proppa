@@ -513,108 +513,117 @@ def api_canvas_nodes():
                 "sub": boo_sub,
                 "chips": ["SKILL.md", "PROCEDURE.md"],
             },
-            *_multiverse_nodes(),
+            *_betterverse_nodes(),
         ],
-        "groups": [{"id": "bookie-multiverse", "name": "THE BOOKIE MULTIVERSE",
-                    "sub": "500 simulated bettors -> MY BOO training data"}],
+        "groups": [{"id": "better-verse", "name": "BETTER-VERSE",
+                    "sub": "simulated betters -> proof leaderboard -> MY BOO"}],
         "edges": [
-            {"source": "ramp-nfl", "target": "mv-bettors"},
-            {"source": "mv-bettors", "target": "mv-sim"},
-            {"source": "mv-sim", "target": "mv-insights"},
-            {"source": "mv-insights", "target": "my-boo"},
+            {"source": "ramp-nfl", "target": "bv-bettors"},
+            {"source": "bv-bettors", "target": "bv-sim"},
+            {"source": "bv-sim", "target": "bv-insights"},
+            {"source": "bv-insights", "target": "my-boo"},
             {"source": "my-boo", "target": "jimmy-the-greek"},
         ],
     }
 
 
-def _multiverse_nodes() -> list[dict]:
+def _betterverse_nodes() -> list[dict]:
     import boo_training
-    import multiverse_bettors
-    import multiverse_sim
-    runs = multiverse_sim.runs()
+    import betterverse_bettors
+    import betterverse_sim
+    runs = betterverse_sim.runs()
     live = next((r for r in runs if r.get("state") == "running"), None)
     done = [r for r in runs if r.get("rows")]
-    pri = boo_training.multiverse_priors()
+    pri = boo_training.betterverse_priors()
     sim_sub = (f"running · week {live.get('week') or 1} · {int(100 * live.get('progress', 0))}%" if live
-               else f"{len(done)} seasons simulated" if done else "idle · open the multiverse")
+               else f"{len(done)} seasons simulated" if done else "idle · open the betterverse")
     ins_sub = (f"{len(pri.get('runs', []))} runs ingested · {len(pri.get('never_won', []))} never-won shapes"
                if pri else "nothing sent to MY BOO yet")
     return [
-        {"id": "mv-bettors", "type": "sim", "group": "bookie-multiverse", "name": "500 BETTORS",
-         "sub": f"{len(multiverse_bettors.ARCHETYPES)} archetypes · FD/DK legal slips", "chips": ["personas"]},
-        {"id": "mv-sim", "type": "sim", "group": "bookie-multiverse", "name": "SEASON ENGINE",
+        {"id": "bv-bettors", "type": "sim", "group": "better-verse", "name": "THE BETTERS",
+         "sub": f"{len(betterverse_bettors.ARCHETYPES)} styles · sharp to degen · FD/DK legal", "chips": ["personas"]},
+        {"id": "bv-sim", "type": "sim", "group": "better-verse", "name": "SEASON ENGINE",
          "sub": sim_sub, "chips": ["2024", "2025"]},
-        {"id": "mv-insights", "type": "sim", "group": "bookie-multiverse", "name": "SLIP INTELLIGENCE",
+        {"id": "bv-insights", "type": "sim", "group": "better-verse", "name": "SLIP INTELLIGENCE",
          "sub": ins_sub, "chips": ["parquet", "priors"]},
     ]
 
 
-# ---------------------------------------------------------------------------- THE BOOKIE MULTIVERSE
-@app.get("/api/multiverse/archetypes")
+# ---------------------------------------------------------------------------- BETTER-VERSE
+@app.get("/api/betterverse/archetypes")
 def api_mv_archetypes():
-    import multiverse_bettors
+    import betterverse_bettors
     return {k: {kk: (sorted(v) if isinstance(v, set) else v) for kk, v in a.items()}
-            for k, a in multiverse_bettors.ARCHETYPES.items()}
+            for k, a in betterverse_bettors.ARCHETYPES.items()}
 
 
-@app.post("/api/multiverse/run")
+@app.post("/api/betterverse/run")
 async def api_mv_run(request: Request):
-    import multiverse_sim
+    import betterverse_sim
     body = await request.json() if (await request.body()) else {}
     season = int(body.get("season", 2024))
     if season not in (2024, 2025):
         raise HTTPException(400, "season must be 2024 or 2025")
-    n = max(10, min(2000, int(body.get("bettors", 500))))
+    n = max(10, min(2000, int(body.get("bettors", 150))))
     seed = int(body.get("seed", 7))
     mix = {k: float(v) for k, v in (body.get("mix") or {}).items() if float(v) >= 0} or None
-    return multiverse_sim.start(season, n, seed, mix)
+    return betterverse_sim.start(season, n, seed, mix)
 
 
-@app.get("/api/multiverse/status/{run_id}")
+@app.get("/api/betterverse/status/{run_id}")
 def api_mv_status(run_id: str):
-    import multiverse_sim
-    return multiverse_sim.status(run_id)
+    import betterverse_sim
+    return betterverse_sim.status(run_id)
 
 
-@app.get("/api/multiverse/runs")
+@app.get("/api/betterverse/runs")
 def api_mv_runs():
-    import multiverse_sim
-    return {"runs": multiverse_sim.runs()}
+    import betterverse_sim
+    return {"runs": betterverse_sim.runs()}
 
 
-@app.get("/api/multiverse/insights/{run_id}")
+@app.get("/api/betterverse/insights/{run_id}")
 def api_mv_insights(run_id: str):
-    import multiverse_sim
-    ins = multiverse_sim.load_insights(run_id)
+    import betterverse_sim
+    ins = betterverse_sim.load_insights(run_id)
     if ins is None:
         raise HTTPException(404, "run not found")
     return ins
 
 
-@app.get("/api/multiverse/bettor/{run_id}/{bettor_id}")
+@app.get("/api/betterverse/career")
+def api_bv_career(runs: str):
+    import betterverse_sim
+    c = betterverse_sim.career([r for r in runs.split(",") if r])
+    if c is None:
+        raise HTTPException(404, "runs not found or not the same betters")
+    return c
+
+
+@app.get("/api/betterverse/bettor/{run_id}/{bettor_id}")
 def api_mv_bettor(run_id: str, bettor_id: int):
-    import multiverse_sim
-    b = multiverse_sim.bettor(run_id, bettor_id)
+    import betterverse_sim
+    b = betterverse_sim.bettor(run_id, bettor_id)
     if b is None:
         raise HTTPException(404, "bettor not found")
     return b
 
 
-@app.post("/api/multiverse/ingest/{run_id}")
+@app.post("/api/betterverse/ingest/{run_id}")
 def api_mv_ingest(run_id: str):
     import boo_training
     try:
-        p = boo_training.ingest_multiverse(run_id)
+        p = boo_training.ingest_betterverse(run_id)
     except FileNotFoundError:
         raise HTTPException(404, "run not found")
     return {"ok": True, "runs": p["runs"], "markets": len(p["markets"]), "never_won": len(p["never_won"]),
             "best_shapes": p["best_shapes"][:5]}
 
 
-@app.get("/api/multiverse/priors")
+@app.get("/api/betterverse/priors")
 def api_mv_priors():
     import boo_training
-    return boo_training.multiverse_priors()
+    return boo_training.betterverse_priors()
 
 
 @app.get("/api/myboo/agent")

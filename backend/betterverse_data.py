@@ -1,5 +1,5 @@
 """
-THE BOOKIE MULTIVERSE: the weekly betting menu.
+BETTER-VERSE: the weekly betting menu.
 
 For every regular-season week of 2024/2025 this builds every market a bettor could have clicked on Friday,
 already graded against what really happened:
@@ -24,7 +24,7 @@ from functools import lru_cache
 from pathlib import Path
 
 _GOLD = Path(__file__).resolve().parent.parent / "lake" / "gold" / "nfl"
-CACHE = _GOLD / "multiverse_cache"
+CACHE = _GOLD / "betterverse_cache"
 URL = "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_{year}.csv"
 KEEP = ("player_id", "player_display_name", "position", "week", "team", "opponent_team",
         "completions", "attempts", "passing_yards", "passing_tds", "passing_interceptions",
@@ -92,7 +92,7 @@ def _path(year: int) -> Path:
 
 
 def _download(year: int) -> None:
-    req = urllib.request.Request(URL.format(year=year), headers={"User-Agent": "big-proppa-multiverse/1.0"})
+    req = urllib.request.Request(URL.format(year=year), headers={"User-Agent": "big-proppa-betterverse/1.0"})
     with urllib.request.urlopen(req, timeout=180) as r:
         text = r.read().decode("utf-8")
     CACHE.mkdir(parents=True, exist_ok=True)

@@ -4,7 +4,7 @@ const TOP_TABS = [
   { id: "leaders", label: "LEADERS", href: "/leaders?cat=targets" },
   { id: "parlay",  label: "PARLAY",  href: "/parlay" },
   { id: "jimmy",   label: "JIMMY",   href: "/jimmy" },
-  { id: "multiverse", label: "MULTIVERSE", href: "/multiverse" },
+  { id: "betterverse", label: "BETTER-VERSE", href: "/betterverse" },
   { id: "myboo",   label: "MY BOO",  href: "/myboo" },
 ] as const;
 
@@ -29,7 +29,7 @@ export default function NavBar({ activeTab }: NavBarProps) {
   const currentTab = activeTab ?? (p.startsWith("/leaders") || p.startsWith("/player") ? "leaders"
     : p === "/parlay" || p === "/throwdown" || p === "/monday" || p === "/sunday-night" || p === "/parlays" ? "parlay"
     : p.startsWith("/jimmy") ? "jimmy"
-    : p.startsWith("/multiverse") ? "multiverse"
+    : p.startsWith("/betterverse") ? "betterverse"
     : p.startsWith("/myboo") ? "myboo" : "");
 
   return (

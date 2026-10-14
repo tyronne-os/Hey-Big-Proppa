@@ -1,7 +1,7 @@
 """
-Combination guardrails for THE BOOKIE MULTIVERSE: the stricter of FanDuel's and DraftKings' parlay rules.
+Combination guardrails for BETTER-VERSE: the stricter of FanDuel's and DraftKings' parlay rules.
 
-A slip is a list of menu items (multiverse_data.menu). validate() says whether either book would refuse it;
+A slip is a list of menu items (betterverse_data.menu). validate() says whether either book would refuse it;
 price() returns the decimal odds a book would pay, including the same-game-parlay haircut books apply when
 legs from one game move together.
 """

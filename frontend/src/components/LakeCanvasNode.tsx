@@ -37,7 +37,7 @@ export default function LakeCanvasNode({ data }: NodeProps<LakeCanvasNodeData>) 
       <Handle type="target" position={Position.Top} style={{ background: "#e0782f", border: "1.5px solid #3a2410" }} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: "0.32em", color: "rgba(255,255,255,0.85)" }}>
-          {isLake ? "LAKE" : data.type === "sim" ? "MULTIVERSE" : "HARNESS"}
+          {isLake ? "LAKE" : data.type === "sim" ? "BETTER-VERSE" : "HARNESS"}
         </span>
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
           {!isLake && data.onSettings && (

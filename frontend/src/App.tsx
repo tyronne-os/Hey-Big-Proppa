@@ -29,7 +29,7 @@ const VIEW_TABS = ["player", "leaders", "matchups", "ramp", "college", "engine",
 type ViewTab = (typeof VIEW_TABS)[number];
 
 const edgeTypes: EdgeTypes = { animatedPulse: AnimatedPulseEdge };
-function MultiverseGroup({ data }: { data: { name: string; sub: string } }) {
+function BetterverseGroup({ data }: { data: { name: string; sub: string } }) {
   return (
     <div style={{ padding: "8px 12px", color: "#c4b5fd", pointerEvents: "none" }}>
       <div style={{ fontWeight: 800, letterSpacing: "0.12em", fontSize: 13 }}>{data.name}</div>
@@ -38,7 +38,7 @@ function MultiverseGroup({ data }: { data: { name: string; sub: string } }) {
   );
 }
 
-const nodeTypes: NodeTypes = { canvasNode: LakeCanvasNode, mvGroup: MultiverseGroup };
+const nodeTypes: NodeTypes = { canvasNode: LakeCanvasNode, mvGroup: BetterverseGroup };
 
 export const tabPath = (t: string) => `/${t}`;
 
@@ -102,10 +102,10 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
         "jimmy-the-greek": { x: 40 + NODE_W + 15, y: 390 },
         // the authority: MY BOO sits right beside Jimmy, same row
         "my-boo":          { x: 40 + NODE_W + 15 + NODE_W + 30, y: 390 },
-        // THE BOOKIE MULTIVERSE cluster: positions are relative to the group frame
-        "mv-bettors":      { x: 20,                    y: 50 },
-        "mv-sim":          { x: 20 + NODE_W + 30,      y: 50 },
-        "mv-insights":     { x: 20 + 2 * (NODE_W + 30), y: 50 },
+        // BETTER-VERSE cluster: positions are relative to the group frame
+        "bv-bettors":      { x: 20,                    y: 50 },
+        "bv-sim":          { x: 20 + NODE_W + 30,      y: 50 },
+        "bv-insights":     { x: 20 + 2 * (NODE_W + 30), y: 50 },
       };
 
       // edges: every lake node feeds into every expert node
@@ -142,7 +142,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
           type: n.type, name: n.name, sub: n.sub, chips: n.chips,
           ...(n.store ? { store: n.store } : {}),
           ...(n.type === "expert" ? { onSettings: () => (n.id === "my-boo" ? setBooPanelOpen(true) : setJimmyPanelOpen(true)) } : {}),
-          ...(n.type === "sim" ? { onSettings: () => { window.location.href = "/multiverse"; } } : {}),
+          ...(n.type === "sim" ? { onSettings: () => { window.location.href = "/betterverse"; } } : {}),
         },
       }))];
 

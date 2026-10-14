@@ -196,8 +196,8 @@ export default function JimmyPage() {
             <button onClick={startSeason} disabled={!season || loading} className="btn-primary">
               {loading ? "Loading the season…" : autoPlay ? "▶ Auto-Play Season" : "Begin Season"}
             </button>
-            <a href="/multiverse" className="mv-jimmy-link">
-              🌌 Or open THE BOOKIE MULTIVERSE: watch 500 bettors play the whole season at once
+            <a href="/betterverse" className="bv-jimmy-link">
+              🌌 Or open BETTER-VERSE: watch a town of sharp and degen betters play the whole season
             </a>
             {err && <p className="jimmy-err">{err}</p>}
             <div className="jimmy-info">
