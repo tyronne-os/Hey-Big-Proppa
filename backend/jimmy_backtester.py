@@ -90,6 +90,7 @@ class JimmyBacktester:
     def __init__(self, year: int, slips_per_week: int):
         self.year = year
         self.slips_per_week = slips_per_week
+        self.log: list[dict] = []   # every player action, so a lost season can be replayed exactly
         self.state = SeasonState(
             year=year, slips_per_week=slips_per_week, starting_bankroll=INITIAL_BANKROLL, current_week=1,
             bankroll=INITIAL_BANKROLL, slips=[], total_wagered=0.0, total_won=0.0, win_streak=0,
@@ -113,6 +114,13 @@ class JimmyBacktester:
         return leg.result
 
     def submit_slip(self, legs: list[Leg], challenge: Optional[str] = None) -> Slip:
+        slip = self._submit_slip(legs, challenge)
+        self.log.append({"op": "submit", "legs": [
+            {"player_id": l.player_id, "team": l.team, "prop_type": l.prop_type, "line": l.line,
+             "is_over": l.is_over, "confidence": round(l.confidence * 100, 2)} for l in legs]})
+        return slip
+
+    def _submit_slip(self, legs: list[Leg], challenge: Optional[str] = None) -> Slip:
         if self.state.game_over:
             raise ValueError("Season is over")
         if not 1 <= len(legs) <= 5:
@@ -180,10 +188,12 @@ class JimmyBacktester:
         if wk not in self.state.booth_picks:
             raise ValueError("Watch this week's recap first, the booth hasn't made picks yet")
         self.state.booth_tails[wk] = host
+        self.log.append({"op": "tail", "host": host})
 
     def advance_week(self) -> None:
         if not self.week_slips():
             raise ValueError("Place at least one slip before advancing")
+        self.log.append({"op": "advance"})
         if self.state.current_week >= SEASON_WEEKS:
             self.state.game_over = True
             return
@@ -214,6 +224,7 @@ class JimmyBacktester:
             "win_streak": s.win_streak, "loss_streak": s.loss_streak, "achievements": s.achievements_unlocked,
             "game_over": s.game_over, "wager_size": self.calculate_wager_size(),
             "slips_this_week": len(self.week_slips()),
+            "log": self.log,
             "slips": [self._serialize_slip(x) for x in s.slips],
             "booth": {"record": s.booth_record, "tails": s.booth_tails, "bonuses": s.bonuses,
                       "next_picks": s.booth_picks.get(s.current_week + 1)},
@@ -253,3 +264,31 @@ def get_session(sid: str) -> Optional[JimmyBacktester]:
         if hit:
             _SESSIONS[sid] = (time.time(), hit[1])
         return hit[1] if hit else None
+
+
+def restore(year: int, slips_per_week: int, log: list[dict]) -> tuple[str, JimmyBacktester]:
+    """Rebuild a season by replaying its action log. Boards and results are deterministic, so the
+    replay lands on exactly the state the player left."""
+    from jimmy_recap import generate_weekly_recap   # booth picks are made when a recap is generated
+
+    sid, bt = new_session(year, slips_per_week)
+    for step in log[:500]:
+        op = step.get("op")
+        if op == "submit":
+            legs = []
+            for l in step["legs"]:
+                if l.get("prop_type") not in hist.PROPS:
+                    raise ValueError("Unknown prop type in log")
+                meta = hist.player(year, str(l["player_id"]))
+                legs.append(Leg(str(l["player_id"]), meta["name"], str(l.get("team") or meta["team"]), l["prop_type"],
+                                float(l["line"]), bool(l.get("is_over", True)), float(l.get("confidence", 50)) / 100,
+                                headshot=meta["headshot"]))
+            bt.submit_slip(legs)
+        elif op == "tail":
+            generate_weekly_recap(bt, bt.state.current_week)
+            bt.tail(str(step["host"]))
+        elif op == "advance":
+            bt.advance_week()
+        else:
+            raise ValueError(f"Unknown action in log: {op}")
+    return sid, bt

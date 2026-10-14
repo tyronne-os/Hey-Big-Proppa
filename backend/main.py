@@ -1642,6 +1642,20 @@ def api_jimmy_start(year: int, slips_per_week: int):
     return {"session_id": sid, **bt.get_state_dict()}
 
 
+@app.post("/api/jimmy/restore")
+def api_jimmy_restore(body: dict):
+    """Rebuild a season lost to a redeploy by replaying the action log the browser saved."""
+    from jimmy_backtester import restore
+    year, per_week = int(body.get("year") or 0), int(body.get("slips_per_week") or 0)
+    if year not in (2024, 2025) or not 1 <= per_week <= 5:
+        raise HTTPException(400, "Bad season")
+    try:
+        sid, bt = restore(year, per_week, body.get("log") or [])
+    except (ValueError, KeyError, TypeError) as e:
+        raise HTTPException(400, f"Could not replay that season: {e}")
+    return {"session_id": sid, **bt.get_state_dict()}
+
+
 @app.get("/api/jimmy/session/{sid}")
 def api_jimmy_session(sid: str):
     return {"session_id": sid, **_jimmy(sid).get_state_dict()}

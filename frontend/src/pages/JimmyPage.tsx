@@ -20,7 +20,7 @@ interface SlipRow {
 interface SeasonState {
   session_id: string; year: number; slips_per_week: number; current_week: number; bankroll: number;
   total_wagered: number; total_won: number; win_streak: number; loss_streak: number; achievements: string[];
-  game_over: boolean; wager_size: number; slips_this_week: number; slips: SlipRow[];
+  game_over: boolean; wager_size: number; slips_this_week: number; slips: SlipRow[]; log?: unknown[];
   booth: { record: Record<string, [number, number]>; tails: Record<string, string>; bonuses: { week: number; host: string; amount: number }[]; next_picks: any };
 }
 interface Prop {
@@ -30,6 +30,7 @@ interface Prop {
 type Pick = Prop & { is_over: boolean };
 
 const SID_KEY = "jimmy_session";
+const SAVE_KEY = "jimmy_save";
 const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 
 async function jx(path: string, init?: RequestInit) {
@@ -61,15 +62,28 @@ export default function JimmyPage() {
 
   useEffect(() => {
     let sid: string | null = null;
-    try { sid = localStorage.getItem(SID_KEY); } catch { /* storage blocked */ }
-    if (!sid) return;
-    jx(`/api/jimmy/session/${sid}`).then((s) => { setState(s); setPage(s.game_over ? "end" : "dashboard"); })
-      .catch(() => { try { localStorage.removeItem(SID_KEY); } catch { /* */ } });
+    let saved: { year: number; slips_per_week: number; log: unknown[] } | null = null;
+    try {
+      sid = localStorage.getItem(SID_KEY);
+      saved = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+    } catch { /* storage blocked */ }
+    if (!sid && !saved) return;
+    const open = (s: SeasonState) => { adopt(s); setPage(s.game_over ? "end" : "dashboard"); };
+    // The server keeps seasons in memory, so a redeploy loses them. The browser keeps the action
+    // log and the server replays it, which lands on exactly the same season.
+    const rebuild = () => saved && saved.log.length
+      ? post("/api/jimmy/restore", saved).then(open)
+      : Promise.reject(new Error("nothing to restore"));
+    (sid ? jx(`/api/jimmy/session/${sid}`).then(open).catch(rebuild) : rebuild())
+      .catch(() => { try { localStorage.removeItem(SID_KEY); localStorage.removeItem(SAVE_KEY); } catch { /* */ } });
   }, []);
 
   function adopt(s: SeasonState) {
     setState(s);
-    try { localStorage.setItem(SID_KEY, s.session_id); } catch { /* */ }
+    try {
+      localStorage.setItem(SID_KEY, s.session_id);
+      localStorage.setItem(SAVE_KEY, JSON.stringify({ year: s.year, slips_per_week: s.slips_per_week, log: s.log ?? [] }));
+    } catch { /* */ }
   }
 
   async function startSeason() {
@@ -95,7 +109,7 @@ export default function JimmyPage() {
   }
 
   function restart() {
-    try { localStorage.removeItem(SID_KEY); } catch { /* */ }
+    try { localStorage.removeItem(SID_KEY); localStorage.removeItem(SAVE_KEY); } catch { /* */ }
     setState(null);
     setPage("select");
   }
