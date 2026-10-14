@@ -32,8 +32,8 @@ derivation of it.
 
 - **[BETTER-VERSE](docs/BETTER-VERSE.md)** -- a town of simulated betters (Sharp, Grinder, Casual, Degen), each with a
   username and a stated ideology, betting FanDuel/DraftKings-legal slips through a real 2024/2025 season at real prices.
-  The leaderboard ranks *proof* (ROI on a bad-luck replay), not luck, and the results become MY BOO training data for
-  JIMMY and JEV. Live at [/betterverse](https://aibruh-big-proppa-live.hf.space/betterverse); full write-up in
+  The leaderboard ranks real winnings (no filtering), the Strategy Lab pools many universes to show which parlay
+  strategies actually make money, and the results become MY BOO training data for JIMMY and JEV. Live at [/betterverse](https://aibruh-big-proppa-live.hf.space/betterverse); full write-up in
   [docs/BETTER-VERSE.md](docs/BETTER-VERSE.md).
 
 Every heuristic is labeled as such and backtested where the lake has the history to do it --
@@ -43,7 +43,8 @@ see `docs/HANDOFF.md` and each pond's own module docstring for method and number
 
 | Date | Update |
 |---|---|
-| 2026-10-14 | **[BETTER-VERSE](docs/BETTER-VERSE.md)**: named betters in four skill tiers, proof leaderboard, career view and per-better deep dive; replaces JIMMY in the nav. |
+| 2026-10-14 | **BETTER-VERSE Strategy Lab**: pools many universes across both real seasons to show which parlay strategies make money (95% intervals), $5/$10 table limits, and a leaderboard of real winnings. |
+| 2026-10-14 | **[BETTER-VERSE](docs/BETTER-VERSE.md)**: named betters in four skill tiers, career view and per-better deep dive; replaces JIMMY in the nav. |
 | 2026-10-14 | **Contact Us** page and a working **Join the Waitlist** form on the home page; every submission is stored and emailed to the owner. |
 | 2026-10-14 | Gradio-SDK Space hardened in raw mode: no Gradio UI, and a startup failure serves a readable 503 instead of restart-looping. |
 

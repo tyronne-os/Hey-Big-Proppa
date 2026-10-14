@@ -60,8 +60,39 @@ def test_sharps_never_use_the_week_they_bet():
     assert len(tables[2]) <= len(tables[10])
 
 
-def test_leaderboard_ranks_by_proof_and_flags_provisional():
+def test_leaderboard_ranks_real_winnings_unfiltered():
     ins = sim.simulate(2024, 60, 11)
-    ranked = [r for r in ins["leaderboard"] if r["proof"] is not None]
-    assert ranked and all(ranked[i]["proof"] >= ranked[i + 1]["proof"] for i in range(len(ranked) - 1))
-    assert all(r["slips"] >= sim.MIN_PROOF_SLIPS for r in ranked)
+    lb = ins["leaderboard"]
+    assert len(lb) == 60                                            # nobody is hidden or re-weighted
+    assert all(lb[i]["final_bankroll"] >= lb[i + 1]["final_bankroll"] for i in range(len(lb) - 1))
+    assert "unit" in lb[0] and lb[0]["unit"] in (5, 10)
+
+
+def test_table_limits_5_10_then_20_then_free():
+    import betterverse_bettors as mb
+    b = mb.roster(30, 3)[0]
+    assert mb.stake_for(b, 100) in (5.0, 10.0)
+    assert mb.stake_for(b, 499.99, 3.0) <= 10.0                     # chasing can't break the $10 cap
+    assert mb.stake_for(b, 500) <= 20.0 and mb.stake_for(b, 999, 3.0) <= 20.0
+    assert mb.stake_for(b, 5000) > 20.0                             # over $1,000 they bet freely
+    _, _, _, slips, _ = sim._run(2024, 60, 11, None, keep_legs=False)
+    low, mid = slips[slips["bankroll_before"] < 500], slips[(slips["bankroll_before"] >= 500) & (slips["bankroll_before"] < 1000)]
+    assert low["stake"].max() <= 10.0 and (mid.empty or mid["stake"].max() <= 20.0)
+
+
+def test_study_pools_universes_and_is_repeatable():
+    import betterverse_study as st
+    a, b = st.run_study(2, 40, 3), st.run_study(2, 40, 3)
+    assert a["bettor_seasons"] == 2 * 2 * 40
+    assert [r["roi"] for r in a["dims"]["tier"]] == [r["roi"] for r in b["dims"]["tier"]]
+    row = a["dims"]["style_tier"][0]
+    assert row["ci_lo"] <= row["roi"] <= row["ci_hi"] and set(row["by_season"]) == {"2024", "2025"}
+    assert a["rookie_winners"] and all(w["tier_label"] in ("Casual", "Degen") for w in a["rookie_winners"])
+
+
+def test_career_pools_two_seasons_with_same_betters():
+    sim.simulate(2024, 40, 21)
+    sim.simulate(2025, 40, 21)
+    c = sim.career([sim.run_id(2024, 40, 21, None), sim.run_id(2025, 40, 21, None)])
+    assert c and len(c["leaderboard"]) == 40 and c["leaderboard"][0]["unit"] in (5, 10)
+    assert len(c["leaderboard"][0]["by_season"]) == 2

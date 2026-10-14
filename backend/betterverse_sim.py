@@ -10,10 +10,12 @@ Output (lake/gold/nfl/betterverse/<run_id>/), ready for MY BOO to ingest as-is:
 
 Same (season, bettors, seed, mix) -> identical files. No network, no model calls: pure numpy/pandas.
 
-Leaderboard honesty: every slip is priced the same way for every better. The PROOF SCORE is the ROI a better
-would still have had on a bad-luck replay of their own season: their slips are resampled 300 times and the
-10th-percentile ROI is kept. One lucky 30x ticket barely moves it (most replays don't contain that ticket),
-while a better who steadily returns a little more keeps it. More slips, or a second season, tighten it.
+Leaderboard: it ranks real winnings. Nothing is filtered or re-weighted, so a rookie who got hot ranks exactly where
+the money puts them, and the deep dive shows how they won. A luck-adjusted PROOF score (ROI on a bad-luck replay of a
+better's own slips) is available as a second view. Whether a *strategy* really makes money is answered by
+betterverse_study.py, which pools many universes and both seasons.
+Table limits: each better picks a $5 or $10 base bet; max bet $10 until the bankroll reaches $500, $20 until $1,000,
+then bets are free.
 Sharps learn only from games played before the week they bet (plus last season), never from the week being graded.
 """
 from __future__ import annotations
@@ -140,8 +142,8 @@ def _build_slip(wk: _Week, b: mb.Bettor, rng: np.random.Generator) -> list[dict]
 
 
 # --------------------------------------------------------------------------- run
-def simulate(season: int, n: int = 150, seed: int = 7, mix: dict | None = None, progress=None) -> dict:
-    t0 = time.time()
+def _run(season: int, n: int, seed: int, mix: dict | None, progress=None, keep_legs: bool = True):
+    """Play one season for one roster. Returns (run_id, bettors, legs, slips, per-better metrics)."""
     rid = run_id(season, n, seed, mix)
     bettors = mb.roster(n, seed, mix)
     weeks = md.weeks(season)
@@ -170,7 +172,7 @@ def simulate(season: int, n: int = 150, seed: int = 7, mix: dict | None = None, 
             mult = b.chase if last_net[i] < 0 else 1.0
             week_net, made = 0.0, 0
             for _ in range(n_slips):
-                stake = round(min(bank[i], max(1.0, bank[i] * b.stake_pct * mult)), 2)
+                stake = mb.stake_for(b, bank[i], mult)
                 if stake < 1.0:
                     break
                 legs = _build_slip(wk, b, rng)
@@ -193,8 +195,8 @@ def simulate(season: int, n: int = 150, seed: int = 7, mix: dict | None = None, 
                     run_id=rid, season=season, week=w, bettor_id=i, archetype=b.archetype, tier=b.tier, slip_id=slip_id,
                     n_legs=len(legs), n_live=len(live), combo_signature=sig, sgp=full_sgp,
                     decimal_odds=full_dec, settled_odds=dec, implied_prob=round(1 / full_dec, 5),
-                    stake=stake, stake_pct=round(stake / bank_before, 4), payout=payout, won=won, bankroll_after=bank[i]))
-                for li, l in enumerate(legs):
+                    bankroll_before=round(bank_before, 2), stake=stake, stake_pct=round(stake / bank_before, 4), payout=payout, won=won, bankroll_after=bank[i]))
+                for li, l in (enumerate(legs) if keep_legs else ()):
                     leg_rows.append(dict(
                         run_id=rid, season=season, week=w, bettor_id=i, archetype=b.archetype, tier=b.tier, slip_id=slip_id,
                         leg_idx=li, market=l["market"], side=l["side"], player_id=l["player_id"], player=l["player"],
@@ -218,8 +220,12 @@ def simulate(season: int, n: int = 150, seed: int = 7, mix: dict | None = None, 
         tier_label=mb.TIERS[b.tier]["label"], final_bankroll=bank[b.bettor_id],
         max_drawdown=round(max_dd[b.bettor_id], 4), bust_week=int(bust_week[b.bettor_id]) or None,
         sit_outs=int(active_weeks[b.bettor_id] - bet_weeks[b.bettor_id])) for b in bettors])
-    bettors_df = _metrics(slips_df, base)
+    return rid, bettors, legs_df, slips_df, _metrics(slips_df, base)
 
+
+def simulate(season: int, n: int = 150, seed: int = 7, mix: dict | None = None, progress=None) -> dict:
+    t0 = time.time()
+    rid, _, legs_df, slips_df, bettors_df = _run(season, n, seed, mix, progress)
     ins = insights(legs_df, slips_df, bettors_df)
     ins.update(run_id=rid, season=season, bettors=n, seed=seed, seconds=round(time.time() - t0, 2))
     _write(rid, legs_df, slips_df, bettors_df, ins, dict(
@@ -292,11 +298,12 @@ def _tier_rows(b: pd.DataFrame, g: pd.DataFrame) -> list[dict]:
             median_final=_f(t["final_bankroll"].median()), profitable_share=_f((t["final_bankroll"] > START_BANKROLL).mean()),
             bust_rate=_f(t["bust_week"].notna().mean()), avg_proof=_f(t["proof"].mean()) if t["proof"].notna().any() else None,
             slip_hit_rate=_f(s["won"].mean()) if len(s) else 0.0, avg_legs=_f(t["avg_legs"].mean()),
-            avg_stake_pct=_f(t["avg_stake_pct"].mean()), sit_outs=_f(t["sit_outs"].mean())))
+            avg_stake_pct=_f(t["avg_stake_pct"].mean()), sit_outs=_f(t["sit_outs"].mean()),
+            top_username=str(t.loc[t["final_bankroll"].idxmax(), "username"]), top_final=_f(t["final_bankroll"].max())))
     return sorted(out, key=lambda r: r["order"])
 
 
-LEADER_COLS = ["bettor_id", "username", "tier", "tier_label", "archetype", "label", "bio", "rules", "final_bankroll", "roi",
+LEADER_COLS = ["bettor_id", "username", "tier", "tier_label", "archetype", "label", "bio", "rules", "unit", "final_bankroll", "roi",
                "proof", "rank_proof", "rank_bankroll", "slips", "slips_won", "hit_rate", "avg_legs", "avg_stake_pct",
                "max_drawdown", "profit_weeks", "sit_outs", "bust_week"]
 
@@ -306,7 +313,7 @@ def insights(legs: pd.DataFrame, slips: pd.DataFrame, bettors: pd.DataFrame) -> 
     graded["won"] = graded["won"].astype(bool)
 
     tiers = _tier_rows(bettors, graded)
-    leaderboard = bettors.sort_values(["rank_proof", "rank_bankroll"], na_position="last")[LEADER_COLS].to_dict("records")
+    leaderboard = bettors.sort_values(["rank_bankroll", "rank_proof"], na_position="last")[LEADER_COLS].to_dict("records")
 
     arch = []
     for name, g in bettors.groupby("archetype"):
@@ -374,10 +381,13 @@ def insights(legs: pd.DataFrame, slips: pd.DataFrame, bettors: pd.DataFrame) -> 
         verdict = "Discipline paid" if s["roi"] > d["roi"] else "Discipline did NOT beat the knee-jerk bettors this season"
         headlines.append(f"{verdict}: Sharps {s['roi']:+.1%} ROI vs Degens {d['roi']:+.1%}; "
                          f"{s['profitable_share']:.0%} of Sharps finished up vs {d['profitable_share']:.0%} of Degens.")
-    ranked = bettors[bettors["proof"].notna()].sort_values("proof", ascending=False)
-    if len(ranked):
-        top = ranked.iloc[0]
-        headlines.append(f"#1 on the Proof board: {top['username']} ({top['tier_label']}, {top['label']}) — {top['roi']:+.1%} ROI over {int(top['slips'])} slips, a bad-luck replay still returns {top['proof']:+.1%}.")
+    winners = bettors.sort_values("final_bankroll", ascending=False)
+    if len(winners):
+        top = winners.iloc[0]
+        headlines.append(f"#1 on the winnings board: {top['username']} ({top['tier_label']}, {top['label']}) turned $100 into "
+                         f"${top['final_bankroll']:,.2f} ({top['roi']:+.1%} ROI over {int(top['slips'])} slips).")
+        per_tier = [f"{t['label']} {t['top_username']} ${t['top_final']:,.0f}" for t in tiers]
+        headlines.append("Top winner in each tier: " + " · ".join(per_tier) + ".")
     headlines.append(f"{(bettors['final_bankroll'] > START_BANKROLL).mean():.0%} of betters finished up; "
                      f"{bettors['bust_week'].notna().mean():.0%} went broke.")
     if never:
@@ -479,7 +489,7 @@ def career(rids: list[str]) -> dict | None:
     if not rids or not all(valid(r) and (OUT / r / "slips.parquet").exists() for r in rids):
         return None
     base = pd.read_parquet(OUT / rids[0] / "bettors.parquet")[
-        ["bettor_id", "username", "tier", "tier_label", "archetype", "label", "bio", "rules"]]
+        ["bettor_id", "username", "tier", "tier_label", "archetype", "label", "bio", "rules", "unit"]]
     finals = {r: pd.read_parquet(OUT / r / "bettors.parquet").set_index("bettor_id") for r in rids}
     slips = pd.concat([pd.read_parquet(OUT / r / "slips.parquet") for r in rids], ignore_index=True)
     # compare identities across seasons: a different roster (seed/n/mix) would not be the same people
@@ -498,7 +508,7 @@ def career(rids: list[str]) -> dict | None:
     graded["won"] = graded["won"].astype(bool)
     seasons = sorted(int(finals[r].iloc[0]["season"]) for r in rids)
     per = {r: finals[r] for r in rids}
-    lb = m.sort_values(["rank_proof", "rank_bankroll"], na_position="last")[LEADER_COLS].to_dict("records")
+    lb = m.sort_values(["rank_bankroll", "rank_proof"], na_position="last")[LEADER_COLS].to_dict("records")
     for row in lb:
         row["by_season"] = [dict(season=int(per[r].iloc[0]["season"]), roi=float(per[r].loc[row["bettor_id"], "roi"]),
                                  final_bankroll=float(per[r].loc[row["bettor_id"], "final_bankroll"])) for r in rids]

@@ -625,6 +625,45 @@ def api_mv_insights(run_id: str):
     return ins
 
 
+@app.post("/api/betterverse/study")
+async def api_bv_study(request: Request):
+    import betterverse_study
+    body = await request.json() if (await request.body()) else {}
+    return betterverse_study.start(max(2, min(60, int(body.get("universes", 20)))), max(20, min(500, int(body.get("bettors", 150)))),
+                                   int(body.get("seed", 100)))
+
+
+@app.get("/api/betterverse/studies")
+def api_bv_studies():
+    import betterverse_study
+    return {"studies": betterverse_study.studies()}
+
+
+@app.get("/api/betterverse/study/status/{study_id}")
+def api_bv_study_status(study_id: str):
+    import betterverse_study
+    return betterverse_study.status(study_id)
+
+
+@app.get("/api/betterverse/study/{study_id}")
+def api_bv_study_get(study_id: str):
+    import betterverse_study
+    s = betterverse_study.load(study_id)
+    if s is None:
+        raise HTTPException(404, "study not found")
+    return s
+
+
+@app.post("/api/betterverse/study/{study_id}/ingest")
+def api_bv_study_ingest(study_id: str):
+    import boo_training
+    try:
+        b = boo_training.ingest_betterverse_study(study_id)
+    except FileNotFoundError:
+        raise HTTPException(404, "study not found")
+    return {"ok": True, "money_makers": len(b["proven_money_makers"]), "money_losers": len(b["proven_money_losers"])}
+
+
 @app.get("/api/betterverse/career")
 def api_bv_career(runs: str):
     import betterverse_sim

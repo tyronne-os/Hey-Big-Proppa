@@ -184,3 +184,25 @@
 
 .bv-jimmy-note { margin-top: 12px !important; font-size: 14px; }
 .bv-jimmy-note a { color: #c4b5fd; text-decoration: none; border-bottom: 1px dashed #7c3aed; }
+
+.bv-lab { max-width: 1120px; margin: 0 auto 18px; width: calc(100% - 32px); box-sizing: border-box; }
+.bv-lab-controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin-bottom: 12px; }
+.bv-lab-controls label { display: flex; flex-direction: column; gap: 6px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bv-dim); }
+.bv-lab-controls input { width: 100px; background: #0d0818; border: 1px solid var(--bv-line); color: var(--bv-fg); border-radius: 8px; padding: 9px 10px; font-size: 15px; }
+.bv-lab-controls .bv-go { margin-left: 0; }
+.bv-lab-head { color: var(--bv-dim); font-size: 12px; margin: 14px 0 8px; }
+.bv-lab-headlines { display: flex; flex-direction: column; gap: 6px; border-left: 3px solid var(--bv-gold); padding: 4px 0 4px 14px; margin-bottom: 14px; line-height: 1.5; }
+.bv-table.lab td { vertical-align: middle; }
+.bv-lab-name { white-space: normal !important; min-width: 190px; font-weight: 700; }
+.bv-ci-cell { min-width: 230px; }
+.bv-ci { position: relative; display: inline-block; vertical-align: middle; width: 150px; height: 14px; margin-right: 8px; background: #0d0818; border-radius: 4px; }
+.bv-ci-zero { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--bv-dim); }
+.bv-ci-range { position: absolute; top: 5px; height: 4px; background: rgba(139, 92, 246, 0.55); border-radius: 2px; }
+.bv-ci b { position: absolute; top: 1px; width: 8px; height: 12px; margin-left: -4px; border-radius: 3px; }
+.bv-ci b.pos { background: var(--bv-pos); } .bv-ci b.neg { background: var(--bv-neg); }
+.bv-flags { white-space: normal !important; }
+.flag { display: inline-block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; margin: 1px 4px 1px 0; border-radius: 99px; border: 1px solid var(--bv-violet); color: #c4b5fd; }
+.flag.good { border-color: var(--bv-pos); color: var(--bv-pos); }
+.bv-lab-winners h3 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bv-dim); }
+.bv-lab-winners li span small { display: block; color: var(--bv-dim); font-size: 11px; }
+.bv-two.tight { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); display: grid; }

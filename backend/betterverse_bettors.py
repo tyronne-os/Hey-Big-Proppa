@@ -7,6 +7,8 @@ actually enforces, so the leaderboard can be read as "whose logic worked", not j
   SHARP    researches: re-reads which market/side beat the book using only games already played (plus last
            season), bets only where the measured edge is positive, 2-3 cross-game legs, small flat stakes,
            never chases, sits out when nothing qualifies.
+  Table limits (all tiers): each better picks a $5 or $10 base bet; max bet $10 until the bankroll reaches $500,
+  $20 until $1,000, and above $1,000 they bet freely.
   GRINDER  has a favorite bet type but bets like a pro: flat small stake, at most 3 legs, never chases.
   CASUAL   a favorite bet type, medium stakes, chases a bad week a little.
   DEGEN    knee-jerk: long parlays, big stakes, doubles up after losses, chases the chalk crowd.
@@ -91,7 +93,8 @@ class Bettor:
     legs_hi: int
     slips_lo: int
     slips_hi: int
-    stake_pct: float       # share of bankroll per slip
+    unit: int              # the base bet this better picked: $5 or $10
+    stake_pct: float       # share of bankroll per slip once the table limits are gone ($1,000+)
     chase: float           # stake multiplier after a losing week (1.0 = disciplined)
     pop_bias: float        # >0 leans to chalk/popular, <0 contrarian
     over_lean: float       # P(choose over/yes) when the archetype allows both sides
@@ -105,10 +108,16 @@ class Bettor:
         return asdict(self)
 
 
+BAND_1, BAND_2 = 500.0, 1000.0     # bankroll where the max bet rises from $10 to $20, then comes off entirely
+
+
 def _rules(b: Bettor, a: dict) -> list[str]:
     r = [f"{b.legs_lo}–{b.legs_hi} legs per slip" if b.legs_lo != b.legs_hi else f"{b.legs_lo} legs per slip"]
-    r.append(f"Stakes {b.stake_pct:.1%} of bankroll" + (" (flat)" if b.chase == 1.0 else ""))
-    r.append("Never chases a losing week" if b.chase == 1.0 else f"Stakes ×{b.chase:g} after a losing week")
+    r.append(f"Bets ${b.unit} slips (max $10 until $500, $20 until $1,000, then free)")
+    if b.chase == 1.0:
+        r.append("Never chases a losing week")
+    else:
+        r.append(f"Bets ×{b.chase:g} after a losing week (up to the limit)")
     if b.learns:
         r.append(f"Bets only markets with ≥{b.edge_min:.1%} measured edge")
         r.append("Sits out when nothing qualifies")
@@ -120,6 +129,22 @@ def _rules(b: Bettor, a: dict) -> list[str]:
     elif b.pop_bias < 0:
         r.append("Fades the crowd")
     return r
+
+
+def max_stake(bank: float) -> float:
+    """Table limits: $10 until the bankroll reaches $500, $20 until $1,000, then bet freely."""
+    return 10.0 if bank < BAND_1 else 20.0 if bank < BAND_2 else float("inf")
+
+
+def stake_for(b: "Bettor", bank: float, mult: float = 1.0) -> float:
+    """What this better puts on a slip: their $5/$10 pick, scaled up in the $500-$1,000 band, free above $1,000."""
+    if bank >= BAND_2:
+        s = max(20.0, bank * b.stake_pct) * mult
+    elif bank >= BAND_1:
+        s = min(20.0, b.unit * 2 * mult)
+    else:
+        s = min(10.0, b.unit * mult)
+    return round(min(bank, max(1.0, s)), 2)
 
 
 def _pick(rng: np.random.Generator, pool: list[str], used: set[str]) -> str:
@@ -168,9 +193,10 @@ def roster(n: int, seed: int, mix: dict[str, float] | None = None) -> list[Betto
                 stake = float(np.clip(rng.lognormal(np.log(0.05), 0.35), 0.02, 0.12))
                 chase, pop = float(rng.choice([1.0, 1.0, 1.25, 1.5])), float(np.clip(rng.normal(0.4, 0.5), -0.5, 1.5))
                 over, learns, edge_min = float(np.clip(rng.normal(0.72, 0.1), 0.3, 0.92)), False, 0.0
+            unit = int(rng.choice([5, 10], p={"sharp": [.5, .5], "grinder": [.6, .4], "casual": [.5, .5], "degen": [.3, .7]}[tier]))
             b = Bettor(
                 bettor_id=bid, username=_pick(rng, _STEMS[name], used), archetype=name, tier=tier,
-                legs_lo=lo, legs_hi=hi, slips_lo=slips_lo, slips_hi=slips_hi,
+                legs_lo=lo, legs_hi=hi, slips_lo=slips_lo, slips_hi=slips_hi, unit=unit,
                 stake_pct=round(float(stake), 4), chase=chase, pop_bias=round(pop, 3), over_lean=round(over, 3),
                 learns=learns, edge_min=edge_min, seed=int(rng.integers(0, 2**31 - 1)), bio=_BIO[tier])
             b.rules = _rules(b, a)

@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import NavBar from "../components/NavBar";
 import { API_BASE } from "../api";
+import { MK, money, pct, shape, sgn, sleep } from "./betterverseUtil";
+import StrategyLab from "./StrategyLab";
 import "./BetterversePage.css";
 
 type Arch = { label: string; desc: string; w: number; legs: [number, number] };
 type Tier = {
+  top_username: string; top_final: number;
   tier: string; label: string; note: string; bettors: number; roi: number; median_final: number; profitable_share: number;
   bust_rate: number; avg_proof: number | null; slip_hit_rate: number; avg_legs: number; avg_stake_pct: number; sit_outs: number;
 };
 type Row = {
-  bettor_id: number; username: string; tier: string; tier_label: string; archetype: string; label: string; bio: string; rules: string[];
+  unit: number; bettor_id: number; username: string; tier: string; tier_label: string; archetype: string; label: string; bio: string; rules: string[];
   final_bankroll: number; roi: number; proof: number | null; rank_proof: number | null; rank_bankroll: number; slips: number;
   slips_won: number; hit_rate: number; avg_legs: number; avg_stake_pct: number; max_drawdown: number; profit_weeks: number | null;
   sit_outs: number; bust_week: number | null; by_season?: { season: number; roi: number; final_bankroll: number }[];
@@ -30,18 +33,7 @@ type Insights = {
 type Career = { runs: string[]; seasons: number[]; tiers: Tier[]; leaderboard: Row[] };
 type RunInfo = { run_id: string; season: number; bettors: number; seed: number };
 
-const MK: Record<string, string> = {
-  spread: "Spread", ml: "Moneyline", total: "Game Total", pass_yds: "Pass Yds", pass_tds: "Pass TDs",
-  completions: "Completions", pass_att: "Pass Att", ints: "INTs", rush_yds: "Rush Yds", rec_yds: "Rec Yds",
-  receptions: "Receptions", rush_rec_yds: "Rush+Rec", anytime_td: "Anytime TD",
-};
-const pct = (x: number | null | undefined, d = 1) => (x == null ? "—" : `${(x * 100).toFixed(d)}%`);
-const sgn = (x: number | null | undefined, d = 1) => (x == null ? "—" : `${x >= 0 ? "+" : ""}${(x * 100).toFixed(d)}%`);
-const money = (x: number) => `$${x.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`;
-const shape = (s: string) =>
-  s.replace(/([a-z_]+):([a-z]+)/g, (_, m, side) => `${MK[m] ?? m} ${side === "yes" ? "" : side}`.trim()).replace(/\|/g, " + ");
 const suffix = (rid: string) => rid.split("_").pop();
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function jx(path: string, init?: RequestInit) {
   const r = await fetch(`${API_BASE}${path}`, init);
@@ -63,7 +55,7 @@ export default function BetterversePage() {
   const [view, setView] = useState<"season" | "career">("season");
   const [runs, setRuns] = useState<RunInfo[]>([]);
   const [drill, setDrill] = useState<{ row: Row; runId: string; data: any } | null>(null);
-  const [rankBy, setRankBy] = useState<"proof" | "bankroll">("proof");
+  const [rankBy, setRankBy] = useState<"proof" | "bankroll">("bankroll");
   const [tierFilter, setTierFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
@@ -178,8 +170,8 @@ export default function BetterversePage() {
         <p>
           A town of betters, each with a username, a style and a stated ideology: Sharps who research which markets beat the book,
           Grinders who bet like pros, Casuals who go with their gut, Degens who chase. They all build FanDuel/DraftKings-legal slips
-          from the full Friday board and every leg is graded against what really happened. The leaderboard ranks <b>proof</b>, not luck,
-          and whatever wins, loses, or never cashes becomes MY BOO training data for JIMMY and JEV.
+          from the full Friday board and every leg is graded against what really happened. The leaderboard ranks <b>real winnings</b>, and the Strategy Lab
+          pools many universes to prove which parlay strategies actually make money. Whatever wins, loses, or never cashes becomes MY BOO training data for JIMMY and JEV.
         </p>
         <p className="bv-jimmy-note"><a href="/jimmy">Want to play a season yourself? Open the JIMMY season game →</a></p>
       </header>
@@ -234,6 +226,8 @@ export default function BetterversePage() {
         {err && <div className="bv-err">{err}</div>}
       </section>
 
+      <StrategyLab />
+
       {ins && board && (
         <>
           <section className="bv-headlines">
@@ -277,7 +271,8 @@ export default function BetterversePage() {
                   <dl>
                     <div><dt>Finished up</dt><dd>{pct(t.profitable_share, 0)}</dd></div>
                     <div><dt>Went broke</dt><dd>{pct(t.bust_rate, 0)}</dd></div>
-                    <div><dt>Proof</dt><dd>{sgn(t.avg_proof, 0)}</dd></div>
+                    <div><dt>Median roll</dt><dd>{money(t.median_final)}</dd></div>
+                    <div><dt>Top winner</dt><dd title={t.top_username}>{money(t.top_final)}</dd></div>
                     <div><dt>Avg legs</dt><dd>{t.avg_legs.toFixed(1)}</dd></div>
                     <div><dt>Stake</dt><dd>{pct(t.avg_stake_pct)}</dd></div>
                   </dl>
@@ -290,14 +285,14 @@ export default function BetterversePage() {
             <div className="bv-lb-head">
               <h2>Leaderboard</h2>
               <div className="bv-seg small">
-                <button className={rankBy === "proof" ? "on" : ""} onClick={() => setRankBy("proof")}>Proof</button>
-                <button className={rankBy === "bankroll" ? "on" : ""} onClick={() => setRankBy("bankroll")}>Bankroll</button>
+                <button className={rankBy === "bankroll" ? "on" : ""} onClick={() => setRankBy("bankroll")}>Winnings</button>
+                <button className={rankBy === "proof" ? "on" : ""} onClick={() => setRankBy("proof")}>Luck-adjusted</button>
               </div>
             </div>
             <p className="bv-note">
-              {rankBy === "proof"
-                ? "Proof = the ROI a better would still have had on a bad-luck replay of their own season (10th percentile of 300 resamples). A lucky long shot can't climb it; steady, disciplined returns do."
-                : "Raw final bankroll. This is the luck view: it rewards whoever hit the biggest ticket."}
+              {rankBy === "bankroll"
+                ? "Ranked by real winnings, nothing filtered. A rookie who got hot ranks exactly where the money puts them; open them to see how they won. Everyone starts with $100 and picks $5 or $10 bets: max $10 until $500, $20 until $1,000, then bets are free."
+                : "Luck-adjusted: the ROI a better would still have had on a bad-luck replay of their own season (10th percentile of 300 resamples). Handy for spotting repeatable skill; the Strategy Lab below pools many universes to prove which strategies make money."}
             </p>
             <div className="bv-filters">
               {["all", ...board.tiers.map((t) => t.tier)].map((t) => (
@@ -310,19 +305,20 @@ export default function BetterversePage() {
             <div className="bv-scroll">
               <table className="bv-table lb">
                 <thead>
-                  <tr><th>#</th><th>Better</th><th>ROI</th><th>Proof</th><th>Bankroll</th><th>Slips</th><th>Hit</th><th>Legs</th><th>Stake</th></tr>
+                  <tr><th>#</th><th>Better</th><th>Winnings</th><th>ROI</th><th>Proof</th><th>Bet</th><th>Slips</th><th>Hit</th><th>Legs</th><th>Stake</th></tr>
                 </thead>
                 <tbody>
                   {shown.map((r, i) => (
                     <tr key={r.bettor_id} onClick={() => openBettor(r)} className="clickable">
-                      <td>{rankBy === "proof" ? (r.proof == null ? "·" : i + 1) : i + 1}</td>
+                      <td>{i + 1}</td>
                       <td>
                         <b>{r.username}</b> <span className={`bv-badge t-${r.tier}`}>{r.tier_label}</span>
-                        <small>{r.label}{r.proof == null ? " · provisional (too few slips)" : ""}</small>
+                        <small>{r.label}{rankBy === "proof" && r.proof == null ? " · too few slips for a luck-adjusted score" : ""}</small>
                       </td>
+                      <td>{money(r.final_bankroll)}{r.bust_week ? <small className="neg"> broke wk {r.bust_week}</small> : null}</td>
                       <td className={r.roi >= 0 ? "pos" : "neg"}>{sgn(r.roi)}</td>
                       <td className={(r.proof ?? -1) >= 0 ? "pos" : "neg"}>{sgn(r.proof)}</td>
-                      <td>{money(r.final_bankroll)}{r.bust_week ? <small className="neg"> broke wk {r.bust_week}</small> : null}</td>
+                      <td>${r.unit}</td>
                       <td>{r.slips}</td>
                       <td>{pct(r.hit_rate, 0)}</td>
                       <td>{r.avg_legs.toFixed(1)}</td>
@@ -469,6 +465,7 @@ function DeepDive({ d, career, onClose, onSeason }: { d: { row: Row; runId: stri
 
         <div className="bv-dd-stats">
           <Stat k="Final bankroll" v={money(b.final_bankroll)} />
+          <Stat k="Base bet" v={`$${b.unit}`} />
           <Stat k="ROI" v={sgn(b.roi)} />
           <Stat k="Proof" v={sgn(b.proof)} />
           <Stat k="Slips won" v={`${b.slips_won} / ${b.slips}`} />

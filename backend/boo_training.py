@@ -448,6 +448,8 @@ def ingest_betterverse(run_id: str) -> dict:
                "best_shapes": sorted([s for s in shape_rows if s["edge"] > 0], key=lambda s: -s["edge"])[:25],
                "archetype_roi": {k: round(sum(v) / len(v), 4) for k, v in arche.items()},
                "tier_roi": {t["tier"]: t["roi"] for r in runs for t in (betterverse_sim.load_insights(r) or {}).get("tiers", [])}}
+        if cur.get("strategies"):
+            out["strategies"] = cur["strategies"]
         tmp = BV_PRIORS.with_suffix(".tmp")
         tmp.write_text(json.dumps(out, indent=1))
         tmp.replace(BV_PRIORS)
@@ -464,3 +466,35 @@ def betterverse_priors() -> dict:
         return json.loads(BV_PRIORS.read_text())
     except (OSError, ValueError):
         return {}
+
+
+def ingest_betterverse_study(study_id: str) -> dict:
+    """File a Strategy Lab result under `strategies` in the BETTER-VERSE priors: what made money, what never did."""
+    import betterverse_study
+    st = betterverse_study.load(study_id)
+    if st is None:
+        raise FileNotFoundError(study_id)
+    slim = lambda r: {k: r[k] for k in ("key", "label", "slips", "roi", "ci_lo", "ci_hi", "hit_rate", "by_season",
+                                        "beats_field_both_seasons", "profitable_both_seasons", "profitable_95")}
+    dims = st["dims"]
+    block = {"study_id": study_id, "bettor_seasons": st["bettor_seasons"], "slips": st["slips"], "field_roi": st["field"]["roi"],
+             "style_tier": [slim(r) for r in dims["style_tier"]],
+             "proven_money_makers": [slim(r) for r in dims["style_tier"] + dims["shape"] if r["profitable_95"] and r["profitable_both_seasons"]],
+             "proven_money_losers": [slim(r) for r in dims["style_tier"] + dims["shape"] if r["ci_hi"] < st["field"]["roi"]],
+             "shapes": [slim(r) for r in dims["shape"]], "legs_per_slip": [slim(r) for r in dims["n_legs"]],
+             "same_game": [slim(r) for r in dims["sgp"]], "updated": _now().isoformat()}
+    with _LOCK:
+        try:
+            cur = json.loads(BV_PRIORS.read_text())
+        except (OSError, ValueError):
+            cur = {"source": "betterverse", "schema": "boo.bv_priors.v1", "runs": [], "markets": {}}
+        cur["strategies"] = block
+        tmp = BV_PRIORS.with_suffix(".tmp")
+        tmp.write_text(json.dumps(cur, indent=1))
+        tmp.replace(BV_PRIORS)
+    try:
+        import boo_store
+        boo_store.push(force=True)
+    except Exception:
+        pass
+    return block
