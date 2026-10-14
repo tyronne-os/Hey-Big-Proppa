@@ -90,6 +90,7 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
   const clips = useRef(new Map<number, Promise<string | null>>());
   const urls = useRef<string[]>([]);
   const feed = useRef<HTMLDivElement>(null);
+  const [video, setVideo] = useState<{ status: string; error?: string }>({ status: "none" });
 
   useEffect(() => {
     jx(`/api/jimmy/recap/${sid}/${week}`)
@@ -206,6 +207,28 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
     }
   }
 
+  useEffect(() => {
+    if (!recap || recap.error) return;
+    jx(`/api/jimmy/video/${sid}/${week}/status`).then(setVideo).catch(() => {});
+  }, [recap, sid, week]);
+
+  useEffect(() => {
+    if (video.status !== "rendering") return;
+    const t = setInterval(() => {
+      jx(`/api/jimmy/video/${sid}/${week}/status`).then(setVideo).catch(() => {});
+    }, 4000);
+    return () => clearInterval(t);
+  }, [video.status, sid, week]);
+
+  async function renderVideo() {
+    setVideo({ status: "rendering" });
+    try {
+      setVideo(await jx(`/api/jimmy/video/${sid}/${week}`, { method: "POST" }));
+    } catch (e: any) {
+      setVideo({ status: "failed", error: e.message });
+    }
+  }
+
   const pow = recap?.play_of_week;
   const story = recap?.storylines;
   const voiceLabel = studio === "studio" ? "Studio voices" : studio === "browser" ? "Browser voices" : "Captions";
@@ -301,6 +324,23 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
                     onChange={(e) => { const v = Number(e.target.value); setVol(v); music.current.setVolume(v); }} />
                 </label>
               </div>
+            </section>
+
+            <section className="booth-video">
+              <div className="story-head">WATCH IT AS A VIDEO</div>
+              {video.status === "ready" ? (
+                <>
+                  <video controls preload="metadata" src={`${API_BASE}/api/jimmy/video/${sid}/${week}/file`} />
+                  <a className="bv-dl" href={`${API_BASE}/api/jimmy/video/${sid}/${week}/file`} download>Download MP4</a>
+                </>
+              ) : video.status === "rendering" ? (
+                <p className="bv-note">Rendering the broadcast with studio voices. This takes a few minutes the first time.</p>
+              ) : (
+                <>
+                  <p className="bv-note">{video.status === "failed" ? `Render failed: ${video.error ?? "unknown error"}. ` : ""}Turn this week's show into a shareable video with voices, theme music and on-screen cards.</p>
+                  <button className="bc-play" onClick={renderVideo}>{video.status === "failed" ? "Try again" : "Render the video"}</button>
+                </>
+              )}
             </section>
 
             {story && (

@@ -1720,6 +1720,60 @@ def api_jimmy_booth_prewarm(sid: str, week: int):
     return {"week": week, "turns": len(turns), "status": "warming"}
 
 
+_VIDEO_JOBS: dict[tuple[str, int], dict] = {}
+
+
+def _video_path(sid: str, week: int):
+    import tempfile
+    from pathlib import Path
+    return Path(os.environ.get("BOOTH_VIDEO_CACHE", Path(tempfile.gettempdir()) / "jimmy_booth_video")) / f"{sid}_{week}.mp4"
+
+
+@app.post("/api/jimmy/video/{sid}/{week}")
+def api_jimmy_video_start(sid: str, week: int):
+    """Render the week's recap as an MP4 in the background (studio voices, theme bed, on-screen cards)."""
+    import threading
+    import booth_video
+    import booth_voice
+    from jimmy_recap import generate_weekly_recap
+    key = (sid, week)
+    out = _video_path(sid, week)
+    if out.exists():
+        return {"status": "ready"}
+    if _VIDEO_JOBS.get(key, {}).get("status") == "rendering":
+        return {"status": "rendering"}
+    recap = generate_weekly_recap(_jimmy(sid), week)
+    if not recap.get("turns"):
+        raise HTTPException(400, recap.get("error") or "Nothing to render yet")
+    _VIDEO_JOBS[key] = {"status": "rendering"}
+
+    def run():
+        try:
+            booth_video.render(recap, booth_voice.clip, out)
+            _VIDEO_JOBS[key] = {"status": "ready"}
+        except Exception as e:  # noqa: BLE001 -- surfaced to the player as a failed render
+            _VIDEO_JOBS[key] = {"status": "failed", "error": str(e)[:300]}
+
+    threading.Thread(target=run, daemon=True).start()
+    return {"status": "rendering"}
+
+
+@app.get("/api/jimmy/video/{sid}/{week}/status")
+def api_jimmy_video_status(sid: str, week: int):
+    if _video_path(sid, week).exists():
+        return {"status": "ready"}
+    return _VIDEO_JOBS.get((sid, week), {"status": "none"})
+
+
+@app.get("/api/jimmy/video/{sid}/{week}/file")
+def api_jimmy_video_file(sid: str, week: int):
+    from fastapi.responses import FileResponse
+    path = _video_path(sid, week)
+    if not path.exists():
+        raise HTTPException(404, "Video not rendered yet")
+    return FileResponse(str(path), media_type="video/mp4", filename=f"big-proppa-booth-week-{week}.mp4")
+
+
 @app.post("/api/jimmy/voice")
 def api_jimmy_voice(body: dict):
     """One booth line as WAV. Cached by host and text, so replays cost nothing."""

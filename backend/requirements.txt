@@ -11,3 +11,7 @@ huggingface_hub>=0.24
 torch
 kokoro>=0.9.4
 soundfile>=0.12
+Pillow>=10.1
+numpy
+imageio-ffmpeg>=0.5
+requests>=2.31.0
