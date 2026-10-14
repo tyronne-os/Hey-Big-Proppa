@@ -51,8 +51,11 @@ def clip(host: str, text: str) -> Path:
     if path.exists():
         return path
     lang, voice = VOICES[host]
-    import numpy as np
-    import soundfile as sf
+    try:
+        import numpy as np
+        import soundfile as sf
+    except ImportError as e:
+        raise VoiceUnavailable("voice runtime is not installed") from e
 
     with _LOCK:
         if path.exists():
