@@ -15,7 +15,7 @@ import os
 import json
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -1640,6 +1640,20 @@ def api_jimmy_start(year: int, slips_per_week: int):
         raise HTTPException(400, "Must select 1-5 slips per week")
     sid, bt = new_session(year, slips_per_week)
     return {"session_id": sid, **bt.get_state_dict()}
+
+
+@app.get("/api/jimmy/share/{sid}/{week}")
+def api_jimmy_share(sid: str, week: int, request: Request):
+    """A 1200x630 PNG of the week: Play of the Week, bankroll, booth record."""
+    import booth_share
+    from fastapi.responses import Response
+    from jimmy_recap import generate_weekly_recap
+    recap = generate_weekly_recap(_jimmy(sid), week)
+    if recap.get("error") or not recap.get("segments"):
+        raise HTTPException(400, recap.get("error") or "Nothing to share yet")
+    site = request.url.netloc or "Big Proppa"
+    png = booth_share.render(recap, recap["storylines"]["bankroll"]["now"], site)
+    return Response(png, media_type="image/png", headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/jimmy/hosts")

@@ -494,6 +494,20 @@ function JimmySeasonEnd({ state, onRestart, onRecap }: { state: SeasonState; onR
   const cashRate = graded.length ? Math.round((graded.filter((s) => s.result).length / graded.length) * 100) : 0;
   const weeks = Array.from(new Set(state.slips.map((s) => s.week))).sort((a, b) => a - b);
   const best = Object.entries(state.booth.record).sort((a, b) => b[1][0] - a[1][0])[0];
+
+  const legs = state.slips.flatMap((x) => x.leg_details).filter((l) => l.result !== null);
+  const legHits = legs.filter((l) => l.result).length;
+  const rows = [
+    { name: "You", note: "your legs", w: legHits, l: legs.length - legHits, you: true },
+    ...Object.entries(state.booth.record).map(([h, [w, l]]) => ({ name: HOST_SHORT[h] ?? h, note: "booth picks", w, l, you: false })),
+  ]
+    .map((r) => ({ ...r, pct: r.w + r.l ? r.w / (r.w + r.l) : 0 }))
+    .sort((a, b) => b.pct - a.pct);
+  const you = rows.find((r) => r.you)!;
+  const beaten = rows.filter((r) => !r.you && r.w + r.l > 0 && you.pct > r.pct).length;
+  const hosts = rows.filter((r) => !r.you && r.w + r.l > 0).length;
+  const tailWeeks = Object.keys(state.booth.tails).map(Number).filter((w) => w <= state.current_week);
+  const tailHits = state.booth.bonuses.length;
   return (
     <div className="jimmy-end">
       <div className="end-header">
@@ -512,6 +526,26 @@ function JimmySeasonEnd({ state, onRestart, onRecap }: { state: SeasonState; onR
           <div className="achievements-list">{state.achievements.map((a) => <div key={a} className="achievement-badge-large">{a.replace(/_/g, " ")}</div>)}</div>
         </div>
       )}
+      <div className="achievements-final you-vs-booth">
+        <h2>You vs. the booth</h2>
+        <p className="yvb-line">
+          {hosts === 0 ? "The booth never got a pick graded this season."
+            : beaten === hosts ? "You beat the whole booth."
+            : beaten === 0 ? "The booth beat you this season."
+            : `You beat ${beaten} of ${hosts} hosts.`}
+          {tailWeeks.length > 0 && ` You tailed ${tailWeeks.length} time${tailWeeks.length === 1 ? "" : "s"} and cashed ${tailHits}.`}
+        </p>
+        <div className="yvb-table" role="table">
+          {rows.map((r, i) => (
+            <div key={r.name} className={`yvb-row ${r.you ? "you" : ""}`} role="row">
+              <span className="yvb-rank">{i + 1}</span>
+              <span className="yvb-name">{r.name}<em>{r.note}</em></span>
+              <span className="yvb-rec">{r.w}-{r.l}</span>
+              <span className="yvb-pct">{r.w + r.l ? Math.round(r.pct * 100) : 0}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="achievements-final">
         <h2>🎙️ Replay the booth</h2>
         <div className="achievements-list">{weeks.map((w) => <button key={w} className="achievement-badge" onClick={() => onRecap(w)}>Week {w}</button>)}</div>

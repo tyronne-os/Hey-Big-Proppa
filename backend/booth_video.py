@@ -15,8 +15,6 @@ import tempfile
 from pathlib import Path
 from typing import Callable, Optional
 
-import numpy as np
-import soundfile as sf
 from PIL import Image, ImageDraw, ImageFont
 
 W, H, FPS, SR = 1280, 720, 24, 24000
@@ -56,8 +54,10 @@ def _fmt(n: float) -> str:
 
 # ------------------------------------------------------------------ audio
 
-def _theme(seconds: float) -> np.ndarray:
+def _theme(seconds: float):
     """A short sports-show bed: kick, snare, hats, saw bass and brass-ish chords, 116 BPM."""
+    import numpy as np
+
     n = int(seconds * SR)
     out = np.zeros(n, dtype=np.float32)
     rng = np.random.default_rng(7)
@@ -100,6 +100,9 @@ def _theme(seconds: float) -> np.ndarray:
 
 def _build_audio(turns: list[dict], clip: ClipFn, intro: float, outro: float):
     """Voices on a timeline with the theme underneath; returns (audio, [(start, end)] per turn)."""
+    import numpy as np
+    import soundfile as sf
+
     pieces, spans, cursor, prev = [], [], intro, None
     placed = []
     for t in turns:
@@ -308,6 +311,8 @@ def _ffmpeg() -> str:
 
 
 def render(recap: dict, clip: ClipFn, out_path: Path, intro: float = 2.6, outro: float = 5.0) -> Path:
+    import soundfile as sf
+
     turns = recap.get("turns") or []
     if not turns:
         raise ValueError("recap has no conversation to render")

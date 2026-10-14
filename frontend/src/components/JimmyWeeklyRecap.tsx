@@ -105,6 +105,7 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
   const urls = useRef<string[]>([]);
   const feed = useRef<HTMLDivElement>(null);
   const [video, setVideo] = useState<{ status: string; error?: string }>({ status: "none" });
+  const [shareMsg, setShareMsg] = useState("");
 
   useEffect(() => {
     jx(`/api/jimmy/recap/${sid}/${week}`)
@@ -243,6 +244,31 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
     }
   }
 
+  async function share() {
+    setShareMsg("");
+    try {
+      const r = await fetch(`${API_BASE}/api/jimmy/share/${sid}/${week}`);
+      if (!r.ok) throw new Error("Could not build the card");
+      const blob = await r.blob();
+      const file = new File([blob], `big-proppa-booth-week-${week}.png`, { type: "image/png" });
+      const text = `${recap?.title ?? `Week ${week}`}. Can you beat the Big Proppa booth?`;
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], text });
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      await navigator.clipboard?.writeText(`${text} ${window.location.origin}/jimmy`).catch(() => {});
+      setShareMsg("Card downloaded. The caption is on your clipboard.");
+    } catch (e: any) {
+      if (e?.name !== "AbortError") setShareMsg(e?.message || "Sharing failed");
+    }
+  }
+
   const pow = recap?.play_of_week;
   const story = recap?.storylines;
   const voiceLabel = studio === "studio" ? "Studio voices" : studio === "browser" ? "Browser voices" : "Captions";
@@ -337,6 +363,15 @@ export default function JimmyWeeklyRecap({ sid, week, onClose, onState }: {
                   <input type="range" min={0} max={0.8} step={0.05} value={vol}
                     onChange={(e) => { const v = Number(e.target.value); setVol(v); music.current.setVolume(v); }} />
                 </label>
+              </div>
+            </section>
+
+            <section className="booth-share">
+              <div className="story-head">SHARE THIS WEEK</div>
+              <img src={`${API_BASE}/api/jimmy/share/${sid}/${week}`} alt={`Week ${week} share card`} loading="lazy" />
+              <div className="bs-row">
+                <button className="bc-play" onClick={share}>Share the card</button>
+                {shareMsg && <span className="bv-note">{shareMsg}</span>}
               </div>
             </section>
 
