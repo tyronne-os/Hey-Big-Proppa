@@ -1,62 +1,73 @@
 """
 JIMMY Backtester: NFL prop betting strategy simulator.
 
-Simulates playing prop slips across a full NFL season (2024 or 2025) starting from Friday of Week 1
-with zero knowledge of season outcomes. Each week, the user builds 1-5 slips from FanDuel props.
-The backtester simulates forward, calculating wins/losses and bankroll progression.
+Travels back to Friday of Week 1 of 2024 or 2025. Each week the player builds 1-5 slips from a board
+whose lines were set only from games already played; slips grade against what really happened
+(nflverse weekly stats via jimmy_history). The booth's picks and tails ride along in the same save.
 """
 from __future__ import annotations
-from dataclasses import dataclass, asdict
+
+import threading
+import time
+import uuid
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Optional
-import csv
-from pathlib import Path
-from datetime import datetime, timedelta
-import json
-import math
+
+import jimmy_history as hist
 
 SEASON_WEEKS = 17
 INITIAL_BANKROLL = 100
+HOSTS = ("MY BOO", "Jonah Jacques", "Julian Feltus")
 
 
 @dataclass
 class Leg:
-    """A single prop bet within a slip."""
     player_id: str
     player_name: str
     team: str
-    prop_type: str  # 'rec_yds', 'rec_td', 'rush_yds', 'rush_td', 'pass_yds', 'pass_td'
+    prop_type: str  # key of jimmy_history.PROPS
     line: float
     is_over: bool
-    confidence: float  # 0.0-1.0 from Jimmy agent
+    confidence: float  # 0.0-1.0
     actual_value: Optional[float] = None
-    result: Optional[bool] = None  # True if hit, False if miss, None if pending
+    result: Optional[bool] = None  # None = void (did not play)
+    headshot: str = ""
+
+    @property
+    def label(self) -> str:
+        return hist.PROPS[self.prop_type]["label"]
+
+    @property
+    def margin(self) -> Optional[float]:
+        if self.actual_value is None:
+            return None
+        return (self.actual_value - self.line) if self.is_over else (self.line - self.actual_value)
 
 
 @dataclass
 class Slip:
-    """A weekly bet slip with 1-5 legs."""
     week: int
     slip_id: str
     legs: list[Leg]
     wager: float
-    submitted_at: str  # ISO timestamp
+    submitted_at: str
     legs_hit: Optional[int] = None
     payout: Optional[float] = None
     roi: Optional[float] = None
-    result: Optional[bool] = None  # True if all legs hit, False if any miss
-    challenge_accepted: Optional[str] = None  # Challenge type if accepted
+    result: Optional[bool] = None
+    challenge_accepted: Optional[str] = None
     challenge_bonus: float = 0.0
 
 
 @dataclass
 class SeasonState:
-    """Full state of a season simulation."""
     year: int
-    slips_per_week: int  # 1-5, locked for season
+    slips_per_week: int
     starting_bankroll: float
     current_week: int
     bankroll: float
-    slips: list[Slip]  # All slips submitted this season
+    slips: list[Slip]
     total_wagered: float
     total_won: float
     win_streak: int
@@ -65,192 +76,180 @@ class SeasonState:
     double_downs_used: int
     double_downs_remaining: int = 3
     insurance_used: bool = False
-    wager_size: float = 5.0  # Base, scales at bankroll milestones
+    wager_size: float = 5.0
+    game_over: bool = False
+    # booth: {week: {host: pick}} picks FOR that week; tails {week: host}; record {host: [w, l]}
+    booth_picks: dict = field(default_factory=dict)
+    booth_tails: dict = field(default_factory=dict)
+    booth_record: dict = field(default_factory=lambda: {h: [0, 0] for h in HOSTS})
+    booth_graded: list = field(default_factory=list)
+    bonuses: list = field(default_factory=list)
 
 
 class JimmyBacktester:
-    """Simulates NFL prop betting strategies across full season."""
-
-    def __init__(self, year: int, slips_per_week: int, lake_dir: Path = Path("/home/user/Hey-Big-Proppa/lake")):
+    def __init__(self, year: int, slips_per_week: int):
         self.year = year
         self.slips_per_week = slips_per_week
-        self.lake_dir = lake_dir
         self.state = SeasonState(
-            year=year,
-            slips_per_week=slips_per_week,
-            starting_bankroll=INITIAL_BANKROLL,
-            current_week=1,
-            bankroll=INITIAL_BANKROLL,
-            slips=[],
-            total_wagered=0.0,
-            total_won=0.0,
-            win_streak=0,
-            loss_streak=0,
-            achievements_unlocked=[],
-            double_downs_used=0,
+            year=year, slips_per_week=slips_per_week, starting_bankroll=INITIAL_BANKROLL, current_week=1,
+            bankroll=INITIAL_BANKROLL, slips=[], total_wagered=0.0, total_won=0.0, win_streak=0,
+            loss_streak=0, achievements_unlocked=[], double_downs_used=0,
         )
-        self._load_season_data()
-
-    def _load_season_data(self):
-        """Load schedule and player stats from lake."""
-        schedule_path = self.lake_dir / "gold" / "nfl" / "schedule.csv"
-        self.schedule = {}
-        if schedule_path.exists():
-            with open(schedule_path) as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    week = int(row.get("week", 0))
-                    if week > 0:
-                        if week not in self.schedule:
-                            self.schedule[week] = []
-                        self.schedule[week].append(row)
 
     def calculate_wager_size(self) -> float:
-        """Calculate wager based on current bankroll (dynamic scaling)."""
         if self.state.bankroll >= 1000:
             return 15.0
-        elif self.state.bankroll >= 500:
+        if self.state.bankroll >= 500:
             return 10.0
         return 5.0
 
-    def evaluate_leg(self, leg: Leg, week: int) -> bool:
-        """
-        Evaluate if a leg hit based on actual player stats for the week.
-        Returns True if leg hits, False if miss.
-        """
-        stats_path = self.lake_dir / "gold" / "nfl" / f"player_{leg.prop_type}_week.csv"
-        if not stats_path.exists():
-            return False
+    def week_slips(self, week: Optional[int] = None) -> list[Slip]:
+        wk = self.state.current_week if week is None else week
+        return [s for s in self.state.slips if s.week == wk]
 
-        with open(stats_path) as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if row.get("player_id") == leg.player_id and int(row.get("week", 0)) == week:
-                    val = float(row.get("value", 0))
-                    leg.actual_value = val
-                    hit = (val > leg.line) if leg.is_over else (val < leg.line)
-                    leg.result = hit
-                    return hit
-        return False
+    def evaluate_leg(self, leg: Leg, week: int) -> Optional[bool]:
+        leg.actual_value = hist.actual(self.year, leg.player_id, week, leg.prop_type)
+        leg.result = None if leg.margin is None else leg.margin > 0
+        return leg.result
 
     def submit_slip(self, legs: list[Leg], challenge: Optional[str] = None) -> Slip:
-        """
-        Submit a slip for the current week. Evaluates all legs, calculates payout.
-        """
-        if len(legs) < 1 or len(legs) > 5:
+        if self.state.game_over:
+            raise ValueError("Season is over")
+        if not 1 <= len(legs) <= 5:
             raise ValueError("Slip must have 1-5 legs")
+        if len({(l.player_id, l.prop_type) for l in legs}) != len(legs):
+            raise ValueError("Duplicate leg on slip")
+        if len(self.week_slips()) >= self.slips_per_week:
+            raise ValueError(f"Already placed {self.slips_per_week} slip(s) this week")
 
-        wager = self.calculate_wager_size()
-        slip_id = f"W{self.state.current_week}_S{len(self.state.slips) + 1}_{self.year}"
-        slip = Slip(
-            week=self.state.current_week,
-            slip_id=slip_id,
-            legs=legs,
-            wager=wager,
-            submitted_at=datetime.utcnow().isoformat(),
-            challenge_accepted=challenge,
-        )
+        wager = min(self.calculate_wager_size(), self.state.bankroll)
+        slip = Slip(week=self.state.current_week, slip_id=f"W{self.state.current_week}_S{len(self.state.slips) + 1}_{self.year}",
+                    legs=legs, wager=wager, submitted_at=datetime.now(timezone.utc).isoformat(), challenge_accepted=challenge)
 
-        # Evaluate all legs for this week
-        legs_hit = 0
-        for leg in slip.legs:
-            if self.evaluate_leg(leg, self.state.current_week):
-                legs_hit += 1
+        for leg in legs:
+            self.evaluate_leg(leg, slip.week)
+        live = [l for l in legs if l.result is not None]
+        slip.legs_hit = sum(1 for l in live if l.result)
+        slip.result = bool(live) and slip.legs_hit == len(live)
+        if not live:  # every leg voided: stake back
+            slip.payout, slip.roi, slip.result = wager, 0.0, None
+            self.state.slips.append(slip)
+            return slip
 
-        slip.legs_hit = legs_hit
-        slip.result = (legs_hit == len(slip.legs))
-
-        # Calculate payout: each leg is 2x multiplier (parlay)
+        self.state.total_wagered += wager
         if slip.result:
-            payout = wager * (2 ** len(slip.legs))
-            slip.payout = payout
-            slip.roi = (payout - wager) / wager * 100
-            self.state.total_won += payout
-            self.state.bankroll += payout - wager
+            slip.payout = wager * (2 ** len(live))
+            slip.roi = (slip.payout - wager) / wager * 100
+            self.state.total_won += slip.payout
+            self.state.bankroll += slip.payout - wager
             self.state.win_streak += 1
             self.state.loss_streak = 0
         else:
-            slip.payout = 0.0
-            slip.roi = -100.0
+            slip.payout, slip.roi = 0.0, -100.0
             self.state.bankroll -= wager
             self.state.loss_streak += 1
             self.state.win_streak = 0
-
-        self.state.total_wagered += wager
         self.state.slips.append(slip)
         self._check_achievements()
+        if self.state.bankroll <= 0:
+            self.state.bankroll, self.state.game_over = 0.0, True
         return slip
 
-    def apply_double_down(self):
-        """Apply 2x wager multiplier for next week."""
-        if self.state.double_downs_remaining <= 0:
-            raise ValueError("No double-downs remaining")
-        self.state.double_downs_used += 1
-        self.state.double_downs_remaining -= 1
-        # Wager size is doubled next week; resets after submission
+    def grade_booth(self, week: int) -> None:
+        """Grade the booth's picks for `week` once; a winning tailed host pays one wager unit."""
+        if week in self.state.booth_graded or week not in self.state.booth_picks:
+            return
+        for host, pick in self.state.booth_picks[week].items():
+            leg = Leg(pick["player_id"], pick["player_name"], pick["team"], pick["prop_type"], pick["line"],
+                      pick["is_over"], pick["confidence"] / 100)
+            self.evaluate_leg(leg, week)
+            pick["actual"], pick["result"] = leg.actual_value, leg.result
+            if leg.result is not None:
+                self.state.booth_record[host][0 if leg.result else 1] += 1
+            if self.state.booth_tails.get(week) == host and leg.result:
+                bonus = self.calculate_wager_size()
+                self.state.bankroll += bonus
+                self.state.bonuses.append({"week": week, "host": host, "amount": bonus})
+                self._unlock("booth_tail_cashed")
+        self.state.booth_graded.append(week)
 
-    def apply_insurance(self):
-        """Activate one-time insurance for this week."""
-        if self.state.insurance_used:
-            raise ValueError("Insurance already used")
-        self.state.insurance_used = True
+    def tail(self, host: str) -> None:
+        wk = self.state.current_week + 1
+        if host not in HOSTS:
+            raise ValueError("Unknown host")
+        if wk not in self.state.booth_picks:
+            raise ValueError("Watch this week's recap first, the booth hasn't made picks yet")
+        self.state.booth_tails[wk] = host
 
-    def advance_week(self):
-        """Move to next week if season not over."""
-        if self.state.current_week < SEASON_WEEKS:
-            self.state.current_week += 1
-        if self.state.bankroll <= 0:
-            self.state.bankroll = 0
+    def advance_week(self) -> None:
+        if not self.week_slips():
+            raise ValueError("Place at least one slip before advancing")
+        if self.state.current_week >= SEASON_WEEKS:
+            self.state.game_over = True
+            return
+        self.state.current_week += 1
+        self.grade_booth(self.state.current_week)
 
-    def _check_achievements(self):
-        """Check for newly unlocked achievements after slip submission."""
-        slip = self.state.slips[-1]
-
-        # First Win
-        if len([s for s in self.state.slips if s.result]) == 1:
+    def _check_achievements(self) -> None:
+        wk = self.state.current_week
+        if sum(1 for s in self.state.slips if s.result) == 1:
             self._unlock("first_win")
-
-        # Perfect Week (all slips hit)
-        if self.state.current_week == 1 and all(s.result for s in self.state.slips if s.week == 1):
-            self._unlock("perfect_week_1")
-
-        # 3-Win Streak
+        week_slips = self.week_slips()
+        if len(week_slips) == self.slips_per_week and all(s.result for s in week_slips):
+            self._unlock(f"perfect_week_{wk}")
         if self.state.win_streak >= 3:
             self._unlock("win_streak_3")
-
-        # Bankroll Doubles
         if self.state.bankroll >= self.state.starting_bankroll * 2:
             self._unlock("bankroll_doubles")
 
-    def _unlock(self, achievement_key: str):
-        """Unlock achievement if not already unlocked."""
-        if achievement_key not in self.state.achievements_unlocked:
-            self.state.achievements_unlocked.append(achievement_key)
+    def _unlock(self, key: str) -> None:
+        if key not in self.state.achievements_unlocked:
+            self.state.achievements_unlocked.append(key)
 
     def get_state_dict(self) -> dict:
-        """Return serializable state dict."""
+        s = self.state
         return {
-            "year": self.state.year,
-            "slips_per_week": self.state.slips_per_week,
-            "current_week": self.state.current_week,
-            "bankroll": round(self.state.bankroll, 2),
-            "total_wagered": round(self.state.total_wagered, 2),
-            "total_won": round(self.state.total_won, 2),
-            "win_streak": self.state.win_streak,
-            "loss_streak": self.state.loss_streak,
-            "achievements": self.state.achievements_unlocked,
-            "slips": [self._serialize_slip(s) for s in self.state.slips],
+            "year": s.year, "slips_per_week": s.slips_per_week, "current_week": s.current_week,
+            "bankroll": round(s.bankroll, 2), "total_wagered": round(s.total_wagered, 2), "total_won": round(s.total_won, 2),
+            "win_streak": s.win_streak, "loss_streak": s.loss_streak, "achievements": s.achievements_unlocked,
+            "game_over": s.game_over, "wager_size": self.calculate_wager_size(),
+            "slips_this_week": len(self.week_slips()),
+            "slips": [self._serialize_slip(x) for x in s.slips],
+            "booth": {"record": s.booth_record, "tails": s.booth_tails, "bonuses": s.bonuses,
+                      "next_picks": s.booth_picks.get(s.current_week + 1)},
         }
 
-    def _serialize_slip(self, slip: Slip) -> dict:
+    @staticmethod
+    def _serialize_slip(slip: Slip) -> dict:
         return {
-            "slip_id": slip.slip_id,
-            "week": slip.week,
-            "wager": round(slip.wager, 2),
-            "legs": len(slip.legs),
-            "legs_hit": slip.legs_hit,
-            "result": slip.result,
-            "payout": round(slip.payout or 0, 2),
-            "roi": slip.roi,
+            "slip_id": slip.slip_id, "week": slip.week, "wager": round(slip.wager, 2), "legs": len(slip.legs),
+            "legs_hit": slip.legs_hit, "result": slip.result, "payout": round(slip.payout or 0, 2), "roi": slip.roi,
             "challenge": slip.challenge_accepted,
+            "leg_details": [{"player_id": l.player_id, "player_name": l.player_name, "team": l.team, "prop_type": l.prop_type,
+                             "label": l.label, "line": l.line, "is_over": l.is_over, "actual": l.actual_value,
+                             "result": l.result, "headshot": l.headshot} for l in slip.legs],
         }
+
+
+_SESSIONS: dict[str, tuple[float, JimmyBacktester]] = {}
+_SLOCK = threading.Lock()
+_TTL = 60 * 60 * 24 * 7
+
+
+def new_session(year: int, slips_per_week: int) -> tuple[str, JimmyBacktester]:
+    sid = uuid.uuid4().hex
+    bt = JimmyBacktester(year, slips_per_week)
+    with _SLOCK:
+        now = time.time()
+        for k in [k for k, (t, _) in _SESSIONS.items() if now - t > _TTL]:
+            del _SESSIONS[k]
+        _SESSIONS[sid] = (now, bt)
+    return sid, bt
+
+
+def get_session(sid: str) -> Optional[JimmyBacktester]:
+    with _SLOCK:
+        hit = _SESSIONS.get(sid)
+        if hit:
+            _SESSIONS[sid] = (time.time(), hit[1])
+        return hit[1] if hit else None
