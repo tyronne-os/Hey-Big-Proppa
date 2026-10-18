@@ -18,7 +18,7 @@ interface SlipRow {
   payout: number; roi: number | null; leg_details: LegDetail[];
 }
 interface SeasonState {
-  session_id: string; year: number; slips_per_week: number; current_week: number; bankroll: number;
+  policy_version?: string; session_id: string; year: number; slips_per_week: number; current_week: number; bankroll: number;
   total_wagered: number; total_won: number; win_streak: number; loss_streak: number; achievements: string[];
   game_over: boolean; wager_size: number; slips_this_week: number; slips: SlipRow[]; log?: unknown[];
   booth: { record: Record<string, [number, number]>; tails: Record<string, string>; bonuses: { week: number; host: string; amount: number }[]; next_picks: any };
@@ -132,14 +132,18 @@ export default function JimmyPage() {
     const t = setTimeout(async () => {
       if (!autoPlayRef.current) return;
       try {
-        const { props } = await jx(`/api/jimmy/board/${state.session_id}`);
-        if (!autoPlayRef.current) return;
-        // sort by confidence desc, pick top 3 overs
-        const sorted = [...props].sort((a: Prop, b: Prop) => b.confidence - a.confidence);
-        const legs = sorted.slice(0, 3).map((p: Prop) => ({
-          player_id: p.player_id, team: p.team, prop_type: p.prop_type, line: p.line,
-          is_over: true, confidence: p.confidence,
-        }));
+        // JIMMY plays the policy MY BOO's latest training update gave him (falls back to the original top-3 overs if that is unavailable)
+        let legs: any[];
+        try {
+          legs = (await jx(`/api/jimmy/recommend/${state.session_id}`)).legs;
+        } catch {
+          const { props } = await jx(`/api/jimmy/board/${state.session_id}`);
+          const sorted = [...props].sort((a: Prop, b: Prop) => b.confidence - a.confidence);
+          legs = sorted.slice(0, 3).map((p: Prop) => ({
+            player_id: p.player_id, team: p.team, prop_type: p.prop_type, line: p.line, is_over: true, confidence: p.confidence,
+          }));
+        }
+        if (!legs.length) return;
         if (!autoPlayRef.current) return;
         const d = await post(`/api/jimmy/submit/${state.session_id}`, { legs });
         adopt(d.state);
@@ -284,7 +288,7 @@ function JimmyDashboard({ state, cst, err, onBuild, onResults, onRecap, recapFre
         </div>
         <div className="header-right">
           {autoPlay && (
-            <button className="autoplay-badge" onClick={onToggleAutoPlay} title="Auto-play is running — click to pause">
+            <button className="autoplay-badge" onClick={onToggleAutoPlay} title={`Auto-play is running on JIMMY training update ${state.policy_version ?? "JU-0000"} — click to pause`}>
               ▶ AUTO
             </button>
           )}

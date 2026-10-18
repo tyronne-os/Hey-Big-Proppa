@@ -27,6 +27,112 @@ function Chip({ text, color }: { text: string; color: string }) {
   return <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: "0.1em", padding: "2px 7px", borderRadius: 999, border: `1px solid ${color}`, color }}>{text}</span>;
 }
 
+const pct = (x: number | null | undefined) => (x == null ? "–" : `${(x * 100).toFixed(1)}%`);
+const pts = (x: number | null | undefined) => (x == null ? "" : `${x >= 0 ? "+" : ""}${(x * 100).toFixed(1)} pts`);
+const dcol = (x: number | null | undefined) => (x == null || x === 0 ? "var(--bp-muted)" : x > 0 ? "#34d399" : "#f87171");
+
+function TrainJimmy() {
+  const [st, setSt] = useState<any>(null);
+  const [sel, setSel] = useState<string | null>(null);
+  const [upd, setUpd] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const load = () => jx("/api/jimmy/updates").then((x) => { setSt(x); setSel((s) => s ?? x.current?.version ?? null); }).catch(() => {});
+  useEffect(() => { load(); }, []);
+  useEffect(() => { setUpd(null); if (sel && sel !== "JU-0000") jx(`/api/jimmy/updates/${sel}`).then(setUpd).catch(() => {}); }, [sel]);
+
+  const send = async () => {
+    setBusy(true); setMsg("Packaging the curriculum, testing every item on held-out seasons…");
+    try {
+      const r = await jx("/api/jimmy/updates/send", { method: "POST" });
+      setMsg(r.sent ? `Sent ${r.update}: ${r.applied} applied, ${r.held} held back. Win % ${pts(r.delta_vs_previous?.win_pct)} vs the last update.` : r.reason);
+      if (r.sent) setSel(r.update);
+      await load();
+    } catch { setMsg("Couldn't send the update."); }
+    setBusy(false);
+  };
+
+  const ups: any[] = st?.updates ?? [];
+  const live = st?.live ?? {};
+  const card = { padding: "10px 14px", borderRadius: 10, border: "1px solid #d9b45a", background: "rgba(217,180,90,0.06)" } as const;
+  return (
+    <div style={card}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.14em", color: "#d9b45a" }}>TRAIN JIMMY · NUMBERED UPDATES</div>
+          <div style={{ fontSize: 12, marginTop: 3, lineHeight: 1.5 }}>
+            One press packages MY BOO's latest curriculum, tests every item on seasons it was not learned from, and sends only the ones that help.
+            JIMMY is on <b>{st?.current?.version ?? "JU-0000"}</b>.
+          </div>
+        </div>
+        <button onClick={send} disabled={busy}
+          style={{ height: 34, padding: "0 16px", borderRadius: 8, cursor: busy ? "wait" : "pointer", fontWeight: 900, fontSize: 12, letterSpacing: "0.08em",
+            border: "1px solid #d9b45a", background: "#d9b45a", color: "#111", opacity: busy ? 0.6 : 1 }}>{busy ? "TRAINING…" : "TRAIN JIMMY"}</button>
+      </div>
+      {msg && <div style={{ fontSize: 11, color: "var(--bp-muted)", marginTop: 6 }}>{msg}</div>}
+
+      {ups.length > 0 && (
+        <div style={{ overflowX: "auto", marginTop: 10 }}>
+          <table style={{ width: "100%", fontSize: 11, borderCollapse: "collapse", minWidth: 560 }}>
+            <thead><tr style={{ color: "var(--bp-muted)", textAlign: "left", fontSize: 9, letterSpacing: "0.1em" }}>
+              {["UPDATE", "ITEMS", "WIN % (OUT OF SAMPLE)", "LEG HIT", "ROI", "LIVE SEASONS"].map((c) => <th key={c} style={{ padding: "3px 6px" }}>{c}</th>)}
+            </tr></thead>
+            <tbody>
+              {[...ups].reverse().map((u) => {
+                const d = u.delta_vs_previous, o = u.out_of_sample, lv = live[u.update];
+                return (
+                  <tr key={u.update} onClick={() => setSel(u.update)} style={{ cursor: "pointer", background: sel === u.update ? "rgba(217,180,90,0.12)" : "transparent", borderTop: "1px solid var(--bp-border)" }}>
+                    <td style={{ padding: "5px 6px", fontWeight: 800, color: "#d9b45a" }}>{u.update}{u.curriculum_release ? <span style={{ color: "var(--bp-muted)", fontWeight: 400 }}> · {u.curriculum_release}</span> : null}</td>
+                    <td style={{ padding: "5px 6px" }}>{u.update === "JU-0000" ? "baseline" : `${u.items_applied} applied · ${u.items_held} held`}</td>
+                    <td style={{ padding: "5px 6px" }}>{pct(o.win_pct)} <span style={{ color: dcol(d?.win_pct) }}>{pts(d?.win_pct)}</span></td>
+                    <td style={{ padding: "5px 6px" }}>{pct(o.leg_hit_pct)} <span style={{ color: dcol(d?.leg_hit_pct) }}>{pts(d?.leg_hit_pct)}</span></td>
+                    <td style={{ padding: "5px 6px" }}>{pct(o.roi)} <span style={{ color: dcol(d?.roi) }}>{pts(d?.roi)}</span></td>
+                    <td style={{ padding: "5px 6px", color: "var(--bp-muted)" }}>{lv ? `${lv.seasons} played · ${pct(lv.slips ? lv.wins / lv.slips : null)} won` : "not played yet"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {upd && (
+        <div style={{ marginTop: 10 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "baseline" }}>
+            <b style={{ fontSize: 13 }}>{upd.update} items</b>
+            <a href={`${API_BASE}/api/jimmy/updates/${upd.update}/notes`} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#c4b5fd" }}>Update notes (.md)</a>
+            <a href={`${API_BASE}/api/jimmy/updates/${upd.update}/items.jsonl`} style={{ fontSize: 11, color: "#c4b5fd" }}>Items (.jsonl)</a>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 6 }}>
+            {upd.items.map((i: any) => {
+              const a = i.impact?.before, b = i.impact?.after, ok = i.status === "APPLIED";
+              return (
+                <div key={i.item} style={{ padding: "8px 10px", borderRadius: 8, background: "rgba(0,0,0,0.18)", borderLeft: `3px solid ${ok ? "#34d399" : "#fbbf24"}` }}>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                    <b style={{ fontSize: 11 }}>{i.item}</b><Chip text={i.status} color={ok ? "#34d399" : "#fbbf24"} />
+                    <span style={{ fontSize: 12 }}>{i.title}</span>
+                  </div>
+                  {a && b && (
+                    <div style={{ fontSize: 11, marginTop: 3 }}>
+                      Win % {pct(a.win_pct)} → <b>{pct(b.win_pct)}</b> · leg hit {pct(a.leg_hit_pct)} → <b>{pct(b.leg_hit_pct)}</b> · ROI {pct(a.roi)} → <b>{pct(b.roi)}</b>
+                    </div>
+                  )}
+                  <div style={{ fontSize: 10, color: "var(--bp-muted)", marginTop: 2, lineHeight: 1.5 }}>{i.reason}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      <div style={{ fontSize: 10, color: "var(--bp-muted)", fontStyle: "italic", marginTop: 8, lineHeight: 1.5 }}>
+        Out of sample = each real season is scored using only items learned from the other two. Replays pay a flat 2^legs, which is generous, on about 270 slips,
+        so treat gains as directional until JIMMY's live seasons confirm them.
+      </div>
+    </div>
+  );
+}
+
 export default function BooCurriculum() {
   const [d, setD] = useState<any>(null);
   const [h, setH] = useState<any>(null);
@@ -82,6 +188,8 @@ export default function BooCurriculum() {
           )}
         </div>
       )}
+
+      <TrainJimmy />
 
       <div style={{ ...card }}>
         <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.14em", color: "#d9b45a" }}>TRAINING CURRICULUM · RELEASES</div>

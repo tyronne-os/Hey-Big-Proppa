@@ -112,3 +112,16 @@ Models and reports live in `lake/gold/nfl/boo_models/` (mirrored to the dataset)
 - The promoted-model hook into live JEV/JIMMY scoring (waiting on validation against real historical lines).
 - Collecting the human JIMMY season-game sessions into the same harvester (the same ledger and mirror would work).
 - Real hourly cadence on a sleeping Space depends on the GitHub Action secrets above being set and the branch being merged.
+
+
+## Train JIMMY: numbered updates
+
+The **TRAIN JIMMY** button at the top of the MY BOO CURRICULUM tab (`POST /api/jimmy/updates/send`) packages the latest curriculum release and sends JIMMY an
+update numbered `JU-000N`. Each change inside it is an item numbered `JU-000N.NN` (a prop direction such as "rec-yds unders", or a slip size).
+
+- **Every item is tested out of sample**: each real season (2023, 2024, 2025) is scored using only items learned from the other two, over up to 5 non-overlapping slips a week from JIMMY's real 16-prop board ($5, payout 2^legs).
+- An item is **APPLIED** only if ROI and leg hit rate do not drop and one improves; otherwise it is **HELD**.
+- The timeline shows win %, leg hit % and ROI per update with the change vs the previous one, plus JIMMY's live results per version (every season JIMMY plays is stamped with the version live at the time).
+- Files: `lake/gold/nfl/boo_jimmy/{policy.json,timeline.json,live.jsonl,updates/JU-000N.{json,md,jsonl}}`. API: `GET /api/jimmy/updates`, `/api/jimmy/updates/{id}`, `/notes`, `/items.jsonl`, `GET /api/jimmy/recommend/{session}`.
+- Baseline JU-0000 (top 3 confidence overs): 15.2% win, 48.2% leg hit, +0.7% ROI. JU-0001 (rec-yds unders applied; rush-yds and receptions unders held): 20.0% win, 53.6% leg hit out of sample.
+- Caveat: the flat 2^legs payout is generous and the sample is about 270 slips, so treat gains as directional until JIMMY's live seasons confirm them.

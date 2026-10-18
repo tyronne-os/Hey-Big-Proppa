@@ -46,3 +46,7 @@ Context in transcript says Obsidian exporter, route, button and tests already ex
 5. Add week-6 merge adjustments once the leaderboard image / data is provided.
 
 Last known good commit: `789703e` on `claude/tender-gauss-96z5nu`.
+
+
+## Recovery note (2026-10-18)
+All work was restored and pushed (b9a92f3 and follow-ups): 3-season BETTER-VERSE, harvester, curriculum, in-house JEV trainer, and the Train JIMMY updates.

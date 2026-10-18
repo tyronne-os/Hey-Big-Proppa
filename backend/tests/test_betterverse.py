@@ -132,13 +132,13 @@ def test_obsidian_vault_links_resolve_and_graph_is_colored():
     assert f"{ob.ROOT}/00 Home.md" in z.namelist()
 
 
-def test_study_compare_two_vs_three_seasons():
+def test_study_compare_two_vs_three_seasons(monkeypatch):
     import betterverse_study as st
     two = st.run_study(2, 40, 3, None, (2024, 2025))
     three = st.run_study(2, 40, 3)
     assert two["study_id"].endswith("_y2024-2025") and three["study_id"].endswith("_y2023-2024-2025")
-    st._write = lambda *a, **k: None                       # not persisting here; compare reads through load()
+    monkeypatch.setattr(st, "_write", lambda *a, **k: None)                       # not persisting here; compare reads through load()
     import json
-    st.load = lambda sid: two if sid == two["study_id"] else three
+    monkeypatch.setattr(st, "load", lambda sid: two if sid == two["study_id"] else three)
     c = st.compare(two["study_id"], three["study_id"])
     assert set(c["shape_tally"]) == {"held", "dropped", "rose", "never-promising"} and c["dims"]["shape"]
