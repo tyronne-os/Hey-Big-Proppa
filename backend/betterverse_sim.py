@@ -417,6 +417,11 @@ def _write(rid: str, legs, slips, bettors, ins: dict, manifest: dict) -> None:
     (tmp / "manifest.json").write_text(json.dumps(_clean(manifest), indent=1, default=str))
     shutil.rmtree(d, ignore_errors=True)
     tmp.rename(d)
+    try:                                                    # MY BOO collects every run automatically
+        import boo_harvest
+        boo_harvest.on_run(rid)
+    except Exception:
+        pass
 
 
 # --------------------------------------------------------------------------- background runs + reads
@@ -444,11 +449,6 @@ def start(season: int, n: int = 150, seed: int = 7, mix: dict | None = None) -> 
                 st.update(progress=round(p, 3), week=w)
             simulate(season, n, seed, mix, prog)
             st.update(state="done", progress=1.0, finished=time.time())
-            try:
-                import boo_store
-                boo_store.push_dir(OUT / rid, f"myboo/betterverse/{rid}")
-            except Exception:
-                pass
         except Exception as e:  # surfaced to the UI, never swallowed silently
             st.update(state="error", error=f"{type(e).__name__}: {e}")
 

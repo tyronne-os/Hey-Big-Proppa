@@ -13,7 +13,7 @@ pinned: false
 [![Live app](https://img.shields.io/badge/live-aibruh--big--proppa--live.hf.space-7c3aed)](https://aibruh-big-proppa-live.hf.space)
 [![BETTER-VERSE](https://img.shields.io/badge/BETTER--VERSE-docs-ffb81c)](docs/BETTER-VERSE.md)
 
-**Jump to:** [Playbook: how to play](docs/PLAYBOOK.md) · [BETTER-VERSE](docs/BETTER-VERSE.md) · [Latest updates](#latest-updates) · [Deployment](#deployment) · [Repo index](INDEX.md)
+**Jump to:** [Playbook: how to play](docs/PLAYBOOK.md) · [MY BOO harvester and curriculum](docs/BOO-CURRICULUM.md) · [BETTER-VERSE](docs/BETTER-VERSE.md) · [Latest updates](#latest-updates) · [Deployment](#deployment) · [Repo index](INDEX.md)
 
 An NFL analytics and parlay app built on a real, self-built data lake -- no consensus lines, no
 outside picks. Everything the app says is either raw box-score data or a documented, backtested
@@ -43,6 +43,8 @@ see `docs/HANDOFF.md` and each pond's own module docstring for method and number
 
 | Date | Update |
 |---|---|
+| 2026-10-14 | **[MY BOO harvester + curriculum](docs/BOO-CURRICULUM.md)**: every BETTER-VERSE run and study is collected automatically (event hooks, startup backfill, scheduled cycles, GitHub Action trigger), packaged into numbered curriculum releases, and used to train JEV in house (scikit-learn, gated promotion). R002 recorded that the two-season winners failed on a third season. |
+| 2026-10-14 | **Third season (2023) added** to BETTER-VERSE and every study re-run: none of the earlier "most consistent" parlay types survived. |
 | 2026-10-14 | **[Playbook](docs/PLAYBOOK.md)** (how to play and read the data) and an **Obsidian vault export** of the Strategy Lab report: a linked-note graph of tiers, strategies, slip shapes and winners. |
 | 2026-10-14 | **BETTER-VERSE Strategy Lab**: pools many universes across both real seasons to show which parlay strategies make money (95% intervals), $5/$10 table limits, and a leaderboard of real winnings. |
 | 2026-10-14 | **[BETTER-VERSE](docs/BETTER-VERSE.md)**: named betters in four skill tiers, career view and per-better deep dive; replaces JIMMY in the nav. |

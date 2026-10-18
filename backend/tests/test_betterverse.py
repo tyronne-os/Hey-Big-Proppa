@@ -55,10 +55,10 @@ def test_roster_has_usernames_tiers_and_rules():
 
 
 def test_sharps_never_use_the_week_they_bet():
-    tables = sim._edge_tables(2024, md.weeks(2024))
-    assert tables[1] == {}                                          # week 1 of the first season: nothing learned yet
-    assert len(tables[2]) <= len(tables[10])
-
+    first = sim._edge_tables(2023, md.weeks(2023))
+    assert first[1] == {}                                           # first season, first week: nothing learned yet
+    assert len(first[2]) <= len(first[10])                          # evidence only grows as weeks are played
+    assert sim._edge_tables(2024, md.weeks(2024))[1]                # 2024 starts with what 2023 taught
 
 def test_leaderboard_ranks_real_winnings_unfiltered():
     ins = sim.simulate(2024, 60, 11)
@@ -83,10 +83,10 @@ def test_table_limits_5_10_then_20_then_free():
 def test_study_pools_universes_and_is_repeatable():
     import betterverse_study as st
     a, b = st.run_study(2, 40, 3), st.run_study(2, 40, 3)
-    assert a["bettor_seasons"] == 2 * 2 * 40
+    assert a["bettor_seasons"] == 2 * 3 * 40
     assert [r["roi"] for r in a["dims"]["tier"]] == [r["roi"] for r in b["dims"]["tier"]]
     row = a["dims"]["style_tier"][0]
-    assert row["ci_lo"] <= row["roi"] <= row["ci_hi"] and set(row["by_season"]) == {"2024", "2025"}
+    assert row["ci_lo"] <= row["roi"] <= row["ci_hi"] and set(row["by_season"]) == {"2023", "2024", "2025"}
     assert a["rookie_winners"] and all(w["tier_label"] in ("Casual", "Degen") for w in a["rookie_winners"])
 
 
@@ -122,7 +122,7 @@ def test_obsidian_vault_links_resolve_and_graph_is_colored():
     assert any(p.startswith("Strategies/") for p in notes) and any(p.startswith("Betters/") for p in notes)
     assert "tag:#top5" in {g["query"] for g in graph["colorGroups"]}
     rank = notes["Rankings/Parlay Shape Ranking.md"]
-    assert "quadrantChart" in rank and "BOTH real seasons" in rank and "Rankings/Top Parlays.md" in notes
+    assert "quadrantChart" in rank and "every tested season" in rank and "Rankings/Top Parlays.md" in notes
     assert any("top5" in t.splitlines()[2] for p, t in notes.items() if p.startswith("Shapes/"))
     for path, text in notes.items():                                   # alias pipes inside table rows must be escaped
         for line in text.splitlines():
@@ -130,3 +130,15 @@ def test_obsidian_vault_links_resolve_and_graph_is_colored():
                 assert not re.search(r"\[\[[^\]]*[^\\]\|[^\]]*\]\]", line), (path, line[:80])
     z = zipfile.ZipFile(io.BytesIO(ob.zip_bytes(study)))
     assert f"{ob.ROOT}/00 Home.md" in z.namelist()
+
+
+def test_study_compare_two_vs_three_seasons():
+    import betterverse_study as st
+    two = st.run_study(2, 40, 3, None, (2024, 2025))
+    three = st.run_study(2, 40, 3)
+    assert two["study_id"].endswith("_y2024-2025") and three["study_id"].endswith("_y2023-2024-2025")
+    st._write = lambda *a, **k: None                       # not persisting here; compare reads through load()
+    import json
+    st.load = lambda sid: two if sid == two["study_id"] else three
+    c = st.compare(two["study_id"], three["study_id"])
+    assert set(c["shape_tally"]) == {"held", "dropped", "rose", "never-promising"} and c["dims"]["shape"]

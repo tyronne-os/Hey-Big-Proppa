@@ -1,0 +1,50 @@
+# Wakes the Big Proppa Space on a schedule and runs one MY BOO harvest cycle: new BETTER-VERSE universes over every real
+# season -> collected into MY BOO's data lake -> curriculum evidence/release -> in-house JEV training when due.
+# A free Space sleeps when idle, so its own scheduler cannot run while it sleeps; this is the external trigger.
+#
+# Setup (repo Settings -> Secrets and variables -> Actions):
+#   HARVEST_URL    e.g. https://aibruh-big-proppa-live.hf.space
+#   HARVEST_TOKEN  the same value as the HARVEST_TOKEN secret set on the Space
+# Scheduled workflows only run from the default branch, so this starts working after it is merged to main.
+name: MY BOO harvest
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check secrets are configured
+        env:
+          HARVEST_URL: ${{ secrets.HARVEST_URL }}
+          HARVEST_TOKEN: ${{ secrets.HARVEST_TOKEN }}
+        run: |
+          if [ -z "$HARVEST_URL" ] || [ -z "$HARVEST_TOKEN" ]; then
+            echo "::error::Set the HARVEST_URL and HARVEST_TOKEN repository secrets (see the comment at the top of this file)."
+            exit 1
+          fi
+      - name: Wake the Space and start a harvest cycle
+        env:
+          HARVEST_URL: ${{ secrets.HARVEST_URL }}
+          HARVEST_TOKEN: ${{ secrets.HARVEST_TOKEN }}
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            code=$(curl -s -o /tmp/out.json -w "%{http_code}" -m 120 -X POST \
+              -H "X-Harvest-Token: ${HARVEST_TOKEN}" "${HARVEST_URL%/}/api/myboo/harvest/cycle" || echo 000)
+            echo "attempt $attempt -> HTTP $code"; cat /tmp/out.json 2>/dev/null; echo
+            [ "$code" = "200" ] && exit 0
+            sleep 60                      # a sleeping Space needs a minute or two to boot
+          done
+          echo "::error::The Space did not accept the harvest trigger."
+          exit 1
+      - name: Report collection status
+        env:
+          HARVEST_URL: ${{ secrets.HARVEST_URL }}
+        run: curl -s -m 60 "${HARVEST_URL%/}/api/myboo/harvest/status" | head -c 1500

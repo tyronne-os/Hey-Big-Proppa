@@ -222,7 +222,7 @@ class JimmyBacktester:
             "year": s.year, "slips_per_week": s.slips_per_week, "current_week": s.current_week,
             "bankroll": round(s.bankroll, 2), "total_wagered": round(s.total_wagered, 2), "total_won": round(s.total_won, 2),
             "win_streak": s.win_streak, "loss_streak": s.loss_streak, "achievements": s.achievements_unlocked,
-            "game_over": s.game_over, "wager_size": self.calculate_wager_size(),
+            "game_over": s.game_over, "wager_size": self.calculate_wager_size(), "policy_version": getattr(self, "policy_version", "JU-0000"),
             "slips_this_week": len(self.week_slips()),
             "log": self.log,
             "slips": [self._serialize_slip(x) for x in s.slips],
@@ -250,6 +250,11 @@ _TTL = 60 * 60 * 24 * 7
 def new_session(year: int, slips_per_week: int) -> tuple[str, JimmyBacktester]:
     sid = uuid.uuid4().hex
     bt = JimmyBacktester(year, slips_per_week)
+    try:                                        # every season is stamped with the MY BOO training update that was live when it started
+        import jimmy_updates
+        bt.policy_version = jimmy_updates.version()
+    except Exception:
+        bt.policy_version = "JU-0000"
     with _SLOCK:
         now = time.time()
         for k in [k for k, (t, _) in _SESSIONS.items() if now - t > _TTL]:

@@ -50,23 +50,36 @@ a deep dive: ideology, rules, base bet, bankroll curve, what they actually bet, 
 
 ## Strategy Lab: which parlay strategy makes the most money?
 
-One roster is one lucky or unlucky sample, so the Strategy Lab pools **many universes** (different rosters, different random picks) across **both real
-seasons**: 20 universes × 150 betters × 2 seasons = 6,000 bettor-seasons and about 127,000 slips in under a minute. For every strategy (style × tier,
+One roster is one lucky or unlucky sample, so the Strategy Lab pools **many universes** (different rosters, different random picks) across **every tested real
+season**: 20 universes × 150 betters × 3 seasons = 9,000 bettor-seasons and about 196,000 slips in about a minute. For every strategy (style × tier,
 tier, style, legs per slip, same-game vs cross-game, exact slip shape) it reports pooled ROI with a **95% confidence interval** (bootstrap over
-bettor-seasons), profit per slip, slip hit rate, share of bettor-seasons in profit, ROI in each season, and a **probability ranking** (chance of profit in each season and in both, chance of beating the field, slip hit probability vs the price-implied probability), and flags for **proven $** (the whole interval
-is above zero), **$ both seasons**, and **beat field**. It also lists the biggest winners and the biggest rookie (Casual/Degen) winners with the slip
+bettor-seasons), profit per slip, slip hit rate, share of bettor-seasons in profit, ROI in each season, and a **probability ranking** (chance of profit in each season and in every season, chance of beating the field, slip hit probability vs the price-implied probability), and flags for **proven $** (the whole interval
+is above zero), **$ every season**, and **beat field**. It also lists the biggest winners and the biggest rookie (Casual/Degen) winners with the slip
 that won it.
 
-Limit to keep in mind: every universe replays the same two real NFL seasons, so more universes average out the betters' randomness, not what really
-happened in 2024-25. Trust strategies that win in **both** seasons.
+Limit to keep in mind: every universe replays the same real NFL seasons, so more universes average out the betters' randomness, not what really
+happened. Trust strategies that win in **every** season, and use the Strategy Lab's *compare* view to check whether a ranking survives a new season.
 
-## What it has found so far (20 universes, 150 betters each)
+## What it has found so far (20 universes × 150 betters, three real seasons: 2023, 2024, 2025)
 
-- The house kept about **19.6%** of every dollar staked (14.8% in 2024, 24.3% in 2025).
-- **Game-total overs** (2-4 legs, cross-game) were the only strategy with a profit the 95% interval supports: Overs Only · Grinder **+9.8% ROI (95% CI +2.0% to +17.3%)**, though 2025 was flat (-0.4%), so its chance of profit in both seasons is 43%.
-- The **most consistent parlay types** by probability of profit in both seasons: **2-leg rushing-yards unders (80%)**, **3-leg game-total overs (70%)**, **2-leg game-total overs (66%)**. 5-leg favorite spreads had the biggest ROI (+16.8%) but only a 36% chance of profit in both seasons (+43% in 2024, -7% in 2025). Note this partly reflects how those two real seasons played out.
-- **Same-game parlays** returned -46.8% vs -16.1% for cross-game slips; **6+ leg slips** lost 74-89%; **Lottery Ticket · Degen** was the worst at -73.8%.
-- The biggest single winners were rookies hitting **4-5 leg anytime-TD tickets at roughly 150x to over 700x**, yet TD Scorer Stackers lose money overall (-19% to -39%). Rookie wins are real, they just don't repeat.
+- **No parlay type is proven to beat the book in every season.** The house kept about **17.4%** of every dollar staked (20.1% in 2023, 11.5% in 2024, 20.9% in 2025). No strategy was profitable with 95% confidence.
+- **The earlier two-season "winners" did not survive 2023.** See the comparison below.
+- **Closest to break-even: the Sharps** (Edge Hunter · Sharp): **+1.8% ROI (95% range -0.5% to +4.1%)** over 21,766 slips: +8.9% in 2024, +4.1% in 2025, -14.4% in 2023 (the one season with no earlier season to learn from). Grinders -9.5%, Casuals -17.2%, Degens -33.6%.
+- **Only one shape was in profit in all three seasons**: a 3-leg slip with one completions-over and two rush-yards-unders (+2.1%, +23.4%, +26.3%; 23% hit vs 15% implied), but its chance of profit in every season is only **39%**. It is on MY BOO's watch list, not taught.
+- **Same-game parlays** returned -45.9% vs -13.9% for cross-game slips; **6+ leg slips** lost 43% to 81%; **Lottery Ticket · Degen** lost 62.9%.
+- The biggest single winners were rookies hitting **4-5 leg anytime-TD tickets at roughly 150x to over 700x**, yet TD Scorer Stackers lose money overall (-41.5% for Casuals). Rookie wins are real, they just don't repeat.
+
+### Adding a third season changed the answer
+
+Run with identical universes and seed, once on 2024-25 and once on 2023-25 (prop lines re-fitted on 2022 so every test season is out-of-sample):
+
+| Parlay type | Chance of profit on 2024-25 | 2023 ROI | 2024 | 2025 | Chance of profit on all three |
+|---|---|---|---|---|---|
+| 2-leg rush-yards unders | 100% | -18.1% | +11.0% | +7.1% | 0% |
+| 3-leg game-total overs | 72% | -23.3% | +15.6% | +3.2% | 0% |
+| 2-leg game-total overs | 70% | -21.3% | +7.6% | +2.6% | 0% |
+
+Of the 5 shapes that looked promising on two seasons, **0 held up and 5 dropped**. (The first published ranking, 80% / 70% / 66%, used lines fitted on 2023 itself; fitting them on 2022 raised the 2024-25 figures to the 100% / 72% / 70% above, and 2023 then erased all three.) One mechanism worth knowing: on the whole 2023 board rush-yards unders hit 55%, but the legs the betters actually picked (they favor high-volume players) hit only 49%. Who you pick matters as much as the market.
 
 ## Obsidian vault export
 
@@ -112,6 +125,8 @@ cd backend && uvicorn main:app --port 8000                    # then open /bette
 
 | Date | Change |
 |---|---|
+| 2026-10-14 | **Third season (2023) added** and every study re-run: the two-season winners failed in 2023. Prop-line shading re-fitted on 2022. Strategy Lab gets a season picker and a compare view. |
+| 2026-10-14 | **MY BOO harvester**: every run and study is collected automatically (event hooks, startup backfill, scheduled cycles, GitHub Action trigger), packaged into numbered curriculum releases, and used to train JEV in house. See [BOO-CURRICULUM.md](BOO-CURRICULUM.md). |
 | 2026-10-14 | **Obsidian vault export** of the Strategy Lab report, and [PLAYBOOK.md](PLAYBOOK.md) (how to play, how to read the data). |
 | 2026-10-14 | **Strategy Lab** (pooled universes, 95% intervals, proven/consistency flags), **$5/$10 table limits** ($10 until $500, $20 until $1,000, then free), leaderboard now ranks **real winnings** (luck-adjusted view kept as an option). |
 | 2026-10-14 | Renamed from "The Bookie Multiverse" to **BETTER-VERSE**. Named betters, skill tiers, proof score, career view, deep dive. Nav: BETTER-VERSE replaces JIMMY. |

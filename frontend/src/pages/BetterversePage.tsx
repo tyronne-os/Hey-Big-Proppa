@@ -85,8 +85,9 @@ export default function BetterversePage() {
   const pairFor = (rid: string, list: RunInfo[]) => {
     const me = list.find((r) => r.run_id === rid);
     if (!me) return null;
-    const other = list.find((r) => r.season !== me.season && r.bettors === me.bettors && r.seed === me.seed && suffix(r.run_id) === suffix(me.run_id));
-    return other ? [me, other].sort((a, b) => a.season - b.season).map((r) => r.run_id) : null;
+    const all = list.filter((r) => r.bettors === me.bettors && r.seed === me.seed && suffix(r.run_id) === suffix(me.run_id))
+      .sort((a, b) => a.season - b.season);
+    return all.length > 1 ? all.map((r) => r.run_id) : null;
   };
 
   async function open(rid: string, list: RunInfo[] = runs) {
@@ -181,7 +182,7 @@ export default function BetterversePage() {
           <div className="bv-field">
             <label>Season</label>
             <div className="bv-seg">
-              {[2024, 2025].map((y) => <button key={y} className={y === season ? "on" : ""} onClick={() => setSeason(y)}>{y}</button>)}
+              {[2023, 2024, 2025].map((y) => <button key={y} className={y === season ? "on" : ""} onClick={() => setSeason(y)}>{y}</button>)}
             </div>
           </div>
           <div className="bv-field">
@@ -196,7 +197,7 @@ export default function BetterversePage() {
             <button className="bv-go" disabled={running} onClick={() => launch([season])}>
               {running ? `Simulating ${status?.label ?? ""}…` : `Run ${season}`}
             </button>
-            <button className="bv-go alt" disabled={running} onClick={() => launch([2024, 2025])}>Run both seasons (career)</button>
+            <button className="bv-go alt" disabled={running} onClick={() => launch([2023, 2024, 2025])}>Run all 3 seasons (career)</button>
           </div>
         </div>
         {running && <div className="bv-progress"><div style={{ width: pct(status?.progress ?? 0, 0) }} /></div>}

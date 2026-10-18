@@ -1,7 +1,7 @@
 """
 BETTER-VERSE: the weekly betting menu.
 
-For every regular-season week of 2024/2025 this builds every market a bettor could have clicked on Friday,
+For every regular-season week of 2023, 2024 and 2025 this builds every market a bettor could have clicked on Friday,
 already graded against what really happened:
 
   game markets   spread / moneyline / total, with the real closing odds from schedule.csv
@@ -9,7 +9,7 @@ already graded against what really happened:
                  rush+rec yds, anytime TD
 
 Prop lines use only games played before that week: median of the last six x a per-market shade "k" fitted
-once on the 2023 season (out of sample) so overs land near the real-world ~48%, set at the nearest half point,
+once on the 2022 season, which is never a test season, so overs land near the real-world ~48%, set at the nearest half point,
 priced at -115 each side. Anytime TD is priced from the player's prior scoring rate plus book margin.
 """
 from __future__ import annotations
@@ -30,19 +30,19 @@ KEEP = ("player_id", "player_display_name", "position", "week", "team", "opponen
         "completions", "attempts", "passing_yards", "passing_tds", "passing_interceptions",
         "carries", "rushing_yards", "rushing_tds", "receptions", "targets", "receiving_yards", "receiving_tds")
 SKILL = {"QB", "RB", "WR", "TE"}
-SEASONS = (2024, 2025)
+SEASONS = (2023, 2024, 2025)
 PROP_DEC = 1 + 100 / 115            # -115
 _LOCK = threading.Lock()
 
 PROPS = {
-    "pass_yds":     {"pos": {"QB"},             "floor": 150, "k": 1.00, "label": "Pass Yds"},
+    "pass_yds":     {"pos": {"QB"},             "floor": 150, "k": 0.98, "label": "Pass Yds"},
     "pass_tds":     {"pos": {"QB"},             "floor": 0.6, "k": 1.00, "label": "Pass TDs"},
-    "completions":  {"pos": {"QB"},             "floor": 12,  "k": 1.00, "label": "Completions"},
-    "pass_att":     {"pos": {"QB"},             "floor": 20,  "k": 1.01, "label": "Pass Att"},
+    "completions":  {"pos": {"QB"},             "floor": 12,  "k": 0.97, "label": "Completions"},
+    "pass_att":     {"pos": {"QB"},             "floor": 20,  "k": 0.99, "label": "Pass Att"},
     "ints":         {"pos": {"QB"},             "floor": 0,   "k": 1.00, "label": "INTs", "fixed": 0.5},
-    "rush_yds":     {"pos": {"RB", "QB"},       "floor": 25,  "k": 0.98, "label": "Rush Yds"},
-    "rec_yds":      {"pos": {"WR", "TE", "RB"}, "floor": 20,  "k": 0.93, "label": "Rec Yds"},
-    "receptions":   {"pos": {"WR", "TE", "RB"}, "floor": 2,   "k": 0.95, "label": "Receptions"},
+    "rush_yds":     {"pos": {"RB", "QB"},       "floor": 25,  "k": 1.00, "label": "Rush Yds"},
+    "rec_yds":      {"pos": {"WR", "TE", "RB"}, "floor": 20,  "k": 0.86, "label": "Rec Yds"},
+    "receptions":   {"pos": {"WR", "TE", "RB"}, "floor": 2,   "k": 0.89, "label": "Receptions"},
     "rush_rec_yds": {"pos": {"RB"},             "floor": 40,  "k": 0.98, "label": "Rush+Rec Yds"},
 }
 TD_LABEL = "Anytime TD"
@@ -128,7 +128,7 @@ def stats(year: int) -> dict:
 def _prior_rows(year: int, pid: str, week: int, n: int) -> list[dict]:
     cur = stats(year)
     rows = [cur["games"][(pid, w)] for w in cur["weeks"].get(pid, []) if w < week]
-    if len(rows) < n and year - 1 >= 2023:
+    if len(rows) < n and year - 1 >= 2022:
         prev = stats(year - 1)
         rows = [prev["games"][(pid, w)] for w in prev["weeks"].get(pid, [])] + rows
     return rows[-n:]

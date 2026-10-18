@@ -1,0 +1,2319 @@
+{
+ "schema": "boo.curriculum.v1",
+ "release": "R002",
+ "previous": "R001",
+ "created": "2026-10-14T20:37:16Z",
+ "trigger": "study",
+ "studies": [
+  "st_u20_n150_s100_y2023-2024-2025"
+ ],
+ "superseded": [
+  "st_u20_n150_s100_y2024-2025"
+ ],
+ "summary": {
+  "teach": 0,
+  "watch": 1,
+  "fragile": 3,
+  "avoid": 36,
+  "benchmark": 14,
+  "case": 5
+ },
+ "diff": {
+  "new": [
+   "L-shape-ml-fav-x3",
+   "L-shape-completions-over-x2",
+   "L-shape-spread-dog-x2-spread-fav-x2",
+   "L-shape-rec-yds-over-rush-yds-over",
+   "L-shape-anytime-td-yes-x4",
+   "L-style_tier-ml-dogs-grinder",
+   "L-style_tier-anytime-td-grinder",
+   "L-style_tier-qb-passing-degen",
+   "L-style_tier-rb-ground-degen"
+  ],
+  "promoted": [],
+  "demoted": [
+   "L-shape-rush-yds-under-x3",
+   "L-shape-rush-yds-under-x2"
+  ],
+  "updated": [
+   "L-shape-completions-over-rush-yds-under-x2"
+  ],
+  "retired": [
+   "L-style_tier-edge-hunter-sharp",
+   "L-shape-total-over-x3",
+   "L-shape-total-over-x2",
+   "L-style_tier-game-overs-casual",
+   "L-shape-spread-fav-x5",
+   "L-shape-rec-yds-over-receptions-over-x2",
+   "L-shape-completions-over-rush-yds-under",
+   "L-shape-total-over-x4",
+   "L-style_tier-game-overs-degen",
+   "L-style_tier-game-overs-grinder",
+   "L-shape-total-under-x3",
+   "L-style_tier-game-unders-grinder",
+   "L-shape-total-under-x2",
+   "L-shape-anytime-td-yes-x3"
+  ],
+  "changed": true
+ },
+ "units": [
+  {
+   "id": "U1",
+   "title": "Foundations: how the house wins",
+   "blurb": "Reference numbers every slip is measured against.",
+   "lessons": [
+    {
+     "id": "L-n_legs-1",
+     "kind": "n_legs",
+     "key": "1",
+     "title": "1-leg slip",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "1-leg slip: ROI -12.2%; 31% of slips hit vs 35% implied by the price.",
+     "apply": {
+      "scope": "n_legs",
+      "key": "1",
+      "action": "reference",
+      "roi": -0.1222
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 2064,
+      "roi": -0.1222,
+      "ci_lo": -0.1758,
+      "ci_hi": -0.0571,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.3096,
+      "implied": 0.3538,
+      "edge_pts": -0.0442,
+      "by_season": {
+       "2023": -0.0647,
+       "2024": -0.1699,
+       "2025": -0.1319
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-n_legs-2",
+     "kind": "n_legs",
+     "key": "2",
+     "title": "2-leg slip",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "2-leg slip: ROI -6.1%; 30% of slips hit vs 30% implied by the price.",
+     "apply": {
+      "scope": "n_legs",
+      "key": "2",
+      "action": "reference",
+      "roi": -0.061
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 64614,
+      "roi": -0.061,
+      "ci_lo": -0.0732,
+      "ci_hi": -0.0469,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.3046,
+      "implied": 0.296,
+      "edge_pts": 0.0086,
+      "by_season": {
+       "2023": -0.0904,
+       "2024": -0.0204,
+       "2025": -0.0745
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-n_legs-3",
+     "kind": "n_legs",
+     "key": "3",
+     "title": "3-leg slip",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "3-leg slip: ROI -9.7%; 16% of slips hit vs 15% implied by the price.",
+     "apply": {
+      "scope": "n_legs",
+      "key": "3",
+      "action": "reference",
+      "roi": -0.0965
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 53421,
+      "roi": -0.0965,
+      "ci_lo": -0.122,
+      "ci_hi": -0.0724,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1623,
+      "implied": 0.1513,
+      "edge_pts": 0.011,
+      "by_season": {
+       "2023": -0.1088,
+       "2024": -0.0544,
+       "2025": -0.127
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-n_legs-4",
+     "kind": "n_legs",
+     "key": "4",
+     "title": "4-leg slip",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "4-leg slip: ROI -18.4%; 9% of slips hit vs 9% implied by the price.",
+     "apply": {
+      "scope": "n_legs",
+      "key": "4",
+      "action": "reference",
+      "roi": -0.1835
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 41576,
+      "roi": -0.1835,
+      "ci_lo": -0.2263,
+      "ci_hi": -0.1328,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0874,
+      "implied": 0.0869,
+      "edge_pts": 0.0005,
+      "by_season": {
+       "2023": -0.2217,
+       "2024": -0.042,
+       "2025": -0.293
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-n_legs-5",
+     "kind": "n_legs",
+     "key": "5",
+     "title": "5-leg slip",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "5-leg slip: ROI -32.3%; 3% of slips hit vs 3% implied by the price.",
+     "apply": {
+      "scope": "n_legs",
+      "key": "5",
+      "action": "reference",
+      "roi": -0.3226
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 22974,
+      "roi": -0.3226,
+      "ci_lo": -0.4044,
+      "ci_hi": -0.2555,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0333,
+      "implied": 0.0313,
+      "edge_pts": 0.002,
+      "by_season": {
+       "2023": -0.3825,
+       "2024": -0.2957,
+       "2025": -0.2932
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-n_legs-6",
+     "kind": "n_legs",
+     "key": "6",
+     "title": "6-leg slip",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "6-leg slip: ROI -42.8%; 2% of slips hit vs 2% implied by the price.",
+     "apply": {
+      "scope": "n_legs",
+      "key": "6",
+      "action": "reference",
+      "roi": -0.4279
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 5121,
+      "roi": -0.4279,
+      "ci_lo": -0.6133,
+      "ci_hi": -0.1099,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0033,
+      "hit_rate": 0.0189,
+      "implied": 0.0212,
+      "edge_pts": -0.0023,
+      "by_season": {
+       "2023": -0.1869,
+       "2024": -0.4834,
+       "2025": -0.6386
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-n_legs-7",
+     "kind": "n_legs",
+     "key": "7",
+     "title": "7-leg slip",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "7-leg slip: ROI -63.9%; 1% of slips hit vs 1% implied by the price.",
+     "apply": {
+      "scope": "n_legs",
+      "key": "7",
+      "action": "reference",
+      "roi": -0.6391
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1485,
+      "roi": -0.6391,
+      "ci_lo": -0.8854,
+      "ci_hi": -0.3116,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0081,
+      "implied": 0.0081,
+      "edge_pts": 0.0,
+      "by_season": {
+       "2023": -0.943,
+       "2024": -0.1538,
+       "2025": -0.7316
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-n_legs-8",
+     "kind": "n_legs",
+     "key": "8",
+     "title": "8+-leg slip",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "8+-leg slip: ROI -81.3%; 0% of slips hit vs 0% implied by the price.",
+     "apply": {
+      "scope": "n_legs",
+      "key": "8",
+      "action": "reference",
+      "roi": -0.8128
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 4621,
+      "roi": -0.8128,
+      "ci_lo": -0.9467,
+      "ci_hi": -0.6617,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0017,
+      "implied": 0.0024,
+      "edge_pts": -0.0007,
+      "by_season": {
+       "2023": -0.6769,
+       "2024": -0.8895,
+       "2025": -0.9041
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-tier-casual",
+     "kind": "tier",
+     "key": "casual",
+     "title": "Casual",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "Casual: ROI -17.2%; 15% of slips hit vs 16% implied by the price.",
+     "apply": {
+      "scope": "tier",
+      "key": "casual",
+      "action": "reference",
+      "roi": -0.1723
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 100026,
+      "roi": -0.1723,
+      "ci_lo": -0.1911,
+      "ci_hi": -0.1523,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1548,
+      "implied": 0.1553,
+      "edge_pts": -0.0005,
+      "by_season": {
+       "2023": -0.1861,
+       "2024": -0.1149,
+       "2025": -0.2175
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-sgp-cross",
+     "kind": "sgp",
+     "key": "cross",
+     "title": "Cross-game slip",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "Cross-game slip: ROI -13.9%; 18% of slips hit vs 18% implied by the price.",
+     "apply": {
+      "scope": "sgp",
+      "key": "cross",
+      "action": "reference",
+      "roi": -0.1392
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 175523,
+      "roi": -0.1392,
+      "ci_lo": -0.1542,
+      "ci_hi": -0.1228,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1836,
+      "implied": 0.1772,
+      "edge_pts": 0.0064,
+      "by_season": {
+       "2023": -0.1633,
+       "2024": -0.0768,
+       "2025": -0.1785
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-tier-degen",
+     "kind": "tier",
+     "key": "degen",
+     "title": "Degen",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "Degen: ROI -33.6%; 5% of slips hit vs 5% implied by the price.",
+     "apply": {
+      "scope": "tier",
+      "key": "degen",
+      "action": "reference",
+      "roi": -0.3361
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 32089,
+      "roi": -0.3361,
+      "ci_lo": -0.3869,
+      "ci_hi": -0.2879,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0503,
+      "implied": 0.0489,
+      "edge_pts": 0.0014,
+      "by_season": {
+       "2023": -0.3409,
+       "2024": -0.2639,
+       "2025": -0.4082
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-tier-grinder",
+     "kind": "tier",
+     "key": "grinder",
+     "title": "Grinder",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "Grinder: ROI -9.5%; 23% of slips hit vs 23% implied by the price.",
+     "apply": {
+      "scope": "tier",
+      "key": "grinder",
+      "action": "reference",
+      "roi": -0.095
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 41995,
+      "roi": -0.095,
+      "ci_lo": -0.1201,
+      "ci_hi": -0.0725,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.2327,
+      "implied": 0.2302,
+      "edge_pts": 0.0025,
+      "by_season": {
+       "2023": -0.0878,
+       "2024": -0.0552,
+       "2025": -0.1424
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-sgp-sgp",
+     "kind": "sgp",
+     "key": "sgp",
+     "title": "Same-game parlay",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "Same-game parlay: ROI -45.8%; 6% of slips hit vs 6% implied by the price.",
+     "apply": {
+      "scope": "sgp",
+      "key": "sgp",
+      "action": "reference",
+      "roi": -0.4585
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 20353,
+      "roi": -0.4585,
+      "ci_lo": -0.5105,
+      "ci_hi": -0.4087,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0631,
+      "implied": 0.0643,
+      "edge_pts": -0.0012,
+      "by_season": {
+       "2023": -0.5,
+       "2024": -0.405,
+       "2025": -0.4767
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-tier-sharp",
+     "kind": "tier",
+     "key": "sharp",
+     "title": "Sharp",
+     "verdict": "benchmark",
+     "confidence": null,
+     "rule": "Sharp: ROI +1.8%; 31% of slips hit vs 26% implied by the price.",
+     "apply": {
+      "scope": "tier",
+      "key": "sharp",
+      "action": "reference",
+      "roi": 0.0185
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 21766,
+      "roi": 0.0185,
+      "ci_lo": -0.0076,
+      "ci_hi": 0.0433,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.9267,
+      "hit_rate": 0.3051,
+      "implied": 0.2589,
+      "edge_pts": 0.0462,
+      "by_season": {
+       "2023": -0.1438,
+       "2024": 0.089,
+       "2025": 0.0413
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    }
+   ]
+  },
+  {
+   "id": "U2",
+   "title": "Parlay types that hold up",
+   "blurb": "Teach these: likely to make money in every tested season.",
+   "lessons": []
+  },
+  {
+   "id": "U3",
+   "title": "Watch list",
+   "blurb": "Promising but not proven. Collect more evidence before teaching.",
+   "lessons": [
+    {
+     "id": "L-shape-completions-over-rush-yds-under-x2",
+     "kind": "shape",
+     "key": "completions:over|rush_yds:under x2",
+     "title": "Completions over + Rush Yds under x2",
+     "verdict": "watch",
+     "confidence": 0.392,
+     "rule": "Watch Completions over + Rush Yds under x2: profit is plausible (39% in every season) but not proven; ROI +20.6%, 95% range -2.9% to +41.8%.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "completions:over|rush_yds:under x2",
+      "action": "watch",
+      "signature": "completions:over|rush_yds:under x2",
+      "hit_prob": 0.2306,
+      "implied_prob": 0.153,
+      "edge_pts": 0.0776
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 490,
+      "roi": 0.2062,
+      "ci_lo": -0.0286,
+      "ci_hi": 0.4175,
+      "p_all_seasons": 0.3924,
+      "p_all_min": 0.3924,
+      "p_profit": 0.9533,
+      "hit_rate": 0.2306,
+      "implied": 0.153,
+      "edge_pts": 0.0776,
+      "by_season": {
+       "2023": 0.0213,
+       "2024": 0.2339,
+       "2025": 0.2627
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UPDATED"
+    }
+   ]
+  },
+  {
+   "id": "U4",
+   "title": "Fragile: worked until it didn't",
+   "blurb": "Profitable overall, but lost money in at least one real season. Not taught.",
+   "lessons": [
+    {
+     "id": "L-shape-rush-yds-under-x3",
+     "kind": "shape",
+     "key": "rush_yds:under x3",
+     "title": "Rush Yds under x3",
+     "verdict": "fragile",
+     "confidence": 0.003,
+     "rule": "Don't trust Rush Yds under x3: ROI +12.1% overall (95% range +2.8% to +19.9%) but it did not repeat: 2023 -29%, 2024 +16%, 2025 +21%.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "rush_yds:under x3",
+      "action": "distrust",
+      "signature": "rush_yds:under x3",
+      "hit_prob": 0.2133,
+      "implied_prob": 0.153,
+      "edge_pts": 0.0603
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 3245,
+      "roi": 0.1214,
+      "ci_lo": 0.0278,
+      "ci_hi": 0.1989,
+      "p_all_seasons": 0.0033,
+      "p_all_min": 0.0033,
+      "p_profit": 0.9967,
+      "hit_rate": 0.2133,
+      "implied": 0.153,
+      "edge_pts": 0.0603,
+      "by_season": {
+       "2023": -0.2854,
+       "2024": 0.1614,
+       "2025": 0.2148
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "DEMOTED"
+    },
+    {
+     "id": "L-shape-ml-fav-x3",
+     "kind": "shape",
+     "key": "ml:fav x3",
+     "title": "Moneyline fav x3",
+     "verdict": "fragile",
+     "confidence": 0.0,
+     "rule": "Don't trust Moneyline fav x3: ROI +4.8% overall (95% range +1.4% to +8.5%) but it did not repeat: 2023 +10%, 2024 +17%, 2025 -12%.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "ml:fav x3",
+      "action": "distrust",
+      "signature": "ml:fav x3",
+      "hit_prob": 0.3252,
+      "implied_prob": 0.3219,
+      "edge_pts": 0.0033
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 5916,
+      "roi": 0.0481,
+      "ci_lo": 0.0137,
+      "ci_hi": 0.0851,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.9933,
+      "hit_rate": 0.3252,
+      "implied": 0.3219,
+      "edge_pts": 0.0033,
+      "by_season": {
+       "2023": 0.0983,
+       "2024": 0.166,
+       "2025": -0.1215
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "NEW"
+    },
+    {
+     "id": "L-shape-rush-yds-under-x2",
+     "kind": "shape",
+     "key": "rush_yds:under x2",
+     "title": "Rush Yds under x2",
+     "verdict": "fragile",
+     "confidence": 0.0,
+     "rule": "Don't trust Rush Yds under x2: ROI +4.9% overall (95% range +2.1% to +7.8%) but it did not repeat: 2023 -18%, 2024 +11%, 2025 +7%.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "rush_yds:under x2",
+      "action": "distrust",
+      "signature": "rush_yds:under x2",
+      "hit_prob": 0.3412,
+      "implied_prob": 0.2861,
+      "edge_pts": 0.0551
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 11079,
+      "roi": 0.0491,
+      "ci_lo": 0.0213,
+      "ci_hi": 0.0778,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 1.0,
+      "hit_rate": 0.3412,
+      "implied": 0.2861,
+      "edge_pts": 0.0551,
+      "by_season": {
+       "2023": -0.1814,
+       "2024": 0.1103,
+       "2025": 0.0713
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "DEMOTED"
+    }
+   ]
+  },
+  {
+   "id": "U5",
+   "title": "Traps to avoid",
+   "blurb": "Confident losers. Stop building these.",
+   "lessons": [
+    {
+     "id": "L-shape-anytime-td-yes-x5",
+     "kind": "shape",
+     "key": "anytime_td:yes x5",
+     "title": "Anytime TD x5",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Anytime TD x5: it loses money with confidence (ROI -45.5%, 95% range -63.9% to -22.2%); 1% of slips hit vs 1% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "anytime_td:yes x5",
+      "action": "avoid",
+      "signature": "anytime_td:yes x5",
+      "hit_prob": 0.0096,
+      "implied_prob": 0.0061,
+      "edge_pts": 0.0035
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 5496,
+      "roi": -0.4545,
+      "ci_lo": -0.639,
+      "ci_hi": -0.2222,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0096,
+      "implied": 0.0061,
+      "edge_pts": 0.0035,
+      "by_season": {
+       "2023": -0.4718,
+       "2024": -0.6262,
+       "2025": -0.2538
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-chalk-grinder-casual",
+     "kind": "style_tier",
+     "key": "chalk_grinder|casual",
+     "title": "Chalk Grinder \u00b7 Casual",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Chalk Grinder \u00b7 Casual: it loses money with confidence (ROI -14.1%, 95% range -18.7% to -9.7%); 28% of slips hit vs 29% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "chalk_grinder|casual",
+      "action": "avoid",
+      "roi": -0.1405
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 3769,
+      "roi": -0.1405,
+      "ci_lo": -0.1874,
+      "ci_hi": -0.0965,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.2834,
+      "implied": 0.2901,
+      "edge_pts": -0.0067,
+      "by_season": {
+       "2023": -0.1426,
+       "2024": -0.1677,
+       "2025": -0.1117
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-chalk-grinder-grinder",
+     "kind": "style_tier",
+     "key": "chalk_grinder|grinder",
+     "title": "Chalk Grinder \u00b7 Grinder",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Chalk Grinder \u00b7 Grinder: it loses money with confidence (ROI -11.4%, 95% range -14.9% to -7.5%); 29% of slips hit vs 29% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "chalk_grinder|grinder",
+      "action": "avoid",
+      "roi": -0.1143
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 6907,
+      "roi": -0.1143,
+      "ci_lo": -0.1486,
+      "ci_hi": -0.0753,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.2897,
+      "implied": 0.2883,
+      "edge_pts": 0.0014,
+      "by_season": {
+       "2023": -0.1327,
+       "2024": -0.062,
+       "2025": -0.1484
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-ml-dogs-casual",
+     "kind": "style_tier",
+     "key": "ml_dogs|casual",
+     "title": "Dog Hunter \u00b7 Casual",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Dog Hunter \u00b7 Casual: it loses money with confidence (ROI -32.3%, 95% range -38.6% to -25.5%); 14% of slips hit vs 17% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "ml_dogs|casual",
+      "action": "avoid",
+      "roi": -0.3231
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 4666,
+      "roi": -0.3231,
+      "ci_lo": -0.3864,
+      "ci_hi": -0.2552,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1389,
+      "implied": 0.1731,
+      "edge_pts": -0.0342,
+      "by_season": {
+       "2023": -0.3809,
+       "2024": -0.3898,
+       "2025": -0.2022
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-rb-ground-casual",
+     "kind": "style_tier",
+     "key": "rb_ground|casual",
+     "title": "Ground & Pound \u00b7 Casual",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Ground & Pound \u00b7 Casual: it loses money with confidence (ROI -33.2%, 95% range -37.8% to -27.2%); 16% of slips hit vs 18% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "rb_ground|casual",
+      "action": "avoid",
+      "roi": -0.3317
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 4264,
+      "roi": -0.3317,
+      "ci_lo": -0.3777,
+      "ci_hi": -0.2723,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1564,
+      "implied": 0.1771,
+      "edge_pts": -0.0207,
+      "by_season": {
+       "2023": -0.2908,
+       "2024": -0.3275,
+       "2025": -0.3792
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-rb-ground-degen",
+     "kind": "style_tier",
+     "key": "rb_ground|degen",
+     "title": "Ground & Pound \u00b7 Degen",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Ground & Pound \u00b7 Degen: it loses money with confidence (ROI -47.2%, 95% range -60.1% to -35.4%); 7% of slips hit vs 8% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "rb_ground|degen",
+      "action": "avoid",
+      "roi": -0.4722
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1121,
+      "roi": -0.4722,
+      "ci_lo": -0.6011,
+      "ci_hi": -0.3538,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0651,
+      "implied": 0.0821,
+      "edge_pts": -0.017,
+      "by_season": {
+       "2023": -0.4805,
+       "2024": -0.473,
+       "2025": -0.4623
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "NEW"
+    },
+    {
+     "id": "L-style_tier-rb-ground-grinder",
+     "kind": "style_tier",
+     "key": "rb_ground|grinder",
+     "title": "Ground & Pound \u00b7 Grinder",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Ground & Pound \u00b7 Grinder: it loses money with confidence (ROI -19.7%, 95% range -26.7% to -11.9%); 21% of slips hit vs 22% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "rb_ground|grinder",
+      "action": "avoid",
+      "roi": -0.1972
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 2292,
+      "roi": -0.1972,
+      "ci_lo": -0.2665,
+      "ci_hi": -0.1187,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.2103,
+      "implied": 0.2174,
+      "edge_pts": -0.0071,
+      "by_season": {
+       "2023": -0.1275,
+       "2024": -0.1569,
+       "2025": -0.3115
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-mixed-degenerate-degen",
+     "kind": "style_tier",
+     "key": "mixed_degenerate|degen",
+     "title": "Lottery Ticket \u00b7 Degen",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Lottery Ticket \u00b7 Degen: it loses money with confidence (ROI -62.9%, 95% range -75.9% to -50.3%); 1% of slips hit vs 1% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "mixed_degenerate|degen",
+      "action": "avoid",
+      "roi": -0.6287
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 9165,
+      "roi": -0.6287,
+      "ci_lo": -0.7588,
+      "ci_hi": -0.503,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0115,
+      "implied": 0.0106,
+      "edge_pts": 0.0009,
+      "by_season": {
+       "2023": -0.5207,
+       "2024": -0.6531,
+       "2025": -0.7493
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-shape-ml-dog",
+     "kind": "shape",
+     "key": "ml:dog",
+     "title": "Moneyline dog",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Moneyline dog: it loses money with confidence (ROI -12.2%, 95% range -18.4% to -6.1%); 31% of slips hit vs 35% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "ml:dog",
+      "action": "avoid",
+      "signature": "ml:dog",
+      "hit_prob": 0.3096,
+      "implied_prob": 0.3538,
+      "edge_pts": -0.0442
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 2064,
+      "roi": -0.1222,
+      "ci_lo": -0.1836,
+      "ci_hi": -0.0611,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.3096,
+      "implied": 0.3538,
+      "edge_pts": -0.0442,
+      "by_season": {
+       "2023": -0.0647,
+       "2024": -0.1699,
+       "2025": -0.1319
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-shape-ml-dog-x2",
+     "kind": "shape",
+     "key": "ml:dog x2",
+     "title": "Moneyline dog x2",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Moneyline dog x2: it loses money with confidence (ROI -28.1%, 95% range -38.8% to -17.3%); 9% of slips hit vs 13% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "ml:dog x2",
+      "action": "avoid",
+      "signature": "ml:dog x2",
+      "hit_prob": 0.0929,
+      "implied_prob": 0.131,
+      "edge_pts": -0.0381
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 2163,
+      "roi": -0.2815,
+      "ci_lo": -0.3883,
+      "ci_hi": -0.1735,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0929,
+      "implied": 0.131,
+      "edge_pts": -0.0381,
+      "by_season": {
+       "2023": -0.403,
+       "2024": -0.3996,
+       "2025": -0.0598
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-shape-ml-dog-x3",
+     "kind": "shape",
+     "key": "ml:dog x3",
+     "title": "Moneyline dog x3",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Moneyline dog x3: it loses money with confidence (ROI -43.5%, 95% range -58.1% to -31.9%); 3% of slips hit vs 5% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "ml:dog x3",
+      "action": "avoid",
+      "signature": "ml:dog x3",
+      "hit_prob": 0.0325,
+      "implied_prob": 0.0458,
+      "edge_pts": -0.0133
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 2156,
+      "roi": -0.4345,
+      "ci_lo": -0.5806,
+      "ci_hi": -0.3188,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0325,
+      "implied": 0.0458,
+      "edge_pts": -0.0133,
+      "by_season": {
+       "2023": -0.5465,
+       "2024": -0.5652,
+       "2025": -0.1846
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-qb-passing-casual",
+     "kind": "style_tier",
+     "key": "qb_passing|casual",
+     "title": "QB Air Raid \u00b7 Casual",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid QB Air Raid \u00b7 Casual: it loses money with confidence (ROI -9.4%, 95% range -14.5% to -4.6%); 20% of slips hit vs 17% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "qb_passing|casual",
+      "action": "avoid",
+      "roi": -0.0942
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 9073,
+      "roi": -0.0942,
+      "ci_lo": -0.1446,
+      "ci_hi": -0.0457,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.2035,
+      "implied": 0.1718,
+      "edge_pts": 0.0317,
+      "by_season": {
+       "2023": -0.0726,
+       "2024": -0.0742,
+       "2025": -0.1347
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-qb-passing-degen",
+     "kind": "style_tier",
+     "key": "qb_passing|degen",
+     "title": "QB Air Raid \u00b7 Degen",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid QB Air Raid \u00b7 Degen: it loses money with confidence (ROI -22.4%, 95% range -35.5% to -9.4%); 10% of slips hit vs 8% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "qb_passing|degen",
+      "action": "avoid",
+      "roi": -0.2241
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1263,
+      "roi": -0.2241,
+      "ci_lo": -0.3554,
+      "ci_hi": -0.0945,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0958,
+      "implied": 0.0821,
+      "edge_pts": 0.0137,
+      "by_season": {
+       "2023": -0.2311,
+       "2024": -0.2262,
+       "2025": -0.2156
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "NEW"
+    },
+    {
+     "id": "L-shape-rec-yds-over-rush-yds-over",
+     "kind": "shape",
+     "key": "rec_yds:over|rush_yds:over",
+     "title": "Rec Yds over + Rush Yds over",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Rec Yds over + Rush Yds over: it loses money with confidence (ROI -23.2%, 95% range -31.5% to -14.4%); 26% of slips hit vs 29% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "rec_yds:over|rush_yds:over",
+      "action": "avoid",
+      "signature": "rec_yds:over|rush_yds:over",
+      "hit_prob": 0.2586,
+      "implied_prob": 0.2861,
+      "edge_pts": -0.0275
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1044,
+      "roi": -0.2321,
+      "ci_lo": -0.3149,
+      "ci_hi": -0.1438,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.2586,
+      "implied": 0.2861,
+      "edge_pts": -0.0275,
+      "by_season": {
+       "2023": -0.1273,
+       "2024": -0.2311,
+       "2025": -0.3252
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "NEW"
+    },
+    {
+     "id": "L-shape-rec-yds-over-x2",
+     "kind": "shape",
+     "key": "rec_yds:over x2",
+     "title": "Rec Yds over x2",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Rec Yds over x2: it loses money with confidence (ROI -16.0%, 95% range -25.1% to -8.4%); 27% of slips hit vs 29% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "rec_yds:over x2",
+      "action": "avoid",
+      "signature": "rec_yds:over x2",
+      "hit_prob": 0.2744,
+      "implied_prob": 0.2861,
+      "edge_pts": -0.0117
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1567,
+      "roi": -0.1603,
+      "ci_lo": -0.2508,
+      "ci_hi": -0.0837,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.2744,
+      "implied": 0.2861,
+      "edge_pts": -0.0117,
+      "by_season": {
+       "2023": -0.0731,
+       "2024": -0.1475,
+       "2025": -0.2553
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-sgp-stacker-casual",
+     "kind": "style_tier",
+     "key": "sgp_stacker|casual",
+     "title": "SGP Stacker \u00b7 Casual",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid SGP Stacker \u00b7 Casual: it loses money with confidence (ROI -39.7%, 95% range -46.9% to -33.5%); 7% of slips hit vs 7% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "sgp_stacker|casual",
+      "action": "avoid",
+      "roi": -0.397
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 9407,
+      "roi": -0.397,
+      "ci_lo": -0.4693,
+      "ci_hi": -0.3351,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0703,
+      "implied": 0.0722,
+      "edge_pts": -0.0019,
+      "by_season": {
+       "2023": -0.4994,
+       "2024": -0.3103,
+       "2025": -0.3941
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-sgp-stacker-degen",
+     "kind": "style_tier",
+     "key": "sgp_stacker|degen",
+     "title": "SGP Stacker \u00b7 Degen",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid SGP Stacker \u00b7 Degen: it loses money with confidence (ROI -41.1%, 95% range -51.6% to -30.3%); 4% of slips hit vs 5% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "sgp_stacker|degen",
+      "action": "avoid",
+      "roi": -0.4108
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 3938,
+      "roi": -0.4108,
+      "ci_lo": -0.5164,
+      "ci_hi": -0.3035,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0434,
+      "implied": 0.0496,
+      "edge_pts": -0.0062,
+      "by_season": {
+       "2023": -0.3905,
+       "2024": -0.3124,
+       "2025": -0.5541
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-sgp-stacker-grinder",
+     "kind": "style_tier",
+     "key": "sgp_stacker|grinder",
+     "title": "SGP Stacker \u00b7 Grinder",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid SGP Stacker \u00b7 Grinder: it loses money with confidence (ROI -29.8%, 95% range -41.0% to -19.4%); 13% of slips hit vs 14% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "sgp_stacker|grinder",
+      "action": "avoid",
+      "roi": -0.2976
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1682,
+      "roi": -0.2976,
+      "ci_lo": -0.4098,
+      "ci_hi": -0.194,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1308,
+      "implied": 0.1438,
+      "edge_pts": -0.013,
+      "by_season": {
+       "2023": -0.3002,
+       "2024": -0.2366,
+       "2025": -0.3527
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-spread-parlay-casual",
+     "kind": "style_tier",
+     "key": "spread_parlay|casual",
+     "title": "Spread Parlay Guy \u00b7 Casual",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Spread Parlay Guy \u00b7 Casual: it loses money with confidence (ROI -9.3%, 95% range -13.4% to -5.4%); 13% of slips hit vs 13% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "spread_parlay|casual",
+      "action": "avoid",
+      "roi": -0.0933
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 25006,
+      "roi": -0.0933,
+      "ci_lo": -0.1342,
+      "ci_hi": -0.0543,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1319,
+      "implied": 0.1334,
+      "edge_pts": -0.0015,
+      "by_season": {
+       "2023": -0.0782,
+       "2024": -0.0462,
+       "2025": -0.1546
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-spread-parlay-grinder",
+     "kind": "style_tier",
+     "key": "spread_parlay|grinder",
+     "title": "Spread Parlay Guy \u00b7 Grinder",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Spread Parlay Guy \u00b7 Grinder: it loses money with confidence (ROI -11.5%, 95% range -16.1% to -6.6%); 20% of slips hit vs 21% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "spread_parlay|grinder",
+      "action": "avoid",
+      "roi": -0.1146
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 8211,
+      "roi": -0.1146,
+      "ci_lo": -0.1614,
+      "ci_hi": -0.0658,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1975,
+      "implied": 0.2092,
+      "edge_pts": -0.0117,
+      "by_season": {
+       "2023": -0.015,
+       "2024": -0.1253,
+       "2025": -0.2064
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-shape-spread-dog-spread-fav",
+     "kind": "shape",
+     "key": "spread:dog|spread:fav",
+     "title": "Spread dog + Spread fav",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Spread dog + Spread fav: it loses money with confidence (ROI -9.9%, 95% range -15.5% to -5.3%); 25% of slips hit vs 27% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "spread:dog|spread:fav",
+      "action": "avoid",
+      "signature": "spread:dog|spread:fav",
+      "hit_prob": 0.2535,
+      "implied_prob": 0.2738,
+      "edge_pts": -0.0203
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 3882,
+      "roi": -0.0987,
+      "ci_lo": -0.1547,
+      "ci_hi": -0.0531,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.2535,
+      "implied": 0.2738,
+      "edge_pts": -0.0203,
+      "by_season": {
+       "2023": -0.0365,
+       "2024": -0.1586,
+       "2025": -0.101
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-shape-spread-dog-spread-fav-x2",
+     "kind": "shape",
+     "key": "spread:dog|spread:fav x2",
+     "title": "Spread dog + Spread fav x2",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Spread dog + Spread fav x2: it loses money with confidence (ROI -18.0%, 95% range -25.4% to -10.7%); 13% of slips hit vs 14% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "spread:dog|spread:fav x2",
+      "action": "avoid",
+      "signature": "spread:dog|spread:fav x2",
+      "hit_prob": 0.1264,
+      "implied_prob": 0.144,
+      "edge_pts": -0.0176
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 4065,
+      "roi": -0.1796,
+      "ci_lo": -0.2539,
+      "ci_hi": -0.1073,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1264,
+      "implied": 0.144,
+      "edge_pts": -0.0176,
+      "by_season": {
+       "2023": -0.0784,
+       "2024": -0.1901,
+       "2025": -0.2683
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-shape-spread-dog-x2-spread-fav",
+     "kind": "shape",
+     "key": "spread:dog x2|spread:fav",
+     "title": "Spread dog x2 + Spread fav",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Spread dog x2 + Spread fav: it loses money with confidence (ROI -19.6%, 95% range -30.8% to -7.8%); 13% of slips hit vs 14% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "spread:dog x2|spread:fav",
+      "action": "avoid",
+      "signature": "spread:dog x2|spread:fav",
+      "hit_prob": 0.1263,
+      "implied_prob": 0.143,
+      "edge_pts": -0.0167
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1829,
+      "roi": -0.1958,
+      "ci_lo": -0.3083,
+      "ci_hi": -0.0781,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1263,
+      "implied": 0.143,
+      "edge_pts": -0.0167,
+      "by_season": {
+       "2023": -0.1682,
+       "2024": -0.3367,
+       "2025": -0.0821
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-shape-spread-dog-x2-spread-fav-x3",
+     "kind": "shape",
+     "key": "spread:dog x2|spread:fav x3",
+     "title": "Spread dog x2 + Spread fav x3",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid Spread dog x2 + Spread fav x3: it loses money with confidence (ROI -41.7%, 95% range -61.6% to -24.8%); 3% of slips hit vs 4% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "spread:dog x2|spread:fav x3",
+      "action": "avoid",
+      "signature": "spread:dog x2|spread:fav x3",
+      "hit_prob": 0.0282,
+      "implied_prob": 0.0394,
+      "edge_pts": -0.0112
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1630,
+      "roi": -0.4168,
+      "ci_lo": -0.6161,
+      "ci_hi": -0.2476,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0282,
+      "implied": 0.0394,
+      "edge_pts": -0.0112,
+      "by_season": {
+       "2023": -0.3733,
+       "2024": -0.3907,
+       "2025": -0.4892
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-anytime-td-casual",
+     "kind": "style_tier",
+     "key": "anytime_td|casual",
+     "title": "TD Scorer Stacker \u00b7 Casual",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid TD Scorer Stacker \u00b7 Casual: it loses money with confidence (ROI -41.5%, 95% range -53.3% to -30.7%); 3% of slips hit vs 2% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "anytime_td|casual",
+      "action": "avoid",
+      "roi": -0.4154
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 10664,
+      "roi": -0.4154,
+      "ci_lo": -0.5329,
+      "ci_hi": -0.3072,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0289,
+      "implied": 0.0208,
+      "edge_pts": 0.0081,
+      "by_season": {
+       "2023": -0.4628,
+       "2024": -0.3318,
+       "2025": -0.4704
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-anytime-td-degen",
+     "kind": "style_tier",
+     "key": "anytime_td|degen",
+     "title": "TD Scorer Stacker \u00b7 Degen",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid TD Scorer Stacker \u00b7 Degen: it loses money with confidence (ROI -23.5%, 95% range -38.6% to -13.2%); 2% of slips hit vs 1% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "anytime_td|degen",
+      "action": "avoid",
+      "roi": -0.2352
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 5241,
+      "roi": -0.2352,
+      "ci_lo": -0.3865,
+      "ci_hi": -0.1315,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0237,
+      "implied": 0.0132,
+      "edge_pts": 0.0105,
+      "by_season": {
+       "2023": -0.3428,
+       "2024": -0.1062,
+       "2025": -0.2916
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-wr-yards-casual",
+     "kind": "style_tier",
+     "key": "wr_yards|casual",
+     "title": "WR Yardage \u00b7 Casual",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid WR Yardage \u00b7 Casual: it loses money with confidence (ROI -17.1%, 95% range -22.8% to -11.9%); 15% of slips hit vs 14% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "wr_yards|casual",
+      "action": "avoid",
+      "roi": -0.1707
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 9464,
+      "roi": -0.1707,
+      "ci_lo": -0.2277,
+      "ci_hi": -0.119,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.1493,
+      "implied": 0.1408,
+      "edge_pts": 0.0085,
+      "by_season": {
+       "2023": -0.1771,
+       "2024": -0.1119,
+       "2025": -0.2262
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-wr-yards-degen",
+     "kind": "style_tier",
+     "key": "wr_yards|degen",
+     "title": "WR Yardage \u00b7 Degen",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid WR Yardage \u00b7 Degen: it loses money with confidence (ROI -20.4%, 95% range -34.1% to -8.9%); 8% of slips hit vs 6% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "wr_yards|degen",
+      "action": "avoid",
+      "roi": -0.2039
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1759,
+      "roi": -0.2039,
+      "ci_lo": -0.3405,
+      "ci_hi": -0.089,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0,
+      "hit_rate": 0.0767,
+      "implied": 0.0634,
+      "edge_pts": 0.0133,
+      "by_season": {
+       "2023": -0.2064,
+       "2024": -0.0991,
+       "2025": -0.3117
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-wr-yards-grinder",
+     "kind": "style_tier",
+     "key": "wr_yards|grinder",
+     "title": "WR Yardage \u00b7 Grinder",
+     "verdict": "avoid",
+     "confidence": 1.0,
+     "rule": "Avoid WR Yardage \u00b7 Grinder: it loses money with confidence (ROI -10.3%, 95% range -17.9% to -3.5%); 23% of slips hit vs 22% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "wr_yards|grinder",
+      "action": "avoid",
+      "roi": -0.1034
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 2403,
+      "roi": -0.1034,
+      "ci_lo": -0.1794,
+      "ci_hi": -0.0354,
+      "p_all_seasons": 0.0001,
+      "p_all_min": 0.0001,
+      "p_profit": 0.0,
+      "hit_rate": 0.2314,
+      "implied": 0.2202,
+      "edge_pts": 0.0112,
+      "by_season": {
+       "2023": -0.0965,
+       "2024": -0.0539,
+       "2025": -0.1622
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-shape-completions-over-x2",
+     "kind": "shape",
+     "key": "completions:over x2",
+     "title": "Completions over x2",
+     "verdict": "avoid",
+     "confidence": 0.997,
+     "rule": "Avoid Completions over x2: it loses money with confidence (ROI -9.7%, 95% range -15.7% to -3.2%); 33% of slips hit vs 29% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "completions:over x2",
+      "action": "avoid",
+      "signature": "completions:over x2",
+      "hit_prob": 0.3293,
+      "implied_prob": 0.2861,
+      "edge_pts": 0.0432
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1886,
+      "roi": -0.0974,
+      "ci_lo": -0.1569,
+      "ci_hi": -0.0325,
+      "p_all_seasons": 0.0001,
+      "p_all_min": 0.0001,
+      "p_profit": 0.0033,
+      "hit_rate": 0.3293,
+      "implied": 0.2861,
+      "edge_pts": 0.0432,
+      "by_season": {
+       "2023": -0.0805,
+       "2024": -0.1583,
+       "2025": -0.0314
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "NEW"
+    },
+    {
+     "id": "L-shape-spread-dog-x2-spread-fav-x2",
+     "kind": "shape",
+     "key": "spread:dog x2|spread:fav x2",
+     "title": "Spread dog x2 + Spread fav x2",
+     "verdict": "avoid",
+     "confidence": 0.997,
+     "rule": "Avoid Spread dog x2 + Spread fav x2: it loses money with confidence (ROI -22.1%, 95% range -40.9% to -6.0%); 6% of slips hit vs 8% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "spread:dog x2|spread:fav x2",
+      "action": "avoid",
+      "signature": "spread:dog x2|spread:fav x2",
+      "hit_prob": 0.0642,
+      "implied_prob": 0.0751,
+      "edge_pts": -0.0109
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1324,
+      "roi": -0.2207,
+      "ci_lo": -0.4092,
+      "ci_hi": -0.0603,
+      "p_all_seasons": 0.0003,
+      "p_all_min": 0.0003,
+      "p_profit": 0.0033,
+      "hit_rate": 0.0642,
+      "implied": 0.0751,
+      "edge_pts": -0.0109,
+      "by_season": {
+       "2023": -0.0793,
+       "2024": -0.3347,
+       "2025": -0.2633
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "NEW"
+    },
+    {
+     "id": "L-style_tier-game-unders-casual",
+     "kind": "style_tier",
+     "key": "game_unders|casual",
+     "title": "Unders Sharp \u00b7 Casual",
+     "verdict": "avoid",
+     "confidence": 0.99,
+     "rule": "Avoid Unders Sharp \u00b7 Casual: it loses money with confidence (ROI -10.2%, 95% range -19.3% to -2.4%); 15% of slips hit vs 16% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "game_unders|casual",
+      "action": "avoid",
+      "roi": -0.1019
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 3553,
+      "roi": -0.1019,
+      "ci_lo": -0.1926,
+      "ci_hi": -0.0237,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.01,
+      "hit_rate": 0.1528,
+      "implied": 0.1639,
+      "edge_pts": -0.0111,
+      "by_season": {
+       "2023": 0.2156,
+       "2024": -0.3226,
+       "2025": -0.2289
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-ml-dogs-grinder",
+     "kind": "style_tier",
+     "key": "ml_dogs|grinder",
+     "title": "Dog Hunter \u00b7 Grinder",
+     "verdict": "avoid",
+     "confidence": 0.983,
+     "rule": "Avoid Dog Hunter \u00b7 Grinder: it loses money with confidence (ROI -16.1%, 95% range -29.6% to -1.0%); 15% of slips hit vs 18% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "ml_dogs|grinder",
+      "action": "avoid",
+      "roi": -0.1607
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 1711,
+      "roi": -0.1607,
+      "ci_lo": -0.2957,
+      "ci_hi": -0.0097,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0167,
+      "hit_rate": 0.1525,
+      "implied": 0.1775,
+      "edge_pts": -0.025,
+      "by_season": {
+       "2023": -0.2298,
+       "2024": -0.3588,
+       "2025": 0.1021
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "NEW"
+    },
+    {
+     "id": "L-shape-spread-dog-spread-fav-x3",
+     "kind": "shape",
+     "key": "spread:dog|spread:fav x3",
+     "title": "Spread dog + Spread fav x3",
+     "verdict": "avoid",
+     "confidence": 0.98,
+     "rule": "Avoid Spread dog + Spread fav x3: it loses money with confidence (ROI -14.9%, 95% range -24.8% to -1.8%); 7% of slips hit vs 8% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "spread:dog|spread:fav x3",
+      "action": "avoid",
+      "signature": "spread:dog|spread:fav x3",
+      "hit_prob": 0.0714,
+      "implied_prob": 0.0756,
+      "edge_pts": -0.0042
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 2954,
+      "roi": -0.1489,
+      "ci_lo": -0.2475,
+      "ci_hi": -0.0185,
+      "p_all_seasons": 0.0004,
+      "p_all_min": 0.0004,
+      "p_profit": 0.02,
+      "hit_rate": 0.0714,
+      "implied": 0.0756,
+      "edge_pts": -0.0042,
+      "by_season": {
+       "2023": -0.0624,
+       "2024": -0.1103,
+       "2025": -0.2689
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-style_tier-anytime-td-grinder",
+     "kind": "style_tier",
+     "key": "anytime_td|grinder",
+     "title": "TD Scorer Stacker \u00b7 Grinder",
+     "verdict": "avoid",
+     "confidence": 0.98,
+     "rule": "Avoid TD Scorer Stacker \u00b7 Grinder: it loses money with confidence (ROI -20.7%, 95% range -41.4% to -3.3%); 5% of slips hit vs 4% implied by the price.",
+     "apply": {
+      "scope": "strategy",
+      "key": "anytime_td|grinder",
+      "action": "avoid",
+      "roi": -0.2073
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 2558,
+      "roi": -0.2073,
+      "ci_lo": -0.4145,
+      "ci_hi": -0.0331,
+      "p_all_seasons": 0.0006,
+      "p_all_min": 0.0006,
+      "p_profit": 0.02,
+      "hit_rate": 0.0536,
+      "implied": 0.0355,
+      "edge_pts": 0.0181,
+      "by_season": {
+       "2023": -0.2866,
+       "2024": -0.2642,
+       "2025": -0.0748
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "NEW"
+    },
+    {
+     "id": "L-shape-anytime-td-yes-x4",
+     "kind": "shape",
+     "key": "anytime_td:yes x4",
+     "title": "Anytime TD x4",
+     "verdict": "avoid",
+     "confidence": 0.973,
+     "rule": "Avoid Anytime TD x4: it loses money with confidence (ROI -26.7%, 95% range -49.7% to -0.8%); 2% of slips hit vs 2% implied by the price.",
+     "apply": {
+      "scope": "slip_shape",
+      "key": "anytime_td:yes x4",
+      "action": "avoid",
+      "signature": "anytime_td:yes x4",
+      "hit_prob": 0.0248,
+      "implied_prob": 0.0165,
+      "edge_pts": 0.0083
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 5853,
+      "roi": -0.2671,
+      "ci_lo": -0.4974,
+      "ci_hi": -0.008,
+      "p_all_seasons": 0.0,
+      "p_all_min": 0.0,
+      "p_profit": 0.0267,
+      "hit_rate": 0.0248,
+      "implied": 0.0165,
+      "edge_pts": 0.0083,
+      "by_season": {
+       "2023": -0.4718,
+       "2024": 0.2434,
+       "2025": -0.6178
+      },
+      "replications": {
+       "passed": 0,
+       "total": 1
+      }
+     },
+     "status": "NEW"
+    }
+   ]
+  },
+  {
+   "id": "U6",
+   "title": "When rookies win",
+   "blurb": "Big wins and why they are not templates.",
+   "lessons": [
+    {
+     "id": "L-case-anytimeannie36-u1-2024",
+     "kind": "case",
+     "key": "anytime_td:yes x4",
+     "title": "AnytimeAnnie36 (Degen, TD Scorer Stacker)",
+     "verdict": "case",
+     "confidence": null,
+     "rule": "AnytimeAnnie36 turned $100 into $979.57 in 2024 with anytime_td:yes x4 at 328x (paid $901.64). Their strategy overall returned -23.5%: a big win is not a template.",
+     "apply": {
+      "scope": "case",
+      "key": "anytime_td:yes x4",
+      "action": "do_not_copy"
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 40,
+      "final_bankroll": 979.57,
+      "strategy_roi": -0.2352,
+      "season": 2024
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-case-anytimeannie58-u3-2025",
+     "kind": "case",
+     "key": "anytime_td:yes x5",
+     "title": "AnytimeAnnie58 (Degen, TD Scorer Stacker)",
+     "verdict": "case",
+     "confidence": null,
+     "rule": "AnytimeAnnie58 turned $100 into $944.96 in 2025 with anytime_td:yes x5 at 723x (paid $5,422.10). Their strategy overall returned -23.5%: a big win is not a template.",
+     "apply": {
+      "scope": "case",
+      "key": "anytime_td:yes x5",
+      "action": "do_not_copy"
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 43,
+      "final_bankroll": 944.96,
+      "strategy_roi": -0.2352,
+      "season": 2025
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-case-anytimeannie83-u1-2024",
+     "kind": "case",
+     "key": "anytime_td:yes x5",
+     "title": "AnytimeAnnie83 (Degen, TD Scorer Stacker)",
+     "verdict": "case",
+     "confidence": null,
+     "rule": "AnytimeAnnie83 turned $100 into $1,082.26 in 2024 with anytime_td:yes x5 at 147x (paid $1,103.46). Their strategy overall returned -23.5%: a big win is not a template.",
+     "apply": {
+      "scope": "case",
+      "key": "anytime_td:yes x5",
+      "action": "do_not_copy"
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 37,
+      "final_bankroll": 1082.26,
+      "strategy_roi": -0.2352,
+      "season": 2024
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-case-dogscover15-u0-2024",
+     "kind": "case",
+     "key": "spread:fav x5",
+     "title": "DogsCover15 (Degen, Spread Parlay Guy)",
+     "verdict": "case",
+     "confidence": null,
+     "rule": "DogsCover15 turned $100 into $906.92 in 2024 with spread:fav x5 at 25x (paid $491.45). Their strategy overall returned -9.5%: a big win is not a template.",
+     "apply": {
+      "scope": "case",
+      "key": "spread:fav x5",
+      "action": "do_not_copy"
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 41,
+      "final_bankroll": 906.92,
+      "strategy_roi": -0.0952,
+      "season": 2024
+     },
+     "status": "UNCHANGED"
+    },
+    {
+     "id": "L-case-tdtony63-u7-2023",
+     "kind": "case",
+     "key": "anytime_td:yes x5",
+     "title": "TDTony63 (Casual, TD Scorer Stacker)",
+     "verdict": "case",
+     "confidence": null,
+     "rule": "TDTony63 turned $100 into $943.97 in 2023 with anytime_td:yes x5 at 163x (paid $1,225.62). Their strategy overall returned -41.5%: a big win is not a template.",
+     "apply": {
+      "scope": "case",
+      "key": "anytime_td:yes x5",
+      "action": "do_not_copy"
+     },
+     "evidence": {
+      "studies": 1,
+      "slips": 32,
+      "final_bankroll": 943.97,
+      "strategy_roi": -0.4154,
+      "season": 2023
+     },
+     "status": "NEW"
+    }
+   ]
+  }
+ ],
+ "caveat": "Every study replays the same real NFL seasons, so extra studies average out the betters' randomness, not what really happened. A lesson taught on two seasons can fail on a third: that is what releases are for. Lessons are priors for MY BOO, JIMMY and JEV, not guarantees."
+}

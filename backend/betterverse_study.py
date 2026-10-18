@@ -2,18 +2,18 @@
 BETTER-VERSE STRATEGY LAB: which parlay strategy actually made the most money?
 
 One universe is one roster of betters; their luck is part of the story. This pools MANY universes (different rosters
-and different random picks) over BOTH real seasons, so a strategy is judged on thousands of bettor-seasons instead of
+and different random picks) over EVERY tested real season, so a strategy is judged on thousands of bettor-seasons instead of
 a handful. Nothing is filtered: lucky and unlucky betters all count, exactly as the money fell.
 
 For every strategy (style x tier, tier, style, legs per slip, same-game vs cross-game, exact slip shape) it reports
   * pooled ROI (profit per $ staked) with a 95% confidence interval from a bootstrap over bettor-seasons,
-  * probability rankings: P(profit), P(profit in BOTH seasons) and P(beat the field) from the same bootstrap, slip hit probability with a 95% Wilson range
+  * probability rankings: P(profit), P(profit in EVERY tested season) and P(beat the field) from the same bootstrap, slip hit probability with a 95% Wilson range
     against the probability the price implies, and an overall rank by P(profit),
   * profit per slip, slip hit rate, share of bettor-seasons that finished in profit,
-  * ROI in each real season, whether it beat the whole field in BOTH seasons, and whether it was in profit in both.
+  * ROI in each real season, whether it beat the whole field in EVERY season, and whether it was in profit in every season.
 
-Honest limit: the NFL results are the same two real seasons in every universe, so extra universes average out the
-betters' randomness but not what really happened in 2024-25. The "beat the field in both seasons" flag is the
+Honest limit: the NFL results are the same real seasons in every universe, so extra universes average out the
+betters' randomness but not what really happened in the real seasons. The "profit in every season" flag is the
 check against a strategy that only fit one season.
 
 Output: lake/gold/nfl/betterverse_studies/<study_id>/study.json (not committed; mirrored to the private HF dataset).
@@ -34,18 +34,18 @@ import betterverse_obsidian as ob
 import betterverse_sim as sim
 
 OUT = sim.md._GOLD / "betterverse_studies"
-SEASONS = (2024, 2025)
+SEASONS = sim.md.SEASONS                 # every real season the Better-Verse can test: 2023, 2024, 2025
 BOOT = 300
 SCHEMA = "boo.bv_study.v1"
-_RID = re.compile(r"st_u\d+_n\d+_s-?\d+")
+_RID = re.compile(r"st_u\d+_n\d+_s-?\d+_y\d{4}(?:-\d{4})*")
 _RUNS: dict[str, dict] = {}
 _LOCK = threading.Lock()
 COLS = ["season", "week", "bettor_id", "archetype", "tier", "combo_signature", "n_legs", "sgp",
         "stake", "payout", "won", "decimal_odds"]
 
 
-def study_id(universes: int, bettors: int, seed: int) -> str:
-    return f"st_u{universes}_n{bettors}_s{seed}"
+def study_id(universes: int, bettors: int, seed: int, seasons=None) -> str:
+    return f"st_u{universes}_n{bettors}_s{seed}_y" + "-".join(str(y) for y in (seasons or SEASONS))
 
 
 def valid(sid: str) -> bool:
@@ -84,7 +84,7 @@ def _table(g: pd.DataFrame, col: str, label, min_slips: int, rng: np.random.Gene
         wh = z * np.sqrt(hr * (1 - hr) / n + z * z / (4 * n * n)) / (1 + z * z / n)
         implied = float(d["imp"].mean())
         rows.append(dict(
-            p_profit=round(float((boot > 0).mean()), 4), p_both_seasons=round(p_both, 4),
+            p_profit=round(float((boot > 0).mean()), 4), p_all_seasons=round(p_both, 4),
             p_profit_by_season={str(k): round(v, 4) for k, v in p_by.items()}, p_beat_field=round(float((boot > field_roi).mean()), 4),
             hit_lo=round(float(max(0.0, wc - wh)), 4), hit_hi=round(float(min(1.0, wc + wh)), 4),
             implied=round(implied, 4), edge_pts=round(hr - implied, 4),
@@ -93,21 +93,22 @@ def _table(g: pd.DataFrame, col: str, label, min_slips: int, rng: np.random.Gene
             edge_vs_field=round(float(roi - field_roi), 4), profit_per_slip=round(float((tot_r - tot_s) / len(d)), 3),
             hit_rate=round(float(d["won"].mean()), 4), profitable_share=round(float((rt > st).mean()), 4),
             avg_legs=round(float(d["n_legs"].mean()), 2), by_season={str(k): round(v, 4) for k, v in seas.items()},
-            beats_field_both_seasons=bool(both), beats_field_95=bool(lo > field_roi), profitable_95=bool(lo > 0),
-            profitable_both_seasons=bool(len(seas) == len(field_by_season) and all(v > 0 for v in seas.values()))))
+            beats_field_all_seasons=bool(both), beats_field_95=bool(lo > field_roi), profitable_95=bool(lo > 0),
+            profitable_all_seasons=bool(len(seas) == len(field_by_season) and all(v > 0 for v in seas.values()))))
     rows.sort(key=lambda r: -r["roi"])
-    for i, r in enumerate(sorted(rows, key=lambda r: (-r["p_both_seasons"], -r["p_profit"], -r["roi"])), start=1):
-        r["rank_p"] = i                                  # 1 = most likely to make money in BOTH real seasons
+    for i, r in enumerate(sorted(rows, key=lambda r: (-r["p_all_seasons"], -r["p_profit"], -r["roi"])), start=1):
+        r["rank_p"] = i                                  # 1 = most likely to make money in EVERY tested season
     return rows
 
 
-def run_study(universes: int = 20, bettors: int = 150, seed: int = 100, progress=None) -> dict:
+def run_study(universes: int = 20, bettors: int = 150, seed: int = 100, progress=None, seasons=None) -> dict:
     t0 = time.time()
+    seasons = tuple(sorted(seasons or SEASONS))
     frames, idents = [], []
-    total = universes * len(SEASONS)
+    total = universes * len(seasons)
     done = 0
     for u in range(universes):
-        for season in SEASONS:
+        for season in seasons:
             _, _, _, slips, bdf = sim._run(season, bettors, seed + u, None, keep_legs=False)
             sl = slips[slips["won"].notna()][COLS].copy()
             sl["won"] = sl["won"].astype(bool)
@@ -164,15 +165,15 @@ def run_study(universes: int = 20, bettors: int = 150, seed: int = 100, progress
                              for r in d.itertuples()]
 
     st = dims["style_tier"]
-    proven = [r for r in st if r["profitable_both_seasons"] and r["profitable_95"]]
+    proven = [r for r in st if r["profitable_all_seasons"] and r["profitable_95"]]
     profit = [r for r in st if r["profitable_95"]]
     headlines = [
-        f"{len(g):,} slips from {len(w):,} bettor-seasons ({universes} universes × {len(SEASONS)} real seasons). The house kept "
+        f"{len(g):,} slips from {len(w):,} bettor-seasons ({universes} universes × {len(seasons)} real seasons: {', '.join(map(str, seasons))}). The house kept "
         f"{-field_roi:.1%} of every dollar staked."]
     if st:
         b = st[0]
         headlines.append(f"Most money per $ staked: {b['label']} at {b['roi']:+.1%} ROI (95% CI {b['ci_lo']:+.1%} to {b['ci_hi']:+.1%}) "
-                         f"over {b['slips']:,} slips{'; ahead of the field in both seasons' if b['beats_field_both_seasons'] else ''}"
+                         f"over {b['slips']:,} slips{'; ahead of the field in every season' if b['beats_field_all_seasons'] else ''}"
                          f"{' — proven' if b['profitable_95'] else ' — promising, not yet proven (the interval still includes losing money)'}.")
     if profit:
         headlines.append(f"{len(profit)} strateg{'y' if len(profit) == 1 else 'ies'} turned a profit with 95% confidence: "
@@ -180,25 +181,24 @@ def run_study(universes: int = 20, bettors: int = 150, seed: int = 100, progress
     else:
         headlines.append("No strategy turned a profit with 95% confidence at these prices.")
     if proven:
-        headlines.append("Made money with 95% confidence AND finished in profit in both real seasons: " + ", ".join(r["label"] for r in proven[:4]) + ".")
-    ranked = sorted(dims["shape"] + st, key=lambda r: (-r["p_both_seasons"], -r["p_profit"], -r["roi"]))
+        headlines.append("Made money with 95% confidence AND finished in profit in every tested season: " + ", ".join(r["label"] for r in proven[:4]) + ".")
+    ranked = sorted(dims["shape"] + st, key=lambda r: (-r["p_all_seasons"], -r["p_profit"], -r["roi"]))
     if ranked:
         t = ranked[0]
         headlines.append(f"Most likely to make money: {t['label']} "
-                         f"({t['p_both_seasons']:.0%} chance of profit in both real seasons, {t['hit_rate']:.0%} of slips hit vs {t['implied']:.0%} implied by the price).")
+                         f"({t['p_all_seasons']:.0%} chance of profit in every tested season, {t['hit_rate']:.0%} of slips hit vs {t['implied']:.0%} implied by the price).")
     if st:
         worst = st[-1]
         headlines.append(f"Money losers: {worst['label']} ({worst['roi']:+.1%} ROI, {worst['hit_rate']:.0%} slip hit rate).")
 
     return sim._clean(dict(
-        schema=SCHEMA, study_id=study_id(universes, bettors, seed), universes=universes, bettors_per_universe=bettors,
-        seasons=list(SEASONS), seed=seed, bettor_seasons=int(len(w)), slips=int(len(g)), seconds=round(time.time() - t0, 1),
+        schema=SCHEMA, study_id=study_id(universes, bettors, seed, seasons), universes=universes, bettors_per_universe=bettors,
+        seasons=list(seasons), seed=seed, bettor_seasons=int(len(w)), slips=int(len(g)), seconds=round(time.time() - t0, 1),
         created=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         field=dict(roi=round(field_roi, 4), by_season={str(k): round(v, 4) for k, v in field_by_season.items()}),
         headlines=headlines, dims=dims, style_shapes=style_shapes, top_winners=top_winners, rookie_winners=rookie_winners,
-        caveat="Every universe replays the same two real NFL seasons, so more universes average out the betters' randomness, "
-               "not what actually happened in 2024-25. Trust strategies that win in both seasons."))
-
+        caveat=f"Every universe replays the same real NFL seasons ({', '.join(map(str, seasons))}), so more universes average out the betters' randomness, "
+               "not what actually happened. Trust strategies that win in every season."))
 
 def _write(sid: str, result: dict) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
@@ -208,10 +208,16 @@ def _write(sid: str, result: dict) -> None:
     (tmp / "study.json").write_text(json.dumps(result, indent=1))
     shutil.rmtree(OUT / sid, ignore_errors=True)
     tmp.rename(OUT / sid)
+    try:                                                    # MY BOO collects every study automatically
+        import boo_harvest
+        boo_harvest.on_study(sid)
+    except Exception:
+        pass
 
 
-def start(universes: int = 20, bettors: int = 150, seed: int = 100) -> dict:
-    sid = study_id(universes, bettors, seed)
+def start(universes: int = 20, bettors: int = 150, seed: int = 100, seasons=None) -> dict:
+    seasons = tuple(sorted(seasons or SEASONS))
+    sid = study_id(universes, bettors, seed, seasons)
     with _LOCK:
         cur = _RUNS.get(sid)
         if cur and cur["state"] == "running":
@@ -223,14 +229,9 @@ def start(universes: int = 20, bettors: int = 150, seed: int = 100) -> dict:
 
     def go():
         try:
-            res = run_study(universes, bettors, seed, lambda p, label: st.update(progress=round(p, 3), label=label))
+            res = run_study(universes, bettors, seed, lambda p, label: st.update(progress=round(p, 3), label=label), seasons)
             _write(sid, res)
             st.update(state="done", progress=1.0, finished=time.time())
-            try:
-                import boo_store
-                boo_store.push_dir(OUT / sid, f"myboo/betterverse_studies/{sid}")
-            except Exception:
-                pass
         except Exception as e:
             st.update(state="error", error=f"{type(e).__name__}: {e}")
 
@@ -260,5 +261,32 @@ def studies() -> list[dict]:
             f = d / "study.json"
             if d.is_dir() and f.exists():
                 s = json.loads(f.read_text())
-                out.append({k: s[k] for k in ("study_id", "universes", "bettors_per_universe", "bettor_seasons", "slips", "seconds", "created")})
+                out.append({k: s.get(k) for k in ("study_id", "seasons", "universes", "bettors_per_universe", "bettor_seasons", "slips", "seconds", "created")})
     return out
+
+
+def compare(a_id: str, b_id: str, min_p: float = 0.5) -> dict | None:
+    """How a strategy's standing changed between two studies (e.g. 2 seasons vs 3): rank, chance of profit in every season, ROI."""
+    A, B = load(a_id), load(b_id)
+    if A is None or B is None:
+        return None
+    out = {}
+    for dim in ("shape", "style_tier", "n_legs", "sgp", "tier"):
+        a = {r["key"]: r for r in A["dims"].get(dim, [])}
+        b = {r["key"]: r for r in B["dims"].get(dim, [])}
+        rows = []
+        for k in sorted(set(a) | set(b)):
+            ra, rb = a.get(k), b.get(k)
+            pa, pb = (ra or {}).get("p_all_seasons"), (rb or {}).get("p_all_seasons")
+            status = ("held" if (pa or 0) >= min_p and (pb or 0) >= min_p else "dropped" if (pa or 0) >= min_p else
+                      "rose" if (pb or 0) >= min_p else "never-promising")
+            rows.append(dict(key=k, label=(rb or ra)["label"], status=status,
+                             rank_a=(ra or {}).get("rank_p"), rank_b=(rb or {}).get("rank_p"), p_all_a=pa, p_all_b=pb,
+                             roi_a=(ra or {}).get("roi"), roi_b=(rb or {}).get("roi"),
+                             hit_a=(ra or {}).get("hit_rate"), hit_b=(rb or {}).get("hit_rate"),
+                             implied_b=(rb or {}).get("implied"), slips_a=(ra or {}).get("slips"), slips_b=(rb or {}).get("slips")))
+        rows.sort(key=lambda r: (-(r["p_all_b"] or 0), -(r["p_all_a"] or 0)))
+        out[dim] = rows
+    tally = {s: sum(1 for r in out["shape"] if r["status"] == s) for s in ("held", "dropped", "rose", "never-promising")}
+    return sim._clean(dict(a=dict(study_id=a_id, seasons=A["seasons"], slips=A["slips"], field=A["field"]),
+                           b=dict(study_id=b_id, seasons=B["seasons"], slips=B["slips"], field=B["field"]), shape_tally=tally, dims=out))

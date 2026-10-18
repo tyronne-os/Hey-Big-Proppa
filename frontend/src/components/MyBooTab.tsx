@@ -5,6 +5,7 @@ import StaffPanel from "./StaffPanel";
 import { useBooAlerts } from "../hooks/useBooAlerts";
 import type { BooAlert, SlipRecap, MyBooTicket, MyBooLeg, MyBooWeek, MyBooTrainingLog, MyBooPostMortem, MyBooReport, MyBooPickDetail, MyBooFactor } from "../api";
 import BooPostGame from "./BooPostGame";
+import BooCurriculum from "./BooCurriculum";
 import BooAvatar from "./BooAvatar";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -1237,7 +1238,7 @@ function BooLink() {
   );
 }
 
-const BOO_TABS = ["POST-GAME REPORT", "POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK", "STAFF", "JIMMY LESSONS"] as const;
+const BOO_TABS = ["POST-GAME REPORT", "POW ORDERS", "SIM LAB", "WEEKLY LEDGER", "TRAINING LOGS", "WEAPON ROOM", "BET REPORT", "RECAPS", "ALERTS", "DESK", "STAFF", "JIMMY LESSONS", "CURRICULUM"] as const;
 type BooTab = (typeof BOO_TABS)[number];
 
 export default function MyBooTab() {
@@ -1365,6 +1366,7 @@ export default function MyBooTab() {
             {tab === "POST-GAME REPORT" && <BooPostGame gameId={reportId} onSelect={setReportId} />}
             {tab === "STAFF" && <StaffPanel />}
             {tab === "JIMMY LESSONS" && <LessonsTab />}
+            {tab === "CURRICULUM" && <BooCurriculum />}
           </div>
         </div>
 

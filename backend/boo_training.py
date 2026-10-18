@@ -300,6 +300,12 @@ def run_batch(preview: bool = False, trigger: str = "manual") -> dict:
                         "weeks": weeks, "legs": len(legs), "slips": len(slips), "weights_moved": len(weights),
                         "biases_moved": len(lessons["market_bias"])})
         BATCHES.write_text(json.dumps(batches, indent=1))
+    if not preview:                                           # the weekly batch also cuts a curriculum release if new evidence changed anything
+        try:
+            import boo_curriculum
+            boo_curriculum.cut_release(trigger=trigger)
+        except Exception:
+            pass
     try:
         import boo_store
         threading.Thread(target=boo_store.push, kwargs={"force": True}, daemon=True).start()
@@ -475,11 +481,11 @@ def ingest_betterverse_study(study_id: str) -> dict:
     if st is None:
         raise FileNotFoundError(study_id)
     slim = lambda r: {k: r[k] for k in ("key", "label", "slips", "roi", "ci_lo", "ci_hi", "hit_rate", "by_season",
-                                        "beats_field_both_seasons", "profitable_both_seasons", "profitable_95")}
+                                        "beats_field_all_seasons", "profitable_all_seasons", "profitable_95")}
     dims = st["dims"]
     block = {"study_id": study_id, "bettor_seasons": st["bettor_seasons"], "slips": st["slips"], "field_roi": st["field"]["roi"],
              "style_tier": [slim(r) for r in dims["style_tier"]],
-             "proven_money_makers": [slim(r) for r in dims["style_tier"] + dims["shape"] if r["profitable_95"] and r["profitable_both_seasons"]],
+             "proven_money_makers": [slim(r) for r in dims["style_tier"] + dims["shape"] if r["profitable_95"] and r["profitable_all_seasons"]],
              "proven_money_losers": [slim(r) for r in dims["style_tier"] + dims["shape"] if r["ci_hi"] < st["field"]["roi"]],
              "shapes": [slim(r) for r in dims["shape"]], "legs_per_slip": [slim(r) for r in dims["n_legs"]],
              "same_game": [slim(r) for r in dims["sgp"]], "updated": _now().isoformat()}

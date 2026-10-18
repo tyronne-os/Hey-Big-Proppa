@@ -1,0 +1,225 @@
+{
+ "update": "JU-0001",
+ "created": "2026-10-14T20:42:47Z",
+ "trigger": "button",
+ "curriculum_release": "R002",
+ "policy": {
+  "legs": 3,
+  "direction": {
+   "pass_yds": "over",
+   "rush_yds": "over",
+   "rec_yds": "under",
+   "receptions": "over"
+  },
+  "rank": "confidence"
+ },
+ "items_applied": 1,
+ "items_held": 2,
+ "in_sample": {
+  "slips": 270,
+  "wins": 54,
+  "legs": 761,
+  "leg_hits": 408,
+  "staked": 1350.0,
+  "returned": 1890.0,
+  "win_pct": 0.2,
+  "leg_hit_pct": 0.5361,
+  "roi": 0.4,
+  "by_season": {
+   "2023": {
+    "slips": 90,
+    "wins": 18,
+    "legs": 249,
+    "leg_hits": 133,
+    "staked": 450.0,
+    "returned": 610.0,
+    "win_pct": 0.2,
+    "leg_hit_pct": 0.5341,
+    "roi": 0.3556
+   },
+   "2024": {
+    "slips": 90,
+    "wins": 21,
+    "legs": 258,
+    "leg_hits": 147,
+    "staked": 450.0,
+    "returned": 740.0,
+    "win_pct": 0.2333,
+    "leg_hit_pct": 0.5698,
+    "roi": 0.6444
+   },
+   "2025": {
+    "slips": 90,
+    "wins": 15,
+    "legs": 254,
+    "leg_hits": 128,
+    "staked": 450.0,
+    "returned": 540.0,
+    "win_pct": 0.1667,
+    "leg_hit_pct": 0.5039,
+    "roi": 0.2
+   }
+  }
+ },
+ "out_of_sample": {
+  "slips": 270,
+  "wins": 54,
+  "legs": 761,
+  "leg_hits": 408,
+  "staked": 1350.0,
+  "returned": 1890.0,
+  "win_pct": 0.2,
+  "leg_hit_pct": 0.5361,
+  "roi": 0.4
+ },
+ "delta_vs_previous": {
+  "win_pct": 0.0481,
+  "leg_hit_pct": 0.0546,
+  "roi": 0.3926
+ },
+ "policy_before": {
+  "legs": 3,
+  "direction": {
+   "pass_yds": "over",
+   "rush_yds": "over",
+   "rec_yds": "over",
+   "receptions": "over"
+  },
+  "rank": "confidence"
+ },
+ "items": [
+  {
+   "id": "direction:rush_yds",
+   "kind": "DIRECTION",
+   "market": "rush_yds",
+   "change": {
+    "direction": {
+     "rush_yds": "under"
+    }
+   },
+   "title": "Bet RUSH YDS UNDERS instead of overs",
+   "evidence": {
+    "legs": 1089,
+    "over_hit": 0.4362,
+    "under_hit": 0.5638,
+    "under_hit_lower_95": 0.5342
+   },
+   "sources": [
+    "JIMMY board 2023-25: 614/1089 unders hit (56.4%, 95% lower bound 53.4%)"
+   ],
+   "lessons": [],
+   "impact": {
+    "before": {
+     "win_pct": 0.1519,
+     "leg_hit_pct": 0.4815,
+     "roi": 0.0074,
+     "slips": 270
+    },
+    "after": {
+     "win_pct": 0.137,
+     "leg_hit_pct": 0.4684,
+     "roi": -0.1185,
+     "slips": 270
+    },
+    "delta": {
+     "win_pct": -0.0149,
+     "leg_hit_pct": -0.0131,
+     "roi": -0.1259
+    },
+    "basis": "out-of-sample, each season scored by a model that never saw it"
+   },
+   "status": "HELD",
+   "reason": "Did not improve JIMMY out of sample, so it was held back.",
+   "item": "JU-0001.01"
+  },
+  {
+   "id": "direction:rec_yds",
+   "kind": "DIRECTION",
+   "market": "rec_yds",
+   "change": {
+    "direction": {
+     "rec_yds": "under"
+    }
+   },
+   "title": "Bet REC YDS UNDERS instead of overs",
+   "evidence": {
+    "legs": 1251,
+    "over_hit": 0.3901,
+    "under_hit": 0.6099,
+    "under_hit_lower_95": 0.5826
+   },
+   "sources": [
+    "JIMMY board 2023-25: 763/1251 unders hit (61.0%, 95% lower bound 58.3%)"
+   ],
+   "lessons": [],
+   "impact": {
+    "before": {
+     "win_pct": 0.1519,
+     "leg_hit_pct": 0.4815,
+     "roi": 0.0074,
+     "slips": 270
+    },
+    "after": {
+     "win_pct": 0.2,
+     "leg_hit_pct": 0.5361,
+     "roi": 0.4,
+     "slips": 270
+    },
+    "delta": {
+     "win_pct": 0.0481,
+     "leg_hit_pct": 0.0546,
+     "roi": 0.3926
+    },
+    "basis": "out-of-sample, each season scored by a model that never saw it"
+   },
+   "status": "APPLIED",
+   "reason": "Improved out-of-sample ROI/leg hit rate without hurting the other.",
+   "item": "JU-0001.02"
+  },
+  {
+   "id": "direction:receptions",
+   "kind": "DIRECTION",
+   "market": "receptions",
+   "change": {
+    "direction": {
+     "receptions": "under"
+    }
+   },
+   "title": "Bet RECEPTIONS UNDERS instead of overs",
+   "evidence": {
+    "legs": 1044,
+    "over_hit": 0.4272,
+    "under_hit": 0.5728,
+    "under_hit_lower_95": 0.5426
+   },
+   "sources": [
+    "JIMMY board 2023-25: 598/1044 unders hit (57.3%, 95% lower bound 54.3%)"
+   ],
+   "lessons": [],
+   "impact": {
+    "before": {
+     "win_pct": 0.2,
+     "leg_hit_pct": 0.5361,
+     "roi": 0.4,
+     "slips": 270
+    },
+    "after": {
+     "win_pct": 0.1933,
+     "leg_hit_pct": 0.5526,
+     "roi": 0.3755,
+     "slips": 269
+    },
+    "delta": {
+     "win_pct": -0.0067,
+     "leg_hit_pct": 0.0165,
+     "roi": -0.0245
+    },
+    "basis": "out-of-sample, each season scored by a model that never saw it"
+   },
+   "status": "HELD",
+   "reason": "Did not improve JIMMY out of sample, so it was held back.",
+   "item": "JU-0001.03"
+  }
+ ],
+ "note": "Out-of-sample = each real season scored by items derived from the other two. In-sample = the final policy replayed on all three."
+}

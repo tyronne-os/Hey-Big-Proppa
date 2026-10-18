@@ -57,11 +57,12 @@ def _pct(x, d=1) -> str:
 
 
 def _prob_rows(r: dict) -> str:
-    if r.get("p_both_seasons") is None:
+    if r.get("p_all_seasons") is None:
         return ""
     ps = r.get("p_profit_by_season", {})
-    return (f"| **Chance of profit in BOTH seasons** | {r['p_both_seasons'] * 100:.0f}% |\n"
-            f"| Chance of profit, each season | 2024 {ps.get('2024', 0) * 100:.0f}% · 2025 {ps.get('2025', 0) * 100:.0f}% |\n"
+    per = " · ".join(f"{y} {v * 100:.0f}%" for y, v in sorted(ps.items()))
+    return (f"| **Chance of profit in EVERY tested season** | {r['p_all_seasons'] * 100:.0f}% |\n"
+            f"| Chance of profit, each season | {per} |\n"
             f"| Chance of profit overall | {r['p_profit'] * 100:.0f}% |\n"
             f"| Chance of beating the field | {r['p_beat_field'] * 100:.0f}% |\n"
             f"| Slip hit probability (95% range) | {r['hit_rate'] * 100:.1f}% ({r['hit_lo'] * 100:.1f}% to {r['hit_hi'] * 100:.1f}%) |\n"
@@ -84,9 +85,9 @@ def _line_bar(title: str, labels: list[str], bars: list[float], line: list[float
 
 def _quadrant(title: str, rows: list[dict], name_fn) -> str:
     mx = max((r["hit_rate"] for r in rows), default=1) or 1
-    pts = "\n".join(f"    {_chart_name(name_fn(r))} {i}: [{r['hit_rate'] / mx:.2f}, {r['p_both_seasons']:.2f}]" for i, r in enumerate(rows, 1))
+    pts = "\n".join(f"    {_chart_name(name_fn(r))} {i}: [{r['hit_rate'] / mx:.2f}, {r['p_all_seasons']:.2f}]" for i, r in enumerate(rows, 1))
     return ("```mermaid\nquadrantChart\n"
-            f"    title {title}\n    x-axis Rarely hits --> Hits often\n    y-axis Unlikely to profit --> Likely to profit in both seasons\n"
+            f"    title {title}\n    x-axis Rarely hits --> Hits often\n    y-axis Unlikely to profit --> Likely to profit in every season\n"
             "    quadrant-1 Hits often and profits\n    quadrant-2 Rare wins that still profit\n"
             "    quadrant-3 Rare and losing\n    quadrant-4 Hits often but loses\n" + pts + "\n```\n")
 
@@ -143,8 +144,8 @@ def build(study: dict) -> dict[str, str]:
         t = []
         if r["profitable_95"]:
             t.append("proven")
-        if r.get("profitable_both_seasons"):
-            t.append("both-seasons")
+        if r.get("profitable_all_seasons"):
+            t.append("all-seasons")
         if r["ci_hi"] < 0:
             t.append("loser")
         if r.get("rank_p") and r["rank_p"] <= 5:
@@ -152,7 +153,7 @@ def build(study: dict) -> dict[str, str]:
         return t
 
     def metrics_table(r: dict) -> str:
-        s24, s25 = r["by_season"].get("2024"), r["by_season"].get("2025")
+        per_roi = " · ".join(f"{y} {_pct(v, 0)}" for y, v in sorted(r["by_season"].items()))
         return ("| Metric | Value |\n|---|---|\n"
                 f"| ROI (profit per $ staked) | {_pct(r['roi'])} |\n"
                 f"| 95% range | {_pct(r['ci_lo'])} to {_pct(r['ci_hi'])} |\n"
@@ -160,19 +161,19 @@ def build(study: dict) -> dict[str, str]:
                 f"| Profit per slip | ${r['profit_per_slip']:+.2f} |\n"
                 f"| Slip hit rate | {r['hit_rate'] * 100:.1f}% |\n"
                 f"| Bettor-seasons in profit | {r['profitable_share'] * 100:.0f}% |\n"
-                f"| 2024 / 2025 ROI | {_pct(s24, 0)} / {_pct(s25, 0)} |\n"
+                f"| ROI by season | {per_roi} |\n"
                 f"| Slips | {r['slips']:,} |\n" + _prob_rows(r))
 
     for r in strat_rows:
         arch, tier = r["key"].split("|")
         body = _fm(type="strategy", tags=[f"tier/{tier}"] + flags(r), roi=r["roi"], ci_lo=r["ci_lo"], ci_hi=r["ci_hi"], slips=r["slips"],
-                   p_both_seasons=r.get("p_both_seasons", ""), p_profit=r.get("p_profit", ""), hit_prob=r["hit_rate"], implied=r.get("implied", ""), rank=r.get("rank_p", ""))
+                   p_all_seasons=r.get("p_all_seasons", ""), p_profit=r.get("p_profit", ""), hit_prob=r["hit_rate"], implied=r.get("implied", ""), rank=r.get("rank_p", ""))
         body += f"# {r['label']}\n\n{link('Tiers', tier_names[tier])} · {link('Styles', arch_names[arch])}\n\n"
         body += f"*{mb.ARCHETYPES[arch]['desc']}.*\n\n" + metrics_table(r)
         verdict = ("**Proven money-maker**: the whole 95% range is above zero. " if r["profitable_95"] else
                    "**Confident loser**: the whole 95% range is below zero. " if r["ci_hi"] < 0 else
                    "Not proven either way: the 95% range includes break-even. ")
-        body += f"\n{verdict}{'It was in profit in both real seasons. ' if r.get('profitable_both_seasons') else ''}\n"
+        body += f"\n{verdict}{'It was in profit in every tested season. ' if r.get('profitable_all_seasons') else ''}\n"
         sh = study.get("style_shapes", {}).get(r["key"], [])
         if sh:
             body += "\n## Slip shapes this strategy actually builds\n\n| Shape | Slips | Won | ROI |\n|---|---|---|---|\n"
@@ -184,7 +185,7 @@ def build(study: dict) -> dict[str, str]:
     # ---- shapes
     for k, r in shape_rows.items():
         body = _fm(type="shape", tags=["shape"] + flags(r), roi=r["roi"], ci_lo=r["ci_lo"], ci_hi=r["ci_hi"], slips=r["slips"],
-                   p_both_seasons=r.get("p_both_seasons", ""), p_profit=r.get("p_profit", ""), hit_prob=r["hit_rate"], implied=r.get("implied", ""), rank=r.get("rank_p", ""))
+                   p_all_seasons=r.get("p_all_seasons", ""), p_profit=r.get("p_profit", ""), hit_prob=r["hit_rate"], implied=r.get("implied", ""), rank=r.get("rank_p", ""))
         body += f"# {_shape(k)}\n\n`{k}`\n\n" + metrics_table(r)
         if k in uses:
             body += "\n## Strategies that build it\n\n"
@@ -246,7 +247,7 @@ def build(study: dict) -> dict[str, str]:
     notes["Findings/Money Makers.md"] = (_fm(type="finding", tags=["finding", "proven"]) + "# Money makers\n\nStrategies and slip shapes whose whole 95% range "
                                          "is above break-even. The tag `proven` colors them gold in the graph.\n\n" +
                                          ("\n".join(f"- {ref(r)}: {_pct(r['roi'])} (95%: {_pct(r['ci_lo'])} to {_pct(r['ci_hi'])}), "
-                                                    f"{'profit in both seasons' if r.get('profitable_both_seasons') else 'not in profit in both seasons'}" for r in makers)
+                                                    f"{'profit in every season' if r.get('profitable_all_seasons') else 'not in profit in every season'}" for r in makers)
                                           or "Nothing cleared that bar in this study."))
     notes["Findings/Money Losers.md"] = (_fm(type="finding", tags=["finding", "loser"]) + "# Money losers\n\nWhole 95% range below break-even.\n\n" +
                                          "\n".join(f"- {ref(r)}: {_pct(r['roi'])}, {r['hit_rate'] * 100:.0f}% of slips hit" for r in losers))
@@ -270,22 +271,22 @@ def build(study: dict) -> dict[str, str]:
             return []
         top = rk[:10]
         body = _fm(type="ranking", tags=["ranking"]) + f"# {title}\n\n{blurb}\n\n"
-        body += _bar("Chance of profit in BOTH real seasons, top 10 (%)", [f"#{r['rank_p']}" for r in top], [r["p_both_seasons"] for r in top], "probability %")
+        body += _bar("Chance of profit in EVERY tested season, top 10 (%)", [f"#{r['rank_p']}" for r in top], [r["p_all_seasons"] for r in top], "probability %")
         body += "\n" + _line_bar("Slip hit probability (bars) vs probability the price implies (line), top 10 (%)", [f"#{r['rank_p']}" for r in top],
                                   [r["hit_rate"] * 100 for r in top], [r["implied"] * 100 for r in top], "%")
         body += "\n" + _quadrant("Hit rate vs chance of profit, top 12", rk[:12], name_fn) + "\n"
-        body += ("| Rank | Parlay | Profit both seasons | Profit overall | Beat field | Slips hit (95% range) | Price implies | Edge | ROI | Slips |\n"
+        body += ("| Rank | Parlay | Profit every season | Profit overall | Beat field | Slips hit (95% range) | Price implies | Edge | ROI | Slips |\n"
                  "|---|---|---|---|---|---|---|---|---|---|\n")
         for r in rk:
-            body += (f"| {r['rank_p']} | {cell(link_fn(r))} | {r['p_both_seasons'] * 100:.0f}% | {r['p_profit'] * 100:.0f}% | {r['p_beat_field'] * 100:.0f}% | "
+            body += (f"| {r['rank_p']} | {cell(link_fn(r))} | {r['p_all_seasons'] * 100:.0f}% | {r['p_profit'] * 100:.0f}% | {r['p_beat_field'] * 100:.0f}% | "
                      f"{r['hit_rate'] * 100:.1f}% ({r['hit_lo'] * 100:.1f}-{r['hit_hi'] * 100:.1f}) | {r['implied'] * 100:.1f}% | {r['edge_pts'] * 100:+.1f} | {_pct(r['roi'])} | {r['slips']:,} |\n")
         notes[f"Rankings/{notename}.md"] = body
         return rk
 
     shape_link = lambda r: link("Shapes", _shape(r["key"]))
     strat_link = lambda r: link("Strategies", strat_note[r["key"]], r["label"])
-    blurb = ("Ranked by the **probability of making money in both real seasons**: each season is resampled on its own (300 bootstrap replays of the "
-             "betters' results) and the two probabilities are multiplied. A parlay type that won big in one season and lost in the other ranks low. "
+    blurb = ("Ranked by the **probability of making money in every tested season**: each season is resampled on its own (300 bootstrap replays of the "
+             "betters' results) and the probabilities are multiplied. A parlay type that won big in one season and lost in another ranks low. "
              "Also shown: how often the slip hits against the probability its price implies, and whether it beats the field.")
     shape_rank = rank_note(dims["shape"], "Rankings", "Parlay Shape Ranking", "Parlay shape ranking: which kinds of parlay win most",
                            lambda r: _shape(r["key"]), shape_link, blurb)
@@ -294,35 +295,35 @@ def build(study: dict) -> dict[str, str]:
     hub = _fm(type="ranking", tags=["ranking", "hub"]) + "# Top parlays\n\nThe parlay types and strategies most likely to make money, best first. They are the bright nodes in the graph.\n\n"
     if shape_rank:
         hub += "## Parlay shapes\n\n" + "\n".join(
-            f"{i}. {shape_link(r)}: {r['p_both_seasons'] * 100:.0f}% chance of profit in both seasons, {r['hit_rate'] * 100:.0f}% of slips hit vs {r['implied'] * 100:.0f}% implied, ROI {_pct(r['roi'])}"
+            f"{i}. {shape_link(r)}: {r['p_all_seasons'] * 100:.0f}% chance of profit in every season, {r['hit_rate'] * 100:.0f}% of slips hit vs {r['implied'] * 100:.0f}% implied, ROI {_pct(r['roi'])}"
             for i, r in enumerate(shape_rank[:10], 1)) + "\n\n"
     if strat_rank:
         hub += "## Strategies\n\n" + "\n".join(
-            f"{i}. {strat_link(r)}: {r['p_both_seasons'] * 100:.0f}% chance of profit in both seasons, ROI {_pct(r['roi'])}" for i, r in enumerate(strat_rank[:8], 1)) + "\n\n"
+            f"{i}. {strat_link(r)}: {r['p_all_seasons'] * 100:.0f}% chance of profit in every season, ROI {_pct(r['roi'])}" for i, r in enumerate(strat_rank[:8], 1)) + "\n\n"
     hub += "Full tables: " + link("Rankings", "Parlay Shape Ranking") + " · " + link("Rankings", "Strategy Ranking") + "\n"
     notes["Rankings/Top Parlays.md"] = hub
 
     # ---- home
     tiers = dims["tier"]
     home = _fm(type="home", tags=["home"], study=study["study_id"], created=study.get("created", ""))
-    home += (f"# BETTER-VERSE report\n\nStudy `{study['study_id']}`: **{study['universes']} universes × {study['bettors_per_universe']} betters × 2 real seasons** = "
+    home += (f"# BETTER-VERSE report\n\nStudy `{study['study_id']}`: **{study['universes']} universes × {study['bettors_per_universe']} betters × {len(study['seasons'])} real seasons ({', '.join(map(str, study['seasons']))})** = "
              f"{study['bettor_seasons']:,} bettor-seasons and {study['slips']:,} slips. The house kept **{-field * 100:.1f}%** of every dollar staked "
-             f"(2024 {-study['field']['by_season']['2024'] * 100:.1f}%, 2025 {-study['field']['by_season']['2025'] * 100:.1f}%).\n\n")
+             "(" + ", ".join(f"{y} {-v * 100:.1f}%" for y, v in sorted(study["field"]["by_season"].items())) + ").\n\n")
     home += "## Headlines\n\n" + "\n".join(f"- {h}" for h in study["headlines"]) + "\n\n"
     home += "## ROI by tier\n\n" + _bar("ROI by tier (%)", [r["label"] for r in tiers], [r["roi"] for r in tiers])
     home += "\n" + "\n".join(f"- {link('Tiers', r['label'])}: {_pct(r['roi'])}" for r in tiers) + "\n\n"
     top = strat_rows[:8]
     if shape_rank:
         tp = shape_rank[:8]
-        home += "## Most winning parlay types\n\n" + _bar("Chance of profit in both real seasons (%)", [_shape(r["key"])[:22] for r in tp], [r["p_both_seasons"] for r in tp], "probability %")
-        home += "\n" + "\n".join(f"{i}. {shape_link(r)}: {r['p_both_seasons'] * 100:.0f}% both seasons · {r['hit_rate'] * 100:.0f}% hit vs {r['implied'] * 100:.0f}% implied · ROI {_pct(r['roi'])}"
+        home += "## Most winning parlay types\n\n" + _bar("Chance of profit in every tested season (%)", [_shape(r["key"])[:22] for r in tp], [r["p_all_seasons"] for r in tp], "probability %")
+        home += "\n" + "\n".join(f"{i}. {shape_link(r)}: {r['p_all_seasons'] * 100:.0f}% every season · {r['hit_rate'] * 100:.0f}% hit vs {r['implied'] * 100:.0f}% implied · ROI {_pct(r['roi'])}"
                                   for i, r in enumerate(tp, 1)) + "\n\n" + "Full ranking: " + link("Rankings", "Parlay Shape Ranking") + " · " + link("Rankings", "Top Parlays") + "\n\n"
     home += "## Best and worst strategies by ROI\n\n" + _bar("Top 8 strategies, ROI (%)", [r["label"].replace(" · ", " / ") for r in top], [r["roi"] for r in top])
     bot = strat_rows[-8:]
     home += _bar("Bottom 8 strategies, ROI (%)", [r["label"].replace(" · ", " / ") for r in bot], [r["roi"] for r in bot])
     home += ("\n## Explore\n\n- " + link("Findings", "Money Makers") + "\n- " + link("Findings", "Money Losers") + "\n- " + link("Findings", "Legs Per Slip") +
              "\n- " + link("Findings", "Same-Game vs Cross-Game") + "\n- " + link("Rankings", "Top Parlays") + "\n- [[Glossary]]\n\n")
-    home += ("## How the pieces connect\n\n```mermaid\nflowchart LR\n  B[Betters<br/>Sharp Grinder Casual Degen] --> E[Season engine<br/>real 2024-25 results]\n"
+    home += ("## How the pieces connect\n\n```mermaid\nflowchart LR\n  B[Betters<br/>Sharp Grinder Casual Degen] --> E[Season engine<br/>real NFL results]\n"
              "  E --> L[Strategy Lab<br/>pooled universes]\n  L --> V[This vault]\n  L --> M[MY BOO priors]\n  M --> J[JIMMY]\n  M --> K[JEV]\n```\n\n")
     home += "Open **Graph view** (Ctrl/Cmd+G). Bright yellow nodes are the top-5 parlay types and strategies by probability of profit, gold nodes are proven money-makers, red nodes are confident losers, white nodes are individual winning betters.\n"
     notes["00 Home.md"] = home
@@ -345,9 +346,9 @@ GLOSSARY = """# Glossary
 - **ROI**: profit per $1 staked. +10% means $10 won for every $100 bet; -20% means $20 lost.
 - **95% range**: the span ROI would land in about 95 times out of 100 if the study were rerun. If the whole range is above 0 the strategy is *proven* to make money; if the whole range is below 0 it is a *confident loser*.
 - **Proven $**: the whole 95% range is above zero.
-- **Chance of profit in both seasons**: resample each real season on its own (300 replays of the betters' results), take the share of replays in profit for each season, multiply. High = consistent; a one-season fluke scores low.
+- **Chance of profit in every season**: resample each real season on its own (300 replays of the betters' results), take the share of replays in profit for each season, multiply across seasons. High = consistent; a one-season fluke scores low.
 - **Hit probability vs price-implied probability**: how often the slip really cashes vs the probability its odds say (1 / decimal odds). Edge in points is the gap.
-- **Both seasons**: in profit in 2024 and in 2025. A strategy that only wins one season probably fit that season's luck.
+- **Every season**: in profit in each tested season. A strategy that only wins one season probably fit that season's luck.
 - **Hold**: the share of every dollar the house keeps.
 - **Slip shape**: the structure of a slip without the players, e.g. `Anytime TD x3` or `Game Total over x2`.
 - **SGP**: same-game parlay. Books pay it less than the plain product of the leg odds.

@@ -1,0 +1,48 @@
+{
+ "schema": "boo.curriculum.v1",
+ "latest": "R002",
+ "releases": [
+  {
+   "release": "R001",
+   "created": "2026-10-14T20:37:16Z",
+   "trigger": "baseline",
+   "summary": {
+    "teach": 5,
+    "watch": 7,
+    "fragile": 1,
+    "avoid": 32,
+    "benchmark": 14,
+    "case": 5
+   },
+   "studies": 1,
+   "changes": {
+    "new": 59,
+    "promoted": 0,
+    "demoted": 0,
+    "updated": 0,
+    "retired": 0
+   }
+  },
+  {
+   "release": "R002",
+   "created": "2026-10-14T20:37:16Z",
+   "trigger": "study",
+   "summary": {
+    "teach": 0,
+    "watch": 1,
+    "fragile": 3,
+    "avoid": 36,
+    "benchmark": 14,
+    "case": 5
+   },
+   "studies": 1,
+   "changes": {
+    "new": 9,
+    "promoted": 0,
+    "demoted": 2,
+    "updated": 1,
+    "retired": 14
+   }
+  }
+ ]
+}

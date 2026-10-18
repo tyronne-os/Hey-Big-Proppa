@@ -74,6 +74,11 @@ except Exception:
 try:
     import slip_alerts as _slip_alerts
     _slip_alerts.start_worker()      # polls Tank01 once a minute when a key is configured
+    try:
+        import boo_harvest
+        boo_harvest.start_worker()   # MY BOO's BETTER-VERSE harvester: backfill on boot, then scheduled collection cycles
+    except Exception:
+        pass
 except Exception:
     pass
 
@@ -543,7 +548,7 @@ def _betterverse_nodes() -> list[dict]:
         {"id": "bv-bettors", "type": "sim", "group": "better-verse", "name": "THE BETTERS",
          "sub": f"{len(betterverse_bettors.ARCHETYPES)} styles · sharp to degen · FD/DK legal", "chips": ["personas"]},
         {"id": "bv-sim", "type": "sim", "group": "better-verse", "name": "SEASON ENGINE",
-         "sub": sim_sub, "chips": ["2024", "2025"]},
+         "sub": sim_sub, "chips": ["2023", "2024", "2025"]},
         {"id": "bv-insights", "type": "sim", "group": "better-verse", "name": "SLIP INTELLIGENCE",
          "sub": ins_sub, "chips": ["parquet", "priors"]},
     ]
@@ -596,8 +601,8 @@ async def api_mv_run(request: Request):
     import betterverse_sim
     body = await request.json() if (await request.body()) else {}
     season = int(body.get("season", 2024))
-    if season not in (2024, 2025):
-        raise HTTPException(400, "season must be 2024 or 2025")
+    if season not in (2023, 2024, 2025):
+        raise HTTPException(400, "season must be 2023, 2024 or 2025")
     n = max(10, min(2000, int(body.get("bettors", 150))))
     seed = int(body.get("seed", 7))
     mix = {k: float(v) for k, v in (body.get("mix") or {}).items() if float(v) >= 0} or None
@@ -629,8 +634,11 @@ def api_mv_insights(run_id: str):
 async def api_bv_study(request: Request):
     import betterverse_study
     body = await request.json() if (await request.body()) else {}
+    seasons = sorted({int(y) for y in body.get("seasons", [2023, 2024, 2025]) if int(y) in (2023, 2024, 2025)})
+    if not seasons:
+        raise HTTPException(400, "seasons must include 2023, 2024 and/or 2025")
     return betterverse_study.start(max(2, min(60, int(body.get("universes", 20)))), max(20, min(500, int(body.get("bettors", 150)))),
-                                   int(body.get("seed", 100)))
+                                   int(body.get("seed", 100)), seasons)
 
 
 @app.get("/api/betterverse/studies")
@@ -643,6 +651,15 @@ def api_bv_studies():
 def api_bv_study_status(study_id: str):
     import betterverse_study
     return betterverse_study.status(study_id)
+
+
+@app.get("/api/betterverse/compare")
+def api_bv_compare(a: str, b: str):
+    import betterverse_study
+    c = betterverse_study.compare(a, b)
+    if c is None:
+        raise HTTPException(404, "study not found")
+    return c
 
 
 @app.get("/api/betterverse/study/{study_id}")
@@ -668,12 +685,16 @@ def api_bv_study_obsidian(study_id: str):
 
 @app.post("/api/betterverse/study/{study_id}/ingest")
 def api_bv_study_ingest(study_id: str):
+    """Send a Strategy Lab study to MY BOO: priors for JIMMY/JEV, evidence for her training curriculum, and a new release if anything changed."""
+    import boo_curriculum
     import boo_training
     try:
         b = boo_training.ingest_betterverse_study(study_id)
+        boo_curriculum.ingest_study(study_id)
     except FileNotFoundError:
         raise HTTPException(404, "study not found")
-    return {"ok": True, "money_makers": len(b["proven_money_makers"]), "money_losers": len(b["proven_money_losers"])}
+    rel = boo_curriculum.cut_release(trigger="study")
+    return {"ok": True, "money_makers": len(b["proven_money_makers"]), "money_losers": len(b["proven_money_losers"]), "curriculum": rel}
 
 
 @app.get("/api/betterverse/career")
@@ -1113,6 +1134,120 @@ def api_high_production(game_id: str):
     if not hp:
         raise HTTPException(404, "no high-production log for this game")
     return {k: v for k, v in hp.items() if k not in ("players", "box")}
+
+
+# ---------------------------------------------------------------------------- MY BOO training curriculum (itemized releases)
+# ---------------------------------------------------------------------------- MY BOO harvester + in-house JEV training
+def _harvest_auth(request: Request) -> None:
+    import hmac
+    tok = os.environ.get("HARVEST_TOKEN", "")
+    if not tok:
+        raise HTTPException(503, "HARVEST_TOKEN is not set on this server, so remote triggers are disabled")
+    if not hmac.compare_digest(request.headers.get("x-harvest-token", ""), tok):
+        raise HTTPException(403, "bad token")
+
+
+@app.get("/api/myboo/harvest/status")
+def api_harvest_status():
+    import boo_harvest
+    return boo_harvest.status()
+
+
+@app.post("/api/myboo/harvest/cycle")
+def api_harvest_cycle(request: Request):
+    """Run one harvest cycle in the background. Called by the scheduled GitHub Action (wakes a sleeping Space)."""
+    import threading
+    import boo_harvest
+    _harvest_auth(request)
+    threading.Thread(target=boo_harvest.cycle, kwargs={"reason": "external"}, daemon=True, name="harvest-external").start()
+    return {"started": True}
+
+
+@app.post("/api/myboo/harvest/backfill")
+def api_harvest_backfill(request: Request):
+    import boo_harvest
+    _harvest_auth(request)
+    return boo_harvest.backfill()
+
+
+@app.get("/api/myboo/jev-model")
+def api_jev_model():
+    import boo_jev_trainer
+    return boo_jev_trainer.status()
+
+
+@app.post("/api/myboo/jev-model/train")
+def api_jev_model_train(request: Request):
+    import threading
+    import boo_jev_trainer
+    _harvest_auth(request)
+    threading.Thread(target=boo_jev_trainer.train, daemon=True, name="jev-train").start()
+    return {"started": True}
+
+
+@app.get("/api/myboo/curriculum/{release}/sft.jsonl")
+def api_curriculum_sft(release: str):
+    import boo_jev_trainer
+    from fastapi.responses import PlainTextResponse
+    t = boo_jev_trainer.curriculum_sft(release)
+    if t is None:
+        raise HTTPException(404, "release not found")
+    return PlainTextResponse(t, media_type="application/x-ndjson", headers={"Content-Disposition": f'attachment; filename="boo-sft-{release}.jsonl"'})
+
+
+@app.get("/api/myboo/curriculum")
+def api_curriculum():
+    import boo_curriculum
+    cur = boo_curriculum.current_rows()
+    return {"index": boo_curriculum.index(), "latest": boo_curriculum.latest(),
+            "evidence": [{k: r.get(k) for k in ("study_id", "seasons", "universes", "bettors_per_universe", "bettor_seasons", "slips", "ingested")} for r in cur],
+            "superseded": len(boo_curriculum._evidence_rows()) - len(cur)}
+
+
+@app.get("/api/myboo/curriculum/{release}")
+def api_curriculum_release(release: str):
+    import boo_curriculum
+    r = boo_curriculum.get(release)
+    if r is None:
+        raise HTTPException(404, "release not found")
+    return r
+
+
+@app.get("/api/myboo/curriculum/{release}/notes")
+def api_curriculum_notes(release: str):
+    import boo_curriculum
+    from fastapi.responses import PlainTextResponse
+    t = boo_curriculum.notes(release)
+    if t is None:
+        raise HTTPException(404, "release not found")
+    return PlainTextResponse(t, media_type="text/markdown")
+
+
+@app.get("/api/myboo/curriculum/{release}/training.jsonl")
+def api_curriculum_training(release: str):
+    import boo_curriculum
+    from fastapi.responses import PlainTextResponse
+    t = boo_curriculum.training_rows(release)
+    if t is None:
+        raise HTTPException(404, "release not found")
+    return PlainTextResponse(t, media_type="application/x-ndjson",
+                             headers={"Content-Disposition": f'attachment; filename="boo-curriculum-{release}.jsonl"'})
+
+
+@app.post("/api/myboo/curriculum/ingest/{study_id}")
+def api_curriculum_ingest(study_id: str):
+    import boo_curriculum
+    try:
+        got = boo_curriculum.ingest_study(study_id)
+    except FileNotFoundError:
+        raise HTTPException(404, "study not found")
+    return {"ingested": got, "release": boo_curriculum.cut_release(trigger="study")}
+
+
+@app.post("/api/myboo/curriculum/release")
+def api_curriculum_cut(force: bool = False):
+    import boo_curriculum
+    return boo_curriculum.cut_release(trigger="manual", force=force)
 
 
 @app.get("/api/myboo/training")
@@ -1883,6 +2018,73 @@ def api_jimmy_board(sid: str):
     return {"week": bt.state.current_week, "props": jimmy_history.board(bt.year, bt.state.current_week)}
 
 
+def _jimmy_live(bt, sid: str) -> None:
+    """When a season ends, record its result against the MY BOO training update that was live, so update impact can be tracked."""
+    if bt.state.game_over and not getattr(bt, "_live_recorded", False):
+        bt._live_recorded = True
+        try:
+            import jimmy_updates
+            jimmy_updates.record_live(bt.year, [bt._serialize_slip(x) for x in bt.state.slips], round(bt.state.bankroll, 2),
+                                      getattr(bt, "policy_version", "JU-0000"), sid)
+        except Exception:
+            pass
+
+
+@app.get("/api/jimmy/recommend/{sid}")
+def api_jimmy_recommend(sid: str):
+    """JIMMY's own slip for this week under the training policy MY BOO has sent him (what auto-play bets)."""
+    import jimmy_history
+    import jimmy_updates
+    bt = _jimmy(sid)
+    wk = bt.state.current_week
+    used = {l.player_id for s in bt.week_slips() for l in s.legs}
+    cur = jimmy_updates.current()
+    legs = jimmy_updates.pick(list(jimmy_history.board(bt.year, wk)), cur["policy"], used)
+    return {"week": wk, "version": cur["version"], "policy": cur["policy"], "legs": legs}
+
+
+@app.get("/api/jimmy/updates")
+def api_jimmy_updates():
+    import jimmy_updates
+    return jimmy_updates.status()
+
+
+@app.post("/api/jimmy/updates/send")
+def api_jimmy_updates_send(force: bool = False):
+    """The one button: package MY BOO's training data, test every item out of sample, and send JIMMY a numbered update."""
+    import jimmy_updates
+    return jimmy_updates.send_to_jimmy(trigger="button", force=force)
+
+
+@app.get("/api/jimmy/updates/{uid}")
+def api_jimmy_update(uid: str):
+    import jimmy_updates
+    u = jimmy_updates.get_update(uid)
+    if u is None:
+        raise HTTPException(404, "update not found")
+    return u
+
+
+@app.get("/api/jimmy/updates/{uid}/notes")
+def api_jimmy_update_notes(uid: str):
+    import jimmy_updates
+    from fastapi.responses import PlainTextResponse
+    t = jimmy_updates.update_notes(uid)
+    if t is None:
+        raise HTTPException(404, "update not found")
+    return PlainTextResponse(t, media_type="text/markdown")
+
+
+@app.get("/api/jimmy/updates/{uid}/items.jsonl")
+def api_jimmy_update_items(uid: str):
+    import jimmy_updates
+    from fastapi.responses import PlainTextResponse
+    t = jimmy_updates.update_rows(uid)
+    if t is None:
+        raise HTTPException(404, "update not found")
+    return PlainTextResponse(t, media_type="application/x-ndjson", headers={"Content-Disposition": f'attachment; filename="jimmy-update-{uid}-items.jsonl"'})
+
+
 @app.post("/api/jimmy/submit/{sid}")
 def api_jimmy_submit(sid: str, body: dict):
     import jimmy_history
@@ -1900,6 +2102,7 @@ def api_jimmy_submit(sid: str, body: dict):
         slip = bt.submit_slip(legs)
     except ValueError as e:
         raise HTTPException(400, str(e))
+    _jimmy_live(bt, sid)
     return {"slip": bt._serialize_slip(slip), "state": {"session_id": sid, **bt.get_state_dict()}}
 
 
@@ -1926,6 +2129,7 @@ def api_jimmy_advance(sid: str):
         bt.advance_week()
     except ValueError as e:
         raise HTTPException(400, str(e))
+    _jimmy_live(bt, sid)
     return {"session_id": sid, **bt.get_state_dict()}
 
 

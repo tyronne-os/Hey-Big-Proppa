@@ -1,0 +1,159 @@
+{
+ "updates": [
+  {
+   "update": "JU-0000",
+   "created": "2026-10-14T20:42:47Z",
+   "curriculum_release": null,
+   "policy": {
+    "legs": 3,
+    "direction": {
+     "pass_yds": "over",
+     "rush_yds": "over",
+     "rec_yds": "over",
+     "receptions": "over"
+    },
+    "rank": "confidence"
+   },
+   "items_applied": 0,
+   "items_held": 0,
+   "in_sample": {
+    "slips": 270,
+    "wins": 41,
+    "legs": 758,
+    "leg_hits": 365,
+    "staked": 1350.0,
+    "returned": 1360.0,
+    "win_pct": 0.1519,
+    "leg_hit_pct": 0.4815,
+    "roi": 0.0074,
+    "by_season": {
+     "2023": {
+      "slips": 90,
+      "wins": 11,
+      "legs": 248,
+      "leg_hits": 117,
+      "staked": 450.0,
+      "returned": 360.0,
+      "win_pct": 0.1222,
+      "leg_hit_pct": 0.4718,
+      "roi": -0.2
+     },
+     "2024": {
+      "slips": 90,
+      "wins": 16,
+      "legs": 256,
+      "leg_hits": 125,
+      "staked": 450.0,
+      "returned": 580.0,
+      "win_pct": 0.1778,
+      "leg_hit_pct": 0.4883,
+      "roi": 0.2889
+     },
+     "2025": {
+      "slips": 90,
+      "wins": 14,
+      "legs": 254,
+      "leg_hits": 123,
+      "staked": 450.0,
+      "returned": 420.0,
+      "win_pct": 0.1556,
+      "leg_hit_pct": 0.4843,
+      "roi": -0.0667
+     }
+    }
+   },
+   "out_of_sample": {
+    "slips": 270,
+    "wins": 41,
+    "legs": 758,
+    "leg_hits": 365,
+    "staked": 1350.0,
+    "returned": 1360.0,
+    "win_pct": 0.1519,
+    "leg_hit_pct": 0.4815,
+    "roi": 0.0074
+   },
+   "note": "Baseline: JIMMY's auto-play before any update (top 3 by confidence, all overs)."
+  },
+  {
+   "update": "JU-0001",
+   "created": "2026-10-14T20:42:47Z",
+   "trigger": "button",
+   "curriculum_release": "R002",
+   "policy": {
+    "legs": 3,
+    "direction": {
+     "pass_yds": "over",
+     "rush_yds": "over",
+     "rec_yds": "under",
+     "receptions": "over"
+    },
+    "rank": "confidence"
+   },
+   "items_applied": 1,
+   "items_held": 2,
+   "in_sample": {
+    "slips": 270,
+    "wins": 54,
+    "legs": 761,
+    "leg_hits": 408,
+    "staked": 1350.0,
+    "returned": 1890.0,
+    "win_pct": 0.2,
+    "leg_hit_pct": 0.5361,
+    "roi": 0.4,
+    "by_season": {
+     "2023": {
+      "slips": 90,
+      "wins": 18,
+      "legs": 249,
+      "leg_hits": 133,
+      "staked": 450.0,
+      "returned": 610.0,
+      "win_pct": 0.2,
+      "leg_hit_pct": 0.5341,
+      "roi": 0.3556
+     },
+     "2024": {
+      "slips": 90,
+      "wins": 21,
+      "legs": 258,
+      "leg_hits": 147,
+      "staked": 450.0,
+      "returned": 740.0,
+      "win_pct": 0.2333,
+      "leg_hit_pct": 0.5698,
+      "roi": 0.6444
+     },
+     "2025": {
+      "slips": 90,
+      "wins": 15,
+      "legs": 254,
+      "leg_hits": 128,
+      "staked": 450.0,
+      "returned": 540.0,
+      "win_pct": 0.1667,
+      "leg_hit_pct": 0.5039,
+      "roi": 0.2
+     }
+    }
+   },
+   "out_of_sample": {
+    "slips": 270,
+    "wins": 54,
+    "legs": 761,
+    "leg_hits": 408,
+    "staked": 1350.0,
+    "returned": 1890.0,
+    "win_pct": 0.2,
+    "leg_hit_pct": 0.5361,
+    "roi": 0.4
+   },
+   "delta_vs_previous": {
+    "win_pct": 0.0481,
+    "leg_hit_pct": 0.0546,
+    "roi": 0.3926
+   }
+  }
+ ]
+}

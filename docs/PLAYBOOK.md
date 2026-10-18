@@ -7,15 +7,17 @@ Back to the [README](../README.md) · [BETTER-VERSE write-up](BETTER-VERSE.md)
 Two things to do here, and a guide to understanding what the numbers mean:
 
 1. **Play a season yourself** in the JIMMY game (`/jimmy`).
-2. **Watch a town of simulated betters** and find out which strategies really make money (`/betterverse`).
+2. **Watch a town of simulated betters** and find out which strategies really make money across three real seasons (`/betterverse`).
 3. **Read the data without fooling yourself.** Skip to [Reading the data](#reading-the-data) if you only want that.
 
 ```mermaid
 flowchart LR
   P[You play JIMMY] --> L[MY BOO logs what hit and missed]
-  B[BETTER-VERSE betters] --> S[Strategy Lab<br/>pooled universes]
+  B[BETTER-VERSE betters] --> H[Harvester<br/>collects every run automatically]
+  H --> S[Strategy Lab<br/>pooled universes]
   S --> L
-  L --> J[JIMMY and JEV learn priors]
+  L --> C[Curriculum releases R001, R002...]
+  C --> J[JIMMY and JEV learn priors]
   S --> O[Obsidian vault<br/>graph of what connects]
 ```
 
@@ -47,7 +49,7 @@ The payout is a flat 2× per leg no matter how likely the leg was, so **each leg
 
 ### What the data says about the game's own board
 
-A check of **519 board props** across both seasons (small sample, so treat these as hints, not laws):
+A check of **519 board props** across 2024 and 2025 (small sample, so treat these as hints, not laws):
 
 | Prop | Over hit rate | Read |
 |---|---|---|
@@ -60,16 +62,18 @@ A check of **519 board props** across both seasons (small sample, so treat these
 - **The confidence number is not a promise.** Legs scored 60 hit 50.8% as overs and legs scored 70 hit 46.7%. Do not stack legs just because the score is high.
 - With about 120-140 legs per prop type the margin of error is roughly ±8 points, so a 57% under is encouraging, not proven.
 
-### Tips from the Strategy Lab (real prices, 6,000 bettor-seasons)
+### Tips from the Strategy Lab (real prices, 9,000 bettor-seasons over 2023, 2024 and 2025)
 
-These come from BETTER-VERSE, which uses real sportsbook-style prices rather than the game's flat 2×, but the lessons carry over:
+These come from BETTER-VERSE, which uses sportsbook-style prices rather than the game's flat 2×, but the lessons carry over:
 
-1. **Keep slips short.** 2-leg slips lost 8.7% of the money bet, 3-leg 12.6%, and **6+ legs lost 74% to 89%**. Every added leg multiplies the house's cut.
-2. **Cross-game beats same-game.** Same-game parlays lost 46.8% vs 16.1% for cross-game slips.
-3. **Game-total overs were the one profit the data supports** (Overs Only · Grinder +9.8%, 95% range +2.0% to +17.3%), but 2025 was flat for them (-0.4%), so the chance of profit in both seasons is only 43%, and part of it reflects how 2024-25 played out.
-4. **The most consistent parlay types** (best chance of profit in *both* seasons): **2-leg rushing-yards unders** (80%; 34% of slips hit vs 29% implied by the price), **3-leg game-total overs** (70%) and **2-leg game-total overs** (66%).
-5. **Do not chase a long anytime-TD ticket.** The biggest single winners hit 4-5 leg anytime-TD tickets at roughly 150× to over 700×, yet TD Scorer Stackers lost money overall (-17% to -39%).
-6. **Flat small bets beat chasing.** Doubling up after a losing week is how the Degens ended at -34.7% on average vs -2.9% for the Sharps.
+1. **Keep slips short.** 2-leg slips lost 6.1% of the money bet, 3-leg 9.7%, and **6+ legs lost 43% to 81%**. Every added leg multiplies the house's cut.
+2. **Cross-game beats same-game.** Same-game parlays lost 45.9% vs 13.9% for cross-game slips.
+3. **No parlay type has been proven to beat the book across all three seasons.** The two-season "winners" (2-leg rush-yards unders, 2- and 3-leg game-total overs) **lost 18% to 23% in 2023**. Only one shape was in profit in all three seasons: a 3-leg slip with one completions-over and two rush-yards-unders (+2%, +23%, +26%), and even it has only a 39% chance of repeating. Treat it as a watch-list idea.
+4. **The disciplined researchers came closest.** Sharps were the only tier near break-even: +1.8% overall (95% range -0.5% to +4.1%), +8.9% in 2024 and +4.1% in 2025, but -14.4% in 2023, the one season with no earlier season to learn from.
+5. **Do not chase a long anytime-TD or lottery ticket.** The biggest single winners hit 4-5 leg anytime-TD tickets at roughly 150× to over 700×, yet TD Scorer Stacker · Casual lost 41.5% overall and Lottery Ticket · Degen lost 62.9%.
+6. **Flat small bets beat chasing.** Doubling up after a losing week is how the Degens ended at -33.6% on average vs +1.8% for the Sharps.
+
+> **Why the third season mattered.** On 2024-25 alone, rush-yards unders and game-total overs looked like winners (80%, 70% and 66% chance of profit in both seasons). Adding 2023 took all three to about 0%. A pattern that holds for two seasons can fail on a third, so MY BOO only *teaches* a parlay type after it survives every tested season and is replicated by more than one study.
 
 ---
 
@@ -82,7 +86,7 @@ These come from BETTER-VERSE, which uses real sportsbook-style prices rather tha
 - **Table limits.** Everyone starts with $100 and picks a **$5 or $10** base bet. Max bet is **$10 until $500, $20 until $1,000, then free**.
 - **Leaderboard.** *Winnings* ranks real money with nothing filtered, so a lucky rookie ranks where the money puts them. *Luck-adjusted* ranks the ROI a better would still have had on a bad-luck replay of their own slips.
 - **Deep dive.** Click any better for their ideology, rules, bankroll curve, what they actually bet, and every slip.
-- **Strategy Lab.** Pools many universes across both real seasons and says which strategies make money. See the next section.
+- **Strategy Lab.** Pools many universes across all three real seasons (2023-25) and says which strategies make money. See the next section.
 
 ---
 
@@ -103,8 +107,8 @@ These come from BETTER-VERSE, which uses real sportsbook-style prices rather tha
   - Whole bar **right** of the line = **proven money-maker** (`proven $` flag).
   - Whole bar **left** = a **confident loser**.
   - Bar **crossing** the line = not proven either way. This is the usual case, so do not over-read the number in the middle.
-- **`$ both seasons`** means it was in profit in 2024 *and* 2025. A strategy that only worked one year probably fit that year's luck.
-- **`beat field`** only means it lost less than the average better in both seasons. It is not a profit.
+- **`$ every season`** means it was in profit in 2023, 2024 *and* 2025. A strategy that only worked one year probably fit that year's luck.
+- **`beat field`** only means it lost less than the average better in every season. It is not a profit.
 - **The 2024 and 2025 columns** are the quickest sanity check. If one is +40% and the other is -7%, do not trust it.
 
 ### The probability ranking: which kinds of parlay win most
@@ -113,33 +117,40 @@ The Strategy Lab ranks every strategy and every slip shape by **how likely it is
 
 | Measure | What it means |
 |---|---|
-| **P(profit), both seasons** | The headline rank. Each real season is replayed 300 times on its own (resampling the betters' results); take the share of replays in profit for 2024 and for 2025, then multiply. A parlay type that won big in one year and lost in the other scores low. |
+| **P(profit), every season** | The headline rank. Each real season is replayed 300 times on its own (resampling the betters' results); take the share of replays in profit for each season, then multiply. A parlay type that won big in one year and lost in another scores low. |
 | **P(profit), overall** | Same idea on all the data pooled. |
 | **P(beat the field)** | Chance the strategy does better than the average better. |
 | **Slip hit probability** | How often the whole slip cashes, with a 95% range (Wilson interval). |
 | **Probability the price implies** | `1 ÷ decimal odds`. If the real hit probability sits **above** this, the price was too long and the slip had an edge; below it, the book's margin wins. |
 | **Edge in points** | Hit probability minus the price-implied probability. |
 
-How to apply them: when you build a slip, find its shape in the ranking and compare. A shape with a high P(profit) **and** a hit rate above its price-implied probability (for example 2-leg rushing-yards unders: 34% of slips hit vs 29% implied, 80% chance of profit in both seasons) is a better template than one that hits rarely and pays a lot (5-leg favorite spreads: +16.8% ROI overall, but +43% in 2024 and -7% in 2025, so only a 36% chance of profit in both seasons).
+How to apply them: when you build a slip, find its shape in the ranking and compare. A shape with a high P(profit) **and** a hit rate above its price-implied probability is a better template than one that hits rarely and pays a lot. The honest lesson of the three-season run is how often that ranking changes: 2-leg rush-yards unders had a 100% chance of profit on 2024-25 and 0% once 2023 was added. The current best, the 3-leg completions-over + two rush-yards-unders slip, hits 23% of the time against 15% implied by the price, in profit in every season, with a 39% chance of repeating.
 
-### Worked examples (20 universes × 150 betters × 2 seasons)
+### Worked examples (20 universes × 150 betters × 3 seasons)
 
-| Strategy | ROI | 95% range | P(profit) both seasons | Verdict |
+| Strategy | ROI | 95% range | P(profit) every season | Verdict |
 |---|---|---|---|---|
-| Overs Only · Grinder | +9.8% | +2.0% to +17.3% | 43% | **Proven profit**, but 2025 was flat, so not consistent. |
-| Overs Only · Degen | +3.5% | -12.8% to +18.6% | 30% | Not proven. Same bet, sloppier bankroll, noisier. |
-| Edge Hunter · Sharp | -2.9% | -6.0% to -0.2% | 1% | Loses the least of any researcher, but still a small confident loser. |
-| TD Scorer Stacker · Casual | -39.4% | -54.0% to -27.7% | 0% | **Confident loser**, even though it produced the biggest single wins. |
-| Lottery Ticket · Degen | -73.8% | -83.1% to -64.7% | 0% | **Confident loser**; 1% of slips hit. |
+| Edge Hunter · Sharp | +1.8% | -0.5% to +4.1% | 0% | Closest to break-even; 2024 +8.9%, 2025 +4.1%, but 2023 -14.4%. Promising, not proven. |
+| Overs Only · Grinder | 0.0% | -7.0% to +7.0% | 0% | A coin flip: 2023 -21.9%, 2024 +19.3%, 2025 -0.4%. Not proven. |
+| TD Scorer Stacker · Casual | -41.5% | -53.3% to -30.7% | 0% | **Confident loser**, even though it produced the biggest single wins. |
+| Lottery Ticket · Degen | -62.9% | -75.9% to -50.3% | 0% | **Confident loser**; 1% of slips hit. |
 
-The house kept about **19.6%** of every dollar staked (14.8% in 2024, 24.3% in 2025). That is the hole every strategy has to climb out of.
+**The correction: the three "most consistent" parlay types from 2024-25 alone**
+
+| Parlay | P(profit) on 2024-25 | 2023 ROI | 2024 | 2025 | P(profit) on all three |
+|---|---|---|---|---|---|
+| 2-leg rush-yards unders | 100% | -18.1% | +11.0% | +7.1% | 0% |
+| 3-leg game-total overs | 72% | -23.3% | +15.6% | +3.2% | 0% |
+| 2-leg game-total overs | 70% | -21.3% | +7.6% | +2.6% | 0% |
+
+The house kept about **17.4%** of every dollar staked (20.1% in 2023, 11.5% in 2024, 20.9% in 2025). That is the hole every strategy has to climb out of.
 
 ### Habits that keep you honest
 
 1. **A big winner is a story, not proof.** The biggest rookie winners hit anytime-TD lottery tickets. Open their deep dive, then look at the strategy's overall ROI.
 2. **Sample size.** The Lab leaves out any strategy with fewer than 150 slips, and even above that a wide bar means there isn't enough data yet.
 3. **One universe is one roster.** Always read the Strategy Lab, not a single run's leaderboard, to judge a strategy.
-4. **Same two seasons.** Extra universes average out the betters' randomness, **not** what really happened in 2024-25. Prefer strategies that win in both seasons.
+4. **Same real seasons.** Extra universes average out the betters' randomness, **not** what really happened in 2023-25. Prefer strategies that win in every season, and add a season before you believe a pattern: a third season erased every two-season winner.
 5. **Compare ROI, not dollars.** A $10 better earns twice the dollars of a $5 better at the same ROI.
 6. **Look for what never cashed.** The *Never cashed* and *Money losers* lists are as useful as the winners: they tell you what to stop building.
 7. **Check the legs.** On the *Every leg vs the book's price* chart, bars right of center beat the price. Unders on volume props (rush yards, receptions) tended to, while receiving-yard overs did not.
@@ -183,7 +194,7 @@ To regenerate from the command line: `cd backend && python betterverse_obsidian.
 ## Glossary
 
 - **ROI**: profit per $1 staked.
-- **P(profit)**: the probability, from resampling, that a strategy makes money; the headline version is for both real seasons together.
+- **P(profit)**: the probability, from resampling, that a strategy makes money; the headline version is for every tested season together.
 - **Implied probability**: the chance a price says an outcome has, `1 ÷ decimal odds`.
 - **95% range**: where ROI would land about 95 times in 100 reruns. Entirely above 0 = proven; entirely below 0 = a confident loser.
 - **Hold**: the share of every dollar the house keeps.
