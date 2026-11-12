@@ -20,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 import data
+import jimmy_take
 import jimmy
 import cfb_jimmy
 import leaders as leaders_mod
@@ -1707,6 +1708,78 @@ def api_slug_list():
     return {"count": len(_load_slugs()), "slugs": _load_slugs()}
 
 
+# ── JIMMY TAKE CACHE ──
+# lake/gold/espn/jimmy_takes.json — precomputed takes keyed by player_id.
+# Served instead of recomputing per crawler hit; a daemon thread refreshes it.
+_TAKES_FILE = _SLUGS_FILE.parent / "jimmy_takes.json"
+
+
+def _load_takes() -> dict[str, dict]:
+    try:
+        return json.loads(_TAKES_FILE.read_text())
+    except Exception:
+        return {}
+
+
+_TAKES_LOCK = __import__("threading").Lock()
+
+
+def _remember_take(player_id: str, take: dict) -> None:
+    """Write-through: merge one take into the cache file."""
+    try:
+        with _TAKES_LOCK:
+            cache = _load_takes()
+            cache[player_id] = take
+            _TAKES_FILE.write_text(json.dumps(cache, indent=1, sort_keys=True))
+    except Exception:
+        pass
+
+
+def _take_refresher() -> None:
+    """Daemon: slowly recompute takes for players missing/stale in the cache.
+
+    One player per cycle with a pause in between so it never competes with the
+    request path or the data refresh."""
+    import time as _time
+    while True:
+        try:
+            slugs = _load_slugs()
+            cache = _load_takes()
+            jobs = []
+            seen = set()
+            for e in slugs.values():
+                pid = e.get("player_id")
+                if not pid or pid in seen:
+                    continue
+                seen.add(pid)
+                ent = cache.get(pid) or {}
+                if not ent.get("prediction") or (_time.time() - ent.get("at", 0) > 86400):
+                    jobs.append((pid, e.get("market") or "rushyds"))
+            for pid, market in jobs:
+                try:
+                    chart = data.player_prop_chart(pid, market)
+                    if isinstance(chart, dict) and not chart.get("error"):
+                        tk = jimmy_take.generate(chart)
+                        if tk.get("prediction"):
+                            tk["at"] = _time.time()
+                            tk["name"] = chart.get("name")
+                            tk["team"] = chart.get("team")
+                            _remember_take(pid, tk)
+                except Exception:
+                    pass
+                _time.sleep(2)
+        except Exception:
+            pass
+        _time.sleep(300)
+
+
+@app.on_event("startup")
+def _start_take_refresher() -> None:
+    import threading as _threading
+    _t = _threading.Thread(target=_take_refresher, daemon=True)
+    _t.start()
+
+
 # Catch-all: landing assets → dist assets → SPA fallback for BrowserRouter routes
 # For /p/<slug> (a permanent player page) the served HTML carries Jimmy's take in
 # the <head> meta + JSON-LD so search engines index the commentary as fresh content.
@@ -1733,24 +1806,31 @@ def _spa_fallback(full_path: str):
 
 
 def _player_spa_html(slug_path: str, idx):
-    """index.html for /p/<slug> with Jimmy's take injected as crawlable text."""
+    """index.html for /p/<slug> with Jimmy's take injected as crawlable text.
+
+    Serves from the precomputed cache (lake/gold/espn/jimmy_takes.json) so a
+    crawler hit never blocks on chart computation."""
     import html as _html
     try:
-        import jimmy_take as _jt
         slug = slug_path[2:]
         entry = _load_slugs().get(slug)
         player_id = (entry or {}).get("player_id")
         market = (entry or {}).get("market") or "rushyds"
         if not player_id:
             return None
-        chart = data.player_prop_chart(player_id, market)
-        if not isinstance(chart, dict) or chart.get("error"):
-            return None
-        take = _jt.generate(chart)
-        txt = take.get("prediction") or ""
-        conf = take.get("confidence") or ""
-        name = chart.get("name") or "Player"
-        team = chart.get("team") or ""
+        take = _load_takes().get(player_id)
+        if not (take or {}).get("prediction"):
+            chart = data.player_prop_chart(player_id, market)
+            if not isinstance(chart, dict) or chart.get("error"):
+                return None
+            take = jimmy_take.generate(chart)
+            take["name"] = chart.get("name") or take.get("name")
+            take["team"] = chart.get("team") or take.get("team")
+            _remember_take(player_id, take)
+        txt = (take or {}).get("prediction") or ""
+        conf = (take or {}).get("confidence") or ""
+        name = take.get("name") or player_id
+        team = take.get("team") or (entry or {}).get("team") or ""
         title = f"{name} ({team}) — Jimmy's Take | Big Proppa"
         esc = lambda s: _html.escape(s, quote=True)
         meta = (
@@ -1762,7 +1842,7 @@ def _player_spa_html(slug_path: str, idx):
             + json.dumps({
                 "@context": "https://schema.org",
                 "@type": "SportsArticle",
-                "headline": f"Jimmy's Take: {name} ({team}) — {chart.get('prop') or 'props'}",
+                "headline": f"Jimmy's Take: {name} ({team}) — {data.PROP_LABELS.get(market, 'props')}",
                 "description": txt,
                 "author": {"@type": "Person", "name": "Jimmy the Greek"},
                 "publisher": {"@type": "Organization", "name": "Big Proppa"},
