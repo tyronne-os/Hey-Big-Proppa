@@ -39,7 +39,7 @@ export type JimmyTake = {
 /** Score a defense rank: 1=toughest, 32=softest. Returns -1..1 where 1=great matchup. */
 function scoreDefense(rank: number | null | undefined, pool = 32): number {
   if (!rank) return 0;
-  return (pool - rank) / (pool - 1) * 2 - 1; // maps 1->-1, 32->+1
+  return (rank - 1) / (pool - 1) * 2 - 1; // rank 1 (stingiest) -> -1, rank 32 (softest) -> +1
 }
 
 /** Score last 5 vs line: fraction of games that cleared. Returns -1..1. */
@@ -135,102 +135,88 @@ export function generateJimmyTake(
 
   // ---- Build the prediction sentence (target ~200 chars) ----
   const name = chart.name;
-  const prop = chart.prop.toLowerCase();
   const team = chart.team;
-  const opp = nextOpp ? `vs ${nextOpp}` : "this week";
-  const lineStr = line !== null ? `line ${line}` : "no line";
 
   // Defense descriptor
   let defDesc = "";
   if (nextOppRank !== null && nextOppRank !== undefined) {
-    if (nextOppRank >= 27) defDesc = "a sieve";
-    else if (nextOppRank >= 21) defDesc = "generous";
-    else if (nextOppRank >= 12) defDesc = "middling";
-    else if (nextOppRank >= 6) defDesc = "stout";
-    else defDesc = "elite";
-  }
-  if (!defDesc) defDesc = "middle-of-the-road";
-
-  // L5 form descriptor
-  let l5Desc = "";
-  const viewer = teamRank?.viewer;
-  const l5Games = viewer?.l5 ?? [];
-  const l5Cleared = l5Games.filter((g) => g.over === true).length;
-  const l5Total = l5Games.filter((g) => g.over !== null).length;
-  if (l5Total) {
-    const pct = l5Cleared / l5Total;
-    if (pct >= 0.8) l5Desc = "crushing the number";
-    else if (pct >= 0.6) l5Desc = "consistently clearing";
-    else if (pct >= 0.4) l5Desc = "splitting decisions";
-    else l5Desc = "missing more often than not";
+    if (nextOppRank >= 27) defDesc = "a defense you can run a truck through";
+    else if (nextOppRank >= 21) defDesc = "a soft run-fit defense";
+    else if (nextOppRank >= 12) defDesc = "an average defense";
+    else if (nextOppRank >= 6) defDesc = "a defense that brings real resistance";
+    else defDesc = "an elite, legit defense";
   }
 
-  // Fantasy projection vs season
-  let projDesc = "";
-  if (f) {
-    const diff = f.projection - (f.season ?? 0);
-    if (diff > 2) projDesc = "projection spikes";
-    else if (diff > 0.5) projDesc = "projection ticks up";
-    else if (diff < -2) projDesc = "projection craters";
-    else if (diff < -0.5) projDesc = "projection dips";
+  // ---- Wrong-market guard ----
+  const POS = (chart.position || "").toUpperCase();
+  const ballSkills = ["WR", "TE", "RB", "FB", ""];
+  const propLow = chart.prop.toLowerCase();
+  if (ballSkills.indexOf(POS) === -1 && /rush|rec|reception/.test(propLow)) {
+    return {
+      prediction: `No play. ${name} is a ${POS || "specialist"} priced out of a ${propLow} number — that's book filler, not a market. Pass.`,
+      confidence: "low" as const,
+      drivers: ["wrong market"],
+      redFlags: [],
+    };
   }
 
-  // Usage pressure tell
-  let usageDesc = "";
-  if (t && t.confidenceDelta !== null && t.confidenceDelta !== undefined) {
-    if (t.confidenceDelta > 0.05) usageDesc = "usage surges under pressure";
-    else if (t.confidenceDelta < -0.05) usageDesc = "usage evaporates when it matters";
-  }
+  // ---- Assemble the take in Jimmy's spoken, veteran-book cadence ----
+  const clauses: string[] = [];
 
-  // Red zone tell
-  let rzDesc = "";
-  if (t && t.td?.perRedZoneOpp !== null && t.td?.perRedZoneOpp !== undefined) {
-    if (t.td.perRedZoneOpp > 0.5) rzDesc = "red-zone assassin";
-    else if (t.td.perRedZoneOpp < 0.2) rzDesc = "red-zone ghost";
-  }
-
-  // ---- Assemble the take in Jimmy's spoken, veteran-columnist cadence ----
-  const clauses: string[] = []
-  
-  // The call comes first — Jimmy always leads with the verdict
-  if (composite > 0.15 && confidence !== "low") {
-    clauses.push("I'm telling you right now — take the over.");
+  // The call comes first — bold, pointed, never a hedge
+  if (redFlags.length) {
+    clauses.push(`Hard pass on ${name} until the wires clear.`);
+  } else if (composite > 0.25 && confidence === "high") {
+    clauses.push(`Put your neck out — ${name}'s going over.`);
+  } else if (composite > 0.15) {
+    clauses.push(`I'm on ${name} over. That's my number.`);
+  } else if (composite < -0.25 && confidence === "high") {
+    clauses.push("Bash the under. The books haven't moved it enough.");
   } else if (composite < -0.15) {
-    clauses.push("Stay away from the over — this feels like an under.");
+    clauses.push("Lean under. Not a lock. A lean.");
+  } else {
+    clauses.push("No payday in this line — watch it, don't bet it.");
   }
 
-  // Opening: name + prop + matchup
-  clauses.push(`${name}, ${team}, ${opp} — ${defDesc ?? "average"} ${prop} defense, ${lineStr}.`);
+  // Matchup
+  let match = `${name} (${team}), ${propLow}${nextOpp ? `, at ${nextOpp}` : ""}`;
+  if (defDesc) match += `, ${defDesc}`;
+  match += ".";
+  clauses.push(match);
 
-  // L5 form
-  if (l5Desc) {
-    clauses.push(`Last five: he's ${l5Desc}.`);
+  // L5 form — with the burn onlyhppened when the player burned you
+  const viewer = teamRank?.viewer;
+  const l5Games = (viewer?.l5 ?? []) as { over?: boolean | null; value?: number }[];
+  const wl = l5Games.filter((g) => g.over !== null && g.over !== undefined);
+  if (wl.length) {
+    const hits = wl.filter((g) => g.over === true).length;
+    const miss = wl.length - hits;
+    const pct = hits / wl.length;
+    let form: string;
+    if (pct >= 0.8) form = `Cashed the number ${hits} of ${wl.length} — that's the ride.`;
+    else if (pct >= 0.6) form = `${hits}-of-${wl.length} lately. He owes nobody.`;
+    else if (pct >= 0.4) form = `${hits}-of-${wl.length} — you're coin-flipping. Not a bet.`;
+    else if (miss >= 4) form = `Putrid — ${hits}-of-${wl.length}. He's cost you dinner twice.`;
+    else form = `${hits}-of-${wl.length} — the number holds together`;
+    const last = wl[wl.length - 1];
+    if (last.over === false && line !== null && typeof last.value === "number" && line && last.value < 0.7 * line) {
+      form += ` Last week was a ${last.value} stinker.`;
+    }
+    clauses.push(form);
   }
 
-  // Fantasy projection
-  if (projDesc) {
-    clauses.push(`${projDesc} to ${f!.projection.toFixed(1)} PPR.`);
-  }
-
-  // Usage / RZ
-  const tells = [usageDesc, rzDesc].filter(Boolean);
-  if (tells.length) {
-    clauses.push(tells.join(". ") + ".");
-  }
-
-  // BPL vs book edge — "daylight" is how Jimmy describes a bet worth taking
+  // BPL vs book — daylight, never a broken-edge prose
   if (bpl && line !== null && bpl.bpl !== null) {
     const edge = bpl.diffPct ?? 0;
-    if (Math.abs(edge) > 5) {
+    if (Math.abs(edge) >= 5 && Math.abs(edge) < 100) {
       const dir = edge > 0 ? "over" : "under";
-      clauses.push(`Lake ${bpl.bpl.toFixed(1)} vs book ${line} — ${Math.abs(edge).toFixed(0)}% daylight to the ${dir}.`);
+      clauses.push(`Lake ${bpl.bpl.toFixed(1)} vs book ${line} — ${Math.abs(edge).toFixed(1)}% daylight, ${dir}.`);
     }
   }
 
   // Red flag closer
   if (redFlags.length) {
-    const flagText = redFlags.slice(0, 2).join(", ");
-    clauses.push(`Watch the wires — ${flagText} could gut this bet.`);
+    clauses.push(`Wire says ${redFlags.slice(0, 2).join(" or ")} — that changes everything.`);
   }
 
   // Join and hard-cap at ~200 chars
