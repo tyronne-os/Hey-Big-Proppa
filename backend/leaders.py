@@ -238,6 +238,55 @@ def _leaders(category: str) -> dict:
             divisions.append({"division": div_name, "standings": standings})
         return {"category": category, "sourceStatus": data.chart_status("schedule"), "divisions": divisions}
 
+    if category == "L5":
+        # Last 5 games TD tracking
+        scoring = data.load("player_scoring_week")
+        # Group by player_id and collect their games
+        player_games: dict[str, list[dict]] = {}
+        for row in scoring:
+            pid = row.get("player_id")
+            if not pid:
+                continue
+            if pid not in player_games:
+                player_games[pid] = []
+            player_games[pid].append(row)
+        
+        # For each player, sort by week (descending) and take last 5 games
+        totals: dict[str, dict] = {}
+        dim = data.player_dimension()
+        
+        for pid, games in player_games.items():
+            # Sort by week number descending (most recent first)
+            games_sorted = sorted(games, key=lambda r: int(r.get("week") or 0), reverse=True)
+            # Take last 5 games (most recent 5)
+            last5 = games_sorted[:5]
+            # Sum total_tds from last 5 games
+            total_tds = sum(float(g.get("total_tds") or 0) for g in last5)
+            if total_tds > 0 or True:  # Include all players who have any data
+                entry = totals.setdefault(pid, {"value": 0.0, "gp": len(last5), "team": "", "name": dim.get(pid, {}).get("name", data.player_name(pid))})
+                entry["value"] += total_tds
+                entry["gp"] = len(last5)
+                # Get team from the most recent game
+                entry["team"] = games_sorted[0].get("team", "") if games_sorted else ""
+        
+        rows = sorted(totals.items(), key=lambda kv: kv[1]["value"], reverse=True)
+        out = []
+        for i, (pid, t) in enumerate(rows, start=1):
+            per_game = t["value"] / max(t["gp"], 1)
+            out.append({
+                "rank": i,
+                "playerId": pid,
+                "name": t.get("name", ""),
+                "team": t.get("team", ""),
+                "gp": t["gp"],
+                "value": round(per_game, 2),
+            })
+        return {
+            "category": category,
+            "sourceStatus": data.chart_status("player_scoring_week"),
+            "rows": out,
+        }
+
     src, stat_col = CATEGORY_SOURCES.get(category, (None, None))
     if src is None:
         return {"category": category, "sourceStatus": "error", "rows": [], "error": "unknown category"}
