@@ -1643,6 +1643,41 @@ def root_landing():
 _DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 _LANDING_DIR = _LANDING.parent
 
+# ── SLUG REGISTRY ──
+# Unique permanent links for player pages: /p/YYYYMMDDHHMM-<name>-<team>
+# Stored in lake/gold/espn/player_slugs.json so direct URL access works.
+_SLUGS_FILE = Path(__file__).resolve().parent.parent / "lake" / "gold" / "espn" / "player_slugs.json"
+_SLUGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+
+def _load_slugs() -> dict[str, dict]:
+    try:
+        return json.loads(_SLUGS_FILE.read_text())
+    except Exception:
+        return {}
+
+
+def _save_slugs(slugs: dict[str, dict]) -> None:
+    _SLUGS_FILE.write_text(json.dumps(slugs, indent=2))
+
+
+@app.post("/api/slug/register")
+def api_slug_register(slug: str, player_id: str, market: str = "rushyds", name: str = "", team: str = ""):
+    slugs = _load_slugs()
+    slugs[slug] = {"player_id": player_id, "market": market, "name": name, "team": team}
+    _save_slugs(slugs)
+    return {"ok": True, "slug": slug}
+
+
+@app.get("/api/slug/resolve/{slug}")
+def api_slug_resolve(slug: str):
+    slugs = _load_slugs()
+    entry = slugs.get(slug)
+    if not entry:
+        raise HTTPException(404, f"unknown slug {slug}")
+    return entry
+
+
 # Catch-all: landing assets → dist assets → SPA fallback for BrowserRouter routes
 @app.get("/{full_path:path}")
 def _spa_fallback(full_path: str):

@@ -46,6 +46,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route key={t} path={`/${t}`} element={<App initialTab={t} />} />
           ))}
           <Route path="*" element={<Navigate to="/throwdown" replace />} />
+          <Route path="/p/:slug" element={<App initialTab="player" />} />
         </Routes>
       </BrowserRouter>
     </ErrorBoundary>

@@ -14,9 +14,20 @@
  *
  * Scroll position is kept in sessionStorage under a key derived from the return
  * path, so it survives the round trip without polluting the URL.
+ *
+ * SLUGS -- unique, permanent links for every player page.
+ *
+ * Every player page gets a unique URL:
+ *     /p/YYYYMMDDHHMM-<player-slug>-<team>
+ *
+ * The timestamp is when the link was generated (page load time). The slug is the
+ * player's name + team, URL-friendly. A slug → {playerId, market} registry lets
+ * the /p/:slug route resolve to the right player, even when typed directly into
+ * the browser (the backend /api/resolve/:slug endpoint handles direct access).
  */
 
 const SCROLL_KEY = "bp_player_back_scroll";
+const SLUG_REGISTRY_KEY = "bp_player_slug_registry";
 
 /** The pages a player can be opened from, and the label the back button shows. */
 const PAGE_LABELS: Record<string, string> = {
@@ -59,7 +70,75 @@ export function labelFor(path: string): string {
   return PAGE_LABELS[clean] ?? "Back";
 }
 
-/** Build the player-page URL that remembers where it came from. */
+/** A registered slug mapping to a player. */
+export type SlugEntry = {
+  slug: string;
+  playerId: string;
+  market: string;
+  name: string;
+  team: string;
+  createdAt: number;
+};
+
+/** In-memory slug registry: slug -> entry. Loaded from sessionStorage on first use. */
+let _slugRegistry: Map<string, SlugEntry> | null = null;
+
+function slugRegistry(): Map<string, SlugEntry> {
+  if (!_slugRegistry) {
+    _slugRegistry = new Map();
+    try {
+      const raw = sessionStorage.getItem(SLUG_REGISTRY_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as SlugEntry[];
+        for (const e of parsed) _slugRegistry.set(e.slug, e);
+      }
+    } catch { /* */ }
+  }
+  return _slugRegistry;
+}
+
+/** Persist the slug registry to sessionStorage. */
+function persistSlugs() {
+  try {
+    const arr = Array.from(slugRegistry().values());
+    sessionStorage.setItem(SLUG_REGISTRY_KEY, JSON.stringify(arr));
+  } catch { /* */ }
+}
+
+/** URL-friendly slug for a player name. */
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** Generate a unique player page slug: YYYYMMDDHHMM-<name>-<team>. */
+export function makePlayerSlug(playerId: string, name: string, team: string, market: string): string {
+  const now = new Date();
+  const ts = now.toISOString().replace(/[-:]/g, "").replace(/\..+/, ""); // 20261112T143000Z -> 20261112143000Z
+  const tsShort = ts.slice(0, 12); // YYYYMMDDHHMM
+  const slug = `p/${tsShort}-${slugify(name)}-${slugify(team)}`;
+
+  // Register it
+  const entry: SlugEntry = { slug, playerId, market, name, team, createdAt: now.getTime() };
+  slugRegistry().set(slug, entry);
+  persistSlugs();
+
+  return slug;
+}
+
+/** Look up a slug and return the player entry, or null. */
+export function resolveSlug(slug: string): SlugEntry | null {
+  return slugRegistry().get(slug) ?? null;
+}
+
+/** The URL for a player page using the unique slug format. */
+export function playerSlugUrl(playerId: string, name: string, team: string, market: string): string {
+  return `/p/${makePlayerSlug(playerId, name, team, market)}`;
+}
+
+/** The legacy player page URL (with query params). */
 export function playerUrl(pid: string, market: string | undefined, opts?: { back?: string; section?: string; from?: string }): string {
   const p = new URLSearchParams();
   p.set("pid", pid);
