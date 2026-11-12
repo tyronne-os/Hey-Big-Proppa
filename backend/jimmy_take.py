@@ -122,12 +122,26 @@ def make_take(chart: dict, news: list | None = None) -> dict:
     opp_rank = _num(bpl.get("nextOppRank")) or _num(f.get("defenseRank"))
     pool = _num(f.get("defensePool")) or 32
 
+    # ---- Name integrity guard first: no take for a player the lake can't name ----
+    if re.match(r"^00-\d{6,7}$|^\d{2}-\d+$", str(name)):
+        return {
+            "prediction": "No read — this player isn't named in the lake yet. He's a number, not a name. Pass.",
+            "confidence": "low",
+            "composite": 0.0,
+            "drivers": ["unknown name"],
+            "redFlags": [],
+        }
+
     # ---- Wrong-market guard ----
-    ball_skills = {"WR", "TE", "RB", "FB", ""}
+    # Known specialists (K/P/DL/LB/OL/etc.) reading out skill props are book
+    # filler, never prose. UNKNOWN position ("") is allowed through — the lake
+    # simply hasn't labeled him. Never punish a player for missing metadata.
+    ball_no_play = {"K", "PK", "P", "DL", "DE", "DT", "NT", "LB", "ILB", "OLB", "MLB", "EDGE", "CB", "S", "FS", "SS", "T", "G", "C", "OT", "OG", "OC", "LT", "RT", "LS"}
+    pass_legit = {"QB", "WR", "TE", "RB", "FB", ""}
     prop_low = prop.lower()
     skill_prop = any(param in prop_low for param in ("rush", "rec", "reception", "scrimmage"))
     pass_prop = "pass" in prop_low or "passing" in prop_low
-    if (skill_prop and pos not in ball_skills) or (pass_prop and pos != "QB"):
+    if (skill_prop and pos in ball_no_play) or (pass_prop and pos not in pass_legit):
         who = "throw passes" if pass_prop else f"run or catch in a {prop_low} market"
         return {
             "prediction": (f"No play. {name} is a {pos or 'specialist'} — he doesn't {who}. "
@@ -135,16 +149,6 @@ def make_take(chart: dict, news: list | None = None) -> dict:
             "confidence": "low",
             "composite": 0.0,
             "drivers": ["wrong market"],
-            "redFlags": [],
-        }
-
-    # ---- Name integrity guard: no take for a player the lake can't even name ----
-    if re.match(r"^00-\d{6,7}$|^N/A|^\d{2}-\d+$", str(name)):
-        return {
-            "prediction": "No read — this player isn't named in the lake yet. He's a number, not a name. Pass.",
-            "confidence": "low",
-            "composite": 0.0,
-            "drivers": ["unknown name"],
             "redFlags": [],
         }
 

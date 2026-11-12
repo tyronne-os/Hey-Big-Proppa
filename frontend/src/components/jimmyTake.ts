@@ -147,14 +147,16 @@ export function generateJimmyTake(
     else defDesc = "an elite, legit defense";
   }
 
-  // ---- Wrong-market guard ----
+  // ---- Name-integrity guard first, then wrong-market guard ----
+  // Unknown position ("") always passes — never punish missing metadata.
   const POS = (chart.position || "").toUpperCase();
-  const ballSkills = ["WR", "TE", "RB", "FB", ""];
+  const ballNoPlay = ["K", "PK", "P", "DL", "DE", "DT", "NT", "LB", "ILB", "OLB", "MLB", "EDGE", "CB", "S", "FS", "SS", "T", "G", "C", "OT", "OG", "OC", "LT", "RT", "LS"];
+  const passLegit = ["QB", "WR", "TE", "RB", "FB", ""];
   const propLow = chart.prop.toLowerCase();
   const isSkillProp = /rush|rec|reception/.test(propLow);
   const isPassProp = /pass/.test(propLow);
-  if ((isSkillProp && ballSkills.indexOf(POS) === -1) || (isPassProp && POS !== "QB")) {
-    const who = isPassProp ? "throw passes" : `run or catch in a ${propLow} market`;
+  if (isPassProp && passLegit.indexOf(POS) === -1) {
+    const who = "throw passes";
     return {
       prediction: `No play. ${name} is a ${POS || "specialist"} — he doesn't ${who}. That's a book filler line, not a market. Pass.`,
       confidence: "low" as const,
@@ -167,6 +169,15 @@ export function generateJimmyTake(
       prediction: "No read — this player isn't named in the lake yet. He's a number, not a name. Pass.",
       confidence: "low" as const,
       drivers: ["unknown name"],
+      redFlags: [],
+    };
+  }
+  if (isSkillProp && ballNoPlay.indexOf(POS) !== -1) {
+    const who = `run or catch in a ${propLow} market`;
+    return {
+      prediction: `No play. ${name} is a ${POS || "specialist"} — he doesn't ${who}. That's a book filler line, not a market. Pass.`,
+      confidence: "low" as const,
+      drivers: ["wrong market"],
       redFlags: [],
     };
   }
