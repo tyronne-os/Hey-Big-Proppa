@@ -79,7 +79,20 @@ def _cached_csv(name: str, _version: int) -> list[dict]:
     return _read_csv(name)
 
 
-_VERSION = 0  # bump to invalidate the cache (not needed -- data is static per session)
+_VERSION = 0  # bump to invalidate the cache
+
+
+def refresh_data() -> int:
+    """Bump the cache version to invalidate all @lru_cache CSV loads.
+
+    Call this when new data has landed from ESPN / the lake ETL so every
+    player stat page picks up breaking news, line moves, and box-score updates
+    on the next render. Returns the new version number.
+    """
+    global _VERSION
+    _VERSION += 1
+    _cached_csv.cache_clear()
+    return _VERSION
 
 
 def load(name: str) -> list[dict]:

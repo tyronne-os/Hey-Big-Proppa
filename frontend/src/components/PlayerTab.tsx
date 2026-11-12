@@ -361,15 +361,34 @@ export default function PlayerTab({
     api.playerProps(playerId, market).then(setChart).catch(() => setChart(null));
   }, [playerId, market]);
 
-  // While his game is live, refresh every 45s (matches the backend box-score cache).
+  // ── CONTINUOUS DATA REFRESH ──
+  // Every section on this page auto-updates from the lake/ESPN so Jimmy's
+  // predictions stay accurate with breaking news, line moves, and box scores.
+  // Cadence:
+  //   • Live game:      every 30s  (box score is moving)
+  //   • Not live:       every 5min (news, line moves, injury reports)
+  //   • Offseason:      stops after the day after the Super Bowl
+  //
+  // The backend invalidates its CSV cache on ?refresh=true so every poll
+  // fetches fresh data, not a stale @lru_cache entry.
+
+  const SUPER_BOWL_DAY_AFTER = new Date("2026-02-09T06:00:00-06:00"); // 6am CST, day after SB LX
+  const isOffseason = () => new Date() > SUPER_BOWL_DAY_AFTER;
+
   const isLive = chart?.fantasy?.live?.status === "LIVE";
+  const pollMs = isOffseason()
+    ? 0
+    : isLive
+    ? 30_000
+    : 5 * 60_000;
+
   useEffect(() => {
-    if (!isLive) return;
-    const t = setInterval(() => api.playerProps(playerId, market).then(setChart).catch(() => {}), 45000);
+    if (!pollMs) return;
+    const t = setInterval(() => {
+      api.playerProps(playerId, market, true).then(setChart).catch(() => {});
+    }, pollMs);
     return () => clearInterval(t);
-  }, [isLive, playerId, market]);
-
-
+  }, [pollMs, playerId, market]);
 
 
   if (!chart) {

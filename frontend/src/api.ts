@@ -65,8 +65,8 @@ export const api = {
   cfbEspn: () => get<any>("/api/cfb/espn"),
   booStaff: () => get<any>("/api/boo/staff"),
   searchPlayers: (q: string) => get<PlayerSearchResult[]>(`/api/players/search?q=${encodeURIComponent(q)}`),
-  playerProps: (playerId: string, market: string) =>
-    get<PlayerPropChart>(`/api/chart/player_props?player_id=${encodeURIComponent(playerId)}&market=${market}`),
+  playerProps: (playerId: string, market: string, refresh = false) =>
+    get<PlayerPropChart>(`/api/chart/player_props?player_id=${encodeURIComponent(playerId)}&market=${market}${refresh ? "&refresh=true" : ""}`),
   odds: (league: string, refresh = false) => get<OddsResponse>(`/api/odds?league=${league}${refresh ? "&refresh=true" : ""}`),
   leaders: (category: string) => get<LeadersResponse>(`/api/chart/leaders?category=${encodeURIComponent(category)}`),
   parlay: (slip: string) => get<ParlaySlip>(`/api/chart/parlays?slip=${slip}`),

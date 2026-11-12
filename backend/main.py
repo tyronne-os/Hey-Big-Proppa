@@ -96,9 +96,11 @@ def api_players_search(q: str = ""):
 
 
 @app.get("/api/chart/player_props")
-def api_player_props(player_id: str, market: str = "rushyds"):
+def api_player_props(player_id: str, market: str = "rushyds", refresh: bool = False):
     if market not in data.PROP_LABELS:
         raise HTTPException(400, f"unknown market '{market}', expected one of {list(data.PROP_LABELS)}")
+    if refresh:
+        data.refresh_data()
     return data.player_prop_chart(player_id, market)
 
 
