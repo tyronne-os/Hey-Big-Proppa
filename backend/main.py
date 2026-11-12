@@ -1679,23 +1679,24 @@ def api_slug_resolve(slug: str):
 
 
 # Every player page ever generated, as a crawlable sitemap: one folder (/p/) full of links.
+# Google sitemap protocol: absolute <loc> URLs, sitemaps.org namespace.
 import datetime as _dt
+import os as _os
+
+_SITEMAP_BASE = _os.environ.get("SITEMAP_BASE_URL", "").rstrip("/") or "https://AIBRUH-big-proppa-live.hf.space"
 
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap_xml():
-    base = str(_dt.datetime.now(_dt.timezone.utc).date())
+    today = _dt.datetime.now(_dt.timezone.utc).date().isoformat()
     slugs = _load_slugs()
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
     for slug, e in sorted(slugs.items()):
-        name = e.get("name") if isinstance(e, dict) else ""
-        lines.append(
-            f"<url><loc>/p/{slug}</loc><lastmod>{base}</lastmod><changefreq>weekly</changefreq>"
-            + (f"<comment>{name}</comment>" if name else "")
-            + "</url>"
-        )
+        loc = f"{_SITEMAP_BASE}/p/{slug}"
+        name = e.get("name", "") if isinstance(e, dict) else ""
+        lines.append(f"<url><loc>{loc}</loc><lastmod>{today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>")
     lines.append("</urlset>")
     from fastapi import Response as _Resp
     return _Resp(content="\n".join(lines), media_type="application/xml")
@@ -1707,6 +1708,8 @@ def api_slug_list():
 
 
 # Catch-all: landing assets → dist assets → SPA fallback for BrowserRouter routes
+# For /p/<slug> (a permanent player page) the served HTML carries Jimmy's take in
+# the <head> meta + JSON-LD so search engines index the commentary as fresh content.
 @app.get("/{full_path:path}")
 def _spa_fallback(full_path: str):
     # Landing page assets (support.js, image-slot.js, _ds/*, big-proppa.png, etc.)
@@ -1720,5 +1723,57 @@ def _spa_fallback(full_path: str):
             return _FileResponse(str(candidate))
         idx = _DIST / "index.html"
         if idx.exists():
+            if full_path.startswith("p/"):
+                seo_html = _player_spa_html(full_path, idx)
+                if seo_html is not None:
+                    from fastapi import Response as _Resp
+                    return _Resp(content=seo_html, media_type="text/html")
             return _FileResponse(str(idx), media_type="text/html")
     raise HTTPException(404)
+
+
+def _player_spa_html(slug_path: str, idx):
+    """index.html for /p/<slug> with Jimmy's take injected as crawlable text."""
+    import html as _html
+    try:
+        import jimmy_take as _jt
+        slug = slug_path[2:]
+        entry = _load_slugs().get(slug)
+        player_id = (entry or {}).get("player_id")
+        market = (entry or {}).get("market") or "rushyds"
+        if not player_id:
+            return None
+        chart = data.player_prop_chart(player_id, market)
+        if not isinstance(chart, dict) or chart.get("error"):
+            return None
+        take = _jt.generate(chart)
+        txt = take.get("prediction") or ""
+        conf = take.get("confidence") or ""
+        name = chart.get("name") or "Player"
+        team = chart.get("team") or ""
+        title = f"{name} ({team}) — Jimmy's Take | Big Proppa"
+        esc = lambda s: _html.escape(s, quote=True)
+        meta = (
+            f"<title>{esc(title)}</title>"
+            f'<meta name="description" content="{esc(txt)}">'
+            f'<meta property="og:title" content="{esc(title)}">'
+            f'<meta property="og:description" content="{esc(txt)}">'
+            '<script type="application/ld+json">'
+            + json.dumps({
+                "@context": "https://schema.org",
+                "@type": "SportsArticle",
+                "headline": f"Jimmy's Take: {name} ({team}) — {chart.get('prop') or 'props'}",
+                "description": txt,
+                "author": {"@type": "Person", "name": "Jimmy the Greek"},
+                "publisher": {"@type": "Organization", "name": "Big Proppa"},
+            }, ensure_ascii=False)
+            + "</script>"
+            f'<noscript><p style="font:16px/1.5 monospace;padding:24px">Jimmy\'s Take: {esc(txt)}</p></noscript>'
+            f'<!-- confidence: {esc(conf)} -->'
+        )
+        raw = idx.read_text(encoding="utf-8")
+        if "</head>" not in raw:
+            return None
+        return raw.replace("</head>", meta + "</head>", 1)
+    except Exception:
+        return None

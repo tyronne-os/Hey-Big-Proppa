@@ -7,7 +7,7 @@ WORKDIR /app
 COPY backend/requirements.txt backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
 COPY backend/ backend/
-COPY lake/gold/nfl/ lake/gold/nfl/
+COPY lake/gold/ lake/gold/
 COPY frontend/dist/ frontend/dist/
 
 WORKDIR /app/backend

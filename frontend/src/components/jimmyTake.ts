@@ -149,6 +149,7 @@ export function generateJimmyTake(
     else if (nextOppRank >= 6) defDesc = "stout";
     else defDesc = "elite";
   }
+  if (!defDesc) defDesc = "middle-of-the-road";
 
   // L5 form descriptor
   let l5Desc = "";
@@ -188,11 +189,18 @@ export function generateJimmyTake(
     else if (t.td.perRedZoneOpp < 0.2) rzDesc = "red-zone ghost";
   }
 
-  // ---- Assemble the SI-style sentence ----
-  const clauses: string[] = [];
+  // ---- Assemble the take in Jimmy's spoken, veteran-columnist cadence ----
+  const clauses: string[] = []
+  
+  // The call comes first — Jimmy always leads with the verdict
+  if (composite > 0.15 && confidence !== "low") {
+    clauses.push("I'm telling you right now — take the over.");
+  } else if (composite < -0.15) {
+    clauses.push("Stay away from the over — this feels like an under.");
+  }
 
   // Opening: name + prop + matchup
-  clauses.push(`${name} (${team}) gets ${opp} — ${defDesc} ${prop} defense${lineStr ? ` with a ${lineStr}` : ""}.`);
+  clauses.push(`${name}, ${team}, ${opp} — ${defDesc ?? "average"} ${prop} defense, ${lineStr}.`);
 
   // L5 form
   if (l5Desc) {
@@ -210,19 +218,19 @@ export function generateJimmyTake(
     clauses.push(tells.join(". ") + ".");
   }
 
-  // BPL vs book edge
+  // BPL vs book edge — "daylight" is how Jimmy describes a bet worth taking
   if (bpl && line !== null && bpl.bpl !== null) {
     const edge = bpl.diffPct ?? 0;
     if (Math.abs(edge) > 5) {
       const dir = edge > 0 ? "over" : "under";
-      clauses.push(`Lake price ${bpl.bpl.toFixed(1)} vs book ${line} — ${Math.abs(edge).toFixed(0)}% edge ${dir}.`);
+      clauses.push(`Lake ${bpl.bpl.toFixed(1)} vs book ${line} — ${Math.abs(edge).toFixed(0)}% daylight to the ${dir}.`);
     }
   }
 
   // Red flag closer
   if (redFlags.length) {
-    const flagText = redFlags.slice(0, 2).join(" and ");
-    clauses.push(`⚠ ${flagText} clouds the picture.`);
+    const flagText = redFlags.slice(0, 2).join(", ");
+    clauses.push(`Watch the wires — ${flagText} could gut this bet.`);
   }
 
   // Join and hard-cap at ~200 chars
