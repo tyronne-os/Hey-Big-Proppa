@@ -123,18 +123,28 @@ def make_take(chart: dict, news: list | None = None) -> dict:
     pool = _num(f.get("defensePool")) or 32
 
     # ---- Wrong-market guard ----
-    # A kicker or an interior lineman being read out of a rushing number is not
-    # a bet, it's a funny artifact of the books. Say so once, then move on.
     ball_skills = {"WR", "TE", "RB", "FB", ""}
     prop_low = prop.lower()
     skill_prop = any(param in prop_low for param in ("rush", "rec", "reception", "scrimmage"))
-    if skill_prop and pos not in ball_skills:
+    pass_prop = "pass" in prop_low or "passing" in prop_low
+    if (skill_prop and pos not in ball_skills) or (pass_prop and pos != "QB"):
+        who = "throw passes" if pass_prop else f"run or catch in a {prop_low} market"
         return {
-            "prediction": (f"No play. {name} is a {pos or 'specialist'} priced out of a {prop_low} number — "
-                           "that's a book filler, not a market. Pass."),
+            "prediction": (f"No play. {name} is a {pos or 'specialist'} — he doesn't {who}. "
+                           "That's a book filler line, not a market. Pass."),
             "confidence": "low",
             "composite": 0.0,
             "drivers": ["wrong market"],
+            "redFlags": [],
+        }
+
+    # ---- Name integrity guard: no take for a player the lake can't even name ----
+    if re.match(r"^00-\d{6,7}$|^N/A|^\d{2}-\d+$", str(name)):
+        return {
+            "prediction": "No read — this player isn't named in the lake yet. He's a number, not a name. Pass.",
+            "confidence": "low",
+            "composite": 0.0,
+            "drivers": ["unknown name"],
             "redFlags": [],
         }
 
@@ -165,7 +175,8 @@ def make_take(chart: dict, news: list | None = None) -> dict:
     elif composite < -0.15:
         call = "Lean under. Not a lock. A lean."
     else:
-        call = "No payday in this line — watch it, don't bet it."
+        call = None  # neutral — the edge clause decides (see below)
+    call_is_neutral = call is None
 
     # ---- Matchup clause ----
     match = f"{name} ({team or 'FA'}), {prop_low}" + (f", at {opp}" if opp else "")
@@ -207,17 +218,34 @@ def make_take(chart: dict, news: list | None = None) -> dict:
         edge_pct = _num(bpl.get("diffPct"))
         if edge_pct is not None and 5 <= abs(edge_pct) < 100:
             size = abs(edge_pct)
-            direction = "over" if edge_pct > 0 else "under"
-            edge = f"Lake {bp:g} vs book {line:g} — {size:g}% daylight, {direction}."
+            edge_direction = "over" if edge_pct > 0 else "under"
+            edge = f"Lake {bp:g} vs book {line:g} — {size:g}% daylight, {edge_direction}."
+
+    # A neutral composite with a loud edge is still a call — Jimmy respects daylight.
+    if call is None:
+        if edge and _num(bpl.get("diffPct")) and abs(_num(bpl.get("diffPct")) or 0) >= 15:
+            call = f"The only angle here is the {edge_direction}."
+        else:
+            call = "No payday in this line — watch it, don't bet it."
 
     flag_voice = None
     if flags:
         flag_voice = "Wire says " + " or ".join(flags[:2]) + " — that changes everything."
 
     clauses = [call, match, form, edge, flag_voice]
-    take = " ".join(c for c in clauses if c).strip()
+    take = " ".join(str(c) for c in clauses if c).strip()
+
+    # Smart trim: drop lowest-priority clauses before ever slicing text.
     if len(take) > 200:
-        take = take[:197].rstrip() + "…"
+        if flag_voice and flags:
+            clauses = [c for c in clauses if c is not flag_voice]
+        elif form:
+            clauses = [c for c in clauses if c is not form]
+        elif edge:
+            clauses = [c for c in clauses if c is not edge]
+        take = " ".join(str(c) for c in clauses if c).strip()
+        if len(take) > 200:
+            take = take[:197].rstrip() + "…"
 
     drivers = []
     if abs(defense) > 0.3: drivers.append("matchup")

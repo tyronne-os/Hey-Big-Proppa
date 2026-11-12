@@ -151,17 +151,39 @@ export function generateJimmyTake(
   const POS = (chart.position || "").toUpperCase();
   const ballSkills = ["WR", "TE", "RB", "FB", ""];
   const propLow = chart.prop.toLowerCase();
-  if (ballSkills.indexOf(POS) === -1 && /rush|rec|reception/.test(propLow)) {
+  const isSkillProp = /rush|rec|reception/.test(propLow);
+  const isPassProp = /pass/.test(propLow);
+  if ((isSkillProp && ballSkills.indexOf(POS) === -1) || (isPassProp && POS !== "QB")) {
+    const who = isPassProp ? "throw passes" : `run or catch in a ${propLow} market`;
     return {
-      prediction: `No play. ${name} is a ${POS || "specialist"} priced out of a ${propLow} number — that's book filler, not a market. Pass.`,
+      prediction: `No play. ${name} is a ${POS || "specialist"} — he doesn't ${who}. That's a book filler line, not a market. Pass.`,
       confidence: "low" as const,
       drivers: ["wrong market"],
+      redFlags: [],
+    };
+  }
+  if (/^00-\d{6,7}$/.test(name)) {
+    return {
+      prediction: "No read — this player isn't named in the lake yet. He's a number, not a name. Pass.",
+      confidence: "low" as const,
+      drivers: ["unknown name"],
       redFlags: [],
     };
   }
 
   // ---- Assemble the take in Jimmy's spoken, veteran-book cadence ----
   const clauses: string[] = [];
+
+  // Edge first (deterministic), so a neutral composite with a loud edge
+  // still becomes a call — Jimmy respects daylight.
+  let edgeClause: string | null = null;
+  if (bpl && line !== null && bpl.bpl !== null) {
+    const edge = bpl.diffPct ?? 0;
+    if (Math.abs(edge) >= 5 && Math.abs(edge) < 100) {
+      const dir = edge > 0 ? "over" : "under";
+      edgeClause = `Lake ${bpl.bpl.toFixed(1)} vs book ${line} — ${Math.abs(edge).toFixed(1)}% daylight, ${dir}.`;
+    }
+  }
 
   // The call comes first — bold, pointed, never a hedge
   if (redFlags.length) {
@@ -174,6 +196,10 @@ export function generateJimmyTake(
     clauses.push("Bash the under. The books haven't moved it enough.");
   } else if (composite < -0.15) {
     clauses.push("Lean under. Not a lock. A lean.");
+  } else if (edgeClause && Math.abs(bpl!.diffPct ?? 0) >= 15) {
+    clauses.push(edgeClause.indexOf("daylight, over") >= 0
+      ? "The only angle here is the over."
+      : "The only angle here is the under.");
   } else {
     clauses.push("No payday in this line — watch it, don't bet it.");
   }
@@ -184,7 +210,7 @@ export function generateJimmyTake(
   match += ".";
   clauses.push(match);
 
-  // L5 form — with the burn onlyhppened when the player burned you
+  // L5 form — burn language fires only when the player burned you
   const viewer = teamRank?.viewer;
   const l5Games = (viewer?.l5 ?? []) as { over?: boolean | null; value?: number }[];
   const wl = l5Games.filter((g) => g.over !== null && g.over !== undefined);
@@ -205,22 +231,23 @@ export function generateJimmyTake(
     clauses.push(form);
   }
 
-  // BPL vs book — daylight, never a broken-edge prose
-  if (bpl && line !== null && bpl.bpl !== null) {
-    const edge = bpl.diffPct ?? 0;
-    if (Math.abs(edge) >= 5 && Math.abs(edge) < 100) {
-      const dir = edge > 0 ? "over" : "under";
-      clauses.push(`Lake ${bpl.bpl.toFixed(1)} vs book ${line} — ${Math.abs(edge).toFixed(1)}% daylight, ${dir}.`);
-    }
-  }
-
+  if (edgeClause) clauses.push(edgeClause);
   // Red flag closer
   if (redFlags.length) {
     clauses.push(`Wire says ${redFlags.slice(0, 2).join(" or ")} — that changes everything.`);
   }
 
-  // Join and hard-cap at ~200 chars
+  // Join, then drop lowest-priority clauses rather than slicing mid-sentence
   let prediction = clauses.join(" ");
+  if (prediction.length > 200 && redFlags.length) {
+    clauses.pop();
+    prediction = clauses.join(" ");
+  }
+  if (prediction.length > 200) {
+    /* find and drop the form clause (lowest priority tail) */
+    const formIdx = clauses.findIndex((c, i) => i > 1 && /Cash|of-|owes|coin|dinner|railway/.test(c));
+    if (formIdx > 1) { clauses.splice(formIdx, 1); prediction = clauses.join(" "); }
+  }
   if (prediction.length > 200) {
     prediction = prediction.slice(0, 197).trim() + "…";
   }
