@@ -1,7 +1,7 @@
 import NavBar from "./components/NavBar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { readBackTarget, type BackTarget } from "./playerNav";
+import { readBackTarget, resolveSlug, type BackTarget } from "./playerNav";
 import ReactFlow, { Background, Controls, MiniMap, type Edge, type EdgeTypes, type Node, type NodeTypes } from "reactflow";
 import "reactflow/dist/style.css";
 import AnimatedPulseEdge from "./AnimatedPulseEdge";
@@ -58,6 +58,9 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
   const navigate = useNavigate();
   useEffect(() => { if (initialTab) setTab(initialTab); }, [initialTab]);
   useEffect(() => {
+    // A slug URL like /p/202611121431-patrick-mahomes-kc is already the page's
+    // address — never rewrite it to /player, or the permanent link dies.
+    if (window.location.pathname.startsWith("/p/")) return;
     const p = tabPath(tab);
     if (window.location.pathname !== p) navigate(p, { replace: window.location.pathname === "/" });
   }, [tab, navigate]);
@@ -70,6 +73,33 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
   // The return target for the player page's "Back" button — set when leaving a
   // Leaders/Parlay/Throwdown page, and restored when the player page mounts.
   const [backTarget, setBackTarget] = useState<BackTarget | null>(null);
+  // Direct entry to /p/<slug>: resolve the slug to its player id + market.
+  // Session registry first (instant), backend registry as the fallback so a
+  // link created in any other browser still lands on the right player.
+  const [slugResolvedUrl, setSlugResolvedUrl] = useState<string | null>(null);
+  const slugMatch = window.location.pathname.match(/^\/p\/(.+)$/)?.[1];
+  useEffect(() => {
+    if (!slugMatch || slugResolvedUrl === slugMatch) return;
+    const local = resolveSlug(slugMatch);
+    if (local) {
+      setSelectedPlayerId(local.playerId);
+      if (local.market) setPlayerMarket(local.market);
+      setSlugResolvedUrl(slugMatch);
+      return;
+    }
+    let live = true;
+    fetch(`/api/slug/resolve/${slugMatch}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (live && d?.player_id) {
+          setSelectedPlayerId(d.player_id);
+          if (d.market) setPlayerMarket(d.market);
+          setSlugResolvedUrl(slugMatch);
+        }
+      })
+      .catch(() => { /* unknown slug — page shows the default player */ });
+    return () => { live = false; };
+  }, [slugMatch]);
   const [ticketCtx, setTicketCtx] = useState<TicketCtx | null>(null);
   const [slip, setSlip] = useState<PlayerPropChart[]>([]);
   const [target, setTarget] = useState("all");

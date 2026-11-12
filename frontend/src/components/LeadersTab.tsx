@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { BplPlayerLine, LeaderRow, LeadersResponse } from "../types";
+import { playerSlugUrl } from "../playerNav";
 import TargetsBoard from "./TargetsBoard";
 import HeadToHead from "./HeadToHead";
 import type { TicketCtx } from "./h2hShared";
@@ -177,9 +178,14 @@ function RowsView({ rows: allRows, onOpenPlayer, scoreLabel, isTeam = false }: {
             <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
               <Photo url={r.photoUrl} name={r.name} size={44} />
               <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                <span className="ld-name" style={{ fontSize: 17, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <a
+                  className="ld-name"
+                  href={playerSlugUrl(r.playerId, r.name, r.team)}
+                  onClick={(e) => { e.preventDefault(); onOpenPlayer(r.playerId); }}
+                  style={{ fontSize: 17, fontWeight: 600, color: "inherit", textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                >
                   {r.name}{!isTeam && <span style={{ color: C.mute, fontWeight: 400 }}> {r.team}</span>}
-                </span>
+                </a>
                 {showRole && r.role && (
                   <span style={{ fontSize: 13, color: C.gold, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.role}</span>
                 )}
@@ -354,9 +360,14 @@ function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version:
                 <span style={{ fontFamily: MONO, fontSize: 14, color: r.rank <= 3 ? C.gold : C.mute, fontWeight: r.rank <= 3 ? 800 : 400 }}>{r.rank}</span>
                 <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                   <Photo url={r.photoUrl} name={r.name} size={48} />
-                  <span className="ld-name" style={{ fontSize: 17, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <a
+                    className="ld-name"
+                    href={playerSlugUrl(r.playerId, r.name, r.team, b.market)}
+                    onClick={(e) => { e.preventDefault(); onOpenPlayer(r.playerId, b.market); }}
+                    style={{ fontSize: 17, fontWeight: 600, color: "inherit", textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                  >
                     {r.name} <span style={{ color: C.mute, fontWeight: 400 }}>({r.team})</span>
-                  </span>
+                  </a>
                 </span>
                 <span style={cell}>{fmt(b.seasonAvg)}</span>
                 <span style={cell}>

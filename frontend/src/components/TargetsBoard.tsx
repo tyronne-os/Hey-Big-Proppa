@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../api";
 import { C, DefRow, am, card, chip, heat, n1, pct, Pred, rankPill, sec, tileRow, Tile } from "./bpTheme";
+import { playerSlugUrl } from "../playerNav";
 
 /**
  * LEADERS -> TARGETS. Jimmy's own target line for every pass catcher, ordered from the biggest projected
@@ -312,7 +313,7 @@ function TargetCard({ r, tree, rows, onBack, onPick, onOpenPlayer }: { r: Target
             <Pred label="Depth of target" value={r.adot === null ? "—" : `${r.adot} aDOT`} note={`air-yards share ${pct(r.airShare)} · WOPR ${n1(r.wopr, 2)} · catch rate ${pct(r.catchRate)}`} />
             <Pred label="Fantasy per target" value={n1(r.fpPerTarget, 2)} note="PPR points per target" />
             <Pred label="Target Power Index" value={`${r.tpi}`} note="the lead stat in Jimmy's score on catch markets" tone={C.goldHi} />
-            <button onClick={() => onOpenPlayer(r.playerId, "recs")} style={{ ...chip(true), marginTop: 10 }}>OPEN FULL PLAYER PAGE</button>
+            <a href={playerSlugUrl(r.playerId, r.name, r.team, "recs")} onClick={(e) => { e.preventDefault(); onOpenPlayer(r.playerId, "recs"); }} style={{ ...chip(true), marginTop: 10, textDecoration: "none", display: "inline-block" }}>OPEN FULL PLAYER PAGE</a>
           </div>
         </div>
       </div>

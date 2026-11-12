@@ -1678,6 +1678,34 @@ def api_slug_resolve(slug: str):
     return entry
 
 
+# Every player page ever generated, as a crawlable sitemap: one folder (/p/) full of links.
+import datetime as _dt
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def sitemap_xml():
+    base = str(_dt.datetime.now(_dt.timezone.utc).date())
+    slugs = _load_slugs()
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for slug, e in sorted(slugs.items()):
+        name = e.get("name") if isinstance(e, dict) else ""
+        lines.append(
+            f"<url><loc>/p/{slug}</loc><lastmod>{base}</lastmod><changefreq>weekly</changefreq>"
+            + (f"<comment>{name}</comment>" if name else "")
+            + "</url>"
+        )
+    lines.append("</urlset>")
+    from fastapi import Response as _Resp
+    return _Resp(content="\n".join(lines), media_type="application/xml")
+
+
+@app.get("/api/slug/list")
+def api_slug_list():
+    return {"count": len(_load_slugs()), "slugs": _load_slugs()}
+
+
 # Catch-all: landing assets → dist assets → SPA fallback for BrowserRouter routes
 @app.get("/{full_path:path}")
 def _spa_fallback(full_path: str):

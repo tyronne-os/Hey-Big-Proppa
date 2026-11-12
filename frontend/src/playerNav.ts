@@ -118,12 +118,17 @@ export function makePlayerSlug(playerId: string, name: string, team: string, mar
   const now = new Date();
   const ts = now.toISOString().replace(/[-:]/g, "").replace(/\..+/, ""); // 20261112T143000Z -> 20261112143000Z
   const tsShort = ts.slice(0, 12); // YYYYMMDDHHMM
-  const slug = `p/${tsShort}-${slugify(name)}-${slugify(team)}`;
+  const slug = `${tsShort}-${slugify(name)}-${slugify(team)}`;
 
-  // Register it
+  // Register it locally, then push it to the backend so the link exists for
+  // everyone: direct URL entry, crawlers, sitemap. Fire-and-forget.
   const entry: SlugEntry = { slug, playerId, market, name, team, createdAt: now.getTime() };
   slugRegistry().set(slug, entry);
   persistSlugs();
+  try {
+    const q = `slug=${encodeURIComponent(slug)}&player_id=${encodeURIComponent(playerId)}&market=${encodeURIComponent(market)}&name=${encodeURIComponent(name)}&team=${encodeURIComponent(team)}`;
+    fetch(`/api/slug/register?${q}`, { method: "POST", keepalive: true }).catch(() => { /* */ });
+  } catch { /* */ }
 
   return slug;
 }
@@ -133,9 +138,9 @@ export function resolveSlug(slug: string): SlugEntry | null {
   return slugRegistry().get(slug) ?? null;
 }
 
-/** The URL for a player page using the unique slug format. */
-export function playerSlugUrl(playerId: string, name: string, team: string, market: string): string {
-  return `/p/${makePlayerSlug(playerId, name, team, market)}`;
+/** The URL for a player page using the unique slug format (folder /p/). */
+export function playerSlugUrl(playerId: string, name: string, team: string, market?: string): string {
+  return `/p/${makePlayerSlug(playerId, name, team, market ?? "")}`;
 }
 
 /** The legacy player page URL (with query params). */
