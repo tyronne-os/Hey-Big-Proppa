@@ -201,6 +201,11 @@ export interface LeaderRow {
   role?: string;
   photoUrl?: string | null;
   bpl?: BplPlayerLine;
+  total?: number;
+  targets?: number;
+  yards?: number;
+  tds?: number;
+  longest?: number;
 }
 
 export interface PlayerTrust {

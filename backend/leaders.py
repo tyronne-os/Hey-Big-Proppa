@@ -290,6 +290,56 @@ def _leaders(category: str) -> dict:
             "rows": out,
         }
 
+    if category == "RB REC":
+        # Running backs' receiving: pays well to predict receptions.
+        # Columns: receptions (value), targets, rec yards, rec TDs, longest (40+ yd receptions as proxy).
+        dim = data.player_dimension()
+        totals: dict[str, dict] = {}
+        for row in data.load("player_receiving_week"):
+            pid = row.get("player_id")
+            if not pid:
+                continue
+            if dim.get(pid, {}).get("position") not in ("RB", "FB"):
+                continue
+            def _f(k: str) -> float:
+                try:
+                    return float(row.get(k) or 0)
+                except ValueError:
+                    return 0.0
+            entry = totals.setdefault(pid, {
+                "value": 0.0, "gp": 0, "team": row.get("team", ""),
+                "targets": 0.0, "yards": 0.0, "tds": 0.0, "longest": 0.0,
+            })
+            entry["value"] += _f("receptions")
+            entry["targets"] += _f("targets")
+            entry["yards"] += _f("receiving_yards")
+            entry["tds"] += _f("receiving_tds")
+            entry["longest"] += _f("receiving_40")
+            entry["gp"] += 1
+            entry["team"] = row.get("team", entry["team"])
+        rows = sorted(totals.items(), key=lambda kv: kv[1]["value"], reverse=True)
+        out = []
+        for i, (pid, t) in enumerate(rows[:50], start=1):
+            gp = max(t["gp"], 1)
+            out.append({
+                "rank": i,
+                "playerId": pid,
+                "name": dim.get(pid, {}).get("name", data.player_name(pid)),
+                "team": t["team"],
+                "gp": t["gp"],
+                "value": round(t["value"] / gp, 2),
+                "total": round(t["value"], 1),
+                "targets": round(t["targets"] / gp, 2),
+                "yards": round(t["yards"] / gp, 1),
+                "tds": round(t["tds"] / gp, 2),
+                "longest": round(t["longest"] / gp, 2),
+            })
+        return {
+            "category": category,
+            "sourceStatus": data.chart_status("player_receiving_week"),
+            "rows": out,
+        }
+
     src, stat_col = CATEGORY_SOURCES.get(category, (None, None))
     if src is None:
         return {"category": category, "sourceStatus": "error", "rows": [], "error": "unknown category"}

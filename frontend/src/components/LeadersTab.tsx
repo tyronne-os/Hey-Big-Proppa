@@ -6,11 +6,12 @@ import TargetsBoard from "./TargetsBoard";
 import HeadToHead from "./HeadToHead";
 import type { TicketCtx } from "./h2hShared";
 
-const CATEGORIES = ["TARGETS", "HEAD TO HEAD", "USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RUSHING ATTEMPTS", "RECEIVING", "PASSING", "PASSING ATTEMPTS", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
+const CATEGORIES = ["TARGETS", "HEAD TO HEAD", "USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RUSHING ATTEMPTS", "RECEIVING", "RB REC", "PASSING", "PASSING ATTEMPTS", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
 
 // Dropdown groups: the top-level label is the button, sub-options expand underneath.
 const CATEGORY_GROUPS: Record<string, string[]> = {
   RUSHING: ["RUSHING", "RUSHING ATTEMPTS"],
+  RECEIVING: ["RECEIVING", "RB REC"],
   PASSING: ["PASSING", "PASSING ATTEMPTS"],
 };
 const SCORE_LABEL: Record<string, string> = {
@@ -19,6 +20,7 @@ const SCORE_LABEL: Record<string, string> = {
   "DEFENSE TOXICITY": "TOXICITY INDEX",
   "RUSHING ATTEMPTS": "RUSH ATT / GAME",
   "PASSING ATTEMPTS": "PASS ATT / GAME",
+  "RB REC": "RB REC / GAME",
 };
 
 // Deep violet ground, purple for interaction, gold for emphasis. Green/red stay reserved
@@ -174,10 +176,73 @@ export default function LeadersTab({ onOpenPlayer, onCategoryChange }: { onOpenP
       )}
 
       {data && data.sourceStatus === "ok" && data.rows && !data.bplVersion && (
-        <RowsView key={category} rows={data.rows} onOpenPlayer={onOpenPlayer} scoreLabel={SCORE_LABEL[category]} isTeam={category === "DEFENSE TOXICITY"} />
+        category === "RB REC"
+          ? <RbRecView key={category} rows={data.rows} onOpenPlayer={onOpenPlayer} />
+          : <RowsView key={category} rows={data.rows} onOpenPlayer={onOpenPlayer} scoreLabel={SCORE_LABEL[category]} isTeam={category === "DEFENSE TOXICITY"} />
       )}
       </>}
     </div>
+  );
+}
+
+const RB_COLS = "44px minmax(0,1fr) 56px 70px 72px 72px 66px 90px";
+
+// RB REC board: running backs' receptions + the columns that pay well to predict.
+function RbRecView({ rows: allRows, onOpenPlayer }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string, market?: string) => void }) {
+  const rows = allRows.slice(0, 50);
+  const top = rows[0];
+  const head = { fontSize: 11, fontWeight: 800, letterSpacing: "0.07em", color: C.gold, textAlign: "right" as const };
+  return (
+    <>
+      {top && (
+        <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap", background: `linear-gradient(120deg, rgba(139,92,246,0.22), ${C.card} 55%)`, border: `1px solid ${C.goldDeep}`, borderRadius: 18, padding: "18px 22px" }}>
+          <span style={{ fontFamily: MONO, fontSize: 13, fontWeight: 800, letterSpacing: "0.1em", color: "#1a0d05", background: C.gold, borderRadius: 6, padding: "4px 10px" }}>#1</span>
+          <Photo url={top.photoUrl} name={top.name} size={76} />
+          <div style={{ flex: 1, minWidth: 180, display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.1, ...GOLD_TEXT }}>{top.name}</span>
+            <span style={{ fontSize: 15, color: C.mute }}>{top.team} · {top.gp} GP · RB</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            <span style={{ fontFamily: MONO, fontSize: 40, fontWeight: 800, color: C.goldHi }}>{top.value}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: C.mute }}>REC / GAME</span>
+          </div>
+        </div>
+      )}
+
+      <div style={{ background: C.card, border: `1px solid ${C.edge}`, borderRadius: 16, overflow: "hidden" }}>
+        <div style={{ display: "grid", gridTemplateColumns: RB_COLS, gap: 10, alignItems: "center", padding: "12px 18px", borderBottom: `1px solid ${C.edge}`, fontSize: 11, fontWeight: 800, letterSpacing: "0.07em", color: C.gold }}>
+          <span>RK</span><span>RB</span>
+          <span style={{ textAlign: "right" }}>GP</span>
+          <span style={head}>REC</span>
+          <span style={head}>TGT</span>
+          <span style={head}>YDS</span>
+          <span style={head}>TD</span>
+          <span style={head}>LONG</span>
+        </div>
+        {rows.map((r) => (
+          <div key={r.playerId} className="ld-row" onClick={() => onOpenPlayer(r.playerId)} title="Open player research"
+            style={{ display: "grid", gridTemplateColumns: RB_COLS, gap: 10, alignItems: "center", padding: "10px 18px", borderBottom: `1px solid ${C.edge}`, cursor: "pointer" }}>
+            <span style={{ fontFamily: MONO, fontSize: 14, color: r.rank <= 3 ? C.gold : C.mute, fontWeight: r.rank <= 3 ? 800 : 400 }}>{r.rank}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+              <Photo url={r.photoUrl} name={r.name} size={44} />
+              <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+                <a className="ld-name" href={playerSlugUrl(r.playerId, r.name, r.team)}
+                  onClick={(e) => { e.preventDefault(); onOpenPlayer(r.playerId); }}
+                  style={{ fontSize: 16, fontWeight: 600, color: "inherit", textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {r.name}<span style={{ color: C.mute, fontWeight: 400 }}> {r.team}</span>
+                </a>
+              </span>
+            </span>
+            <span style={{ textAlign: "right", fontFamily: MONO, fontSize: 14, color: C.mute }}>{r.gp}</span>
+            <span style={{ textAlign: "right", fontFamily: MONO, fontSize: 16, fontWeight: 700, color: C.goldHi }}>{r.value}</span>
+            <span style={{ textAlign: "right", fontFamily: MONO, fontSize: 14 }}>{r.targets ?? "—"}</span>
+            <span style={{ textAlign: "right", fontFamily: MONO, fontSize: 14 }}>{r.yards ?? "—"}</span>
+            <span style={{ textAlign: "right", fontFamily: MONO, fontSize: 14, color: (r.tds ?? 0) > 0 ? C.green : C.mute }}>{r.tds ?? "—"}</span>
+            <span style={{ textAlign: "right", fontFamily: MONO, fontSize: 14, color: (r.longest ?? 0) > 0 ? C.gold : C.mute }}>{r.longest ?? "—"}</span>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
