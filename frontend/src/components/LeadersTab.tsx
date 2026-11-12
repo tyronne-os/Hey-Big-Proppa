@@ -126,7 +126,7 @@ export default function LeadersTab({ onOpenPlayer, onCategoryChange }: { onOpenP
       )}
 
       {data && data.sourceStatus === "ok" && data.rows && data.bplVersion && (
-        <BplTable key={category} rows={data.rows} version={data.bplVersion} onOpenPlayer={onOpenPlayer} />
+        <BplTable key={category} rows={data.rows} onOpenPlayer={onOpenPlayer} />
       )}
 
       {data && data.sourceStatus === "ok" && data.rows && !data.bplVersion && (
@@ -307,7 +307,7 @@ function L5Bars({ b }: { b: BplPlayerLine }) {
   );
 }
 
-function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version: string; onOpenPlayer: (playerId: string, market?: string) => void }) {
+function BplTable({ rows, onOpenPlayer }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string, market?: string) => void }) {
   const [mode, setMode] = useState<SortMode>("rank");
   const [limit, setLimit] = useState<number>(50);
   const sorted = sortRows(rows, mode);
@@ -317,9 +317,6 @@ function BplTable({ rows, version, onOpenPlayer }: { rows: LeaderRow[]; version:
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, justifyContent: "space-between" }}>
-        <span style={{ fontSize: 13, color: C.mute }}>
-          <b style={GOLD_TEXT}>BIG PROPPA = JEV</b> · projection read from the lake and live ESPN, {version} fills in until JEV loads · SAFE BET cuts the line 15% for a safer over · green = above the book, red = below
-        </span>
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
         <LimitPicker limit={limit} total={sorted.length} onChange={setLimit} />
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>

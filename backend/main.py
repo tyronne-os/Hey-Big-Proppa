@@ -15,7 +15,7 @@ import os
 import json
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -146,6 +146,111 @@ def api_jimmy_score(player_id: str, market: str = "rushyds"):
 @app.get("/api/chart/leaders")
 def api_leaders(category: str = "RUSHING"):
     return leaders_mod.leaders(category)
+
+
+@app.get("/api/betterverse/archetypes")
+def api_mv_archetypes():
+    import betterverse_bettors
+    return {k: {kk: (sorted(v) if isinstance(v, set) else v) for kk, v in a.items()}
+            for k, a in betterverse_bettors.ARCHETYPES.items()}
+
+
+@app.post("/api/betterverse/run")
+async def api_mv_run(request: Request):
+    import betterverse_sim
+    body = await request.json() if (await request.body()) else {}
+    season = int(body.get("season", 2024))
+    if season not in (2023, 2024, 2025):
+        raise HTTPException(400, "season must be 2023, 2024 or 2025")
+    n = max(10, min(2000, int(body.get("bettors", 150))))
+    seed = int(body.get("seed", 7))
+    mix = {k: float(v) for k, v in (body.get("mix") or {}).items() if float(v) >= 0} or None
+    return betterverse_sim.start(season, n, seed, mix)
+
+
+@app.get("/api/betterverse/status/{run_id}")
+def api_mv_status(run_id: str):
+    import betterverse_sim
+    return betterverse_sim.status(run_id)
+
+
+@app.get("/api/betterverse/runs")
+def api_mv_runs():
+    import betterverse_sim
+    return {"runs": betterverse_sim.runs()}
+
+
+@app.get("/api/betterverse/insights/{run_id}")
+def api_mv_insights(run_id: str):
+    import betterverse_sim
+    ins = betterverse_sim.load_insights(run_id)
+    if ins is None:
+        raise HTTPException(404, "run not found")
+    return ins
+
+
+@app.post("/api/betterverse/study")
+async def api_bv_study(request: Request):
+    import betterverse_study
+    body = await request.json() if (await request.body()) else {}
+    seasons = sorted({int(y) for y in body.get("seasons", [2023, 2024, 2025]) if int(y) in (2023, 2024, 2025)})
+    if not seasons:
+        raise HTTPException(400, "seasons must include 2023, 2024 and/or 2025")
+    return betterverse_study.start(max(2, min(60, int(body.get("universes", 20)))), max(20, min(500, int(body.get("bettors", 150)))),
+                                   int(body.get("seed", 100)), seasons)
+
+
+@app.get("/api/betterverse/studies")
+def api_bv_studies():
+    import betterverse_study
+    return {"studies": betterverse_study.studies()}
+
+
+@app.get("/api/betterverse/study/status/{study_id}")
+def api_bv_study_status(study_id: str):
+    import betterverse_study
+    return betterverse_study.status(study_id)
+
+
+@app.get("/api/betterverse/compare")
+def api_bv_compare(a: str, b: str):
+    import betterverse_study
+    c = betterverse_study.compare(a, b)
+    if c is None:
+        raise HTTPException(404, "study not found")
+    return c
+
+
+@app.get("/api/betterverse/study/{study_id}")
+def api_bv_study_get(study_id: str):
+    import betterverse_study
+    s = betterverse_study.load(study_id)
+    if s is None:
+        raise HTTPException(404, "study not found")
+    return s
+
+
+@app.get("/api/betterverse/career")
+def api_bv_career(runs: str):
+    import betterverse_sim
+    c = betterverse_sim.career([r for r in runs.split(",") if r])
+    if c is None:
+        raise HTTPException(404, "runs not found or not the same betters")
+    return c
+
+
+@app.get("/api/betterverse/bettor/{run_id}/{bettor_id}")
+def api_mv_bettor(run_id: str, bettor_id: int):
+    import betterverse_sim
+    b = betterverse_sim.bettor(run_id, bettor_id)
+    if b is None:
+        raise HTTPException(404, "bettor not found")
+    return b
+
+
+@app.get("/api/betterverse/priors")
+def api_mv_priors():
+    return {"sourceStatus": "ok", "runs": 0, "markets": 0, "never_won": [], "best_shapes": []}
 
 
 @app.get("/api/bpl/nfl-games")
@@ -1644,6 +1749,9 @@ def root_landing():
 _DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 _LANDING_DIR = _LANDING.parent
 
+if _DIST.exists():
+    app.mount("/app", StaticFiles(directory=str(_DIST), html=True), name="frontend")
+
 # ── SLUG REGISTRY ──
 # Unique permanent links for player pages: /p/YYYYMMDDHHMM-<name>-<team>
 # Stored in lake/gold/espn/player_slugs.json so direct URL access works.
@@ -1694,7 +1802,7 @@ def api_slug_resolve(slug: str):
 import datetime as _dt
 import os as _os
 
-_SITEMAP_BASE = _os.environ.get("SITEMAP_BASE_URL", "").rstrip("/") or "https://AIBRUH-big-proppa-live.hf.space"
+_SITEMAP_BASE = _os.environ.get("SITEMAP_BASE_URL", "").rstrip("/") or "http://localhost:8000"
 
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap_xml():
@@ -1786,8 +1894,10 @@ def _take_refresher() -> None:
 @app.on_event("startup")
 def _start_take_refresher() -> None:
     import threading as _threading
+    print("Starting app - registering take refresher thread")
     _t = _threading.Thread(target=_take_refresher, daemon=True)
     _t.start()
+    print("Take refresher thread started")
 
 
 # Catch-all: landing assets → dist assets → SPA fallback for BrowserRouter routes
