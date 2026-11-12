@@ -59,6 +59,7 @@ def _rank(totals: dict[str, dict]) -> list[dict]:
             "team": t["team"],
             "gp": t["gp"],
             "value": round(per_game, 2),
+            "total": round(t["value"], 1),  # season total (e.g. total TDs on the year)
         })
     return out
 
@@ -68,9 +69,11 @@ CATEGORY_ROWS = {}                 # every BPL category returns 100 so the page 
 
 CATEGORY_SOURCES = {
     "RUSHING": ("player_rushing_week", "rushing_yards"),
+    "RUSHING ATTEMPTS": ("player_rushing_week", "carries"),
     "RECEIVING": ("player_receiving_week", "receiving_yards"),
     "RECEPTIONS": ("player_receiving_week", "receptions"),
     "PASSING": ("player_passing_week", "passing_yards"),
+    "PASSING ATTEMPTS": ("player_passing_week", "attempts"),
     "SCORING": ("player_scoring_week", "total_tds"),
     "FIELD GOALS": ("player_kicking_week", "fg_made"),
     "TARGETS": ("player_receiving_week", "targets"),

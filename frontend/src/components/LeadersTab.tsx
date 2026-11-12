@@ -6,11 +6,19 @@ import TargetsBoard from "./TargetsBoard";
 import HeadToHead from "./HeadToHead";
 import type { TicketCtx } from "./h2hShared";
 
-const CATEGORIES = ["TARGETS", "HEAD TO HEAD", "USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RECEIVING", "PASSING", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
+const CATEGORIES = ["TARGETS", "HEAD TO HEAD", "USAGE INDEX", "BREAKOUT", "DEFENSE TOXICITY", "RUSHING", "RUSHING ATTEMPTS", "RECEIVING", "PASSING", "PASSING ATTEMPTS", "SCORING", "SACKS", "FIELD GOALS", "DIVISIONS"];
+
+// Dropdown groups: the top-level label is the button, sub-options expand underneath.
+const CATEGORY_GROUPS: Record<string, string[]> = {
+  RUSHING: ["RUSHING", "RUSHING ATTEMPTS"],
+  PASSING: ["PASSING", "PASSING ATTEMPTS"],
+};
 const SCORE_LABEL: Record<string, string> = {
   "USAGE INDEX": "USAGE INDEX",
   "BREAKOUT": "BREAKOUT SCORE",
   "DEFENSE TOXICITY": "TOXICITY INDEX",
+  "RUSHING ATTEMPTS": "RUSH ATT / GAME",
+  "PASSING ATTEMPTS": "PASS ATT / GAME",
 };
 
 // Deep violet ground, purple for interaction, gold for emphasis. Green/red stay reserved
@@ -54,6 +62,7 @@ export default function LeadersTab({ onOpenPlayer, onCategoryChange }: { onOpenP
     return "TARGETS";
   });
   const [data, setData] = useState<LeadersResponse | null>(null);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   // Tell the app which category is open so the player page's "Back" returns here.
   useEffect(() => {
@@ -79,18 +88,53 @@ export default function LeadersTab({ onOpenPlayer, onCategoryChange }: { onOpenP
     <div className="ld-wrap" style={{ fontFamily: SANS, color: C.text, background: C.bg, border: `1px solid ${C.edge}`, borderRadius: 20, padding: "16px 18px 22px", display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
       <style>{`.ld-wrap button{font-family:inherit}.ld-row:hover{background:${C.hover}}.ld-row:hover .ld-name{color:${C.goldHi};text-decoration:underline}`}</style>
 
-      <div style={{ display: "flex", gap: 4, padding: 4, background: C.card, border: `1px solid ${C.edge}`, borderRadius: 14, overflowX: "auto" }}>
+      <div style={{ display: "flex", gap: 4, padding: 4, background: C.card, border: `1px solid ${C.edge}`, borderRadius: 14, overflowX: "auto", position: "relative" }}>
         {CATEGORIES.map((c) => {
           const on = c === category;
+          const isGroup = CATEGORY_GROUPS[c] !== undefined;
+          const groupOpen = openGroup === c;
+          const isChild = !isGroup && Object.values(CATEGORY_GROUPS).some((g) => g.includes(c));
+          // Skip rendering a child category as its own top-level pill; it lives in the parent dropdown.
+          if (isChild) return null;
           return (
-            <button key={c} onClick={() => setCategory(c)}
-              style={{ flex: "1 0 auto", height: 40, padding: "0 16px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap",
-                fontSize: 13, fontWeight: 800, letterSpacing: "0.08em",
-                border: `1px solid ${on ? C.purple : "transparent"}`,
-                background: on ? "linear-gradient(180deg, rgba(139,92,246,0.35), rgba(139,92,246,0.14))" : "transparent",
-                color: on ? C.goldHi : C.mute }}>
-              {c}
-            </button>
+            <div key={c} style={{ position: "relative", flex: "1 0 auto" }}>
+              <button
+                onClick={() => {
+                  if (isGroup) {
+                    // Toggle dropdown; selecting the parent selects the parent stat.
+                    setOpenGroup(groupOpen ? null : c);
+                    if (!groupOpen) setCategory(c);
+                  } else {
+                    setCategory(c);
+                  }
+                }}
+                style={{ width: "100%", height: 40, padding: "0 16px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap",
+                  fontSize: 13, fontWeight: 800, letterSpacing: "0.08em",
+                  border: `1px solid ${on ? C.purple : "transparent"}`,
+                  background: on ? "linear-gradient(180deg, rgba(139,92,246,0.35), rgba(139,92,246,0.14))" : "transparent",
+                  color: on ? C.goldHi : C.mute,
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                {c}
+                {isGroup && (
+                  <span style={{ fontSize: 9, transform: groupOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s", opacity: 0.7, lineHeight: 1 }}>▼</span>
+                )}
+              </button>
+              {isGroup && groupOpen && (
+                <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 30, minWidth: "100%", background: C.card2, border: `1px solid ${C.edge}`, borderRadius: 10, overflow: "hidden", boxShadow: "0 10px 28px rgba(0,0,0,0.55)", display: "flex", flexDirection: "column" }}>
+                  {CATEGORY_GROUPS[c].map((sub) => {
+                    const subOn = category === sub;
+                    return (
+                      <button key={sub} onClick={() => { setCategory(sub); setOpenGroup(null); }}
+                        style={{ padding: "10px 14px", textAlign: "left", cursor: "pointer", whiteSpace: "nowrap", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
+                          background: subOn ? "linear-gradient(90deg, rgba(139,92,246,0.28), transparent)" : "transparent",
+                          color: subOn ? C.goldHi : C.mute, border: "none", borderBottom: `1px solid ${C.edge}` }}>
+                        {sub}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
