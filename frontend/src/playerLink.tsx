@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { currentLocation, playerUrl, rememberReturn } from "./playerNav";
 
 const PLAYER_ID = /^00-\d{7}$/;
 const MARKETS = new Set(["rushyds", "recyds", "recs", "passyds"]);
@@ -18,14 +19,24 @@ function legMarket(leg: LegLike): string | null {
   return BY_POS[(leg.pos ?? "").toUpperCase()] ?? "recyds";
 }
 
-const BOARD: Record<string, string> = { recs: "Receptions", recyds: "Receiving Yds", rushyds: "Rushing Yds", passyds: "Passing Yds" };
-
-/** Link from a ticket leg to the single-player page (the leaders page's player panel) on that leg's board.
- *  Game and team legs have none. */
+/**
+ * Link from a ticket leg to THE ONE player page.
+ *
+ * Every player name on the site -- in a bet slip, a parlay, the Throwdown, MY BOO's
+ * tickets, a leaderboard row -- lands on the same React player page, built in the
+ * Targets board's design system. There is no second design and no standalone HTML
+ * page any more.
+ *
+ * The link carries the page it came from in `back`, so the player page's back arrow
+ * returns the subscriber to the exact page -- and the scroll position is remembered
+ * on the way out, so they land where they left off.
+ */
 export function playerHref(leg: LegLike): string | null {
   if (!leg.playerId || !PLAYER_ID.test(leg.playerId)) return null;
   const m = legMarket(leg);
-  return m ? `/leaders-player.html?cat=${encodeURIComponent(BOARD[m])}&pid=${encodeURIComponent(leg.playerId)}&from=ticket` : null;
+  if (!m) return null;
+  const here = currentLocation();
+  return playerUrl(leg.playerId, m, { back: here.path, section: here.section, from: "ticket" });
 }
 
 export function PlayerLink({ leg, name, children }: { leg: LegLike; name: string; children: ReactNode }) {
@@ -36,6 +47,11 @@ export function PlayerLink({ leg, name, children }: { leg: LegLike; name: string
   // wrapper is cross-origin and must never be targeted: the browser silently blocks that and the click does nothing.
   const onClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    // remember where we were on this page before leaving for the player
+    try {
+      const here = currentLocation();
+      rememberReturn(here.path, here.section);
+    } catch { /* */ }
     try {
       const parent = window.parent;
       if (parent !== window && parent.location.origin === window.location.origin) {
@@ -44,5 +60,15 @@ export function PlayerLink({ leg, name, children }: { leg: LegLike; name: string
       }
     } catch { /* cross-origin parent: fall through to the normal link */ }
   };
-  return <a href={href} onClick={onClick} className="bp-plink" title={`Open ${name}'s page: L5, season and the line`} style={{ color: "inherit", textDecoration: "none", cursor: "pointer" }}>{children}</a>;
+  return (
+    <a
+      href={href}
+      onClick={onClick}
+      className="bp-plink"
+      title={`Open ${name}'s player page`}
+      style={{ color: "inherit", textDecoration: "none", cursor: "pointer" }}
+    >
+      {children}
+    </a>
+  );
 }

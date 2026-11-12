@@ -383,6 +383,14 @@ def player_prop_chart(player_id: str, market_slug: str) -> dict:
 
     import bpl
     official = bpl.nfl_player_line(player_id, market_slug, name, team) if market_slug in bpl.NFL_MARKETS else None
+    # The teammate ranking in the SAME category he is being viewed under -- his own
+    # room, so a single number can be read against the competition for the ball.
+    try:
+        import team_rank
+        room = team_rank.team_rank(player_id, market_slug)
+    except Exception:
+        room = {"market": market_slug, "label": "", "sourceStatus": "error", "team": team, "rows": [],
+                "viewerRank": None, "viewer": None}
     return {
         "playerId": player_id,
         "name": name,
@@ -392,6 +400,7 @@ def player_prop_chart(player_id: str, market_slug: str) -> dict:
         "trust": player_trust(player_id),
         "fantasy": _fantasy(player_id),
         "targets": _targets(player_id),
+        "teamRank": room,
         "prop": PROP_LABELS.get(market_slug, market_slug),
         "marketSlug": market_slug,
         "line": line,

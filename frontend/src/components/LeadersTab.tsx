@@ -41,7 +41,7 @@ function Photo({ url, name, size }: { url?: string | null; name: string; size: n
   return <span style={{ ...box, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: MONO, fontSize: size * 0.34, fontWeight: 700, color: C.mute }}>{initials(name)}</span>;
 }
 
-export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: string, market?: string, ctx?: TicketCtx) => void }) {
+export default function LeadersTab({ onOpenPlayer, onCategoryChange }: { onOpenPlayer: (playerId: string, market?: string, ctx?: TicketCtx) => void; onCategoryChange?: (category: string) => void }) {
   // TARGETS is the lead board ("targets rule predictions"); /leaders?cat=rushing opens another category
   const [category, setCategory] = useState(() => {
     try {
@@ -53,6 +53,11 @@ export default function LeadersTab({ onOpenPlayer }: { onOpenPlayer: (playerId: 
     return "TARGETS";
   });
   const [data, setData] = useState<LeadersResponse | null>(null);
+
+  // Tell the app which category is open so the player page's "Back" returns here.
+  useEffect(() => {
+    onCategoryChange?.(category);
+  }, [category, onCategoryChange]);
 
   useEffect(() => {
     try { sessionStorage.setItem("bp_leaders_cat", category); } catch { /* */ }

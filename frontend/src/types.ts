@@ -141,6 +141,35 @@ export interface PropSplit {
   hitRate: number | null;
 }
 
+/** One row of the teammate ranking on a player page: his own room, in the same category. */
+export interface TeamRankRow {
+  playerId: string;
+  name: string;
+  position: string;
+  rank: number;
+  games: number;
+  season: number;
+  seasonAvg: number;
+  l5Avg: number | null;
+  line: number | null;
+  hitRate: number | null;
+  l5HitRate: number | null;
+  isViewer: boolean;
+  l5: { week: number; opponent: string; value: number; over: boolean | null }[];
+  log: { week: number; opponent: string; value: number }[];
+}
+
+/** The teammate ranking for the category the player page is being viewed under. */
+export interface TeamRank {
+  market: string;
+  label: string;
+  sourceStatus: SourceStatus;
+  team: string;
+  rows: TeamRankRow[];
+  viewerRank: number | null;
+  viewer: TeamRankRow | null;
+}
+
 export interface PlayerPropChart {
   playerId: string;
   name: string;
@@ -157,6 +186,8 @@ export interface PlayerPropChart {
   bpl?: BplPlayerLine | null;
   trust?: PlayerTrust | null;
   fantasy?: PlayerFantasy | null;
+  targets?: any | null;
+  teamRank?: TeamRank | null;
   error?: string;
 }
 

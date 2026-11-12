@@ -1,6 +1,7 @@
 import NavBar from "./components/NavBar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { readBackTarget, type BackTarget } from "./playerNav";
 import ReactFlow, { Background, Controls, MiniMap, type Edge, type EdgeTypes, type Node, type NodeTypes } from "reactflow";
 import "reactflow/dist/style.css";
 import AnimatedPulseEdge from "./AnimatedPulseEdge";
@@ -62,6 +63,9 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
   const [selectedPlayerId, setSelectedPlayerId] = useState(() => query("pid") ?? DEFAULT_PLAYER_ID);
   const [playerMarket, setPlayerMarket] = useState<string | undefined>(() => query("market"));
   const [fromTicket, setFromTicket] = useState(() => query("from") === "ticket");
+  // The return target for the player page's "Back" button — set when leaving a
+  // Leaders/Parlay/Throwdown page, and restored when the player page mounts.
+  const [backTarget, setBackTarget] = useState<BackTarget | null>(null);
   const [ticketCtx, setTicketCtx] = useState<TicketCtx | null>(null);
   const [slip, setSlip] = useState<PlayerPropChart[]>([]);
   const [target, setTarget] = useState("all");
@@ -72,6 +76,13 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
   const [cleared, setCleared] = useState(false);
   const [jimmyPanelOpen, setJimmyPanelOpen] = useState(false);
   const [booPanelOpen, setBooPanelOpen] = useState(false);
+  // Restore the back target from the URL so the player page knows where to return.
+  useEffect(() => {
+    const target = readBackTarget(window.location.search);
+    if (target?.path) {
+      setBackTarget(target);
+    }
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
@@ -257,6 +268,7 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
                 backToTicket={fromTicket}
                 ticketCtx={ticketCtx}
                 onBackToH2H={() => setTab("leaders")}
+                backTarget={backTarget}
                 onSlipAdd={addToSlip}
                 inSlip={slipIds.has(selectedPlayerId)}
               />

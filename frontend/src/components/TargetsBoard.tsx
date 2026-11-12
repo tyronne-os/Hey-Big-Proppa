@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../api";
+import { C, DefRow, am, card, chip, heat, n1, pct, Pred, rankPill, sec, tileRow, Tile } from "./bpTheme";
 
 /**
  * LEADERS -> TARGETS. Jimmy's own target line for every pass catcher, ordered from the biggest projected
@@ -32,27 +33,8 @@ export type TargetRow = {
   log: Log[];
 };
 
-const C = {
-  bg: "#000000", card: "#070707", card2: "#111111", edge: "#26232b", hover: "rgba(139,92,246,0.14)",
-  purple: "#8b5cf6", gold: "#d9b45a", goldHi: "#f1dc92", text: "#f1ecf8", mute: "#9a8fb0",
-  green: "#22c55e", greenDeep: "#166534", red: "#ef4444", redDeep: "#7f1d1d", amber: "#eab308",
-};
-const n1 = (v: number | null | undefined, d = 1) => (v === null || v === undefined ? "—" : v.toFixed(d).replace(/\.0$/, ""));
-const pct = (v: number | null | undefined) => (v === null || v === undefined ? "—" : `${Math.round(v * 100)}%`);
-const am = (v: string | number | null | undefined) => (v === null || v === undefined || v === "" ? "—" : Number(v) > 0 ? `+${Number(v)}` : `${v}`);
-
-/** heat cell: green for hits, red for misses, intensity by distance from 50% */
-function heat(v: number | null) {
-  if (v === null) return { background: C.card2, color: C.mute };
-  const k = Math.min(1, Math.abs(v - 0.5) * 2);
-  const base = v >= 0.5 ? [22, 101, 52] : [127, 29, 29];
-  return { background: `rgba(${base[0]},${base[1]},${base[2]},${0.35 + 0.65 * k})`, color: "#fff" };
-}
-/** D rank pill: 1 = toughest (red), 32 = softest (green) */
-function rankPill(r: number | null) {
-  if (!r) return { background: C.card2, color: C.mute };
-  return r <= 10 ? { background: C.red, color: "#fff" } : r >= 23 ? { background: C.green, color: "#04120c" } : { background: C.amber, color: "#1a1405" };
-}
+/** heat cell, rank pill and the number formatters all come from the shared theme so the
+ *  Targets board and the full player page can never drift apart. */
 
 type SortKey = "projDiff" | "projTargets" | "tpi" | "bigPlayThreat" | "dRank" | "tgtPerGame";
 
@@ -168,10 +150,6 @@ export default function TargetsBoard({ onOpenPlayer }: { onOpenPlayer: (playerId
 }
 
 const td: React.CSSProperties = { padding: "8px", textAlign: "center", whiteSpace: "nowrap", color: C.text };
-function chip(on: boolean): React.CSSProperties {
-  return { height: 34, padding: "0 14px", borderRadius: 10, cursor: "pointer", fontSize: 12, fontWeight: 800, letterSpacing: "0.06em",
-    border: `1px solid ${on ? C.purple : C.edge}`, background: on ? "rgba(139,92,246,0.25)" : C.card, color: on ? C.goldHi : C.mute };
-}
 function Divider({ text, color }: { text: string; color: string }) {
   const gold = color === C.green;
   return (
@@ -342,20 +320,5 @@ function TargetCard({ r, tree, rows, onBack, onPick, onOpenPlayer }: { r: Target
   );
 }
 
-const card: React.CSSProperties = { background: C.card, border: `1px solid ${C.edge}`, borderRadius: 16, padding: 16, minWidth: 0 };
-const tileRow: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, padding: 8, borderRadius: 10, background: C.card2 };
-const sec: React.CSSProperties = { fontSize: 12, fontWeight: 900, letterSpacing: "0.12em", color: C.gold };
-function Tile({ label, value, color }: { label: string; value: string; color?: string }) {
-  return <div style={{ textAlign: "center" }}><div style={{ fontSize: 10, color: C.mute, fontWeight: 800, letterSpacing: "0.08em" }}>{label}</div><div style={{ fontSize: 18, fontWeight: 900, color: color ?? C.text }}>{value}</div></div>;
-}
-function DefRow({ label, rank, value }: { label: string; rank: number | null; value: string }) {
-  return <tr style={{ borderTop: `1px solid ${C.edge}` }}><td style={{ padding: 6 }}>{label}</td><td style={{ textAlign: "center" }}><span style={{ ...rankPill(rank), padding: "2px 8px", borderRadius: 999, fontWeight: 900, fontSize: 12 }}>{rank ?? "—"}</span></td><td style={{ textAlign: "center" }}>{value}</td></tr>;
-}
-function Pred({ label, value, note, tone }: { label: string; value: string; note: string; tone?: string }) {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", gap: 8, padding: "7px 0", borderBottom: `1px solid ${C.edge}` }}>
-      <div><div style={{ fontSize: 13, fontWeight: 700 }}>{label}</div><div style={{ fontSize: 11, color: C.mute }}>{note}</div></div>
-      <div style={{ fontSize: 17, fontWeight: 900, color: tone ?? C.text, alignSelf: "center" }}>{value}</div>
-    </div>
-  );
-}
+/** The card surface, tile row, section header, chip, Tile and Pred all come from the
+ *  shared theme (bpTheme.ts) so this board and the player page stay one design. */
