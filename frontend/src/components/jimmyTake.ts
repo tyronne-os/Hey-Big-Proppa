@@ -182,6 +182,16 @@ export function generateJimmyTake(
     };
   }
 
+  // Missing-market guard: both book and lake silent → nothing to bet
+  if ((bpl?.bpl == null) && line == null) {
+    return {
+      prediction: `No line on ${name} yet — book and lake are both silent. Nothing to bet. Pass.`,
+      confidence: "low" as const,
+      drivers: ["no line"],
+      redFlags: [],
+    };
+  }
+
   // ---- Assemble the take in Jimmy's spoken, veteran-book cadence ----
   const clauses: string[] = [];
 
@@ -196,9 +206,27 @@ export function generateJimmyTake(
     }
   }
 
-  // The call comes first — bold, pointed, never a hedge
+  // The call comes first — order of authority: news flags → lake edge → composite,
+  // with the book/form clash voiced honestly for mild daylight (5–15%).
+  let edgeClauseLocal: string | null = edgeClause;
+  const edgePct = bpl?.diffPct ?? null;
+  const strongEdge = edgePct !== null && Math.abs(edgePct) >= 15 && Math.abs(edgePct) < 100;
+  const edgeDirMild = edgeClauseLocal
+    ? (edgeClauseLocal.indexOf("daylight, over") >= 0 ? "over" : "under")
+    : null;
+  let callDirShadow: "over" | "under" | null = null;
+  if (composite > 0.15) callDirShadow = "over";
+  if (composite < -0.15) callDirShadow = "under";
+  const callDir = callDirShadow;
+  const clash = callDir && edgeDirMild && edgeDirMild !== callDir;
   if (redFlags.length) {
     clauses.push(`Hard pass on ${name} until the wires clear.`);
+  } else if (strongEdge && bpl) {
+    clauses.push(edgePct! > 0
+      ? `Lake's read — take the over. The book underprices him.`
+      : `Lake's read — take the under. The book's ${line} is fat.`);
+  } else if (clash) {
+    clauses.push(`The angles fight here — the book prices him ${edgeDirMild}, the form says ${callDir}. I'd size down or sit.`);
   } else if (composite > 0.25 && confidence === "high") {
     clauses.push(`Put your neck out — ${name}'s going over.`);
   } else if (composite > 0.15) {
@@ -207,8 +235,8 @@ export function generateJimmyTake(
     clauses.push("Bash the under. The books haven't moved it enough.");
   } else if (composite < -0.15) {
     clauses.push("Lean under. Not a lock. A lean.");
-  } else if (edgeClause && Math.abs(bpl!.diffPct ?? 0) >= 15) {
-    clauses.push(edgeClause.indexOf("daylight, over") >= 0
+  } else if (edgeClauseLocal) {
+    clauses.push(edgeDirMild === "over"
       ? "The only angle here is the over."
       : "The only angle here is the under.");
   } else {

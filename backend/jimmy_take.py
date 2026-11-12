@@ -167,20 +167,43 @@ def make_take(chart: dict, news: list | None = None) -> dict:
     if flags:
         confidence = "low"
 
-    # ---- The call. Jimmy never squints at a number; he points at it. ----
+    # ---- Missing-market guard: a line that never dropped is not a market ----
+    bp_any = _num(bpl.get("bpl"))
+    if bp_any is None and line is None:
+        return {
+            "prediction": f"No line on {name} yet — book and lake are both silent. Nothing to bet. Pass.",
+            "confidence": "low",
+            "composite": 0.0,
+            "drivers": ["no line"],
+            "redFlags": [],
+        }
+
+    # ---- The call. Order of authority: news flags → lake edge → composite. ----
+    edge_pct0 = _num(bpl.get("diffPct"))
+    strong_edge = edge_pct0 is not None and 15 <= abs(edge_pct0) < 100
+    call = None
+    call_dir = None
     if flags:
         call = f"Hard pass on {name} until the wires clear."
+    elif strong_edge:
+        if edge_pct0 > 0:
+            call = f"Lake's read — take the over. The book underprices him."
+        else:
+            call = f"Lake's read — take the under. The book's {line:g} is fat."
     elif composite > 0.25 and confidence == "high":
         call = f"Put your neck out — {name}'s going over."
+        call_dir = "over"
     elif composite > 0.15:
         call = f"I'm on {name} over. That's my number."
+        call_dir = "over"
     elif composite < -0.25 and confidence == "high":
         call = "Bash the under. The books haven't moved it enough."
+        call_dir = "under"
     elif composite < -0.15:
         call = "Lean under. Not a lock. A lean."
+        call_dir = "under"
     else:
-        call = None  # neutral — the edge clause decides (see below)
-    call_is_neutral = call is None
+        call = "No payday in this line — watch it, don't bet it."
 
     # ---- Matchup clause ----
     match = f"{name} ({team or 'FA'}), {prop_low}" + (f", at {opp}" if opp else "")
@@ -218,19 +241,15 @@ def make_take(chart: dict, news: list | None = None) -> dict:
     # ---- Edge clause — never prose an impossible number ----
     edge = None
     bp = _num(bpl.get("bpl"))
-    if bp is not None and line is not None:
-        edge_pct = _num(bpl.get("diffPct"))
-        if edge_pct is not None and 5 <= abs(edge_pct) < 100:
-            size = abs(edge_pct)
-            edge_direction = "over" if edge_pct > 0 else "under"
-            edge = f"Lake {bp:g} vs book {line:g} — {size:g}% daylight, {edge_direction}."
-
-    # A neutral composite with a loud edge is still a call — Jimmy respects daylight.
-    if call is None:
-        if edge and _num(bpl.get("diffPct")) and abs(_num(bpl.get("diffPct")) or 0) >= 15:
-            call = f"The only angle here is the {edge_direction}."
-        else:
-            call = "No payday in this line — watch it, don't bet it."
+    edge_pct = _num(bpl.get("diffPct"))
+    if bp is not None and line is not None and edge_pct is not None and 5 <= abs(edge_pct) < 100:
+        size = abs(edge_pct)
+        edge_direction = "over" if edge_pct > 0 else "under"
+        edge = f"Lake {bp:g} vs book {line:g} — {size:g}% daylight, {edge_direction}."
+        # Call clashes with a real edge? Voices that tension honestly instead of fake certainty.
+        if call_dir and edge_direction != call_dir and size >= 5:
+            call = ("The angles fight here — the book prices him "
+                    f"{edge_direction} at {line:g}, the form says {call_dir}. I'd size down or sit.")
 
     flag_voice = None
     if flags:
