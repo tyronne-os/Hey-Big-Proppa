@@ -161,7 +161,7 @@ def player_dimension() -> dict[str, dict]:
     # scripts/resolve_player_names.py): backfills name/position/team for the
     # players the lake only knows as "00-XXXXXXX" so no page ever serves a
     # raw ID as a name.
-    for row in _names_patch():
+    for row in _names_patch().values():
         pid = row.get("player_id")
         if not pid:
             continue
