@@ -1,10 +1,11 @@
 import TicketBuilder from "./TicketBuilder";
+import HeroSection from "./HeroSection";
 import type { TicketCtx } from "./h2hShared";
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import type { PlayerPropChart, PlayerSearchResult, PlayerTrust, PlayerFantasy, TeamRank } from "../types";
+import type { PlayerPropChart, PlayerTrust, PlayerFantasy, TeamRank } from "../types";
 import {
-  C, MONO, SANS, card, chip, DefRow, initials, ordinal, pct, sec, tileRow, Tile, Pred,
+  C, MONO, SANS, card, chip, DefRow, ordinal, pct, sec, tileRow, Tile, Pred,
 } from "./bpTheme";
 import { loadScroll } from "../playerNav";
 
@@ -331,8 +332,6 @@ export default function PlayerTab({
   playerId,
   initialMarket,
   onSelectPlayer,
-  onSlipAdd,
-  inSlip,
   ticketCtx,
   onBackToH2H,
   backToTicket,
@@ -342,8 +341,8 @@ export default function PlayerTab({
   playerId: string;
   initialMarket?: string;
   onSelectPlayer: (playerId: string) => void;
-  onSlipAdd: (chart: PlayerPropChart) => void;
-  inSlip: boolean;
+  onSlipAdd?: (chart: PlayerPropChart) => void;
+  inSlip?: boolean;
   ticketCtx?: TicketCtx | null;
   onBackToH2H?: () => void;
   backToTicket?: boolean;
@@ -352,17 +351,13 @@ export default function PlayerTab({
 }) {
   const [market, setMarket] = useState("rushyds");
   const [win, setWin] = useState<Window>("season");
-  const [photoBroken, setPhotoBroken] = useState(false);
   const [chart, setChart] = useState<PlayerPropChart | null>(null);
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<PlayerSearchResult[]>([]);
 
   useEffect(() => {
     if (initialMarket) setMarket(initialMarket);
   }, [playerId, initialMarket]);
 
   useEffect(() => {
-    setPhotoBroken(false);
     api.playerProps(playerId, market).then(setChart).catch(() => setChart(null));
   }, [playerId, market]);
 
@@ -374,48 +369,12 @@ export default function PlayerTab({
     return () => clearInterval(t);
   }, [isLive, playerId, market]);
 
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      return;
-    }
-    const t = setTimeout(() => {
-      api.searchPlayers(query).then(setResults).catch(() => setResults([]));
-    }, 200);
-    return () => clearTimeout(t);
-  }, [query]);
 
-  const searchBox = (
-    <div style={{ position: "relative", maxWidth: 300 }}>
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search a player..."
-        style={{
-          width: "100%", height: 34, padding: "0 12px", borderRadius: 10,
-          border: `1px solid ${C.edge}`, background: C.card, color: C.text, fontSize: 13, outline: "none",
-        }}
-      />
-      {results.length > 0 && (
-        <div style={{ position: "absolute", top: 38, left: 0, right: 0, zIndex: 10, background: C.card, border: `1px solid ${C.edge}`, borderRadius: 10, overflow: "hidden" }}>
-          {results.map((r) => (
-            <button
-              key={r.playerId}
-              onClick={() => { onSelectPlayer(r.playerId); setQuery(""); setResults([]); }}
-              style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", background: "transparent", border: 0, color: C.text, cursor: "pointer", fontSize: 13 }}
-            >
-              {r.name} <span style={{ color: C.mute }}>{r.team}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+
 
   if (!chart) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 980 }}>
-        {searchBox}
         <div style={{ color: C.mute, fontSize: 13 }}>Loading player data...</div>
       </div>
     );
@@ -424,7 +383,6 @@ export default function PlayerTab({
   if (chart.sourceStatus !== "ok") {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 980 }}>
-        {searchBox}
         <div style={{ color: C.mute, fontSize: 13 }}>
           Chart source status is &ldquo;{chart.sourceStatus}&rdquo; &mdash; no real data to render yet.
         </div>
@@ -461,12 +419,9 @@ export default function PlayerTab({
     <div className="pl-wrap" style={{ fontFamily: SANS, color: C.text, background: C.bg, border: `1px solid ${C.edge}`, borderRadius: 20, padding: "16px 18px 22px", display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
       <style>{`.pl-wrap button{font-family:inherit}`}</style>
 
-      {/* back + search */}
+      {/* BACK BUTTON — top left */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         {(() => {
-          // The back arrow always knows where it came from: the Leaders category, the
-          // parlay page, the throwdown, MY BOO's ticket list -- wherever the name was
-          // clicked. It returns the subscriber to that page and scroll position.
           if (backTarget?.path) {
             const label = backTarget.section
               ? `Back to ${backTarget.section}`
@@ -504,64 +459,25 @@ export default function PlayerTab({
           }
           return null;
         })()}
-        {searchBox}
       </div>
 
-      {/* header: name + market pills */}
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "flex-start" }}>
-        <div>
-          <div style={{ fontSize: 20, fontWeight: 900 }}>{chart.name} ({chart.team})</div>
-          <div style={{ fontSize: 13, color: C.mute }}>
-            {chart.position ? `${chart.position} · ` : ""}
-            {chart.prop} · {allGames.length} game{allGames.length === 1 ? "" : "s"} logged this season
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-          {PROP_CHIPS.map((p) => (
-            <button key={p.market} onClick={() => setMarket(p.market)} style={chip(p.market === market)}>{p.label}</button>
-          ))}
-        </div>
+      {/* HERO SECTION — large image + Jimmy's Take + market pills */}
+      <HeroSection chart={chart} />
+
+      {/* MARKET TABS — inline with hero, below name bar */}
+      <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: -8 }}>
+        {PROP_CHIPS.map((p) => (
+          <button key={p.market} onClick={() => setMarket(p.market)} style={chip(p.market === market)}>{p.label}</button>
+        ))}
       </div>
 
       {/* the two columns */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 420px), 1fr))", gap: 16, alignItems: "start" }}>
         {/* ── LEFT: the player ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={card}>
-            {/* photo strip */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, marginBottom: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                {chart.photoUrl && !photoBroken ? (
-                  <img
-                    src={chart.photoUrl}
-                    alt={chart.name}
-                    referrerPolicy="no-referrer"
-                    onError={() => setPhotoBroken(true)}
-                    style={{ display: "block", width: 76, height: 76, borderRadius: 12, objectFit: "cover", objectPosition: "center top", border: `1px solid ${C.edge}`, background: C.card2 }}
-                  />
-                ) : (
-                  <div style={{ width: 76, height: 76, borderRadius: 12, background: C.card2, border: `1px solid ${C.edge}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: MONO, fontSize: 26, fontWeight: 700, color: C.mute }}>
-                    {initials(chart.name)}
-                  </div>
-                )}
-                <div>
-                  <div style={{ fontSize: 17, fontWeight: 900 }}>{chart.name}</div>
-                  <div style={{ fontSize: 12, color: C.mute }}>{chart.team} · {chart.position ?? "—"}</div>
-                  <div style={{ fontSize: 11, color: C.gold, fontWeight: 700, letterSpacing: "0.06em", marginTop: 2 }}>
-                    {b?.version ?? ""}
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => onSlipAdd(chart)}
-                style={{ ...chip(true), border: `1px solid ${C.purple}` }}
-              >
-                {inSlip ? "IN SLIP" : "+ ADD TO SLIP"}
-              </button>
-            </div>
-
-            {/* LINE / OVER / UNDER + SEASON / L5 / VS DEF */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8, marginTop: 12 }}>
+          {/* LINE / OVER / UNDER + SEASON / L5 / VS DEF — compact strip */}
+          <div style={{ ...card, padding: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
               <div style={{ ...tileRow, position: "relative", overflow: "hidden", background: "linear-gradient(90deg, rgba(217,180,90,0.18) 0%, rgba(217,180,90,0.07) 60%, transparent 100%)", borderLeft: `3px solid ${C.gold}` }}>
                 <span style={{ position: "absolute", top: 0, bottom: 0, width: 80, pointerEvents: "none", background: "linear-gradient(90deg, transparent 0%, rgba(34,197,94,0.45) 40%, rgba(34,197,94,0.8) 50%, rgba(34,197,94,0.45) 60%, transparent 100%)", animation: "dot-scan 2.6s linear infinite" }} />
                 <Tile label="LINE" value={fmt1(line)} color={C.goldHi} />
@@ -575,15 +491,15 @@ export default function PlayerTab({
               </div>
             </div>
 
-            {/* the bars */}
-            <div style={{ position: "relative", height: 240, marginTop: 14, display: "flex", alignItems: "flex-end", gap: 10, borderBottom: `1px solid ${C.edge}` }}>
+            {/* the bars — compact */}
+            <div style={{ position: "relative", height: 180, marginTop: 10, display: "flex", alignItems: "flex-end", gap: 8, borderBottom: `1px solid ${C.edge}` }}>
               {line !== null && line !== undefined && (
-                <div style={{ position: "absolute", left: 0, right: 0, bottom: (line / maxVal) * 240, borderTop: "2px solid #fff", zIndex: 2 }}>
+                <div style={{ position: "absolute", left: 0, right: 0, bottom: (line / maxVal) * 180, borderTop: "2px solid #fff", zIndex: 2 }}>
                   <span style={{ position: "absolute", right: 0, top: -20, fontSize: 11, fontWeight: 800, color: "#fff" }}>LINE {fmt1(line)}</span>
                 </div>
               )}
               {bplLine !== null && bplLine !== line && (
-                <div style={{ position: "absolute", left: 0, right: 0, bottom: (bplLine / maxVal) * 240, borderTop: `2px dashed ${C.gold}`, zIndex: 2 }}>
+                <div style={{ position: "absolute", left: 0, right: 0, bottom: (bplLine / maxVal) * 180, borderTop: `2px dashed ${C.gold}`, zIndex: 2 }}>
                   <span style={{ position: "absolute", left: 0, top: -20, fontSize: 11, fontWeight: 800, color: C.gold }}>BPL {fmt1(bplLine)}</span>
                 </div>
               )}
@@ -592,7 +508,7 @@ export default function PlayerTab({
               )}
               {shown.map((g) => {
                 const over = line === null ? true : g.value > line;
-                const v = Math.max(4, (g.value / maxVal) * 240);
+                const v = Math.max(4, (g.value / maxVal) * 180);
                 return (
                   <div
                     key={g.gameDate + g.opponent}
@@ -604,19 +520,16 @@ export default function PlayerTab({
                 );
               })}
             </div>
-            <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
               {shown.map((g) => (
                 <div key={g.gameDate + g.opponent} style={{ flex: "1 1 0", maxWidth: 90, textAlign: "center", fontSize: 11, color: C.goldHi }}>
                   {g.gameDate.replace("Week ", "Wk ")}<br />{g.opponent}
                 </div>
               ))}
             </div>
-            <div style={{ fontSize: 11, color: C.mute, marginTop: 6 }}>
-              {shown.length} games shown · axis capped at {fmt1(maxVal)} · line is {chart.book ?? "the book"}.
-            </div>
 
             {/* window pills with hit rates */}
-            <div style={{ display: "flex", gap: 4, padding: 4, background: C.card2, border: `1px solid ${C.edge}`, borderRadius: 12, marginTop: 14 }}>
+            <div style={{ display: "flex", gap: 4, padding: 4, background: C.card2, border: `1px solid ${C.edge}`, borderRadius: 12, marginTop: 10 }}>
               {WINDOWS.map((w) => {
                 const r = rate(w.games);
                 return (
