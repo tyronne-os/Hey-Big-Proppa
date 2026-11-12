@@ -48,6 +48,10 @@ export default function App({ initialTab }: { initialTab?: ViewTab }) {
     try {
       const t = new URLSearchParams(window.location.search).get("tab");
       if (t && (VIEW_TABS as readonly string[]).includes(t)) return t as ViewTab;
+      // Derive tab from current URL pathname so a refresh stays on the same page
+      const p = window.location.pathname.replace(/^\//, "");
+      if (p && (VIEW_TABS as readonly string[]).includes(p as ViewTab)) return p as ViewTab;
+      if (p === "player") return "player";
     } catch { /* */ }
     return "leaders";
   });
