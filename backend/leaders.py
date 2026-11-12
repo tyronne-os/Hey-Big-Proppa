@@ -74,6 +74,7 @@ CATEGORY_SOURCES = {
     "SCORING": ("player_scoring_week", "total_tds"),
     "FIELD GOALS": ("player_kicking_week", "fg_made"),
     "TARGETS": ("player_receiving_week", "targets"),
+    "COMBO": ("player_combo_week", "all_purpose_yards"),
 }
 
 
@@ -174,6 +175,56 @@ def _leaders(category: str) -> dict:
                 }
                 for i, r in enumerate(ranked, start=1)
             ],
+        }
+
+    if category == "COMBO":
+        # Combine rushing_yards + receiving_yards = all-purpose yards
+        rushing = data.load("player_rushing_week")
+        receiving = data.load("player_receiving_week")
+        # Sum yards per player
+        totals: dict[str, dict] = {}
+        for row in rushing:
+            pid = row.get("player_id")
+            if not pid:
+                continue
+            try:
+                val = float(row.get("rushing_yards") or 0)
+            except ValueError:
+                val = 0.0
+            entry = totals.setdefault(pid, {"value": 0.0, "gp": 0, "team": row.get("team", "")})
+            entry["value"] += val
+            entry["gp"] += 1
+            entry["team"] = row.get("team", entry["team"])
+        for row in receiving:
+            pid = row.get("player_id")
+            if not pid:
+                continue
+            try:
+                val = float(row.get("receiving_yards") or 0)
+            except ValueError:
+                val = 0.0
+            if pid in totals:
+                totals[pid]["value"] += val
+                totals[pid]["gp"] = max(totals[pid]["gp"], 1)
+            else:
+                totals[pid] = {"value": val, "gp": 1, "team": row.get("team", "")}
+        dim = data.player_dimension()
+        rows = sorted(totals.items(), key=lambda kv: kv[1]["value"], reverse=True)
+        out = []
+        for i, (pid, t) in enumerate(rows, start=1):
+            per_game = t["value"] / max(t["gp"], 1)
+            out.append({
+                "rank": i,
+                "playerId": pid,
+                "name": dim.get(pid, {}).get("name", data.player_name(pid)),
+                "team": t["team"],
+                "gp": t["gp"],
+                "value": round(per_game, 2),
+            })
+        return {
+            "category": category,
+            "sourceStatus": data.chart_status("player_rushing_week"),
+            "rows": out,
         }
 
     if category == "DIVISIONS":
