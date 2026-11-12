@@ -6,6 +6,11 @@
 lake/bronze/*
 lake/silver/*
 lake/gold/*
+lake/gold/espn/*
+!lake/gold/espn/
+!lake/gold/espn/player_names_patch.csv
+!lake/gold/espn/player_slugs.json
+!lake/gold/espn/jimmy_takes.json
 !lake/*/.gitkeep
 !lake/gold/nfl/
 !lake/gold/nfl/*.csv

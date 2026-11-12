@@ -1,0 +1,2630 @@
+{
+  "202611121555-a-shawn-robinson-tb": {
+    "market": "passyds",
+    "name": "A'Shawn Robinson",
+    "player_id": "00-0032889",
+    "team": "TB"
+  },
+  "202611121555-aaron-jones-min": {
+    "market": "rushyds",
+    "name": "Aaron Jones",
+    "player_id": "00-0033293",
+    "team": "MIN"
+  },
+  "202611121555-aaron-rodgers-pit": {
+    "market": "passyds",
+    "name": "Aaron Rodgers",
+    "player_id": "00-0023459",
+    "team": "PIT"
+  },
+  "202611121555-adam-butler-lv": {
+    "market": "passyds",
+    "name": "Adam Butler",
+    "player_id": "00-0033381",
+    "team": "LV"
+  },
+  "202611121555-adonai-mitchell-nyj": {
+    "market": "recyds",
+    "name": "Adonai Mitchell",
+    "player_id": "00-0039890",
+    "team": "NYJ"
+  },
+  "202611121555-aj-barner-sea": {
+    "market": "passyds",
+    "name": "AJ Barner",
+    "player_id": "00-0039793",
+    "team": "SEA"
+  },
+  "202611121555-aj-cole-lv": {
+    "market": "passyds",
+    "name": "AJ Cole",
+    "player_id": "00-0035190",
+    "team": "LV"
+  },
+  "202611121555-alex-singleton-den": {
+    "market": "passyds",
+    "name": "Alex Singleton",
+    "player_id": "00-0031898",
+    "team": "DEN"
+  },
+  "202611121555-alvin-kamara-no": {
+    "market": "rushyds",
+    "name": "Alvin Kamara",
+    "player_id": "00-0033906",
+    "team": "NO"
+  },
+  "202611121555-ameer-abdullah-jax": {
+    "market": "rushyds",
+    "name": "Ameer Abdullah",
+    "player_id": "00-0032104",
+    "team": "JAX"
+  },
+  "202611121555-amon-ra-st--brown-det": {
+    "market": "recyds",
+    "name": "Amon-Ra St. Brown",
+    "player_id": "00-0036963",
+    "team": "DET"
+  },
+  "202611121555-andre-szmyt-cle": {
+    "market": "passyds",
+    "name": "Andre Szmyt",
+    "player_id": "00-0038428",
+    "team": "CLE"
+  },
+  "202611121555-andrew-depaola-min": {
+    "market": "passyds",
+    "name": "Andrew DePaola",
+    "player_id": "00-0029714",
+    "team": "MIN"
+  },
+  "202611121555-andy-borregales-ne": {
+    "market": "passyds",
+    "name": "Andy Borregales",
+    "player_id": "00-0040200",
+    "team": "NE"
+  },
+  "202611121555-antonio-williams-was": {
+    "market": "recyds",
+    "name": "Antonio Williams",
+    "player_id": "00-0041040",
+    "team": "WAS"
+  },
+  "202611121555-arik-armstead-jax": {
+    "market": "passyds",
+    "name": "Arik Armstead",
+    "player_id": "00-0032164",
+    "team": "JAX"
+  },
+  "202611121555-ashton-dulin-ind": {
+    "market": "passyds",
+    "name": "Ashton Dulin",
+    "player_id": "00-0035021",
+    "team": "IND"
+  },
+  "202611121555-ashton-jeanty-lv": {
+    "market": "rushyds",
+    "name": "Ashton Jeanty",
+    "player_id": "00-0040122",
+    "team": "LV"
+  },
+  "202611121555-austin-hooper-atl": {
+    "market": "passyds",
+    "name": "Austin Hooper",
+    "player_id": "00-0032392",
+    "team": "ATL"
+  },
+  "202611121555-baker-mayfield-tb": {
+    "market": "rushyds",
+    "name": "Baker Mayfield",
+    "player_id": "00-0034855",
+    "team": "TB"
+  },
+  "202611121555-bam-knight-ari": {
+    "market": "rushyds",
+    "name": "Bam Knight",
+    "player_id": "00-0037157",
+    "team": "ARI"
+  },
+  "202611121555-ben-skowronek-pit": {
+    "market": "passyds",
+    "name": "Ben Skowronek",
+    "player_id": "00-0036862",
+    "team": "PIT"
+  },
+  "202611121555-bhayshul-tuten-jax": {
+    "market": "rushyds",
+    "name": "Bhayshul Tuten",
+    "player_id": "00-0040719",
+    "team": "JAX"
+  },
+  "202611121555-bijan-robinson-atl": {
+    "market": "rushyds",
+    "name": "Bijan Robinson",
+    "player_id": "00-0038542",
+    "team": "ATL"
+  },
+  "202611121555-blake-corum-la": {
+    "market": "rushyds",
+    "name": "Blake Corum",
+    "player_id": "00-0039738",
+    "team": "LA"
+  },
+  "202611121555-blake-whiteheart-cle": {
+    "market": "passyds",
+    "name": "Blake Whiteheart",
+    "player_id": "00-0038710",
+    "team": "CLE"
+  },
+  "202611121555-bo-nix-den": {
+    "market": "rushyds",
+    "name": "Bo Nix",
+    "player_id": "00-0039732",
+    "team": "DEN"
+  },
+  "202611121555-bradley-pinion-mia": {
+    "market": "passyds",
+    "name": "Bradley Pinion",
+    "player_id": "00-0032065",
+    "team": "MIA"
+  },
+  "202611121555-braelon-allen-nyj": {
+    "market": "rushyds",
+    "name": "Braelon Allen",
+    "player_id": "00-0039794",
+    "team": "NYJ"
+  },
+  "202611121555-brandon-aubrey-dal": {
+    "market": "passyds",
+    "name": "Brandon Aubrey",
+    "player_id": "00-0037692",
+    "team": "DAL"
+  },
+  "202611121555-breece-hall-nyj": {
+    "market": "rushyds",
+    "name": "Breece Hall",
+    "player_id": "00-0038120",
+    "team": "NYJ"
+  },
+  "202611121555-brenton-strange-jax": {
+    "market": "recyds",
+    "name": "Brenton Strange",
+    "player_id": "00-0038935",
+    "team": "JAX"
+  },
+  "202611121555-brian-robinson-atl": {
+    "market": "rushyds",
+    "name": "Brian Robinson",
+    "player_id": "00-0037746",
+    "team": "ATL"
+  },
+  "202611121555-brian-thomas-jr-jax": {
+    "market": "passyds",
+    "name": "Brian Thomas Jr.",
+    "player_id": "00-0039893",
+    "team": "JAX"
+  },
+  "202611121555-brock-purdy-sf": {
+    "market": "rushyds",
+    "name": "Brock Purdy",
+    "player_id": "00-0037834",
+    "team": "SF"
+  },
+  "202611121555-bryan-anger-dal": {
+    "market": "passyds",
+    "name": "Bryan Anger",
+    "player_id": "00-0029692",
+    "team": "DAL"
+  },
+  "202611121555-bryce-lance-no": {
+    "market": "passyds",
+    "name": "Bryce Lance",
+    "player_id": "00-0041067",
+    "team": "NO"
+  },
+  "202611121555-bryce-young-car": {
+    "market": "passyds",
+    "name": "Bryce Young",
+    "player_id": "00-0039150",
+    "team": "CAR"
+  },
+  "202611121555-bucky-irving-tb": {
+    "market": "rushyds",
+    "name": "Bucky Irving",
+    "player_id": "00-0039361",
+    "team": "TB"
+  },
+  "202611121555-bud-dupree-lac": {
+    "market": "passyds",
+    "name": "Bud Dupree",
+    "player_id": "00-0032146",
+    "team": "LAC"
+  },
+  "202611121555-c-j--stroud-hou": {
+    "market": "rushyds",
+    "name": "C.J. Stroud",
+    "player_id": "00-0039163",
+    "team": "HOU"
+  },
+  "202611121555-cade-stover-hou": {
+    "market": "passyds",
+    "name": "Cade Stover",
+    "player_id": "00-0039359",
+    "team": "HOU"
+  },
+  "202611121555-cairo-santos-chi": {
+    "market": "passyds",
+    "name": "Cairo Santos",
+    "player_id": "00-0031203",
+    "team": "CHI"
+  },
+  "202611121555-calais-campbell-bal": {
+    "market": "passyds",
+    "name": "Calais Campbell",
+    "player_id": "00-0026190",
+    "team": "BAL"
+  },
+  "202611121555-caleb-douglas-mia": {
+    "market": "recyds",
+    "name": "Caleb Douglas",
+    "player_id": "00-0041523",
+    "team": "MIA"
+  },
+  "202611121555-caleb-williams-chi": {
+    "market": "rushyds",
+    "name": "Caleb Williams",
+    "player_id": "00-0039918",
+    "team": "CHI"
+  },
+  "202611121555-calijah-kancey-tb": {
+    "market": "passyds",
+    "name": "Calijah Kancey",
+    "player_id": "00-0039063",
+    "team": "TB"
+  },
+  "202611121555-cam-little-jax": {
+    "market": "passyds",
+    "name": "Cam Little",
+    "player_id": "00-0039409",
+    "team": "JAX"
+  },
+  "202611121555-cam-skattebo-nyg": {
+    "market": "rushyds",
+    "name": "Cam Skattebo",
+    "player_id": "00-0040715",
+    "team": "NYG"
+  },
+  "202611121555-cam-ward-ten": {
+    "market": "rushyds",
+    "name": "Cam Ward",
+    "player_id": "00-0040676",
+    "team": "TEN"
+  },
+  "202611121555-cameron-dicker-lac": {
+    "market": "passyds",
+    "name": "Cameron Dicker",
+    "player_id": "00-0037224",
+    "team": "LAC"
+  },
+  "202611121555-cameron-heyward-pit": {
+    "market": "passyds",
+    "name": "Cameron Heyward",
+    "player_id": "00-0027969",
+    "team": "PIT"
+  },
+  "202611121555-carnell-tate-ten": {
+    "market": "recyds",
+    "name": "Carnell Tate",
+    "player_id": "00-0041438",
+    "team": "TEN"
+  },
+  "202611121555-carson-wentz-min": {
+    "market": "passyds",
+    "name": "Carson Wentz",
+    "player_id": "00-0032950",
+    "team": "MIN"
+  },
+  "202611121555-ceedee-lamb-dal": {
+    "market": "recyds",
+    "name": "CeeDee Lamb",
+    "player_id": "00-0036358",
+    "team": "DAL"
+  },
+  "202611121555-chad-ryland-ari": {
+    "market": "passyds",
+    "name": "Chad Ryland",
+    "player_id": "00-0038567",
+    "team": "ARI"
+  },
+  "202611121555-charlie-woerner-atl": {
+    "market": "passyds",
+    "name": "Charlie Woerner",
+    "player_id": "00-0036429",
+    "team": "ATL"
+  },
+  "202611121555-chase-brown-cin": {
+    "market": "rushyds",
+    "name": "Chase Brown",
+    "player_id": "00-0038597",
+    "team": "CIN"
+  },
+  "202611121555-chase-mclaughlin-tb": {
+    "market": "passyds",
+    "name": "Chase McLaughlin",
+    "player_id": "00-0035358",
+    "team": "TB"
+  },
+  "202611121555-chimere-dike-ten": {
+    "market": "passyds",
+    "name": "Chimere Dike",
+    "player_id": "00-0040705",
+    "team": "TEN"
+  },
+  "202611121555-chris-blair-atl": {
+    "market": "passyds",
+    "name": "Chris Blair",
+    "player_id": "00-0036463",
+    "team": "ATL"
+  },
+  "202611121555-chris-boswell-pit": {
+    "market": "passyds",
+    "name": "Chris Boswell",
+    "player_id": "00-0031136",
+    "team": "PIT"
+  },
+  "202611121555-chris-godwin-jr-tb": {
+    "market": "recyds",
+    "name": "Chris Godwin Jr.",
+    "player_id": "00-0033921",
+    "team": "TB"
+  },
+  "202611121555-chris-jones-kc": {
+    "market": "passyds",
+    "name": "Chris Jones",
+    "player_id": "00-0032762",
+    "team": "KC"
+  },
+  "202611121555-chris-moore-bal": {
+    "market": "passyds",
+    "name": "Chris Moore",
+    "player_id": "00-0032398",
+    "team": "BAL"
+  },
+  "202611121555-chris-olave-no": {
+    "market": "recyds",
+    "name": "Chris Olave",
+    "player_id": "00-0037239",
+    "team": "NO"
+  },
+  "202611121555-chris-rodriguez-jr-jax": {
+    "market": "rushyds",
+    "name": "Chris Rodriguez Jr.",
+    "player_id": "00-0038611",
+    "team": "JAX"
+  },
+  "202611121555-christian-mccaffrey-sf": {
+    "market": "rushyds",
+    "name": "Christian McCaffrey",
+    "player_id": "00-0033280",
+    "team": "SF"
+  },
+  "202611121555-christian-watson-gb": {
+    "market": "recyds",
+    "name": "Christian Watson",
+    "player_id": "00-0038124",
+    "team": "GB"
+  },
+  "202611121555-chuba-hubbard-car": {
+    "market": "rushyds",
+    "name": "Chuba Hubbard",
+    "player_id": "00-0036555",
+    "team": "CAR"
+  },
+  "202611121555-chuck-clark-det": {
+    "market": "passyds",
+    "name": "Chuck Clark",
+    "player_id": "00-0033294",
+    "team": "DET"
+  },
+  "202611121555-cj-donaldson-no": {
+    "market": "rushyds",
+    "name": "CJ Donaldson",
+    "player_id": "00-0041326",
+    "team": "NO"
+  },
+  "202611121555-cody-white-lv": {
+    "market": "passyds",
+    "name": "Cody White",
+    "player_id": "00-0035891",
+    "team": "LV"
+  },
+  "202611121555-colby-parkinson-la": {
+    "market": "passyds",
+    "name": "Colby Parkinson",
+    "player_id": "00-0036244",
+    "team": "LA"
+  },
+  "202611121555-cole-kmet-chi": {
+    "market": "passyds",
+    "name": "Cole Kmet",
+    "player_id": "00-0036290",
+    "team": "CHI"
+  },
+  "202611121555-colston-loveland-chi": {
+    "market": "recyds",
+    "name": "Colston Loveland",
+    "player_id": "00-0040126",
+    "team": "CHI"
+  },
+  "202611121555-cooper-kupp-sea": {
+    "market": "passyds",
+    "name": "Cooper Kupp",
+    "player_id": "00-0033908",
+    "team": "SEA"
+  },
+  "202611121555-cooper-rush-atl": {
+    "market": "passyds",
+    "name": "Cooper Rush",
+    "player_id": "00-0033662",
+    "team": "ATL"
+  },
+  "202611121555-corey-kiner-ne": {
+    "market": "rushyds",
+    "name": "Corey Kiner",
+    "player_id": "00-0040556",
+    "team": "NE"
+  },
+  "202611121555-courtland-sutton-den": {
+    "market": "recyds",
+    "name": "Courtland Sutton",
+    "player_id": "00-0034348",
+    "team": "DEN"
+  },
+  "202611121555-d-andre-swift-chi": {
+    "market": "rushyds",
+    "name": "D'Andre Swift",
+    "player_id": "00-0036275",
+    "team": "CHI"
+  },
+  "202611121555-d-j--jones-den": {
+    "market": "passyds",
+    "name": "D.J. Jones",
+    "player_id": "00-0033297",
+    "team": "DEN"
+  },
+  "202611121555-dak-prescott-dal": {
+    "market": "rushyds",
+    "name": "Dak Prescott",
+    "player_id": "00-0033077",
+    "team": "DAL"
+  },
+  "202611121555-dallas-goedert-phi": {
+    "market": "recyds",
+    "name": "Dallas Goedert",
+    "player_id": "00-0034351",
+    "team": "PHI"
+  },
+  "202611121555-dalton-kincaid-buf": {
+    "market": "recyds",
+    "name": "Dalton Kincaid",
+    "player_id": "00-0038933",
+    "team": "BUF"
+  },
+  "202611121555-dalton-schultz-hou": {
+    "market": "recyds",
+    "name": "Dalton Schultz",
+    "player_id": "00-0034383",
+    "team": "HOU"
+  },
+  "202611121555-dalvin-tomlinson-lac": {
+    "market": "passyds",
+    "name": "Dalvin Tomlinson",
+    "player_id": "00-0033546",
+    "team": "LAC"
+  },
+  "202611121555-daniel-carlson-no": {
+    "market": "passyds",
+    "name": "Daniel Carlson",
+    "player_id": "00-0034161",
+    "team": "NO"
+  },
+  "202611121555-daniel-jones-ind": {
+    "market": "rushyds",
+    "name": "Daniel Jones",
+    "player_id": "00-0035710",
+    "team": "IND"
+  },
+  "202611121555-danielle-hunter-hou": {
+    "market": "passyds",
+    "name": "Danielle Hunter",
+    "player_id": "00-0031565",
+    "team": "HOU"
+  },
+  "202611121555-darius-cooper-phi": {
+    "market": "passyds",
+    "name": "Darius Cooper",
+    "player_id": "00-0040024",
+    "team": "PHI"
+  },
+  "202611121555-darnell-washington-pit": {
+    "market": "recyds",
+    "name": "Darnell Washington",
+    "player_id": "00-0038558",
+    "team": "PIT"
+  },
+  "202611121555-darren-waller-car": {
+    "market": "recyds",
+    "name": "Darren Waller",
+    "player_id": "00-0031610",
+    "team": "CAR"
+  },
+  "202611121555-davante-adams-la": {
+    "market": "recyds",
+    "name": "Davante Adams",
+    "player_id": "00-0031381",
+    "team": "LA"
+  },
+  "202611121555-david-montgomery-hou": {
+    "market": "rushyds",
+    "name": "David Montgomery",
+    "player_id": "00-0035685",
+    "team": "HOU"
+  },
+  "202611121555-david-onyemata-nyj": {
+    "market": "passyds",
+    "name": "David Onyemata",
+    "player_id": "00-0033051",
+    "team": "NYJ"
+  },
+  "202611121555-davis-allen-la": {
+    "market": "passyds",
+    "name": "Davis Allen",
+    "player_id": "00-0039074",
+    "team": "LA"
+  },
+  "202611121555-dawson-knox-buf": {
+    "market": "passyds",
+    "name": "Dawson Knox",
+    "player_id": "00-0035689",
+    "team": "BUF"
+  },
+  "202611121555-de-von-achane-mia": {
+    "market": "rushyds",
+    "name": "De'Von Achane",
+    "player_id": "00-0039040",
+    "team": "MIA"
+  },
+  "202611121555-deebo-samuel-sr-sf": {
+    "market": "rushyds",
+    "name": "Deebo Samuel Sr.",
+    "player_id": "00-0035719",
+    "team": "SF"
+  },
+  "202611121555-deforest-buckner-sf": {
+    "market": "passyds",
+    "name": "DeForest Buckner",
+    "player_id": "00-0032378",
+    "team": "SF"
+  },
+  "202611121555-demarcus-lawrence-sea": {
+    "market": "passyds",
+    "name": "DeMarcus Lawrence",
+    "player_id": "00-0031411",
+    "team": "SEA"
+  },
+  "202611121555-demarcus-robinson-sf": {
+    "market": "passyds",
+    "name": "Demarcus Robinson",
+    "player_id": "00-0032775",
+    "team": "SF"
+  },
+  "202611121555-demario-davis-nyj": {
+    "market": "passyds",
+    "name": "Demario Davis",
+    "player_id": "00-0029607",
+    "team": "NYJ"
+  },
+  "202611121555-demario-douglas-ne": {
+    "market": "recyds",
+    "name": "DeMario Douglas",
+    "player_id": "00-0038621",
+    "team": "NE"
+  },
+  "202611121555-demetrius-knight-jr-cin": {
+    "market": "passyds",
+    "name": "Demetrius Knight Jr.",
+    "player_id": "00-0040738",
+    "team": "CIN"
+  },
+  "202611121555-denzel-boston-cle": {
+    "market": "recyds",
+    "name": "Denzel Boston",
+    "player_id": "00-0041037",
+    "team": "CLE"
+  },
+  "202611121555-deonte-banks-nyg": {
+    "market": "passyds",
+    "name": "Deonte Banks",
+    "player_id": "00-0039000",
+    "team": "NYG"
+  },
+  "202611121555-derius-davis-lac": {
+    "market": "passyds",
+    "name": "Derius Davis",
+    "player_id": "00-0038573",
+    "team": "LAC"
+  },
+  "202611121555-derrick-henry-bal": {
+    "market": "rushyds",
+    "name": "Derrick Henry",
+    "player_id": "00-0032764",
+    "team": "BAL"
+  },
+  "202611121555-deshaun-watson-cle": {
+    "market": "rushyds",
+    "name": "Deshaun Watson",
+    "player_id": "00-0033537",
+    "team": "CLE"
+  },
+  "202611121555-devaughn-vele-no": {
+    "market": "recyds",
+    "name": "Devaughn Vele",
+    "player_id": "00-0039424",
+    "team": "NO"
+  },
+  "202611121555-devin-lloyd-car": {
+    "market": "passyds",
+    "name": "Devin Lloyd",
+    "player_id": "00-0037244",
+    "team": "CAR"
+  },
+  "202611121555-devin-singletary-nyg": {
+    "market": "rushyds",
+    "name": "Devin Singletary",
+    "player_id": "00-0035250",
+    "team": "NYG"
+  },
+  "202611121555-devonta-smith-phi": {
+    "market": "recyds",
+    "name": "DeVonta Smith",
+    "player_id": "00-0036912",
+    "team": "PHI"
+  },
+  "202611121555-devontez-walker-bal": {
+    "market": "passyds",
+    "name": "Devontez Walker",
+    "player_id": "00-0039792",
+    "team": "BAL"
+  },
+  "202611121555-dj-moore-buf": {
+    "market": "recyds",
+    "name": "DJ Moore",
+    "player_id": "00-0034827",
+    "team": "BUF"
+  },
+  "202611121555-dj-reader-nyg": {
+    "market": "passyds",
+    "name": "DJ Reader",
+    "player_id": "00-0032424",
+    "team": "NYG"
+  },
+  "202611121555-dk-metcalf-pit": {
+    "market": "recyds",
+    "name": "DK Metcalf",
+    "player_id": "00-0035640",
+    "team": "PIT"
+  },
+  "202611121555-dominic-zvada-nyg": {
+    "market": "passyds",
+    "name": "Dominic Zvada",
+    "player_id": "00-0041145",
+    "team": "NYG"
+  },
+  "202611121555-dontayvion-wicks-phi": {
+    "market": "recyds",
+    "name": "Dontayvion Wicks",
+    "player_id": "00-0038393",
+    "team": "PHI"
+  },
+  "202611121555-drake-london-atl": {
+    "market": "recyds",
+    "name": "Drake London",
+    "player_id": "00-0037238",
+    "team": "ATL"
+  },
+  "202611121555-drake-maye-ne": {
+    "market": "rushyds",
+    "name": "Drake Maye",
+    "player_id": "00-0039851",
+    "team": "NE"
+  },
+  "202611121555-drew-lock-sea": {
+    "market": "passyds",
+    "name": "Drew Lock",
+    "player_id": "00-0035704",
+    "team": "SEA"
+  },
+  "202611121555-drew-sample-cin": {
+    "market": "passyds",
+    "name": "Drew Sample",
+    "player_id": "00-0035631",
+    "team": "CIN"
+  },
+  "202611121555-drew-stevens-was": {
+    "market": "passyds",
+    "name": "Drew Stevens",
+    "player_id": "00-0041182",
+    "team": "WAS"
+  },
+  "202611121555-dylan-laube-lv": {
+    "market": "passyds",
+    "name": "Dylan Laube",
+    "player_id": "00-0039407",
+    "team": "LV"
+  },
+  "202611121555-eddy-pineiro-sf": {
+    "market": "passyds",
+    "name": "Eddy Pineiro",
+    "player_id": "00-0034173",
+    "team": "SF"
+  },
+  "202611121555-efton-chism-iii-ne": {
+    "market": "passyds",
+    "name": "Efton Chism III",
+    "player_id": "00-0040563",
+    "team": "NE"
+  },
+  "202611121555-eli-raridon-ne": {
+    "market": "passyds",
+    "name": "Eli Raridon",
+    "player_id": "00-0041395",
+    "team": "NE"
+  },
+  "202611121555-elic-ayomanor-ten": {
+    "market": "passyds",
+    "name": "Elic Ayomanor",
+    "player_id": "00-0040170",
+    "team": "TEN"
+  },
+  "202611121555-elijah-higgins-ari": {
+    "market": "passyds",
+    "name": "Elijah Higgins",
+    "player_id": "00-0039041",
+    "team": "ARI"
+  },
+  "202611121555-elijah-ponder-ne": {
+    "market": "passyds",
+    "name": "Elijah Ponder",
+    "player_id": "00-0040574",
+    "team": "NE"
+  },
+  "202611121555-emanuel-wilson-sea": {
+    "market": "rushyds",
+    "name": "Emanuel Wilson",
+    "player_id": "00-0038797",
+    "team": "SEA"
+  },
+  "202611121555-emeka-egbuka-tb": {
+    "market": "recyds",
+    "name": "Emeka Egbuka",
+    "player_id": "00-0040129",
+    "team": "TB"
+  },
+  "202611121555-emmett-johnson-kc": {
+    "market": "rushyds",
+    "name": "Emmett Johnson",
+    "player_id": "00-0041013",
+    "team": "KC"
+  },
+  "202611121555-eric-murray-jax": {
+    "market": "passyds",
+    "name": "Eric Murray",
+    "player_id": "00-0033038",
+    "team": "JAX"
+  },
+  "202611121555-eric-saubert-sea": {
+    "market": "passyds",
+    "name": "Eric Saubert",
+    "player_id": "00-0033576",
+    "team": "SEA"
+  },
+  "202611121555-eric-wilson-min": {
+    "market": "passyds",
+    "name": "Eric Wilson",
+    "player_id": "00-0033336",
+    "team": "MIN"
+  },
+  "202611121555-ethan-evans-la": {
+    "market": "passyds",
+    "name": "Ethan Evans",
+    "player_id": "00-0039059",
+    "team": "LA"
+  },
+  "202611121555-evan-engram-den": {
+    "market": "passyds",
+    "name": "Evan Engram",
+    "player_id": "00-0033881",
+    "team": "DEN"
+  },
+  "202611121555-evan-mcpherson-cin": {
+    "market": "passyds",
+    "name": "Evan McPherson",
+    "player_id": "00-0036854",
+    "team": "CIN"
+  },
+  "202611121555-foster-moreau-hou": {
+    "market": "passyds",
+    "name": "Foster Moreau",
+    "player_id": "00-0034981",
+    "team": "HOU"
+  },
+  "202611121555-garrett-wilson-nyj": {
+    "market": "recyds",
+    "name": "Garrett Wilson",
+    "player_id": "00-0037740",
+    "team": "NYJ"
+  },
+  "202611121555-geno-smith-nyj": {
+    "market": "passyds",
+    "name": "Geno Smith",
+    "player_id": "00-0030565",
+    "team": "NYJ"
+  },
+  "202611121555-george-holani-sea": {
+    "market": "rushyds",
+    "name": "George Holani",
+    "player_id": "00-0039299",
+    "team": "SEA"
+  },
+  "202611121555-george-kittle-sf": {
+    "market": "recyds",
+    "name": "George Kittle",
+    "player_id": "00-0033288",
+    "team": "SF"
+  },
+  "202611121555-george-pickens-dal": {
+    "market": "recyds",
+    "name": "George Pickens",
+    "player_id": "00-0037247",
+    "team": "DAL"
+  },
+  "202611121555-germie-bernard-pit": {
+    "market": "recyds",
+    "name": "Germie Bernard",
+    "player_id": "00-0041489",
+    "team": "PIT"
+  },
+  "202611121555-gracen-halton-sf": {
+    "market": "passyds",
+    "name": "Gracen Halton",
+    "player_id": "00-0041557",
+    "team": "SF"
+  },
+  "202611121555-grady-jarrett-chi": {
+    "market": "passyds",
+    "name": "Grady Jarrett",
+    "player_id": "00-0031583",
+    "team": "CHI"
+  },
+  "202611121555-greg-dulcich-mia": {
+    "market": "recyds",
+    "name": "Greg Dulcich",
+    "player_id": "00-0037252",
+    "team": "MIA"
+  },
+  "202611121555-gunnar-helm-ten": {
+    "market": "passyds",
+    "name": "Gunnar Helm",
+    "player_id": "00-0040584",
+    "team": "TEN"
+  },
+  "202611121555-harold-fannin-jr-cle": {
+    "market": "recyds",
+    "name": "Harold Fannin Jr.",
+    "player_id": "00-0040663",
+    "team": "CLE"
+  },
+  "202611121555-harrison-butker-kc": {
+    "market": "passyds",
+    "name": "Harrison Butker",
+    "player_id": "00-0033303",
+    "team": "KC"
+  },
+  "202611121555-harrison-mevis-la": {
+    "market": "passyds",
+    "name": "Harrison Mevis",
+    "player_id": "00-0039498",
+    "team": "LA"
+  },
+  "202611121555-harrison-smith-min": {
+    "market": "passyds",
+    "name": "Harrison Smith",
+    "player_id": "00-0029606",
+    "team": "MIN"
+  },
+  "202611121555-hunter-henry-ne": {
+    "market": "recyds",
+    "name": "Hunter Henry",
+    "player_id": "00-0033090",
+    "team": "NE"
+  },
+  "202611121555-ian-thomas-lv": {
+    "market": "passyds",
+    "name": "Ian Thomas",
+    "player_id": "00-0034365",
+    "team": "LV"
+  },
+  "202611121555-isaiah-likely-nyg": {
+    "market": "recyds",
+    "name": "Isaiah Likely",
+    "player_id": "00-0037838",
+    "team": "NYG"
+  },
+  "202611121555-isaiah-williams-nyj": {
+    "market": "passyds",
+    "name": "Isaiah Williams",
+    "player_id": "00-0039451",
+    "team": "NYJ"
+  },
+  "202611121555-j-k--dobbins-den": {
+    "market": "rushyds",
+    "name": "J.K. Dobbins",
+    "player_id": "00-0036158",
+    "team": "DEN"
+  },
+  "202611121555-ja-marr-chase-cin": {
+    "market": "recyds",
+    "name": "Ja'Marr Chase",
+    "player_id": "00-0036900",
+    "team": "CIN"
+  },
+  "202611121555-jack-bech-lv": {
+    "market": "passyds",
+    "name": "Jack Bech",
+    "player_id": "00-0040729",
+    "team": "LV"
+  },
+  "202611121555-jack-fox-det": {
+    "market": "passyds",
+    "name": "Jack Fox",
+    "player_id": "00-0035156",
+    "team": "DET"
+  },
+  "202611121555-jack-strand-atl": {
+    "market": "passyds",
+    "name": "Jack Strand",
+    "player_id": "00-0041194",
+    "team": "ATL"
+  },
+  "202611121555-jacoby-brissett-ari": {
+    "market": "rushyds",
+    "name": "Jacoby Brissett",
+    "player_id": "00-0033119",
+    "team": "ARI"
+  },
+  "202611121555-jacory-croskey-merritt-was": {
+    "market": "rushyds",
+    "name": "Jacory Croskey-Merritt",
+    "player_id": "00-0040242",
+    "team": "WAS"
+  },
+  "202611121555-jadarian-price-sea": {
+    "market": "rushyds",
+    "name": "Jadarian Price",
+    "player_id": "00-0041512",
+    "team": "SEA"
+  },
+  "202611121555-jaden-dugger-sf": {
+    "market": "passyds",
+    "name": "Jaden Dugger",
+    "player_id": "00-0041078",
+    "team": "SF"
+  },
+  "202611121555-jadeveon-clowney-hou": {
+    "market": "passyds",
+    "name": "Jadeveon Clowney",
+    "player_id": "00-0031364",
+    "team": "HOU"
+  },
+  "202611121555-jahan-dotson-atl": {
+    "market": "recyds",
+    "name": "Jahan Dotson",
+    "player_id": "00-0037741",
+    "team": "ATL"
+  },
+  "202611121555-jahdae-walker-chi": {
+    "market": "passyds",
+    "name": "Jahdae Walker",
+    "player_id": "00-0040277",
+    "team": "CHI"
+  },
+  "202611121555-jahmyr-gibbs-det": {
+    "market": "rushyds",
+    "name": "Jahmyr Gibbs",
+    "player_id": "00-0039139",
+    "team": "DET"
+  },
+  "202611121555-jake-bates-det": {
+    "market": "passyds",
+    "name": "Jake Bates",
+    "player_id": "00-0039172",
+    "team": "DET"
+  },
+  "202611121555-jake-brendel-sf": {
+    "market": "passyds",
+    "name": "Jake Brendel",
+    "player_id": "00-0032701",
+    "team": "SF"
+  },
+  "202611121555-jake-elliott-phi": {
+    "market": "passyds",
+    "name": "Jake Elliott",
+    "player_id": "00-0033787",
+    "team": "PHI"
+  },
+  "202611121555-jake-ferguson-dal": {
+    "market": "passyds",
+    "name": "Jake Ferguson",
+    "player_id": "00-0038041",
+    "team": "DAL"
+  },
+  "202611121555-jake-matthews-atl": {
+    "market": "passyds",
+    "name": "Jake Matthews",
+    "player_id": "00-0031279",
+    "team": "ATL"
+  },
+  "202611121555-jakobi-meyers-jax": {
+    "market": "recyds",
+    "name": "Jakobi Meyers",
+    "player_id": "00-0034960",
+    "team": "JAX"
+  },
+  "202611121555-jaleel-mclaughlin-cle": {
+    "market": "passyds",
+    "name": "Jaleel McLaughlin",
+    "player_id": "00-0038794",
+    "team": "CLE"
+  },
+  "202611121555-jalen-coker-car": {
+    "market": "recyds",
+    "name": "Jalen Coker",
+    "player_id": "00-0039491",
+    "team": "CAR"
+  },
+  "202611121555-jalen-hurts-phi": {
+    "market": "rushyds",
+    "name": "Jalen Hurts",
+    "player_id": "00-0036389",
+    "team": "PHI"
+  },
+  "202611121555-jalen-nailor-lv": {
+    "market": "passyds",
+    "name": "Jalen Nailor",
+    "player_id": "00-0037291",
+    "team": "LV"
+  },
+  "202611121555-jalen-ramsey-pit": {
+    "market": "passyds",
+    "name": "Jalen Ramsey",
+    "player_id": "00-0033055",
+    "team": "PIT"
+  },
+  "202611121555-jalen-royals-kc": {
+    "market": "passyds",
+    "name": "Jalen Royals",
+    "player_id": "00-0040646",
+    "team": "KC"
+  },
+  "202611121555-jameis-winston-nyg": {
+    "market": "passyds",
+    "name": "Jameis Winston",
+    "player_id": "00-0031503",
+    "team": "NYG"
+  },
+  "202611121555-james-cook-buf": {
+    "market": "rushyds",
+    "name": "James Cook",
+    "player_id": "00-0037248",
+    "team": "BUF"
+  },
+  "202611121555-jameson-williams-det": {
+    "market": "recyds",
+    "name": "Jameson Williams",
+    "player_id": "00-0037240",
+    "team": "DET"
+  },
+  "202611121555-jared-goff-det": {
+    "market": "passyds",
+    "name": "Jared Goff",
+    "player_id": "00-0033106",
+    "team": "DET"
+  },
+  "202611121555-jarran-reed-sea": {
+    "market": "passyds",
+    "name": "Jarran Reed",
+    "player_id": "00-0032387",
+    "team": "SEA"
+  },
+  "202611121555-jason-myers-sea": {
+    "market": "passyds",
+    "name": "Jason Myers",
+    "player_id": "00-0031492",
+    "team": "SEA"
+  },
+  "202611121555-jason-sanders-nyj": {
+    "market": "passyds",
+    "name": "Jason Sanders",
+    "player_id": "00-0034794",
+    "team": "NYJ"
+  },
+  "202611121555-javon-hargrave-gb": {
+    "market": "passyds",
+    "name": "Javon Hargrave",
+    "player_id": "00-0033109",
+    "team": "GB"
+  },
+  "202611121555-javonte-williams-dal": {
+    "market": "rushyds",
+    "name": "Javonte Williams",
+    "player_id": "00-0036997",
+    "team": "DAL"
+  },
+  "202611121555-jaxon-smith-njigba-sea": {
+    "market": "recyds",
+    "name": "Jaxon Smith-Njigba",
+    "player_id": "00-0038543",
+    "team": "SEA"
+  },
+  "202611121555-jaxson-dart-nyg": {
+    "market": "passyds",
+    "name": "Jaxson Dart",
+    "player_id": "00-0040691",
+    "team": "NYG"
+  },
+  "202611121555-jayden-daniels-was": {
+    "market": "rushyds",
+    "name": "Jayden Daniels",
+    "player_id": "00-0039910",
+    "team": "WAS"
+  },
+  "202611121555-jaylen-waddle-den": {
+    "market": "recyds",
+    "name": "Jaylen Waddle",
+    "player_id": "00-0036613",
+    "team": "DEN"
+  },
+  "202611121555-jaylen-warren-pit": {
+    "market": "rushyds",
+    "name": "Jaylen Warren",
+    "player_id": "00-0037228",
+    "team": "PIT"
+  },
+  "202611121555-jaylin-noel-hou": {
+    "market": "recyds",
+    "name": "Jaylin Noel",
+    "player_id": "00-0040138",
+    "team": "HOU"
+  },
+  "202611121555-jaylon-johnson-chi": {
+    "market": "passyds",
+    "name": "Jaylon Johnson",
+    "player_id": "00-0036292",
+    "team": "CHI"
+  },
+  "202611121555-jeremiyah-love-ari": {
+    "market": "rushyds",
+    "name": "Jeremiyah Love",
+    "player_id": "00-0041027",
+    "team": "ARI"
+  },
+  "202611121555-jeremy-ruckert-nyj": {
+    "market": "passyds",
+    "name": "Jeremy Ruckert",
+    "player_id": "00-0037805",
+    "team": "NYJ"
+  },
+  "202611121555-jermaine-eluemunor-nyg": {
+    "market": "passyds",
+    "name": "Jermaine Eluemunor",
+    "player_id": "00-0033290",
+    "team": "NYG"
+  },
+  "202611121555-jessie-bates-atl": {
+    "market": "passyds",
+    "name": "Jessie Bates",
+    "player_id": "00-0034675",
+    "team": "ATL"
+  },
+  "202611121555-joe-burrow-cin": {
+    "market": "rushyds",
+    "name": "Joe Burrow",
+    "player_id": "00-0036442",
+    "team": "CIN"
+  },
+  "202611121555-joey-slye-ten": {
+    "market": "passyds",
+    "name": "Joey Slye",
+    "player_id": "00-0035192",
+    "team": "TEN"
+  },
+  "202611121555-john-metchie-iii-car": {
+    "market": "passyds",
+    "name": "John Metchie III",
+    "player_id": "00-0037614",
+    "team": "CAR"
+  },
+  "202611121555-jonah-coleman-den": {
+    "market": "rushyds",
+    "name": "Jonah Coleman",
+    "player_id": "00-0041496",
+    "team": "DEN"
+  },
+  "202611121555-jonas-sanker-no": {
+    "market": "passyds",
+    "name": "Jonas Sanker",
+    "player_id": "00-0040643",
+    "team": "NO"
+  },
+  "202611121555-jonathan-allen-cin": {
+    "market": "passyds",
+    "name": "Jonathan Allen",
+    "player_id": "00-0033523",
+    "team": "CIN"
+  },
+  "202611121555-jonathan-bullard-dal": {
+    "market": "passyds",
+    "name": "Jonathan Bullard",
+    "player_id": "00-0033093",
+    "team": "DAL"
+  },
+  "202611121555-jonathan-taylor-ind": {
+    "market": "rushyds",
+    "name": "Jonathan Taylor",
+    "player_id": "00-0036223",
+    "team": "IND"
+  },
+  "202611121555-jordan-addison-min": {
+    "market": "recyds",
+    "name": "Jordan Addison",
+    "player_id": "00-0038994",
+    "team": "MIN"
+  },
+  "202611121555-jordan-love-gb": {
+    "market": "passyds",
+    "name": "Jordan Love",
+    "player_id": "00-0036264",
+    "team": "GB"
+  },
+  "202611121555-jordan-mason-min": {
+    "market": "rushyds",
+    "name": "Jordan Mason",
+    "player_id": "00-0037525",
+    "team": "MIN"
+  },
+  "202611121555-josh-allen-buf": {
+    "market": "rushyds",
+    "name": "Josh Allen",
+    "player_id": "00-0034857",
+    "team": "BUF"
+  },
+  "202611121555-josh-cameron-jax": {
+    "market": "passyds",
+    "name": "Josh Cameron",
+    "player_id": "00-0041100",
+    "team": "JAX"
+  },
+  "202611121555-josh-downs-ind": {
+    "market": "recyds",
+    "name": "Josh Downs",
+    "player_id": "00-0038997",
+    "team": "IND"
+  },
+  "202611121555-josh-palmer-buf": {
+    "market": "passyds",
+    "name": "Josh Palmer",
+    "player_id": "00-0036988",
+    "team": "BUF"
+  },
+  "202611121555-josiah-trotter-tb": {
+    "market": "passyds",
+    "name": "Josiah Trotter",
+    "player_id": "00-0041502",
+    "team": "TB"
+  },
+  "202611121555-justice-hill-bal": {
+    "market": "rushyds",
+    "name": "Justice Hill",
+    "player_id": "00-0034975",
+    "team": "BAL"
+  },
+  "202611121555-justin-herbert-lac": {
+    "market": "rushyds",
+    "name": "Justin Herbert",
+    "player_id": "00-0036355",
+    "team": "LAC"
+  },
+  "202611121555-justin-jefferson-min": {
+    "market": "recyds",
+    "name": "Justin Jefferson",
+    "player_id": "00-0036322",
+    "team": "MIN"
+  },
+  "202611121555-juwan-johnson-no": {
+    "market": "recyds",
+    "name": "Juwan Johnson",
+    "player_id": "00-0036040",
+    "team": "NO"
+  },
+  "202611121555-ka-imi-fairbairn-hou": {
+    "market": "passyds",
+    "name": "Ka'imi Fairbairn",
+    "player_id": "00-0032726",
+    "team": "HOU"
+  },
+  "202611121555-kaelon-black-sf": {
+    "market": "rushyds",
+    "name": "Kaelon Black",
+    "player_id": "00-0041052",
+    "team": "SF"
+  },
+  "202611121555-kain-medrano-was": {
+    "market": "passyds",
+    "name": "Kain Medrano",
+    "player_id": "00-0040216",
+    "team": "WAS"
+  },
+  "202611121555-kaleb-johnson-gb": {
+    "market": "rushyds",
+    "name": "Kaleb Johnson",
+    "player_id": "00-0040142",
+    "team": "GB"
+  },
+  "202611121555-kalif-raymond-chi": {
+    "market": "recyds",
+    "name": "Kalif Raymond",
+    "player_id": "00-0032464",
+    "team": "CHI"
+  },
+  "202611121555-kavontae-turpin-dal": {
+    "market": "passyds",
+    "name": "KaVontae Turpin",
+    "player_id": "00-0037801",
+    "team": "DAL"
+  },
+  "202611121555-kayshon-boutte-hou": {
+    "market": "recyds",
+    "name": "Kayshon Boutte",
+    "player_id": "00-0038608",
+    "team": "HOU"
+  },
+  "202611121555-kc-concepcion-cle": {
+    "market": "recyds",
+    "name": "KC Concepcion",
+    "player_id": "00-0041547",
+    "team": "CLE"
+  },
+  "202611121555-keaton-mitchell-lac": {
+    "market": "rushyds",
+    "name": "Keaton Mitchell",
+    "player_id": "00-0038454",
+    "team": "LAC"
+  },
+  "202611121555-keenan-allen-ind": {
+    "market": "recyds",
+    "name": "Keenan Allen",
+    "player_id": "00-0030279",
+    "team": "IND"
+  },
+  "202611121555-keleki-latu-buf": {
+    "market": "passyds",
+    "name": "Keleki Latu",
+    "player_id": "00-0040363",
+    "team": "BUF"
+  },
+  "202611121555-kendre-miller-no": {
+    "market": "rushyds",
+    "name": "Kendre Miller",
+    "player_id": "00-0038551",
+    "team": "NO"
+  },
+  "202611121555-kendrick-bourne-ari": {
+    "market": "recyds",
+    "name": "Kendrick Bourne",
+    "player_id": "00-0033307",
+    "team": "ARI"
+  },
+  "202611121555-kenneth-walker-iii-kc": {
+    "market": "rushyds",
+    "name": "Kenneth Walker III",
+    "player_id": "00-0038134",
+    "team": "KC"
+  },
+  "202611121555-kenny-clark-dal": {
+    "market": "passyds",
+    "name": "Kenny Clark",
+    "player_id": "00-0033120",
+    "team": "DAL"
+  },
+  "202611121555-kenny-gainwell-tb": {
+    "market": "rushyds",
+    "name": "Kenny Gainwell",
+    "player_id": "00-0036919",
+    "team": "TB"
+  },
+  "202611121555-kenny-pickett-car": {
+    "market": "passyds",
+    "name": "Kenny Pickett",
+    "player_id": "00-0038102",
+    "team": "CAR"
+  },
+  "202611121555-kenyon-sadiq-nyj": {
+    "market": "passyds",
+    "name": "Kenyon Sadiq",
+    "player_id": "00-0041032",
+    "team": "NYJ"
+  },
+  "202611121555-keon-coleman-buf": {
+    "market": "recyds",
+    "name": "Keon Coleman",
+    "player_id": "00-0039901",
+    "team": "BUF"
+  },
+  "202611121555-kevin-byard-ne": {
+    "market": "passyds",
+    "name": "Kevin Byard",
+    "player_id": "00-0033132",
+    "team": "NE"
+  },
+  "202611121555-kevin-coleman-jr-mia": {
+    "market": "passyds",
+    "name": "Kevin Coleman Jr.",
+    "player_id": "00-0041529",
+    "team": "MIA"
+  },
+  "202611121555-khalil-mack-lac": {
+    "market": "passyds",
+    "name": "Khalil Mack",
+    "player_id": "00-0031040",
+    "team": "LAC"
+  },
+  "202611121555-khalil-shakir-buf": {
+    "market": "recyds",
+    "name": "Khalil Shakir",
+    "player_id": "00-0037261",
+    "team": "BUF"
+  },
+  "202611121555-kimani-vidal-lac": {
+    "market": "rushyds",
+    "name": "Kimani Vidal",
+    "player_id": "00-0039391",
+    "team": "LAC"
+  },
+  "202611121555-kirk-cousins-lv": {
+    "market": "passyds",
+    "name": "Kirk Cousins",
+    "player_id": "00-0029604",
+    "team": "LV"
+  },
+  "202611121555-konata-mumpfield-la": {
+    "market": "passyds",
+    "name": "Konata Mumpfield",
+    "player_id": "00-0040590",
+    "team": "LA"
+  },
+  "202611121555-kyle-juszczyk-sf": {
+    "market": "passyds",
+    "name": "Kyle Juszczyk",
+    "player_id": "00-0029892",
+    "team": "SF"
+  },
+  "202611121555-kyle-monangai-chi": {
+    "market": "rushyds",
+    "name": "Kyle Monangai",
+    "player_id": "00-0040236",
+    "team": "CHI"
+  },
+  "202611121555-kyle-pitts-atl": {
+    "market": "passyds",
+    "name": "Kyle Pitts",
+    "player_id": "00-0036970",
+    "team": "ATL"
+  },
+  "202611121555-kyle-van-noy-min": {
+    "market": "passyds",
+    "name": "Kyle Van Noy",
+    "player_id": "00-0031360",
+    "team": "MIN"
+  },
+  "202611121555-kyle-williams-ne": {
+    "market": "passyds",
+    "name": "Kyle Williams",
+    "player_id": "00-0040131",
+    "team": "NE"
+  },
+  "202611121555-kyler-murray-min": {
+    "market": "rushyds",
+    "name": "Kyler Murray",
+    "player_id": "00-0035228",
+    "team": "MIN"
+  },
+  "202611121555-kyren-williams-la": {
+    "market": "rushyds",
+    "name": "Kyren Williams",
+    "player_id": "00-0037840",
+    "team": "LA"
+  },
+  "202611121555-ladd-mcconkey-lac": {
+    "market": "recyds",
+    "name": "Ladd McConkey",
+    "player_id": "00-0039915",
+    "team": "LAC"
+  },
+  "202611121555-lamar-jackson-bal": {
+    "market": "rushyds",
+    "name": "Lamar Jackson",
+    "player_id": "00-0034796",
+    "team": "BAL"
+  },
+  "202611121555-laquon-treadwell-ind": {
+    "market": "passyds",
+    "name": "Laquon Treadwell",
+    "player_id": "00-0032951",
+    "team": "IND"
+  },
+  "202611121555-leonard-williams-sea": {
+    "market": "passyds",
+    "name": "Leonard Williams",
+    "player_id": "00-0031933",
+    "team": "SEA"
+  },
+  "202611121555-luke-rhodes-ind": {
+    "market": "passyds",
+    "name": "Luke Rhodes",
+    "player_id": "00-0032753",
+    "team": "IND"
+  },
+  "202611121555-luther-burden-iii-chi": {
+    "market": "recyds",
+    "name": "Luther Burden III",
+    "player_id": "00-0040735",
+    "team": "CHI"
+  },
+  "202611121555-mack-hollins-ne": {
+    "market": "passyds",
+    "name": "Mack Hollins",
+    "player_id": "00-0033555",
+    "team": "NE"
+  },
+  "202611121555-makai-lemon-phi": {
+    "market": "recyds",
+    "name": "Makai Lemon",
+    "player_id": "00-0040867",
+    "team": "PHI"
+  },
+  "202611121555-malachi-fields-nyg": {
+    "market": "recyds",
+    "name": "Malachi Fields",
+    "player_id": "00-0041042",
+    "team": "NYG"
+  },
+  "202611121555-maliek-collins-cle": {
+    "market": "passyds",
+    "name": "Maliek Collins",
+    "player_id": "00-0033131",
+    "team": "CLE"
+  },
+  "202611121555-malik-nabers-nyg": {
+    "market": "recyds",
+    "name": "Malik Nabers",
+    "player_id": "00-0039337",
+    "team": "NYG"
+  },
+  "202611121555-malik-washington-mia": {
+    "market": "recyds",
+    "name": "Malik Washington",
+    "player_id": "00-0039880",
+    "team": "MIA"
+  },
+  "202611121555-malik-willis-mia": {
+    "market": "rushyds",
+    "name": "Malik Willis",
+    "player_id": "00-0038128",
+    "team": "MIA"
+  },
+  "202611121555-marcus-mariota-was": {
+    "market": "passyds",
+    "name": "Marcus Mariota",
+    "player_id": "00-0032268",
+    "team": "WAS"
+  },
+  "202611121555-mario-edwards-hou": {
+    "market": "passyds",
+    "name": "Mario Edwards",
+    "player_id": "00-0032265",
+    "team": "HOU"
+  },
+  "202611121555-mark-andrews-bal": {
+    "market": "passyds",
+    "name": "Mark Andrews",
+    "player_id": "00-0034753",
+    "team": "BAL"
+  },
+  "202611121555-marlon-humphrey-bal": {
+    "market": "passyds",
+    "name": "Marlon Humphrey",
+    "player_id": "00-0033281",
+    "team": "BAL"
+  },
+  "202611121555-marshawn-lloyd-gb": {
+    "market": "rushyds",
+    "name": "MarShawn Lloyd",
+    "player_id": "00-0039811",
+    "team": "GB"
+  },
+  "202611121555-marvin-harrison-jr-hou": {
+    "market": "passyds",
+    "name": "Marvin Harrison Jr.",
+    "player_id": "00-0039849",
+    "team": "HOU"
+  },
+  "202611121555-mason-taylor-nyj": {
+    "market": "passyds",
+    "name": "Mason Taylor",
+    "player_id": "00-0040736",
+    "team": "NYJ"
+  },
+  "202611121555-matt-gay-lv": {
+    "market": "passyds",
+    "name": "Matt Gay",
+    "player_id": "00-0035269",
+    "team": "LV"
+  },
+  "202611121555-matthew-golden-gb": {
+    "market": "recyds",
+    "name": "Matthew Golden",
+    "player_id": "00-0040667",
+    "team": "GB"
+  },
+  "202611121555-matthew-hibner-bal": {
+    "market": "passyds",
+    "name": "Matthew Hibner",
+    "player_id": "00-0040879",
+    "team": "BAL"
+  },
+  "202611121555-matthew-stafford-la": {
+    "market": "passyds",
+    "name": "Matthew Stafford",
+    "player_id": "00-0026498",
+    "team": "LA"
+  },
+  "202611121555-michael-mayer-lv": {
+    "market": "recyds",
+    "name": "Michael Mayer",
+    "player_id": "00-0039066",
+    "team": "LV"
+  },
+  "202611121555-michael-wilson-ari": {
+    "market": "recyds",
+    "name": "Michael Wilson",
+    "player_id": "00-0038559",
+    "team": "ARI"
+  },
+  "202611121555-mike-evans-sf": {
+    "market": "recyds",
+    "name": "Mike Evans",
+    "player_id": "00-0031408",
+    "team": "SF"
+  },
+  "202611121555-mike-gesicki-cin": {
+    "market": "recyds",
+    "name": "Mike Gesicki",
+    "player_id": "00-0034829",
+    "team": "CIN"
+  },
+  "202611121555-mike-washington-jr-lv": {
+    "market": "rushyds",
+    "name": "Mike Washington Jr.",
+    "player_id": "00-0040878",
+    "team": "LV"
+  },
+  "202611121555-morgan-moses-ne": {
+    "market": "passyds",
+    "name": "Morgan Moses",
+    "player_id": "00-0031330",
+    "team": "NE"
+  },
+  "202611121555-myles-price-min": {
+    "market": "passyds",
+    "name": "Myles Price",
+    "player_id": "00-0040506",
+    "team": "MIN"
+  },
+  "202611121555-najee-harris-nyg": {
+    "market": "rushyds",
+    "name": "Najee Harris",
+    "player_id": "00-0036893",
+    "team": "NYG"
+  },
+  "202611121555-nate-adkins-den": {
+    "market": "passyds",
+    "name": "Nate Adkins",
+    "player_id": "00-0038783",
+    "team": "DEN"
+  },
+  "202611121555-nate-boerkircher-jax": {
+    "market": "passyds",
+    "name": "Nate Boerkircher",
+    "player_id": "00-0041503",
+    "team": "JAX"
+  },
+  "202611121555-nick-folk-atl": {
+    "market": "passyds",
+    "name": "Nick Folk",
+    "player_id": "00-0025565",
+    "team": "ATL"
+  },
+  "202611121555-nick-mullens-jax": {
+    "market": "passyds",
+    "name": "Nick Mullens",
+    "player_id": "00-0033319",
+    "team": "JAX"
+  },
+  "202611121555-nick-muse-atl": {
+    "market": "passyds",
+    "name": "Nick Muse",
+    "player_id": "00-0037317",
+    "team": "ATL"
+  },
+  "202611121555-nico-collins-hou": {
+    "market": "recyds",
+    "name": "Nico Collins",
+    "player_id": "00-0036554",
+    "team": "HOU"
+  },
+  "202611121555-noah-fant-no": {
+    "market": "passyds",
+    "name": "Noah Fant",
+    "player_id": "00-0035644",
+    "team": "NO"
+  },
+  "202611121555-noah-gray-kc": {
+    "market": "passyds",
+    "name": "Noah Gray",
+    "player_id": "00-0036637",
+    "team": "KC"
+  },
+  "202611121555-ollie-gordon-ii-mia": {
+    "market": "rushyds",
+    "name": "Ollie Gordon II",
+    "player_id": "00-0040198",
+    "team": "MIA"
+  },
+  "202611121555-oluwafemi-oladejo-ten": {
+    "market": "passyds",
+    "name": "Oluwafemi Oladejo",
+    "player_id": "00-0040752",
+    "team": "TEN"
+  },
+  "202611121555-omar-cooper-jr-nyj": {
+    "market": "recyds",
+    "name": "Omar Cooper Jr.",
+    "player_id": "00-0041511",
+    "team": "NYJ"
+  },
+  "202611121555-omarion-hampton-lac": {
+    "market": "rushyds",
+    "name": "Omarion Hampton",
+    "player_id": "00-0040666",
+    "team": "LAC"
+  },
+  "202611121555-oronde-gadsden-ii-lac": {
+    "market": "passyds",
+    "name": "Oronde Gadsden II",
+    "player_id": "00-0040189",
+    "team": "LAC"
+  },
+  "202611121555-parker-washington-jax": {
+    "market": "recyds",
+    "name": "Parker Washington",
+    "player_id": "00-0038606",
+    "team": "JAX"
+  },
+  "202611121555-pat-bryant-den": {
+    "market": "passyds",
+    "name": "Pat Bryant",
+    "player_id": "00-0040134",
+    "team": "DEN"
+  },
+  "202611121555-pat-freiermuth-pit": {
+    "market": "passyds",
+    "name": "Pat Freiermuth",
+    "player_id": "00-0036894",
+    "team": "PIT"
+  },
+  "202611121555-patrick-mahomes-kc": {
+    "market": "rushyds",
+    "name": "Patrick Mahomes",
+    "player_id": "00-0033873",
+    "team": "KC"
+  },
+  "202611121555-patrick-ricard-nyg": {
+    "market": "passyds",
+    "name": "Patrick Ricard",
+    "player_id": "00-0033376",
+    "team": "NYG"
+  },
+  "202611121555-puka-nacua-la": {
+    "market": "recyds",
+    "name": "Puka Nacua",
+    "player_id": "00-0039075",
+    "team": "LA"
+  },
+  "202611121555-quentin-johnston-lac": {
+    "market": "recyds",
+    "name": "Quentin Johnston",
+    "player_id": "00-0038544",
+    "team": "LAC"
+  },
+  "202611121555-quinshon-judkins-cle": {
+    "market": "rushyds",
+    "name": "Quinshon Judkins",
+    "player_id": "00-0040784",
+    "team": "CLE"
+  },
+  "202611121555-rachaad-white-was": {
+    "market": "rushyds",
+    "name": "Rachaad White",
+    "player_id": "00-0037256",
+    "team": "WAS"
+  },
+  "202611121555-rakeem-nunez-roches-tb": {
+    "market": "passyds",
+    "name": "Rakeem Nunez-Roches",
+    "player_id": "00-0031957",
+    "team": "TB"
+  },
+  "202611121555-rashee-rice-kc": {
+    "market": "recyds",
+    "name": "Rashee Rice",
+    "player_id": "00-0039067",
+    "team": "KC"
+  },
+  "202611121555-rashid-shaheed-sea": {
+    "market": "passyds",
+    "name": "Rashid Shaheed",
+    "player_id": "00-0037545",
+    "team": "SEA"
+  },
+  "202611121555-rashod-bateman-bal": {
+    "market": "recyds",
+    "name": "Rashod Bateman",
+    "player_id": "00-0036550",
+    "team": "BAL"
+  },
+  "202611121555-rayuan-lane-iii-jax": {
+    "market": "passyds",
+    "name": "Rayuan Lane III",
+    "player_id": "00-0040213",
+    "team": "JAX"
+  },
+  "202611121555-rhamondre-stevenson-ne": {
+    "market": "rushyds",
+    "name": "Rhamondre Stevenson",
+    "player_id": "00-0036875",
+    "team": "NE"
+  },
+  "202611121555-rico-dowdle-pit": {
+    "market": "rushyds",
+    "name": "Rico Dowdle",
+    "player_id": "00-0036139",
+    "team": "PIT"
+  },
+  "202611121555-rigoberto-sanchez-ind": {
+    "market": "passyds",
+    "name": "Rigoberto Sanchez",
+    "player_id": "00-0033269",
+    "team": "IND"
+  },
+  "202611121555-riley-patterson-mia": {
+    "market": "passyds",
+    "name": "Riley Patterson",
+    "player_id": "00-0036816",
+    "team": "MIA"
+  },
+  "202611121555-rj-harvey-den": {
+    "market": "rushyds",
+    "name": "RJ Harvey",
+    "player_id": "00-0040730",
+    "team": "DEN"
+  },
+  "202611121555-roman-wilson-pit": {
+    "market": "passyds",
+    "name": "Roman Wilson",
+    "player_id": "00-0039739",
+    "team": "PIT"
+  },
+  "202611121555-rome-odunze-chi": {
+    "market": "recyds",
+    "name": "Rome Odunze",
+    "player_id": "00-0039919",
+    "team": "CHI"
+  },
+  "202611121555-romeo-doubs-ne": {
+    "market": "recyds",
+    "name": "Romeo Doubs",
+    "player_id": "00-0037816",
+    "team": "NE"
+  },
+  "202611121555-ronnie-stanley-bal": {
+    "market": "passyds",
+    "name": "Ronnie Stanley",
+    "player_id": "00-0032965",
+    "team": "BAL"
+  },
+  "202611121555-roschon-johnson-chi": {
+    "market": "rushyds",
+    "name": "Roschon Johnson",
+    "player_id": "00-0039021",
+    "team": "CHI"
+  },
+  "202611121555-ryan-fitzgerald-car": {
+    "market": "passyds",
+    "name": "Ryan Fitzgerald",
+    "player_id": "00-0040279",
+    "team": "CAR"
+  },
+  "202611121555-ryan-flournoy-dal": {
+    "market": "recyds",
+    "name": "Ryan Flournoy",
+    "player_id": "00-0039410",
+    "team": "DAL"
+  },
+  "202611121555-ryan-miller-mia": {
+    "market": "passyds",
+    "name": "Ryan Miller",
+    "player_id": "00-0038824",
+    "team": "MIA"
+  },
+  "202611121555-sam-darnold-sea": {
+    "market": "passyds",
+    "name": "Sam Darnold",
+    "player_id": "00-0034869",
+    "team": "SEA"
+  },
+  "202611121555-sam-laporta-det": {
+    "market": "recyds",
+    "name": "Sam LaPorta",
+    "player_id": "00-0039065",
+    "team": "DET"
+  },
+  "202611121555-sam-martin-car": {
+    "market": "passyds",
+    "name": "Sam Martin",
+    "player_id": "00-0030092",
+    "team": "CAR"
+  },
+  "202611121555-samaje-perine-cin": {
+    "market": "rushyds",
+    "name": "Samaje Perine",
+    "player_id": "00-0033526",
+    "team": "CIN"
+  },
+  "202611121555-saquon-barkley-phi": {
+    "market": "rushyds",
+    "name": "Saquon Barkley",
+    "player_id": "00-0034844",
+    "team": "PHI"
+  },
+  "202611121555-seth-mcgowan-ind": {
+    "market": "rushyds",
+    "name": "Seth McGowan",
+    "player_id": "00-0041125",
+    "team": "IND"
+  },
+  "202611121555-sheldon-rankins-hou": {
+    "market": "passyds",
+    "name": "Sheldon Rankins",
+    "player_id": "00-0032759",
+    "team": "HOU"
+  },
+  "202611121555-sione-vaki-det": {
+    "market": "rushyds",
+    "name": "Sione Vaki",
+    "player_id": "00-0039364",
+    "team": "DET"
+  },
+  "202611121555-spencer-shrader-ind": {
+    "market": "passyds",
+    "name": "Spencer Shrader",
+    "player_id": "00-0039576",
+    "team": "IND"
+  },
+  "202611121555-stefon-diggs-was": {
+    "market": "recyds",
+    "name": "Stefon Diggs",
+    "player_id": "00-0031588",
+    "team": "WAS"
+  },
+  "202611121555-stetson-bennett-la": {
+    "market": "passyds",
+    "name": "Stetson Bennett",
+    "player_id": "00-0039107",
+    "team": "LA"
+  },
+  "202611121555-t-j--hockenson-min": {
+    "market": "recyds",
+    "name": "T.J. Hockenson",
+    "player_id": "00-0035229",
+    "team": "MIN"
+  },
+  "202611121555-t-j--watt-pit": {
+    "market": "passyds",
+    "name": "T.J. Watt",
+    "player_id": "00-0033886",
+    "team": "PIT"
+  },
+  "202611121555-talanoa-hufanga-den": {
+    "market": "passyds",
+    "name": "Talanoa Hufanga",
+    "player_id": "00-0036564",
+    "team": "DEN"
+  },
+  "202611121555-tank-bigsby-phi": {
+    "market": "rushyds",
+    "name": "Tank Bigsby",
+    "player_id": "00-0038555",
+    "team": "PHI"
+  },
+  "202611121555-tanner-hudson-cin": {
+    "market": "passyds",
+    "name": "Tanner Hudson",
+    "player_id": "00-0034613",
+    "team": "CIN"
+  },
+  "202611121555-ted-hurst-iii-tb": {
+    "market": "passyds",
+    "name": "Ted Hurst III",
+    "player_id": "00-0041048",
+    "team": "TB"
+  },
+  "202611121555-tee-higgins-cin": {
+    "market": "recyds",
+    "name": "Tee Higgins",
+    "player_id": "00-0036410",
+    "team": "CIN"
+  },
+  "202611121555-terrance-ferguson-la": {
+    "market": "passyds",
+    "name": "Terrance Ferguson",
+    "player_id": "00-0040737",
+    "team": "LA"
+  },
+  "202611121555-terry-mclaurin-was": {
+    "market": "passyds",
+    "name": "Terry McLaurin",
+    "player_id": "00-0035659",
+    "team": "WAS"
+  },
+  "202611121555-tetairoa-mcmillan-car": {
+    "market": "recyds",
+    "name": "Tetairoa McMillan",
+    "player_id": "00-0040124",
+    "team": "CAR"
+  },
+  "202611121555-tez-johnson-tb": {
+    "market": "recyds",
+    "name": "Tez Johnson",
+    "player_id": "00-0040237",
+    "team": "TB"
+  },
+  "202611121555-theo-johnson-nyg": {
+    "market": "passyds",
+    "name": "Theo Johnson",
+    "player_id": "00-0039847",
+    "team": "NYG"
+  },
+  "202611121555-tommy-tremble-car": {
+    "market": "passyds",
+    "name": "Tommy Tremble",
+    "player_id": "00-0037005",
+    "team": "CAR"
+  },
+  "202611121555-tony-jefferson-lac": {
+    "market": "passyds",
+    "name": "Tony Jefferson",
+    "player_id": "00-0030294",
+    "team": "LAC"
+  },
+  "202611121555-tony-pollard-ten": {
+    "market": "rushyds",
+    "name": "Tony Pollard",
+    "player_id": "00-0035261",
+    "team": "TEN"
+  },
+  "202611121555-travis-etienne-no": {
+    "market": "rushyds",
+    "name": "Travis Etienne",
+    "player_id": "00-0036973",
+    "team": "NO"
+  },
+  "202611121555-travis-hunter-jax": {
+    "market": "passyds",
+    "name": "Travis Hunter",
+    "player_id": "00-0040718",
+    "team": "JAX"
+  },
+  "202611121555-travis-kelce-kc": {
+    "market": "recyds",
+    "name": "Travis Kelce",
+    "player_id": "00-0030506",
+    "team": "KC"
+  },
+  "202611121555-tre-harris-lac": {
+    "market": "recyds",
+    "name": "Tre Harris",
+    "player_id": "00-0040727",
+    "team": "LAC"
+  },
+  "202611121555-tre-tucker-lv": {
+    "market": "recyds",
+    "name": "Tre Tucker",
+    "player_id": "00-0038563",
+    "team": "LV"
+  },
+  "202611121555-trent-brown-hou": {
+    "market": "passyds",
+    "name": "Trent Brown",
+    "player_id": "00-0032071",
+    "team": "HOU"
+  },
+  "202611121555-tress-way-was": {
+    "market": "passyds",
+    "name": "Tress Way",
+    "player_id": "00-0030140",
+    "team": "WAS"
+  },
+  "202611121555-treveyon-henderson-ne": {
+    "market": "rushyds",
+    "name": "TreVeyon Henderson",
+    "player_id": "00-0040734",
+    "team": "NE"
+  },
+  "202611121555-trevor-lawrence-jax": {
+    "market": "rushyds",
+    "name": "Trevor Lawrence",
+    "player_id": "00-0036971",
+    "team": "JAX"
+  },
+  "202611121555-trey-mcbride-ari": {
+    "market": "recyds",
+    "name": "Trey McBride",
+    "player_id": "00-0037744",
+    "team": "ARI"
+  },
+  "202611121555-trey-smack-gb": {
+    "market": "passyds",
+    "name": "Trey Smack",
+    "player_id": "00-0040899",
+    "team": "GB"
+  },
+  "202611121555-treylon-burks-was": {
+    "market": "passyds",
+    "name": "Treylon Burks",
+    "player_id": "00-0037742",
+    "team": "WAS"
+  },
+  "202611121555-tucker-kraft-gb": {
+    "market": "recyds",
+    "name": "Tucker Kraft",
+    "player_id": "00-0038996",
+    "team": "GB"
+  },
+  "202611121555-tyler-allgeier-ari": {
+    "market": "rushyds",
+    "name": "Tyler Allgeier",
+    "player_id": "00-0037263",
+    "team": "ARI"
+  },
+  "202611121555-tyler-badie-den": {
+    "market": "passyds",
+    "name": "Tyler Badie",
+    "player_id": "00-0037085",
+    "team": "DEN"
+  },
+  "202611121555-tyler-bass-buf": {
+    "market": "passyds",
+    "name": "Tyler Bass",
+    "player_id": "00-0036162",
+    "team": "BUF"
+  },
+  "202611121555-tyler-higbee-la": {
+    "market": "recyds",
+    "name": "Tyler Higbee",
+    "player_id": "00-0033110",
+    "team": "LA"
+  },
+  "202611121555-tyler-loop-bal": {
+    "market": "passyds",
+    "name": "Tyler Loop",
+    "player_id": "00-0040074",
+    "team": "BAL"
+  },
+  "202611121555-tyler-shough-no": {
+    "market": "rushyds",
+    "name": "Tyler Shough",
+    "player_id": "00-0040743",
+    "team": "NO"
+  },
+  "202611121555-tyler-warren-ind": {
+    "market": "recyds",
+    "name": "Tyler Warren",
+    "player_id": "00-0040128",
+    "team": "IND"
+  },
+  "202611121555-tyquan-thornton-kc": {
+    "market": "passyds",
+    "name": "Tyquan Thornton",
+    "player_id": "00-0038104",
+    "team": "KC"
+  },
+  "202611121555-tyrone-tracy-jr-nyg": {
+    "market": "passyds",
+    "name": "Tyrone Tracy Jr.",
+    "player_id": "00-0039384",
+    "team": "NYG"
+  },
+  "202611121555-tyson-bagent-chi": {
+    "market": "passyds",
+    "name": "Tyson Bagent",
+    "player_id": "00-0038416",
+    "team": "CHI"
+  },
+  "202611121555-wan-dale-robinson-ten": {
+    "market": "recyds",
+    "name": "Wan'Dale Robinson",
+    "player_id": "00-0038117",
+    "team": "TEN"
+  },
+  "202611121555-wil-lutz-den": {
+    "market": "passyds",
+    "name": "Wil Lutz",
+    "player_id": "00-0032569",
+    "team": "DEN"
+  },
+  "202611121555-will-reichard-min": {
+    "market": "passyds",
+    "name": "Will Reichard",
+    "player_id": "00-0039404",
+    "team": "MIN"
+  },
+  "202611121555-will-shipley-phi": {
+    "market": "passyds",
+    "name": "Will Shipley",
+    "player_id": "00-0039746",
+    "team": "PHI"
+  },
+  "202611121555-woody-marks-hou": {
+    "market": "rushyds",
+    "name": "Woody Marks",
+    "player_id": "00-0040583",
+    "team": "HOU"
+  },
+  "202611121555-xavier-hutchinson-hou": {
+    "market": "recyds",
+    "name": "Xavier Hutchinson",
+    "player_id": "00-0038618",
+    "team": "HOU"
+  },
+  "202611121555-xavier-worthy-kc": {
+    "market": "recyds",
+    "name": "Xavier Worthy",
+    "player_id": "00-0039894",
+    "team": "KC"
+  },
+  "202611121555-za-darius-smith-atl": {
+    "market": "passyds",
+    "name": "Za'Darius Smith",
+    "player_id": "00-0031576",
+    "team": "ATL"
+  },
+  "202611121555-zachariah-branch-atl": {
+    "market": "passyds",
+    "name": "Zachariah Branch",
+    "player_id": "00-0041044",
+    "team": "ATL"
+  },
+  "202611121555-zay-flowers-bal": {
+    "market": "recyds",
+    "name": "Zay Flowers",
+    "player_id": "00-0039064",
+    "team": "BAL"
+  },
+  "202611121555-zyon-mccollum-tb": {
+    "market": "passyds",
+    "name": "Zyon McCollum",
+    "player_id": "00-0037268",
+    "team": "TB"
+  },
+  "202611121643-anthony-richardson-ind": {
+    "market": "passyds",
+    "name": "Anthony Richardson",
+    "player_id": "00-0039164",
+    "team": "IND"
+  },
+  "202611121643-anthony-tyus-iii-car": {
+    "market": "passyds",
+    "name": "Anthony Tyus III",
+    "player_id": "00-0040394",
+    "team": "CAR"
+  },
+  "202611121643-athan-kaliakmanis-was": {
+    "market": "passyds",
+    "name": "Athan Kaliakmanis",
+    "player_id": "00-0041117",
+    "team": "WAS"
+  },
+  "202611121643-audric-estime-den": {
+    "market": "rushyds",
+    "name": "Audric Estime",
+    "player_id": "00-0039373",
+    "team": "DEN"
+  },
+  "202611121643-austin-ekeler-was": {
+    "market": "rushyds",
+    "name": "Austin Ekeler",
+    "player_id": "00-0033699",
+    "team": "WAS"
+  },
+  "202611121643-blake-grupe-la": {
+    "market": "passyds",
+    "name": "Blake Grupe",
+    "player_id": "00-0038905",
+    "team": "LA"
+  },
+  "202611121643-brandin-cooks-dal": {
+    "market": "passyds",
+    "name": "Brandin Cooks",
+    "player_id": "00-0031236",
+    "team": "DAL"
+  },
+  "202611121643-brandon-mcmanus-den": {
+    "market": "passyds",
+    "name": "Brandon McManus",
+    "player_id": "00-0029822",
+    "team": "DEN"
+  },
+  "202611121643-brock-bowers-lv": {
+    "market": "recyds",
+    "name": "Brock Bowers",
+    "player_id": "00-0039338",
+    "team": "LV"
+  },
+  "202611121643-case-keenum-hou": {
+    "market": "passyds",
+    "name": "Case Keenum",
+    "player_id": "00-0028986",
+    "team": "HOU"
+  },
+  "202611121643-charlie-smyth-no": {
+    "market": "passyds",
+    "name": "Charlie Smyth",
+    "player_id": "00-0039229",
+    "team": "NO"
+  },
+  "202611121643-dameon-pierce-hou": {
+    "market": "rushyds",
+    "name": "Dameon Pierce",
+    "player_id": "00-0037258",
+    "team": "HOU"
+  },
+  "202611121643-davis-mills-hou": {
+    "market": "passyds",
+    "name": "Davis Mills",
+    "player_id": "00-0036898",
+    "team": "HOU"
+  },
+  "202611121643-dj-uiagalelei-lac": {
+    "market": "passyds",
+    "name": "DJ Uiagalelei",
+    "player_id": "00-0040464",
+    "team": "LAC"
+  },
+  "202611121643-fernando-mendoza-lv": {
+    "market": "passyds",
+    "name": "Fernando Mendoza",
+    "player_id": "00-0041562",
+    "team": "LV"
+  },
+  "202611121643-gardner-minshew-lv": {
+    "market": "passyds",
+    "name": "Gardner Minshew",
+    "player_id": "00-0035289",
+    "team": "LV"
+  },
+  "202611121643-hayden-rucci-lac": {
+    "market": "passyds",
+    "name": "Hayden Rucci",
+    "player_id": "00-0039489",
+    "team": "LAC"
+  },
+  "202611121643-j-j--mccarthy-nyg": {
+    "market": "passyds",
+    "name": "J.J. McCarthy",
+    "player_id": "00-0039923",
+    "team": "NYG"
+  },
+  "202611121643-jack-endries-cin": {
+    "market": "passyds",
+    "name": "Jack Endries",
+    "player_id": "00-0041116",
+    "team": "CIN"
+  },
+  "202611121643-jake-moody-bal": {
+    "market": "passyds",
+    "name": "Jake Moody",
+    "player_id": "00-0038562",
+    "team": "BAL"
+  },
+  "202611121643-jalon-daniels-tb": {
+    "market": "rushyds",
+    "name": "Jalon Daniels",
+    "player_id": "00-0041251",
+    "team": "TB"
+  },
+  "202611121643-james-mitchell-det": {
+    "market": "passyds",
+    "name": "James Mitchell",
+    "player_id": "00-0037282",
+    "team": "DET"
+  },
+  "202611121643-jawhar-jordan-hou": {
+    "market": "passyds",
+    "name": "Jawhar Jordan",
+    "player_id": "00-0039405",
+    "team": "HOU"
+  },
+  "202611121643-joe-fagnano-bal": {
+    "market": "passyds",
+    "name": "Joe Fagnano",
+    "player_id": "00-0040981",
+    "team": "BAL"
+  },
+  "202611121643-joe-milton-ne": {
+    "market": "passyds",
+    "name": "Joe Milton",
+    "player_id": "00-0039398",
+    "team": "NE"
+  },
+  "202611121643-jordan-watkins-sf": {
+    "market": "passyds",
+    "name": "Jordan Watkins",
+    "player_id": "00-0040172",
+    "team": "SF"
+  },
+  "202611121643-josh-cuevas-bal": {
+    "market": "passyds",
+    "name": "Josh Cuevas",
+    "player_id": "00-0040887",
+    "team": "BAL"
+  },
+  "202611121643-josh-jacobs-gb": {
+    "market": "rushyds",
+    "name": "Josh Jacobs",
+    "player_id": "00-0035700",
+    "team": "GB"
+  },
+  "202611121643-max-brosmer-min": {
+    "market": "passyds",
+    "name": "Max Brosmer",
+    "player_id": "00-0040494",
+    "team": "MIN"
+  },
+  "202611121643-michael-penix-atl": {
+    "market": "passyds",
+    "name": "Michael Penix",
+    "player_id": "00-0039917",
+    "team": "ATL"
+  },
+  "202611121643-mo-alie-cox-ind": {
+    "market": "passyds",
+    "name": "Mo Alie-Cox",
+    "player_id": "00-0033217",
+    "team": "IND"
+  },
+  "202611121643-quinn-ewers-jax": {
+    "market": "passyds",
+    "name": "Quinn Ewers",
+    "player_id": "00-0040234",
+    "team": "JAX"
+  },
+  "202611121643-savion-williams-gb": {
+    "market": "passyds",
+    "name": "Savion Williams",
+    "player_id": "00-0040009",
+    "team": "GB"
+  },
+  "202611121643-sean-tucker-tb": {
+    "market": "rushyds",
+    "name": "Sean Tucker",
+    "player_id": "00-0038951",
+    "team": "TB"
+  },
+  "202611121643-shedeur-sanders-cle": {
+    "market": "passyds",
+    "name": "Shedeur Sanders",
+    "player_id": "00-0040668",
+    "team": "CLE"
+  },
+  "202611121643-sterling-shepard-tb": {
+    "market": "passyds",
+    "name": "Sterling Shepard",
+    "player_id": "00-0032385",
+    "team": "TB"
+  },
+  "202611121643-tank-dell-hou": {
+    "market": "passyds",
+    "name": "Tank Dell",
+    "player_id": "00-0038977",
+    "team": "HOU"
+  },
+  "202611121643-tanner-mckee-phi": {
+    "market": "passyds",
+    "name": "Tanner McKee",
+    "player_id": "00-0038400",
+    "team": "PHI"
+  },
+  "202611121643-teagan-quitoriano-hou": {
+    "market": "passyds",
+    "name": "Teagan Quitoriano",
+    "player_id": "00-0037277",
+    "team": "HOU"
+  },
+  "202611121643-tommy-devito-nyg": {
+    "market": "passyds",
+    "name": "Tommy DeVito",
+    "player_id": "00-0038476",
+    "team": "NYG"
+  },
+  "202611121643-tory-horton-sea": {
+    "market": "passyds",
+    "name": "Tory Horton",
+    "player_id": "00-0040648",
+    "team": "SEA"
+  },
+  "202611121643-tua-tagovailoa-mia": {
+    "market": "passyds",
+    "name": "Tua Tagovailoa",
+    "player_id": "00-0036212",
+    "team": "MIA"
+  },
+  "202611121643-tyler-goodson-ind": {
+    "market": "rushyds",
+    "name": "Tyler Goodson",
+    "player_id": "00-0037120",
+    "team": "IND"
+  },
+  "202611121643-tyler-huntley-mia": {
+    "market": "passyds",
+    "name": "Tyler Huntley",
+    "player_id": "00-0035993",
+    "team": "MIA"
+  },
+  "202611121643-van-jefferson-pit": {
+    "market": "passyds",
+    "name": "Van Jefferson",
+    "player_id": "00-0036415",
+    "team": "PIT"
+  },
+  "202611121643-zach-charbonnet-sea": {
+    "market": "rushyds",
+    "name": "Zach Charbonnet",
+    "player_id": "00-0039165",
+    "team": "SEA"
+  },
+  "202611121643-zane-gonzalez-mia": {
+    "market": "passyds",
+    "name": "Zane Gonzalez",
+    "player_id": "00-0033862",
+    "team": "MIA"
+  }
+}
