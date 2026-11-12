@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
-import { currentLocation, playerUrl, rememberReturn } from "./playerNav";
+import { currentLocation, playerUrl, playerSlugUrl, rememberReturn } from "./playerNav";
 
 const PLAYER_ID = /^00-\d{7}$/;
 const MARKETS = new Set(["rushyds", "recyds", "recs", "passyds"]);
 const BY_POS: Record<string, string> = { QB: "passyds", RB: "rushyds", FB: "rushyds", WR: "recyds", TE: "recyds" };
 
-type LegLike = { playerId?: string; market?: string; prop?: string; pos?: string };
+type LegLike = { playerId?: string; market?: string; prop?: string; pos?: string; name?: string; team?: string };
 
 /** The stat a leg is about: the leg's own market, else read from its text ("Over 2.5 receptions" -> recs). */
 function legMarket(leg: LegLike): string | null {
@@ -36,6 +36,11 @@ export function playerHref(leg: LegLike): string | null {
   const m = legMarket(leg);
   if (!m) return null;
   const here = currentLocation();
+  
+  // Use slug URL when we have name and team, fallback to query-param URL
+  if (leg.name && leg.team) {
+    return playerSlugUrl(leg.playerId, leg.name, leg.team, m);
+  }
   return playerUrl(leg.playerId, m, { back: here.path, section: here.section, from: "ticket" });
 }
 
