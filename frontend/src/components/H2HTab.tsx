@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { LeaderRow, LeadersResponse, MatchupGame, MatchupSide } from "../types";
 import { playerSlugUrl } from "../playerNav";
@@ -205,7 +205,7 @@ export default function H2HTab({ onOpenPlayer, onCategoryChange }: H2HTabProps) 
                 MATCHUP EDGES
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                {["SCORING", "RED ZONE", "GROUND", "AIR", "BALL SECURITY"] as const).map((unit) => (
+                {(["SCORING", "RED ZONE", "GROUND", "AIR", "BALL SECURITY"] as const).map((unit) => (
                   <UnitEdgeBox key={unit} unit={unit} home={selectedGame.home} away={selectedGame.away} />
                 ))}
               </div>
@@ -267,9 +267,9 @@ function MatchupCard({ game, isSelected, onSelect }: { game: MatchupGame | undef
       style={{
         display: "flex", flexDirection: "column", gap: 4,
         padding: "10px 12px", borderRadius: 10,
-        border: `2px solid ${isSelected ? C.purple : "transparent"}`,
+        border: `2px solid ${isSelected ? C.purple : C.edge}`,
         background: isSelected ? "rgba(139,92,246,0.12)" : C.card2,
-        cursor: "pointer", textAlign: "left", border: `1px solid ${isSelected ? C.purple : C.edge}`,
+        cursor: "pointer", textAlign: "left",
         transition: "all 0.15s"
       }}
     >
@@ -427,7 +427,7 @@ function ComboH2HView({ game, onOpenPlayer }: { game: MatchupGame | undefined; o
 }
 
 /* ── Standard rows view (non-BPL) ── */
-function RowsViewH2H({ rows: allRows, onOpenPlayer, game }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string, market?: string) => void; game: MatchupGame | undefined }) {
+function RowsViewH2H({ rows: allRows, onOpenPlayer, game: _game }: { rows: LeaderRow[]; onOpenPlayer: (playerId: string, market?: string) => void; game: MatchupGame | undefined }) {
   const [limit, setLimit] = useState<number>(50);
   const rows = allRows.slice(0, limit);
   const top = rows[0];
@@ -483,7 +483,7 @@ function RowsViewH2H({ rows: allRows, onOpenPlayer, game }: { rows: LeaderRow[];
 }
 
 /* ── BPL Table for H2H (with matchup context) ── */
-function BplTableH2H({ rows, version, onOpenPlayer, game }: { rows: LeaderRow[]; version: string; onOpenPlayer: (playerId: string, market?: string) => void; game: MatchupGame | undefined }) {
+function BplTableH2H({ rows, version, onOpenPlayer, game: _game }: { rows: LeaderRow[]; version: string; onOpenPlayer: (playerId: string, market?: string) => void; game: MatchupGame | undefined }) {
   const [mode, setMode] = useState<"rank" | "reverse" | "greens" | "reds">("rank");
   const [limit, setLimit] = useState<number>(50);
 
@@ -520,7 +520,7 @@ function BplTableH2H({ rows, version, onOpenPlayer, game }: { rows: LeaderRow[];
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
           <LimitPicker limit={limit} total={sorted.length} onChange={setLimit} />
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {({ id: "rank", label: "TOP TO BOTTOM" }, { id: "reverse", label: "BOTTOM TO TOP" }, { id: "greens", label: "GREENS FIRST" }, { id: "reds", label: "REDS FIRST" }).map((s) => {
+            {([{ id: "rank", label: "TOP TO BOTTOM" }, { id: "reverse", label: "BOTTOM TO TOP" }, { id: "greens", label: "GREENS FIRST" }, { id: "reds", label: "REDS FIRST" }] as const).map((s) => {
               const on = mode === s.id;
               return (
                 <button key={s.id} onClick={() => setMode(s.id)}
