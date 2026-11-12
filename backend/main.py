@@ -1670,6 +1670,16 @@ def api_slug_register(slug: str, player_id: str, market: str = "rushyds", name: 
     return {"ok": True, "slug": slug}
 
 
+@app.post("/api/slug/delete")
+def api_slug_delete(slug: str):
+    """Remove dead/renamed slugs (e.g. the ones minted before names resolved)."""
+    slugs = _load_slugs()
+    existed = slugs.pop(slug, None)
+    if existed:
+        _save_slugs(slugs)
+    return {"ok": True, "deleted": bool(existed), "count": len(slugs)}
+
+
 @app.get("/api/slug/resolve/{slug}")
 def api_slug_resolve(slug: str):
     slugs = _load_slugs()

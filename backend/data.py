@@ -157,13 +157,54 @@ def player_dimension() -> dict[str, dict]:
         row.setdefault("name", photos.get(pid, pid))
         row.setdefault("position", "")
         row.pop("_week", None)
+    # Reference-resolution layer (nflverse GSIS table, built by
+    # scripts/resolve_player_names.py): backfills name/position/team for the
+    # players the lake only knows as "00-XXXXXXX" so no page ever serves a
+    # raw ID as a name.
+    for row in _names_patch():
+        pid = row.get("player_id")
+        if not pid:
+            continue
+        entry = dim.get(pid)
+        if entry is None:
+            dim[pid] = {"player_id": pid, "name": row.get("name") or pid,
+                        "position": row.get("position", ""), "team": row.get("team", "")}
+            continue
+        if not entry.get("name") or entry["name"] == pid:
+            if row.get("name"):
+                entry["name"] = row["name"]
+        if not entry.get("position") and row.get("position"):
+            entry["position"] = row["position"]
+        if not entry.get("team") and row.get("team"):
+            entry["team"] = row["team"]
     return dim
+
+
+@lru_cache(maxsize=1)
+def _names_patch() -> dict[str, dict]:
+    """lake/gold/espn/player_names_patch.csv — gsis_id -> {name, position, team}."""
+    path = GOLD.parent / "espn" / "player_names_patch.csv"
+    if not path.exists():
+        return {}
+    out: dict[str, dict] = {}
+    try:
+        with path.open(newline="", encoding="utf-8") as fh:
+            for row in csv.DictReader(fh):
+                pid = (row.get("player_id") or "").strip()
+                if pid:
+                    out[pid] = row
+    except Exception:
+        return {}
+    return out
 
 
 def player_name(player_id: str) -> str:
     dim = player_dimension()
     if player_id in dim:
         return dim[player_id]["name"]
+    p = _names_patch().get(player_id)
+    if p and p.get("name"):
+        return p["name"]
     photos = {r["player_id"]: r["player_display_name"] for r in load("player_photos/_index")}
     return photos.get(player_id, player_id)
 
