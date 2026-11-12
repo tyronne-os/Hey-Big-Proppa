@@ -50,13 +50,15 @@ def _rank(totals: dict[str, dict]) -> list[dict]:
     rows = sorted(totals.items(), key=lambda kv: kv[1]["value"], reverse=True)
     out = []
     for i, (pid, t) in enumerate(rows, start=1):
+        gp = max(t["gp"], 1)  # avoid div-by-zero
+        per_game = t["value"] / gp
         out.append({
             "rank": i,
             "playerId": pid,
             "name": dim.get(pid, {}).get("name", data.player_name(pid)),
             "team": t["team"],
             "gp": t["gp"],
-            "value": round(t["value"], 1),
+            "value": round(per_game, 2),
         })
     return out
 
@@ -69,8 +71,9 @@ CATEGORY_SOURCES = {
     "RECEIVING": ("player_receiving_week", "receiving_yards"),
     "RECEPTIONS": ("player_receiving_week", "receptions"),
     "PASSING": ("player_passing_week", "passing_yards"),
-    "SCORING": ("player_scoring_week", "total_points"),
+    "SCORING": ("player_scoring_week", "total_tds"),
     "FIELD GOALS": ("player_kicking_week", "fg_made"),
+    "TARGETS": ("player_receiving_week", "targets"),
 }
 
 
