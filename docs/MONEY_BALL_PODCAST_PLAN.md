@@ -79,35 +79,47 @@ Each episode has fixed beats, each fed by a data call:
 
 ## 3. The Voice / TTS Engine (NotebookLM-style)
 
-Two viable paths. **Both are "real voice" — the difference is cost vs. control.**
+**We use NVIDIA's free voice endpoint (Kokoro) — no ElevenLabs needed.** The project
+already talks to NVIDIA NIM (`intelligence.py` → `https://integrate.api.nvidia.com/v1`,
+`NVIDIA_API_KEY`). NVIDIA's catalog includes **free text-to-speech** models (e.g., the
+Kokoro family) served on the same `integrate.api.nvidia.com` endpoint. The user's own
+**Kokoro/NVIDIA free voice endpoint** supplies the "real voice" for both personas.
 
-### Path A — ElevenLabs (best quality, pay-per-use) ✅ recommended
-- **Endpoint:** `/v1/text-to-speech/{voice_id}` with `model_id=eleven_multilingual_v2`.
-- **Two cloned voices:** MY BOO (host) + BIG PROPPA (analyst). Clone from 30s samples
-  (or use stock voices that match the personas).
-- **Input:** the generated script per segment. Split by speaker, call TTS per line,
-  then **concatenate** the audio (with tiny gaps).
-- **Output:** an MP3/stream that the MONEY BALL page `<audio>` plays.
+### The voices (two distinct personas)
+- **MY BOO** — warm, playful, high-energy host.
+- **BIG PROPPA** — confident, dry, data-first analyst.
 
-### Path B — Edge-TTS / Coqui (free, on-prem)
-- **Microsoft Edge TTS** (`edge-tts`) gives natural neural voices free, no API key.
-  `edge-tts --voice en-US-ChristopherNeural --text "..." --write-media out.mp3`.
-- Pick two distinct voices for the two personas. Good enough, zero cost, runs in the
-  Space (CPU basic).
-- **Note:** Coqui needs a model download (~2GB) — too heavy for CPU-basic; Edge-TTS
-  is the right free choice.
+Pick two distinct voices from the NVIDIA TTS model's voice set so the cast is
+unmistakable in the audio.
 
 ### The pipeline (write → speak → stitch)
 ```
 script = generate_show()               # pure text, persona-tagged
 audio = []
 for line in script:
-    if line.speaker == "MY BOO": voice = BOO_VOICE
-    elif line.speaker == "BIG PROPPA": voice = BP_VOICE
-    audio.append(tts(line.text, voice))
+    voice = BOO_VOICE if line.speaker == "MY BOO" else BP_VOICE
+    audio.append(nvidia_tts(line.text, voice))   # Kokoro via integrate.api.nvidia.com
 stream = concat(audio)                 # add 200-400ms gaps between turns
 save/stream → GET /api/moneyball/audio
 ```
+
+`nvidia_tts()` mirrors the existing `_nvidia_generate()` call in `intelligence.py`:
+```
+POST https://integrate.api.nvidia.com/v1/audio/speech
+  headers: Authorization: Bearer NVIDIA_API_KEY
+  json: { model: <kokoro-model>, input: text, voice: <voice>, response_format: "mp3" }
+```
+
+### API key
+- **`NVIDIA_API_KEY`** (free tier) — already used by `intelligence.py`; reuse the same
+  key. If it's not in this shell's env, set it (or the Space secret) and the endpoint works.
+- **Cost:** free on the NVIDIA free tier — the reason we skip ElevenLabs entirely.
+
+### Why this is the right call
+- **Free** (NVIDIA free endpoint) vs. ElevenLabs' monthly fee.
+- **Reuses** the existing NVIDIA integration — one key, one base URL.
+- **Real neural voice** — Kokoro sounds genuinely human, NotebookLM-grade.
+
 
 ---
 
@@ -172,8 +184,8 @@ PROPPA's deadpans, chosen by data conditions (e.g., a team that was red-zone-0 p
 
 1. **Phase 1 — The writer (pure text).** `moneyball.generate_show()` returns a persona-
    tagged script from the data. Testable instantly, no TTS needed. *This is the core.*
-2. **Phase 2 — The TTS.** Wire Edge-TTS (free) for two voices → `GET /api/moneyball/audio`.
-   Verifiable: it speaks.
+2. **Phase 2 — The TTS.** Wire **NVIDIA Kokoro** (free endpoint, `NVIDIA_API_KEY`) for two
+   voices → `GET /api/moneyball/audio`. Verifiable: it speaks.
 3. **Phase 3 — The page.** `/moneyball` with the audio player + live transcript + board.
 4. **Phase 4 — Personality tuning.** Expand the quip bank, tighten pacing, add the JIMMY/JEV
    guest beats. Make it genuinely funny and sharp.
@@ -184,11 +196,11 @@ PROPPA's deadpans, chosen by data conditions (e.g., a team that was red-zone-0 p
 
 ## 8. Cost / Feasibility
 
-- **Edge-TTS:** free, runs on CPU-basic, no API key. **Recommended first build.**
-- **ElevenLabs:** ~$5-22/mo (Creator tier) for real cloned voices, higher quality.
-  Worth it once Phase 1-3 prove the show is good.
-- **Compute:** a 4-6 min episode = ~30-60 TTS calls. Edge-TTS is fast; cache the audio
-  per day so it's generated once, not every play.
+- **NVIDIA voice (Kokoro):** **free** on the NVIDIA free endpoint — the user's own
+  Kokoro/NVIDIA free voice API. No ElevenLabs fee, no model download. Reuses the
+  existing `NVIDIA_API_KEY` from `intelligence.py`.
+- **Compute:** a 4-6 min episode = ~30-60 TTS calls to `integrate.api.nvidia.com/v1/audio/speech`.
+  Fast; **cache the audio per day** so it's generated once, not every play.
 - **Storage:** one MP3/day is tiny. Store in `lake/gold/nfl/moneyball/`.
 
 ---
