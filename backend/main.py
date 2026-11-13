@@ -148,6 +148,18 @@ def api_leaders(category: str = "RUSHING"):
     return leaders_mod.leaders(category)
 
 
+@app.get("/api/parlays/correlated")
+def api_correlated_parlays(limit: int = 25):
+    """Data-driven correlated two-leg parlays (see docs/CORRELATED_PARLAY_THESIS.md).
+
+    Two legs share one upstream variable — defensive pass-rush strength or a stable
+    bell-cow volume constant — which drives 85%+ implied probability. Every ticket is
+    exactly two legs and no player-prop is reused across tickets.
+    """
+    import correlated_parlay
+    return correlated_parlay.top(min(max(limit, 1), 100))
+
+
 @app.get("/api/betterverse/archetypes")
 def api_mv_archetypes():
     import betterverse_bettors
