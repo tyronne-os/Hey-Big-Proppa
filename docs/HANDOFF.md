@@ -779,6 +779,16 @@ frontal-lobe2/
 > alerts" (§3) — high-probability, data-driven two-leg parlays. It converts five
 > peer-reviewed papers into code. Full standalone writeup: `docs/CORRELATED_PARLAY_THESIS.md`.
 
+> **MONEY BALL — 2026-11-12 (timestamped update).** The automated podcast is LIVE.
+> `backend/moneyball.py` writes a persona-tagged show (MY BOO + BIG PROPPA) from the
+> data pipeline (day_picks, rotowire_api, leg_builder, bet_logic). `backend/moneyball_audio.py`
+> voices it with **Kokoro-82M fully local** (onnx, no inference API/subscription). The
+> opening is a settling-in flirt scene — MY BOO (Samantha-from-Her energy: smart, sexy,
+> addictive, 40yo who knows stats) pulls BIG PROPPA's focus back to the board. Endpoints:
+> `/api/moneyball/script`, `/api/moneyball/transcript`, `/api/moneyball/audio`. Page:
+> `/moneyball` (audio player + transcript + parlay board). Model + voices stored in the
+> HF model repo `AIBRUH/kokoro-82m` (Pro storage). Episode ≈2.5-3 min, cached per day.
+
 ### 8.5.1 The five research papers (sources)
 
 | # | Paper | Why it matters |

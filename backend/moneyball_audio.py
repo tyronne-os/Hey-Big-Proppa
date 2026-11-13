@@ -60,7 +60,36 @@ def _voice_line(text: str, speaker: str) -> bytes | None:
 
 
 def _stitch(clips: list[bytes]) -> bytes:
-    return b"".join(clips)
+    """Properly merge WAV clips into one continuous WAV.
+
+    Raw WAV concatenation breaks because each clip has its own header + length field;
+    players only read the first header. So we strip the headers, concatenate the PCM
+    frames, and write a single valid WAV with the combined length.
+    """
+    import io
+    import struct as _s
+
+    channels, sampwidth, framerate = 1, 2, 24000
+    frames = b""
+    for c in clips:
+        try:
+            w = wave.open(io.BytesIO(c), "r")
+            if w.getframerate() != framerate or w.getnchannels() != channels:
+                w.close()
+                continue
+            frames += w.readframes(w.getnframes())
+            w.close()
+        except Exception:
+            continue
+    if not frames:
+        return b""
+    out = io.BytesIO()
+    with wave.open(out, "wb") as w:
+        w.setnchannels(channels)
+        w.setsampwidth(sampwidth)
+        w.setframerate(framerate)
+        w.writeframes(frames)
+    return out.getvalue()
 
 
 def generate_audio() -> bytes | None:

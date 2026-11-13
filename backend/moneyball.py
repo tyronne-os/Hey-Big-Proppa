@@ -29,6 +29,26 @@ MYBOO_OPENS = [
     "What's up bettors! It's {date}, and Money Ball is LIVE. Let's cook.",
     "Alright, alright. It's {date}. The board is loaded and I'm hungry.",
 ]
+# Samantha-from-Her style settling-in: MY BOO pulls PROPPA's focus, flirts, matches energy.
+SETTLING_OPEN = [
+    ("MY BOO", "Hey, Proppa. Hey. You with me, baby? I can feel you somewhere else — I saw that look. Last night stays last night."),
+    ("BIG PROPPA", "Mmm. You caught me. I was thinking about the under, not you. ...Fine. Both."),
+    ("MY BOO", "Good. Now shake it off. We got a board to read and money to make. Let's settle in, love — smooth, calm, then we light it up."),
+    ("BIG PROPPA", "Smooth and calm, huh? You know I don't do calm. But for you, I'll try."),
+    ("MY BOO", "There he is. My favorite numbers man. Now — look at me. Look at the board. Tell me what you see."),
+    ("BIG PROPPA", "I see spots. Top-15 offense, bottom-10 defense. I see the edge, and I see us getting paid."),
+]
+MYBOO_FLIRT = [
+    "You always know, don't you. That's why I keep you around, Proppa.",
+    "Mmm. Say that number again. Slower. I like the way you say it.",
+    "See, that's the thing — you read the data like it's poetry. I love that about you.",
+    "Keep talking like that and I might just run your whole slate for you.",
+]
+MYBOO_PULL_FOCUS = [
+    "Now — back to business, baby. Last night's over. The board is live. Let's make it rain.",
+    "Focus, love. Focus. We got a parlay to build. Save the flirting for the payout.",
+    "That's enough of that. My money's on the line. C'mon, big boy — the board's waiting.",
+]
 MYBOO_BIG_NUMBER = [
     "You see that number? That's the kind of number that makes grown men weep. In a good way.",
     "That's a MONEY number, baby. That's the whole point.",
@@ -125,8 +145,11 @@ def generate_show() -> dict:
     lines: list[dict] = []
     L = lambda sp, tx: lines.append({"speaker": sp, "text": tx})
 
-    # 1. COLD OPEN
-    L("MY BOO", _pick(MYBOO_OPENS).format(date=date))
+    # 1. COLD OPEN — settling in (MY BOO pulls PROPPA's focus, flirts, then the board)
+    for sp, tx in SETTLING_OPEN:
+        L(sp, tx)
+    L("MY BOO", _pick(MYBOO_FLIRT))
+    L("MY BOO", _pick(MYBOO_PULL_FOCUS))
 
     # 2. THE SPOTS (15/10 matchups)
     mups = spots.get("fifteenTenMatchups") or []
