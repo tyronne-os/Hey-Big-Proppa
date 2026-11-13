@@ -1,75 +1,76 @@
 """
-Money Ball audio — voices the show script with Kokoro via NVIDIA's free TTS endpoint.
+Money Ball audio — voices the show script with LOCAL Kokoro (no inference API, no subscription).
 
-Uses the same NVIDIA integration pattern as intelligence.py:
-  POST https://integrate.api.nvidia.com/v1/audio/speech
-  Authorization: Bearer NVIDIA_API_KEY
-  json: { model: <kokoro>, input: text, voice: <voice>, response_format: "mp3" }
-
-Two voices for the cast: MY BOO (host) + BIG PROPPA (analyst). Each persona line is
+We downloaded the model + voices (kokoro-v1.0.onnx, voices-v1.0.bin) from the official
+thewh1teagle/kokoro-onnx release and run it on CPU via onnxruntime. Two voices for the
+cast: MY BOO (host, af_heart) + BIG PROPPA (analyst, am_michael). Each persona line is
 voiced, then the clips are concatenated into one audio file. Cached per day.
+
+Fully local and free — this is the open-source "real voice" for the Money Ball podcast.
 """
 from __future__ import annotations
 
 import os
-import io
+import struct
+import wave
+from datetime import datetime
 from pathlib import Path
-
-import httpx
 
 import moneyball
 
-_NVIDIA_BASE = "https://integrate.api.nvidia.com/v1"
-_KOKORO_MODEL = "nvidia/parakeet-tdt-0.6b-v2"  # placeholder; set to your Kokoro model id
+# Kokoro files (downloaded to the repo root) and the cast voices.
+_KOKORO_MODEL = "kokoro-v1.0.onnx"
+_KOKORO_VOICES = "voices-v1.0.bin"
 _BASE = Path(__file__).resolve().parent.parent / "lake" / "gold" / "nfl" / "moneyball"
 
-# two distinct Kokoro voices for the cast
 VOICES = {
-    "MY BOO": "af_heart",      # warm, playful female
-    "BIG PROPPA": "am_michael",  # confident male
+    "MY BOO": "af_heart",       # warm, playful female host
+    "BIG PROPPA": "am_michael",  # confident male analyst
 }
 
+_ENGINE = None
 
-def _key() -> str:
-    return os.environ.get("NVIDIA_API_KEY", "")
+
+def _engine():
+    """Lazy-load the Kokoro engine once."""
+    global _ENGINE
+    if _ENGINE is None:
+        from kokoro_onnx import Kokoro
+        root = Path(__file__).resolve().parent.parent
+        _ENGINE = Kokoro(str(root / _KOKORO_MODEL), str(root / _KOKORO_VOICES))
+    return _ENGINE
 
 
 def _voice_line(text: str, speaker: str) -> bytes | None:
-    key = _key()
-    if not key:
-        return None
-    voice = VOICES.get(speaker, "af_heart")
+    """Synthesize one line as WAV bytes."""
     try:
-        resp = httpx.post(
-            f"{_NVIDIA_BASE}/audio/speech",
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"model": _KOKORO_MODEL, "input": text, "voice": voice, "response_format": "mp3"},
-            timeout=60.0,
-        )
-        resp.raise_for_status()
-        return resp.content
+        voice = VOICES.get(speaker, "af_heart")
+        samples, sr = _engine().create(text, voice=voice, speed=1.0)
+        buf = io_bytes = None
+        import io
+        buf = io.BytesIO()
+        with wave.open(buf, "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(sr)
+            w.writeframes(b"".join(struct.pack("<h", int(s * 32767)) for s in samples))
+        return buf.getvalue()
     except Exception:
         return None
 
 
 def _stitch(clips: list[bytes]) -> bytes:
-    """Join MP3 clips with a short gap. (Simplest: concat — MP3 frame headers allow it.)"""
-    gap = b""  # MP3 concat needs no explicit gap; add a pause clip if desired
-    return gap.join(clips)
+    return b"".join(clips)
 
 
 def generate_audio() -> bytes | None:
     """Generate the full episode audio, cached per day."""
     _BASE.mkdir(parents=True, exist_ok=True)
-    from datetime import datetime
     day = datetime.now().strftime("%Y-%m-%d")
-    out = _BASE / f"moneyball_{day}.mp3"
+    out = _BASE / f"moneyball_{day}.wav"
     if out.exists():
         return out.read_bytes()
 
-    key = _key()
-    if not key:
-        return None
     show = moneyball.generate_show()
     clips = []
     for line in show["lines"]:
@@ -87,8 +88,8 @@ def serve_audio():
     from fastapi.responses import Response
     audio = generate_audio()
     if audio is None:
-        return Response("NVIDIA_API_KEY not set (or no voice configured). Set the key to enable Money Ball audio.", status_code=503)
-    return Response(audio, media_type="audio/mpeg", headers={"Content-Disposition": "inline"})
+        return Response("Could not generate Money Ball audio (check the Kokoro model files).", status_code=503)
+    return Response(audio, media_type="audio/wav", headers={"Content-Disposition": "inline"})
 
 
 if __name__ == "__main__":

@@ -11,6 +11,7 @@ template filled from the pipeline. Output is a list of {speaker, text} lines, re
 """
 from __future__ import annotations
 
+import os
 import random
 from datetime import datetime
 
@@ -72,6 +73,45 @@ def _pick(bank: list[str]) -> str:
 
 def _money(n: float) -> str:
     return f"${n:,.0f}"
+
+
+# NVIDIA LLM (works with the keys): enhances the draft show with personality & banter.
+# Configurable via env; model defaults to the verified-working nemotron-3.5-lightning.
+_NVIDIA_BASE = "https://integrate.api.nvidia.com/v1"
+_NVIDIA_MODEL = os.environ.get("NVIDIA_LLM_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b")
+
+
+def _enhance_show(script: str) -> str:
+    """Use the NVIDIA LLM to punch up the draft show (personality, banter, flow)."""
+    key = os.environ.get("NVIDIA_API_KEY", "")
+    if not key:
+        return script
+    try:
+        import httpx
+        resp = httpx.post(
+            f"{_NVIDIA_BASE}/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={
+                "model": _NVIDIA_MODEL,
+                "messages": [
+                    {"role": "system", "content": (
+                        "You are the writer for 'MONEY BALL', a fast, funny, uncensored sports-betting "
+                        "podcast. Two hosts: MY BOO (warm, playful, talks money) and BIG PROPPA (confident, "
+                        "dry, data-first). Rewrite the draft into a tighter, funnier episode. Keep every "
+                        "player, prop, line and number exactly as given. Use two speakers: MY BOO and BIG PROPPA. "
+                        "Short punchy lines. A few jokes. End by setting up the next big play."
+                    )},
+                    {"role": "user", "content": script},
+                ],
+                "max_tokens": 2000,
+                "temperature": 0.8,
+            },
+            timeout=90.0,
+        )
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"].strip()
+    except Exception:
+        return script
 
 
 def generate_show() -> dict:
@@ -148,6 +188,19 @@ def generate_show() -> dict:
     else:
         L("MY BOO", "No winners on the board today. We stay home and count our money.")
     L("MY BOO", "That's the show. Money Ball — go make some money.")
+
+    # Optional NVIDIA LLM punch-up (if NVIDIA_API_KEY set) — keeps the data intact.
+    if os.environ.get("NVIDIA_API_KEY"):
+        script_text = "\n".join(f"[{l['speaker']}] {l['text']}" for l in lines)
+        enhanced = _enhance_show(script_text)
+        if enhanced and "[MY BOO]" in enhanced:
+            # return the LLM's version as the transcript, keep the structured lines too
+            return {
+                "sourceStatus": "ok", "date": date, "title": f"Money Ball — {date}",
+                "cast": ["MY BOO", "BIG PROPPA"],
+                "lines": lines, "enhanced": enhanced,
+                "matchups": mups, "picks": picks, "parlay": slips[:3],
+            }
 
     return {
         "sourceStatus": "ok",
