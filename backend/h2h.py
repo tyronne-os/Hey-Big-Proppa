@@ -31,7 +31,7 @@ _SB = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
 _SUM = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={}"
 
 MARKET_LABEL = {"rushyds": "Rushing Yards", "recyds": "Receiving Yards", "recs": "Receptions", "passyds": "Passing Yards"}
-STAT_KEY = {"rushyds": "rushyds", "recyds": "recyds", "recs": "recs", "passyds": "passyds"}
+STAT_KEY = {"rushyds": "rushyds", "recyds": "recyds", "recs": "recs", "passyds": "passyds", "anytd": "anytd"}
 ALT_STEP = {"rushyds": 10.0, "recyds": 10.0, "recs": 1.0, "passyds": 25.0}
 SD_FLOOR = {"rushyds": 12.0, "recyds": 14.0, "recs": 1.1, "passyds": 38.0}
 WAGER = 5.0
@@ -570,8 +570,20 @@ def live_game(game_id: str) -> dict:
 def leg_live(leg: dict, lg: dict) -> dict:
     if not lg.get("ok"):
         return {"state": lg.get("state", "PRE"), "status": "PENDING", "current": None, "pct": 0, "pace": None}
+    market = leg.get("market", "")
+    if market in ("total", "ml"):
+        # Game-level legs: current = combined or winner score.
+        away, home = lg.get("awayScore"), lg.get("homeScore")
+        cur = (away + home) if market == "total" else None
+        if market == "ml":
+            winner = (lg.get("away") if (away or 0) > (home or 0) else lg.get("home")) if lg["state"] == "FINAL" else None
+            return {"state": lg["state"], "status": ("WON" if winner == leg.get("team") else "LOST") if lg["state"] == "FINAL" else ("PENDING" if lg["state"] == "PRE" else "LIVE"),
+                    "current": cur, "pct": round(min(cur / float(leg["line"]), 1.5), 3) if (market == "total" and leg.get("line")) else 0, "pace": None}
     st = lg["players"].get(f"{data.normalize_name(leg['name'])}|{leg['team']}") or {}
-    cur = float(st.get(STAT_KEY[leg["market"]], 0.0))
+    if market == "anytd":
+        cur = float(st.get("td", 0.0))
+    else:
+        cur = float(st.get(STAT_KEY.get(market, "recs"), 0.0))
     frac, line, over, final = lg["fraction"], float(leg["line"]), leg["direction"] == "over", lg["state"] == "FINAL"
     pace = round(cur / frac, 1) if frac >= 0.08 else None
     if lg["state"] == "PRE":
