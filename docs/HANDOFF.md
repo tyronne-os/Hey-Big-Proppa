@@ -789,6 +789,18 @@ frontal-lobe2/
 > `/moneyball` (audio player + transcript + parlay board). Model + voices stored in the
 > HF model repo `AIBRUH/kokoro-82m` (Pro storage). Episode ≈2.5-3 min, cached per day.
 
+> **NEW PROJECT — Voice Agent (2026-11-12, timestamped).** Live voice agent prototype for
+> the adult-companionship platform (Match.com × OnlyFans, 3D/4D avatars later). Folder:
+> `voice-agent/`. Stack: STT (faster-whisper) → LLM (HF router `google/gemma-4-26B-A4B-it`,
+> non-reasoning; Qwen3.5-9B returns empty — reasoning model) → TTS (Kokoro local, cloned
+> voices). `voice_agent.py` has WebSocket `/ws/voice` (mic→transcribe→reply→speak) and
+> `/api/talk` (text fallback). **Voice Studio** UI (`voice-agent/static/index.html`) clones
+> a voice (blend base+blend → `.npy`) and masters for max human realism (DSP). Endpoints:
+> `/api/voices`, `/api/settings`, `/api/clone`, `/api/test-voice`. Run:
+> `HF_TOKEN=<token> .venv/bin/python voice-agent/voice_agent.py` → http://127.0.0.1:8094.
+> NOTE: do NOT hardcode the HF token in source (GitHub secret scan blocks commits).
+> Private-UI research: `docs/PRIVATE_LLM_UI.md` (Jan is the pick).
+
 ### 8.5.1 The five research papers (sources)
 
 | # | Paper | Why it matters |
