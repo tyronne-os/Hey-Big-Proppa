@@ -160,6 +160,43 @@ def api_correlated_parlays(limit: int = 25):
     return correlated_parlay.top(min(max(limit, 1), 100))
 
 
+@app.get("/api/parlays/sunday")
+def api_parlays_sunday(limit: int = 40):
+    """Sunday slate thesis parlays, built 100% from the Rotowire players + prop categories.
+
+    Applies the correlated-parlay thesis (checkdown reaction / bell-cow volume) plus the
+    weak-defense bump (+6 vs bottom-10% defenses) to every player in Sunday's games.
+    """
+    import sunday_slate
+    return sunday_slate.top(min(max(limit, 1), 100))
+
+
+@app.get("/api/parlays/legs")
+def api_parlay_legs(pct: float = 0.15, min_games: int = 5):
+    """Two-leg parlays built from the FULL range of sportsbook/rotowire bet options.
+
+    Returns the buildable top `pct` (default 15%) of qualifying tickets by joint
+    probability, plus a link to the complete list file for the full batch.
+    """
+    import leg_builder
+    build = leg_builder.buildable(pct, min_games=min_games)
+    return {
+        "count": len(build),
+        "buildablePct": pct,
+        "fullCount": len(leg_builder.full(min_games=min_games)),
+        "rows": build,
+        "fullListUrl": "/api/parlays/legs/full",
+    }
+
+
+@app.get("/api/parlays/legs/full")
+def api_parlay_legs_full(min_games: int = 5):
+    """The complete list of qualifying two-leg parlays (the full batch, downloadable)."""
+    import leg_builder
+    full_list = leg_builder.full(min_games=min_games)
+    return {"count": len(full_list), "rows": full_list}
+
+
 @app.get("/api/betterverse/archetypes")
 def api_mv_archetypes():
     import betterverse_bettors

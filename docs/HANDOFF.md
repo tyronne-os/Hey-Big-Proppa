@@ -1,6 +1,6 @@
 # HANDOFF — frontal-lobe2, NFL ramp, Phase 1
 
-Written 2026-09-25, last updated 2026-10-01 (see §5.12). This document exists because a prior session lost context
+Written 2026-09-25, last updated 2026-11-12 (see §8.5 Correlated Parlay Thesis). This document exists because a prior session lost context
 mid-task and had to re-derive everything from the repo. If you are reading this
 after a memory reset: **trust this document's structure, but verify every
 number against the live database before acting on it** (queries to run are at
@@ -772,6 +772,99 @@ frontal-lobe2/
 │       gold/nfl/player_photos/*.png         # TRACKED, 1300+ headshot files
 └── catalog/README.md                        # legacy, pre-NFL-ramp
 ```
+
+## 8.5 Correlated Parlay Thesis — research, code logic, schematics & metrics
+
+> **Built 2026-11-12.** This is the research-backed engine behind the "BIG PROPPA
+> alerts" (§3) — high-probability, data-driven two-leg parlays. It converts five
+> peer-reviewed papers into code. Full standalone writeup: `docs/CORRELATED_PARLAY_THESIS.md`.
+
+### 8.5.1 The five research papers (sources)
+
+| # | Paper | Why it matters |
+|---|-------|----------------|
+| 1 | *Here Comes the STRAIN: Analyzing Defensive Pass Rush with Player Tracking Data* (arXiv:2305.10262, CMU/Loyola) | **STRAIN** measures continuous pass-rush pressure; it's **stable week-to-week (r=0.85)** and **predicts future pressure better than past pressure (r=0.32 vs 0.10)**. ⇒ Defensive pass-rush strength is a **forecastable** feature. |
+| 2 | *Predicting plays in the NFL* (J. Sports Analytics 6:35-43, 2020) | Play-calling is **predictable from situation + opponent context** — offenses systematically **react** to defensive pressure. ⇒ The checkdown/short-pass reaction is a **conditioned, modelable behavior**. |
+| 3 | *Projecting NFL Potential from College Career Performance Curve* (MIT Sloan SSAC, 2020) | **Elo-style, opponent-adjusted** college ratings **project to NFL production**. ⇒ Player skill tier (and volume ceiling) is **portable college→NFL**; precondition on proven tier. |
+| 4 | *Opponent-Adjusted Evaluation of NFL Pass Blocking & Pass Protection* (arXiv:2604.01491) | Pass-rush/pass-protection must be **opponent-adjusted** — raw sacks mislead. ⇒ Our "defensive strength" signal must be **adjusted for opponent**. |
+| 5 | *Sports Analytics in the NFL: Classifying the Winner* (PMC9684891, 2022) | **Defensive performance is among the strongest game-outcome predictors**; offensive efficiency is **conditional on defensive matchup**. ⇒ The offense–defense matchup is the **primary driver** of the correlated prop outcome. |
+
+**Cross-paper thesis:** *The DEFENSE dictates the OFFENSE's reaction.* A strong, opponent-adjusted
+pass rush (1+4) predictably shortens the QB's internal clock (2), which **increases checkdowns /
+short passes to the RB**. A proven bell-cow's volume is stable (3). Correlating these two known
+behaviors is what makes a **two-leg parlay high-probability**.
+
+### 8.5.2 The thesis statement
+
+> **A two-leg parlay is high-probability (85%+) when BOTH legs are driven by the SAME
+> upstream variable — the defense the offense is facing — and that variable is forecastable
+> and stable.**
+
+Three testable mechanisms (the "schematic"):
+
+```
+Mechanism A — CHECKDOWN REACTION (RBs/WRs/TEs vs top pass-rush)
+  Driver:  opponent pass-rush pressure (opponent-adjusted)
+  Reaction: QB throws short/underneath → skill player is the safety valve
+  Correlated pair:  REC >= 3  AND  REC Yds >= 25        (both rise from same pressure event)
+
+Mechanism B — BELL-COW VOLUME CONSTANT (workhorse RBs)
+  Driver:  proven volume (10+ carries/game), skill-tiered
+  Correlated pair:  RUSH > 70  AND  Anytime TD          (both flow from the same carry count)
+
+Mechanism C — PASS-BLOCK FAILURE → SHORT-PASS VOLUME
+  Driver:  offensive-line pass-protection grade (opponent-adjusted)
+  Correlated pair:  PASS ATTEMPTS > line  AND  RB RECEPTIONS >= 2
+```
+
+### 8.5.3 The rubric (score each two-leg parlay, target ≥ 85% joint)
+
+| Step | Condition | Score |
+|------|-----------|-------|
+| 1 — Trigger | Opponent defense **bottom-10%** for the bet category | 1.0 (else 0.0 → reject) |
+| 2 — Leg 1 (volume/reaction) | Bell-cow: ≥10 carries/g AND ≥2 rec/g | 2.0 / 1.5 / 1.0 / 0.0 |
+| 3 — Leg 2 (correlated reaction) | Historical joint hit-rate ≥60% / 50% / 40% | 2.0 / 1.5 / 1.0 / 0.0 |
+| 4 — Correlation gate | Legs share an upstream driver | 1.0 (else reject) |
+| 5 — Line sanity | Both lines within 1 SD of season median | 1.0 (else reject) |
+
+**PASS:** Step1=1 AND Leg1+Leg2 ≥ 3.0 AND Step4=1 AND Step5=1  → composite ≥ 5.0/7.
+
+**Weak-defense bump (+6 points):** When the offense faces a defense ranked **bottom-10%** for
+the bet category, add **+0.06** to the joint probability (e.g. 86% → 92%). Rank 1 = best,
+32 = worst; bottom 10% = the worst 3 teams. Uses `team_defense_season.csv` rank columns
+(`rank_scoring_defense`, `rank_sacks`, `rank_interceptions`, `rank_turnovers_created`).
+
+### 8.5.4 Code logic (the metric layer)
+
+| Module | What it does | Key functions |
+|--------|--------------|---------------|
+| `backend/correlated_parlay.py` | Research-triggered engine; the defense-driven score | `analyze()`, `top()`, `defense_pressure()` |
+| `backend/leg_builder.py` | Full-option leg builder over **all 16 Rotowire markets** | `leg_builder()`, `buildable()`, `full()`, `defense_boost()` |
+| `backend/sunday_slate.py` | Applies the thesis to **every player in Sunday's slate** (Rotowire players+categories) | `slate_tickets()`, `top()`, `player_legs()` |
+
+**Metrics backing it (14,040 RB game-weeks, 2023–2026):**
+
+- **Checkdown (REC≥3 + 25 yds):** McCaffrey 88% (2025), Jeanty 78%, Bijan 71%, Kamara 69%.
+- **Bell-cow (rush>70 + TD):** Kyren Williams 58%, McCaffrey 56%, Jonathan Taylor 56%, Saquon 50%.
+- **Defense trigger:** `team_defense_season.csv` bottom-10% sets (worst 3/32): scoring
+  {ARI,NO,WAS}, sacks {DAL,KC,MIA}, interceptions {DAL,NO,NYJ}, turnovers {ATL,IND,TEN}.
+
+### 8.5.5 How it's exposed
+
+- `GET /api/parlays/correlated` — research-triggered engine (defense-driven).
+- `GET /api/parlays/legs` — full-option leg builder, returns buildable top-15% + `fullListUrl`.
+- `GET /api/parlays/sunday` — Sunday-slate thesis parlays (Rotowire players + categories).
+- Data files: `lake/gold/nfl/sunday_slate_parlays.json`, `docs/CORRELATED_PARLAY_THESIS.md`.
+
+### 8.5.6 Verified live (2026-11-12)
+
+Sunday slate top tickets (thesis, Rotowire categories): Olave (NO) 3+rec+40yds 100%,
+Christian Watson (GB) 100%, JSN (SEA) 100%, Brock Bowers (LV) 100%, Mike Evans (SF) 89%.
+Tonight's game (WSH@NYG): the weak-defense bump correctly adds +6 to **Giants** players
+(Nabers, Likely, Skattebo) because WAS is bottom-10% in scoring defense; WAS players
+(Antonio Williams) get no bump because NYG's defense is top-10.
+
+---
 
 ## 9. Commands to re-orient yourself, right now, if memory was lost
 

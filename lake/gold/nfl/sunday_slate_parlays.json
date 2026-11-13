@@ -1,0 +1,629 @@
+{
+  "count": 39,
+  "rows": [
+    {
+      "player": "Chris Olave",
+      "team": "NO",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 1.0
+      },
+      "jointP": 1.0,
+      "opp": "CAR"
+    },
+    {
+      "player": "Christian Watson",
+      "team": "GB",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 1.0
+      },
+      "jointP": 1.0,
+      "opp": "MIN"
+    },
+    {
+      "player": "Jaxon Smith-Njigba",
+      "team": "SEA",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 1.0
+      },
+      "jointP": 1.0,
+      "opp": "LV"
+    },
+    {
+      "player": "Brock Bowers",
+      "team": "LV",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 1.0
+      },
+      "jointP": 1.0,
+      "opp": "SEA"
+    },
+    {
+      "player": "Mike Evans",
+      "team": "SF",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.893
+      },
+      "jointP": 0.893,
+      "opp": "DAL"
+    },
+    {
+      "player": "Trey McBride",
+      "team": "ARI",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.889
+      },
+      "jointP": 0.889,
+      "opp": "LAR"
+    },
+    {
+      "player": "Jaxon Smith-Njigba",
+      "team": "SEA",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "5+ rec & 60 yds",
+        "hit": 0.889
+      },
+      "jointP": 0.889,
+      "opp": "LV"
+    },
+    {
+      "player": "Amon-Ra St. Brown",
+      "team": "DET",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.875
+      },
+      "jointP": 0.875,
+      "opp": "NE"
+    },
+    {
+      "player": "Tetairoa McMillan",
+      "team": "CAR",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.935
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.935
+      },
+      "jointP": 0.874,
+      "opp": "NO"
+    },
+    {
+      "player": "Brock Bowers",
+      "team": "LV",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "5+ rec & 60 yds",
+        "hit": 0.857
+      },
+      "jointP": 0.857,
+      "opp": "SEA"
+    },
+    {
+      "player": "Christian McCaffrey",
+      "team": "SF",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.935
+      },
+      "legB": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.875
+      },
+      "jointP": 0.818,
+      "opp": "DAL"
+    },
+    {
+      "player": "CeeDee Lamb",
+      "team": "DAL",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.889
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.889
+      },
+      "jointP": 0.79,
+      "opp": "SF"
+    },
+    {
+      "player": "Matthew Golden",
+      "team": "GB",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.778
+      },
+      "jointP": 0.778,
+      "opp": "MIN"
+    },
+    {
+      "player": "James Cook",
+      "team": "BUF",
+      "legA": {
+        "category": "rushyds",
+        "label": "70+ rush yds",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.875
+      },
+      "jointP": 0.766,
+      "opp": "NYJ"
+    },
+    {
+      "player": "James Cook",
+      "team": "BUF",
+      "legA": {
+        "category": "rushyds",
+        "label": "70+ rush yds & 1+ TD",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.875
+      },
+      "jointP": 0.766,
+      "opp": "NYJ"
+    },
+    {
+      "player": "George Kittle",
+      "team": "SF",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.935
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.81
+      },
+      "jointP": 0.757,
+      "opp": "DAL"
+    },
+    {
+      "player": "Amon-Ra St. Brown",
+      "team": "DET",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "5+ rec & 60 yds",
+        "hit": 0.75
+      },
+      "jointP": 0.75,
+      "opp": "NE"
+    },
+    {
+      "player": "Brock Bowers",
+      "team": "LV",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.714
+      },
+      "jointP": 0.714,
+      "opp": "SEA"
+    },
+    {
+      "player": "Brock Bowers",
+      "team": "LV",
+      "legA": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.714
+      },
+      "jointP": 0.714,
+      "opp": "SEA"
+    },
+    {
+      "player": "Nico Collins",
+      "team": "HOU",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.833
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.833
+      },
+      "jointP": 0.694,
+      "opp": "CLE"
+    },
+    {
+      "player": "Jaxon Smith-Njigba",
+      "team": "SEA",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.667
+      },
+      "jointP": 0.667,
+      "opp": "LV"
+    },
+    {
+      "player": "Jaxon Smith-Njigba",
+      "team": "SEA",
+      "legA": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.667
+      },
+      "jointP": 0.667,
+      "opp": "LV"
+    },
+    {
+      "player": "Matthew Golden",
+      "team": "GB",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "5+ rec & 60 yds",
+        "hit": 0.667
+      },
+      "jointP": 0.667,
+      "opp": "MIN"
+    },
+    {
+      "player": "Tee Higgins",
+      "team": "CIN",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.75
+      },
+      "jointP": 0.656,
+      "opp": "PIT"
+    },
+    {
+      "player": "Ja'Marr Chase",
+      "team": "CIN",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.75
+      },
+      "jointP": 0.656,
+      "opp": "PIT"
+    },
+    {
+      "player": "Ja'Marr Chase",
+      "team": "CIN",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "5+ rec & 60 yds",
+        "hit": 0.75
+      },
+      "jointP": 0.656,
+      "opp": "PIT"
+    },
+    {
+      "player": "Ja'Marr Chase",
+      "team": "CIN",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.75
+      },
+      "jointP": 0.656,
+      "opp": "PIT"
+    },
+    {
+      "player": "Garrett Wilson",
+      "team": "NYJ",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.75
+      },
+      "jointP": 0.656,
+      "opp": "BUF"
+    },
+    {
+      "player": "Zay Flowers",
+      "team": "BAL",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.75
+      },
+      "jointP": 0.656,
+      "opp": "LAC"
+    },
+    {
+      "player": "Jahmyr Gibbs",
+      "team": "DET",
+      "legA": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.75
+      },
+      "jointP": 0.656,
+      "opp": "NE"
+    },
+    {
+      "player": "Jahmyr Gibbs",
+      "team": "DET",
+      "legA": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "rushyds",
+        "label": "70+ rush yds",
+        "hit": 0.75
+      },
+      "jointP": 0.656,
+      "opp": "NE"
+    },
+    {
+      "player": "Malik Washington",
+      "team": "MIA",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.875
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.75
+      },
+      "jointP": 0.656,
+      "opp": "IND"
+    },
+    {
+      "player": "Khalil Shakir",
+      "team": "BUF",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.935
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.685
+      },
+      "jointP": 0.64,
+      "opp": "NYJ"
+    },
+    {
+      "player": "Rashee Rice",
+      "team": "KC",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.8
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.8
+      },
+      "jointP": 0.64,
+      "opp": "ATL"
+    },
+    {
+      "player": "Chris Olave",
+      "team": "NO",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 1.0
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "5+ rec & 60 yds",
+        "hit": 0.625
+      },
+      "jointP": 0.625,
+      "opp": "CAR"
+    },
+    {
+      "player": "Justin Jefferson",
+      "team": "MIN",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.857
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.714
+      },
+      "jointP": 0.612,
+      "opp": "GB"
+    },
+    {
+      "player": "Brock Bowers",
+      "team": "LV",
+      "legA": {
+        "category": "recyds",
+        "label": "5+ rec & 60 yds",
+        "hit": 0.857
+      },
+      "legB": {
+        "category": "anytd",
+        "label": "anytime TD",
+        "hit": 0.714
+      },
+      "jointP": 0.612,
+      "opp": "SEA"
+    },
+    {
+      "player": "Drake London",
+      "team": "ATL",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.778
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.778
+      },
+      "jointP": 0.605,
+      "opp": "KC"
+    },
+    {
+      "player": "Tre Tucker",
+      "team": "LV",
+      "legA": {
+        "category": "recs",
+        "label": "3+ receptions",
+        "hit": 0.778
+      },
+      "legB": {
+        "category": "recyds",
+        "label": "3+ rec & 40 yds",
+        "hit": 0.778
+      },
+      "jointP": 0.605,
+      "opp": "SEA"
+    }
+  ]
+}
