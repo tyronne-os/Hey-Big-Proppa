@@ -201,6 +201,31 @@ def api_rotowire_board(market: str = "rushyds", n: int = 25):
     return rotowire_api.market_leaderboard(market, n)
 
 
+@app.get("/api/moneyball/script")
+def api_moneyball_script():
+    """The Money Ball episode script (persona-tagged, from today's data)."""
+    import moneyball
+    return moneyball.generate_show()
+
+
+@app.get("/api/moneyball/transcript")
+def api_moneyball_transcript():
+    """Plain-text Money Ball transcript for the page."""
+    import moneyball
+    return {"transcript": moneyball.transcript()}
+
+
+@app.get("/api/moneyball/audio")
+def api_moneyball_audio():
+    """The Money Ball podcast audio (Kokoro TTS via NVIDIA free endpoint).
+
+    Generates the script, voices each persona line, and returns a single audio file.
+    Requires NVIDIA_API_KEY. Cached per day.
+    """
+    import moneyball_audio
+    return moneyball_audio.serve_audio()
+
+
 @app.get("/api/parlays/sunday")
 def api_parlays_sunday(limit: int = 40):
     """Sunday slate thesis parlays, built 100% from the Rotowire players + prop categories.

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import csv
 from collections import defaultdict
+from functools import lru_cache
 from pathlib import Path
 from statistics import mean
 
@@ -48,11 +49,13 @@ def _num(v) -> float:
         return 0.0
 
 
+@lru_cache(maxsize=1)
 def _load(name: str) -> list[dict]:
     with open(BASE / name) as f:
         return list(csv.DictReader(f))
 
 
+@lru_cache(maxsize=1)
 def _name_to_id() -> dict[str, str]:
     dim = data.player_dimension()
     out: dict[str, str] = {}
@@ -63,6 +66,7 @@ def _name_to_id() -> dict[str, str]:
     return out
 
 
+@lru_cache(maxsize=4096)
 def _player_games(market: str, player_id: str) -> list[dict]:
     """Return weekly {week, opponent, value} for a player+market from the lake."""
     if market in ML_MARKETS or market in NO_STAT:
@@ -97,6 +101,7 @@ def _player_opponent(player_id: str, market: str) -> str:
     return ""
 
 
+@lru_cache(maxsize=1)
 def _sportsbook_options() -> list[dict]:
     options = []
     with open(BASE / "prop_best_price.csv") as f:
