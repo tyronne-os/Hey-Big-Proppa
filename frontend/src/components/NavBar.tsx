@@ -6,6 +6,7 @@ const TOP_TABS = [
   { id: "parlay",  label: "PARLAY",  href: "/parlay" },
   { id: "myboo",   label: "MY BOO",  href: "/myboo" },
   { id: "betterverse", label: "BETTER-VERSE", href: "/betterverse" },
+  { id: "moneyball", label: "MONEY BALL", href: "/moneyball" },
 ] as const;
 
 type NavBarProps = { activeTab?: string };
@@ -30,7 +31,8 @@ export default function NavBar({ activeTab }: NavBarProps) {
     : p.startsWith("/h2h") ? "h2h"
     : p === "/parlay" || p === "/throwdown" || p === "/monday" || p === "/sunday-night" || p === "/parlays" ? "parlay"
     : p.startsWith("/myboo") ? "myboo"
-    : p.startsWith("/betterverse") ? "betterverse" : "");
+    : p.startsWith("/betterverse") ? "betterverse"
+    : p.startsWith("/moneyball") ? "moneyball" : "");
 
   return (
     <div style={{
