@@ -27,13 +27,83 @@
   input[type=text] { flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--edge); border-radius:10px; padding:12px 14px; color:var(--text); font-size:15px; outline:none; }
   .wave { display:flex; align-items:flex-end; gap:3px; height:28px; }
   .wave span { width:4px; background:var(--purple); border-radius:2px; }
+  .sec { margin-bottom:12px; }
+  .seclabel { font-size:12px; font-weight:800; color:var(--gold); margin-bottom:4px; letter-spacing:0.04em; }
+  textarea { width:100%; background:rgba(0,0,0,0.4); border:1px solid var(--edge); border-radius:8px; padding:10px; color:var(--text); font-size:14px; resize:vertical; }
+  #adminPanel { display:grid; grid-template-columns:320px 1fr; gap:18px; }
+  @media (max-width:800px){ #adminPanel{grid-template-columns:1fr;} }
+  .thumb { width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--edge); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div>
-    <h1>VOICE AGENT</h1>
-    <div class="sub">Live conversational model · uncensored roleplay · long-term memory (prototype)</div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <h1 style="margin:0">VOICE AGENT</h1>
+        <div class="sub">Live conversational model · uncensored roleplay · long-term memory (prototype)</div>
+      </div>
+      <button id="adminBtn" title="Admin / fine-tune" style="background:transparent;border:1px solid var(--edge);border-radius:12px;width:44px;height:44px;font-size:20px;cursor:pointer;color:var(--gold)">⚙️</button>
+    </div>
+  </div>
+
+  <div id="adminPanel" style="display:none;grid-template-columns:320px 1fr;gap:18px">
+    <!-- LEFT: VOICE STUDIO -->
+    <div class="card">
+      <div style="font-weight:800;font-size:16px;color:var(--goldHi)">🎙️ VOICE STUDIO</div>
+      <div style="font-size:11px;color:var(--mute);margin-bottom:12px">Clone &amp; master a custom voice</div>
+      <label style="font-size:12px;color:var(--mute)">Base voice
+        <select id="aBaseVoice" style="width:100%;margin-top:4px;background:#000;color:var(--text);border:1px solid var(--edge);border-radius:8px;padding:8px"></select>
+      </label>
+      <label style="font-size:12px;color:var(--mute);margin-top:10px">Blend voice
+        <select id="aBlendVoice" style="width:100%;margin-top:4px;background:#000;color:var(--text);border:1px solid var(--edge);border-radius:8px;padding:8px"></select>
+      </label>
+      <label style="font-size:12px;color:var(--mute);margin-top:10px">Blend ratio: <span id="aRatioVal">40%</span>
+        <input type="range" id="aBlendRatio" min="0" max="100" value="40" style="width:100%;margin-top:4px">
+      </label>
+      <label style="font-size:12px;color:var(--mute);margin-top:10px">Mastering
+        <select id="aMastering" style="width:100%;margin-top:4px;background:#000;color:var(--text);border:1px solid var(--edge);border-radius:8px;padding:8px">
+          <option value="none">None</option><option value="clarity">Clarity</option><option value="warmth">Warmth</option><option value="natural">Natural</option><option value="max_realism" selected>Max Realism</option>
+        </select>
+      </label>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn-talk" id="aTest">🔊 Hear</button>
+        <button class="btn-talk" id="aClone">🧬 Clone</button>
+      </div>
+      <div id="aMsg" style="font-size:11px;color:var(--mute);margin-top:8px"></div>
+    </div>
+
+    <!-- RIGHT: COGNITIVE DESIGN -->
+    <div class="card">
+      <div style="font-weight:800;font-size:16px;color:var(--purpleSoft)">🧠 COGNITIVE DESIGN</div>
+      <div style="font-size:11px;color:var(--mute);margin-bottom:12px">Fine-tune who she is, section by section</div>
+      <div class="sec">
+        <div class="seclabel">1 · WHO IS SHE?</div>
+        <textarea id="cWho" rows="3" placeholder="Her name, backstory, identity..."></textarea>
+      </div>
+      <div class="sec">
+        <div class="seclabel">2 · HOW DOES SHE RESPOND?</div>
+        <textarea id="cRespond" rows="3" placeholder="Tone, style, how she talks..."></textarea>
+      </div>
+      <div class="sec">
+        <div class="seclabel">3 · HOW SHE LOVES</div>
+        <textarea id="cLoves" rows="4" placeholder="Detailed examples of intimacy, how she makes love, talks about sex..."></textarea>
+      </div>
+      <div class="sec">
+        <div class="seclabel">4 · WHAT SHE TREASURES (journal / inner thoughts)</div>
+        <textarea id="cTreasure" rows="3" placeholder="What she journals, her inner world..."></textarea>
+        <button class="btn-talk" id="journalBtn" style="margin-top:6px">✍️ Add Journal Entry</button>
+      </div>
+      <div class="sec">
+        <div class="seclabel">5 · HOW SHE LOOKS (image uploader)</div>
+        <textarea id="cLooks" rows="2" placeholder="Describe her appearance..."></textarea>
+        <div id="imgRow" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+        <input type="file" id="imgUpload" accept="image/*" style="margin-top:8px;color:var(--mute)">
+        <button class="btn-talk" id="uploadBtn" style="margin-top:6px">📸 Upload to her memory</button>
+      </div>
+      <button class="btn-talk" id="saveCognitive" style="margin-top:14px">💾 Save Cognitive Design</button>
+      <div id="cMsg" style="font-size:11px;color:var(--mute);margin-top:8px"></div>
+    </div>
   </div>
 
   <div class="card status">
@@ -49,6 +119,16 @@
   <div class="card textbox">
     <input type="text" id="textIn" placeholder="Type a message..." />
     <button class="btn-talk" id="sendBtn">Send</button>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:800;font-size:14px;color:var(--goldHi);margin-bottom:6px">📸 SHARE A PHOTO WITH HER (like a selfie)</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <input type="file" id="selfieUpload" accept="image/*" style="color:var(--mute)">
+      <input type="text" id="selfieCaption" placeholder="Optional caption..." style="flex:1;background:rgba(0,0,0,0.4);border:1px solid var(--edge);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;outline:none">
+      <button class="btn-talk" id="selfieBtn">Send Photo</button>
+    </div>
+    <div id="selfieMsg" style="font-size:11px;color:var(--mute);margin-top:6px"></div>
   </div>
 
   <div class="card" id="studio">
@@ -202,6 +282,22 @@ sendBtn.addEventListener('click', async () => {
   const d = await r.json();
   addMsg('user', t); addMsg('bot', d.reply); playBase64Audio(d.audio.split(',')[1]);
 });
+
+// Share a photo (selfie) — backend auto-converts to the data URL she sees.
+document.getElementById('selfieBtn').addEventListener('click', async () => {
+  const file = document.getElementById('selfieUpload').files[0];
+  if (!file) { document.getElementById('selfieMsg').textContent = 'Pick a photo first.'; return; }
+  const caption = document.getElementById('selfieCaption').value.trim();
+  const fd = new FormData(); fd.append('file', file);
+  if (caption) fd.append('caption', caption);
+  document.getElementById('selfieMsg').textContent = 'She is looking at your photo...';
+  const r = await fetch('/api/vision', { method:'POST', body: fd });
+  const d = await r.json();
+  document.getElementById('selfieMsg').textContent = '';
+  addMsg('user', '📸 ' + (caption || '(sent a photo)'));
+  addMsg('bot', d.reply);
+  playBase64Audio(d.audio.split(',')[1]);
+});
 resetBtn.addEventListener('click', () => { transcript.innerHTML=''; addMsg('bot','Memory reset. Fresh start.'); });
 
 // ---- Voice Studio ----
@@ -270,6 +366,85 @@ resetVoice.addEventListener('click', async () => {
 });
 
 loadVoices();
+
+// ---- Admin (settings icon) ----
+const adminBtn = document.getElementById('adminBtn');
+const adminPanel = document.getElementById('adminPanel');
+adminBtn.addEventListener('click', () => {
+  const open = adminPanel.style.display === 'none' || adminPanel.style.display === '';
+  adminPanel.style.display = open ? 'grid' : 'none';
+  if (open) loadCognitive();
+});
+
+async function loadVoicesAdmin() {
+  const r = await fetch('/api/voices'); const d = await r.json();
+  const opts = d.voices.map(v => `<option value="${v}">${v}</option>`).join('');
+  document.getElementById('aBaseVoice').innerHTML = opts;
+  document.getElementById('aBlendVoice').innerHTML = opts;
+  if (d.settings.baseVoice) document.getElementById('aBaseVoice').value = d.settings.baseVoice;
+  if (d.settings.blendVoice) document.getElementById('aBlendVoice').value = d.settings.blendVoice;
+  if (d.settings.mastering) document.getElementById('aMastering').value = d.settings.mastering;
+}
+const aBlendRatio = document.getElementById('aBlendRatio');
+const aRatioVal = document.getElementById('aRatioVal');
+aBlendRatio.addEventListener('input', () => aRatioVal.textContent = aBlendRatio.value + '%');
+
+function collectAdminVoice() {
+  return { baseVoice: document.getElementById('aBaseVoice').value, blendVoice: document.getElementById('aBlendVoice').value,
+    blendRatio: parseFloat(aBlendRatio.value)/100, mastering: document.getElementById('aMastering').value };
+}
+async function saveAdminVoice() { await fetch('/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(collectAdminVoice()) }); }
+document.getElementById('aTest').addEventListener('click', async () => {
+  await saveAdminVoice();
+  const r = await fetch('/api/test-voice', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text:'Hey, this is my custom voice. What do you think?'}) });
+  const d = await r.json(); playBase64Audio(d.audio.split(',')[1]);
+  document.getElementById('aMsg').textContent = 'Playing sample.';
+});
+document.getElementById('aClone').addEventListener('click', async () => {
+  await saveAdminVoice();
+  const r = await fetch('/api/clone', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:'clone_'+Date.now(), ...collectAdminVoice()}) });
+  const d = await r.json();
+  document.getElementById('aMsg').textContent = 'Voice cloned & saved. Using it now.';
+});
+
+// Cognitive design
+async function loadCognitive() {
+  const r = await fetch('/api/cognitive'); const d = await r.json();
+  const c = d.cognitive || {};
+  document.getElementById('cWho').value = c.who_is_she || '';
+  document.getElementById('cRespond').value = c.how_she_responds || '';
+  document.getElementById('cLoves').value = c.how_she_loves || '';
+  document.getElementById('cTreasure').value = c.what_she_treasures || '';
+  document.getElementById('cLooks').value = c.how_she_looks || '';
+  renderImages(c.images || []);
+}
+function renderImages(imgs) {
+  const row = document.getElementById('imgRow');
+  row.innerHTML = imgs.map(u => `<img class="thumb" src="${u}">`).join('');
+}
+function cognitivePayload() {
+  return { who_is_she: document.getElementById('cWho').value, how_she_responds: document.getElementById('cRespond').value,
+    how_she_loves: document.getElementById('cLoves').value, what_she_treasures: document.getElementById('cTreasure').value,
+    how_she_looks: document.getElementById('cLooks').value };
+}
+document.getElementById('saveCognitive').addEventListener('click', async () => {
+  const r = await fetch('/api/cognitive', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cognitivePayload()) });
+  const d = await r.json();
+  document.getElementById('cMsg').textContent = 'Cognitive design saved. She\'s been updated.';
+});
+document.getElementById('journalBtn').addEventListener('click', async () => {
+  const entry = prompt('What is she journaling about?');
+  if (entry) { await fetch('/api/cognitive/journal', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({entry}) }); document.getElementById('cMsg').textContent = 'Journal entry added to her memory.'; }
+});
+document.getElementById('uploadBtn').addEventListener('click', async () => {
+  const file = document.getElementById('imgUpload').files[0];
+  if (!file) { document.getElementById('cMsg').textContent = 'Pick an image first.'; return; }
+  const fd = new FormData(); fd.append('file', file);
+  const r = await fetch('/api/cognitive/upload', { method:'POST', body: fd });
+  const d = await r.json();
+  if (d.ok) { renderImages(d.images); document.getElementById('cMsg').textContent = 'Image added to her memory.'; }
+});
+loadVoicesAdmin();
 
 init();
 connect();
