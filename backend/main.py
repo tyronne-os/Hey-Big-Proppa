@@ -160,6 +160,18 @@ def api_correlated_parlays(limit: int = 25):
     return correlated_parlay.top(min(max(limit, 1), 100))
 
 
+@app.get("/api/bet-logic")
+def api_bet_logic(category: str = "all"):
+    """BIG PROPPA betting logic — the three rules.
+
+    1. Always know the weak defenses (bottom-10% run/pass/yards/points).
+    2. The 15/10 rule: hunt TOP-15% offense vs BOTTOM-10% defense matchups.
+    3. Something to live for: only bet winning-record teams (playoff/division race).
+    """
+    import bet_logic
+    return bet_logic.bet_hunt(category)
+
+
 @app.get("/api/parlays/sunday")
 def api_parlays_sunday(limit: int = 40):
     """Sunday slate thesis parlays, built 100% from the Rotowire players + prop categories.

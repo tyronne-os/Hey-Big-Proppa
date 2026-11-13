@@ -866,6 +866,36 @@ Tonight's game (WSH@NYG): the weak-defense bump correctly adds +6 to **Giants** 
 
 ---
 
+## 8.6 Big Proppa Betting Logic — the three rules
+
+> **Built 2026-11-12.** The user's betting philosophy, converted to code. Module:
+> `backend/bet_logic.py`. Exposed at `GET /api/bet-logic`.
+
+**Rule 1 — "Always know the weak defenses."** Scan the day's matchups for the **BOTTOM 10%**
+in each defensive category: can't stop the run (rush yds allowed), can't stop the pass
+(pass yds allowed), gives up yards (total) and points. `bottom10_defenses()` returns the sets.
+
+**Rule 2 — "The 15/10 Rule."** Hunt matchups where a **TOP-15% offense** faces a **BOTTOM-10%
+defense**. That's where the profitable parlays live — the bottom-10% defense triggers the
+**+6 point bump**, inflating the joint probability. `bet_hunt()` surfaces these `fifteenTenMatchups`.
+
+**Rule 3 — "Something to live for."** Only bet on **winning-record teams** (playoff race,
+division race, undefeated, live storyline). Losers lose; we bet on teams with a bright future.
+`_living()` filters to teams with W > L.
+
+**Metrics (2026 season):**
+- Bottom-10% run D: CAR, DAL, NO · pass D: ATL, DET, JAX · pts: ARI, NO, WAS · total: CAR, DAL, DET
+- Top-15% offenses: rush {DAL,GB,HOU,NO} · pass {LAC,MIA,PHI,TEN} · pts {LAC,MIA,PHI,TEN} · total {CLE,DEN,PHI,TEN}
+- Something to live for (winning record): 17 teams.
+
+**Implementation notes:** Defense is computed from the **opponent's** offensive output in the
+same game (paired by `game_id`), so a team's defense = what its opponent gained. Offense is
+what the team itself gained. Rankings use the top-15%/bottom-10% quantiles. The 15/10 matchup
+detector currently uses the last-played opponent from `team_game_stats`; wire it to the live
+slate's opponent map (`sunday_slate._SUNDAY_OPP`) for the upcoming week's matchups.
+
+---
+
 ## 9. Commands to re-orient yourself, right now, if memory was lost
 
 Run these before trusting anything above as current:
