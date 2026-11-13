@@ -183,6 +183,24 @@ def api_day_picks():
     return day_picks.day_picks()
 
 
+@app.get("/api/rotowire")
+def api_rotowire(market: str | None = None, team: str | None = None):
+    """The RotoWire player-prop board, exposed as an API.
+
+    Returns every game/player/market with the line and over/under prices per book.
+    Optional filters: market (market slug) and team (team abbr).
+    """
+    import rotowire_api
+    return rotowire_api.board(market, team)
+
+
+@app.get("/api/rotowire/board")
+def api_rotowire_board(market: str = "rushyds", n: int = 25):
+    """Best-price leaderboard for one market (the RotoWire board table)."""
+    import rotowire_api
+    return rotowire_api.market_leaderboard(market, n)
+
+
 @app.get("/api/parlays/sunday")
 def api_parlays_sunday(limit: int = 40):
     """Sunday slate thesis parlays, built 100% from the Rotowire players + prop categories.
