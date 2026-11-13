@@ -141,6 +141,22 @@ def _living(team_stats: dict[str, dict]) -> set[str]:
     return out
 
 
+def _upcoming_opponents() -> dict[str, str]:
+    """team abbr -> opponent for the upcoming slate, from the live ESPN scoreboard."""
+    try:
+        import espn
+        opp: dict[str, str] = {}
+        for g in espn.get_scoreboard() or []:
+            if g.get("status") != "PRE":
+                continue
+            opp[g.get("away")] = g.get("home")
+            opp[g.get("home")] = g.get("away")
+        return opp
+    except Exception:
+        # fallback: last-played opponent
+        return {r.get("team"): r.get("opponent") for r in _load("team_game_stats.csv") if r.get("season") == "2026"}
+
+
 # ---------------------------------------------------------------------------
 # The bet hunt: 15/10 matchups, filtered by "something to live for".
 # ---------------------------------------------------------------------------
@@ -152,12 +168,8 @@ def bet_hunt(category: str = "all") -> dict:
 
     living = _living(ts)
     cats = ["rush", "pass", "pts", "tot"] if category == "all" else [category]
-    # Map each team -> its opponent from the game stats (the 2026 schedule).
-    opp = {}
-    for r in _load("team_game_stats.csv"):
-        if r.get("season") != "2026":
-            continue
-        opp[r.get("team")] = r.get("opponent")
+    # Map each team -> its opponent from the LIVE Sunday slate (upcoming matchups).
+    opp = _upcoming_opponents()
 
     # 15/10 matchups: offense of team A is TOP-15%, opponent B's defense is BOTTOM-10%.
     matchups = []

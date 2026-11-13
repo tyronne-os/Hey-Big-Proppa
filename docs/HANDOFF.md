@@ -891,8 +891,27 @@ division race, undefeated, live storyline). Losers lose; we bet on teams with a 
 **Implementation notes:** Defense is computed from the **opponent's** offensive output in the
 same game (paired by `game_id`), so a team's defense = what its opponent gained. Offense is
 what the team itself gained. Rankings use the top-15%/bottom-10% quantiles. The 15/10 matchup
-detector currently uses the last-played opponent from `team_game_stats`; wire it to the live
-slate's opponent map (`sunday_slate._SUNDAY_OPP`) for the upcoming week's matchups.
+detector uses the **live slate's opponent map** (`_upcoming_opponents()` → ESPN scoreboard),
+so it scans the upcoming week's matchups, not the last-played ones.
+
+### 8.6.1 Day Picks — 15/10 → Rotowire players (the money pipeline)
+
+> Module: `backend/day_picks.py` · `GET /api/day-picks`. **"That one link with solid logic
+> can make us rich."** The categories stay the same every day; the players change.
+
+Pipeline:
+1. `bet_logic` finds the day's **15/10 matchups** (top-15% offense vs bottom-10% defense).
+2. For each 15/10 matchup, pull the **offense's Rotowire players** who dominate that category.
+3. Rank by **season average** in the relevant prop (rush yds / pass yds / rec yds / recs),
+   requiring ≥4 games (filters small-sample flukes).
+4. Annotate the **anytime TD rate** and a **WHY** line (the weak defense they face + volume).
+
+**Example (2026-11-12 slate):**
+- RUSH: **NO vs CAR** (CAR bottom-10% rush D) → top RB **Kendre Miller** (26.5 rush yds/g, 33% TD)
+- PASS: **TEN vs JAX** (JAX bottom-10% pass D) → top QB **Cam Ward** (185.4 pass yds/g, 12% TD)
+
+Both offenses have losing records, so **Rule 3 rejects them** — but `day_picks()` still surfaces
+them (annotated) so the pipeline is visible and the weak-defense bump applies if bet anyway.
 
 ---
 

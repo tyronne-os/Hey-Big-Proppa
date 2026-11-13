@@ -172,6 +172,17 @@ def api_bet_logic(category: str = "all"):
     return bet_logic.bet_hunt(category)
 
 
+@app.get("/api/day-picks")
+def api_day_picks():
+    """Day picks: 15/10 matchups + the Rotowire players who dominate the prop category.
+
+    For each top-15% offense vs bottom-10% defense matchup, pulls the offense's Rotowire
+    players, ranks by season average in the relevant category, and explains why each is a pick.
+    """
+    import day_picks
+    return day_picks.day_picks()
+
+
 @app.get("/api/parlays/sunday")
 def api_parlays_sunday(limit: int = 40):
     """Sunday slate thesis parlays, built 100% from the Rotowire players + prop categories.
