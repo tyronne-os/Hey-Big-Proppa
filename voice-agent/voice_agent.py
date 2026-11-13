@@ -24,7 +24,7 @@ import httpx
 # ---------------------------------------------------------------------------
 _HF_BASE = "https://router.huggingface.co/v1"
 _HF_TOKEN = os.environ.get("HF_TOKEN", "")  # never hardcode a token — set in env
-_LLM_MODEL = os.environ.get("VOICE_LLM_MODEL", "Qwen/Qwen3.5-9B")
+_LLM_MODEL = os.environ.get("VOICE_LLM_MODEL", "google/gemma-4-26B-A4B-it")
 _LLM_KEY = os.environ.get("HF_TOKEN", "")
 
 # System prompt for the roleplay companion (uncensored conversational model).
@@ -113,10 +113,16 @@ def _tts(text: str) -> bytes:
     import io as _io
     import wave as _wave
     voice = _voice_vector()
-    samples, sr = _kokoro().create(text, voice=voice, speed=float(SETTINGS.get("speed", 1.0)))
-    if len(samples) == 0:
-        samples, sr = _kokoro().create("Hmm, let me say that again.", voice=voice, speed=1.0)
-    if len(samples) == 0:
+    samples, sr = None, None
+    for attempt in (text, "Hmm, let me say that again.", "Hey there."):
+        try:
+            s, r = _kokoro().create(attempt, voice=voice, speed=float(SETTINGS.get("speed", 1.0)))
+            if len(s) > 0:
+                samples, sr = s, r
+                break
+        except Exception:
+            continue
+    if samples is None:
         samples, sr = _kokoro().create("Hey there.", voice=voice, speed=1.0)
     buf = _io.BytesIO()
     with _wave.open(buf, "wb") as w:
