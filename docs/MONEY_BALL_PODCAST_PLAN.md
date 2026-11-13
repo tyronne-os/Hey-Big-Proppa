@@ -79,46 +79,33 @@ Each episode has fixed beats, each fed by a data call:
 
 ## 3. The Voice / TTS Engine (NotebookLM-style)
 
-**We use NVIDIA's free voice endpoint (Kokoro) — no ElevenLabs needed.** The project
-already talks to NVIDIA NIM (`intelligence.py` → `https://integrate.api.nvidia.com/v1`,
-`NVIDIA_API_KEY`). NVIDIA's catalog includes **free text-to-speech** models (e.g., the
-Kokoro family) served on the same `integrate.api.nvidia.com` endpoint. The user's own
-**Kokoro/NVIDIA free voice endpoint** supplies the "real voice" for both personas.
+**We run Kokoro-82M FULLY LOCAL — no inference API, no subscription.** We downloaded the
+ONNX model + voices from the official `thewh1teagle/kokoro-onnx` release and run it on CPU
+via onnxruntime. This is the open-source "real voice" for the podcast, $0 forever.
 
 ### The voices (two distinct personas)
-- **MY BOO** — warm, playful, high-energy host.
-- **BIG PROPPA** — confident, dry, data-first analyst.
-
-Pick two distinct voices from the NVIDIA TTS model's voice set so the cast is
-unmistakable in the audio.
+- **MY BOO** — `af_heart` (warm, playful, high-energy host)
+- **BIG PROPPA** — `am_michael` (confident, dry, data-first analyst)
 
 ### The pipeline (write → speak → stitch)
 ```
-script = generate_show()               # pure text, persona-tagged
+script = generate_show()               # persona-tagged text from the data
 audio = []
 for line in script:
-    voice = BOO_VOICE if line.speaker == "MY BOO" else BP_VOICE
-    audio.append(nvidia_tts(line.text, voice))   # Kokoro via integrate.api.nvidia.com
-stream = concat(audio)                 # add 200-400ms gaps between turns
-save/stream → GET /api/moneyball/audio
+    voice = af_heart if line.speaker == "MY BOO" else am_michael
+    audio.append(kokoro.create(line.text, voice=voice))   # LOCAL, CPU, ~3s/line
+stream = concat(audio)                 # one WAV
+save/stream → GET /api/moneyball/audio  (cached per day)
 ```
 
-`nvidia_tts()` mirrors the existing `_nvidia_generate()` call in `intelligence.py`:
-```
-POST https://integrate.api.nvidia.com/v1/audio/speech
-  headers: Authorization: Bearer NVIDIA_API_KEY
-  json: { model: <kokoro-model>, input: text, voice: <voice>, response_format: "mp3" }
-```
-
-### API key
-- **`NVIDIA_API_KEY`** (free tier) — already used by `intelligence.py`; reuse the same
-  key. If it's not in this shell's env, set it (or the Space secret) and the endpoint works.
-- **Cost:** free on the NVIDIA free tier — the reason we skip ElevenLabs entirely.
+### Files (downloaded, committed-friendly)
+- `kokoro-v1.0.onnx` (325MB) + `voices-v1.0.bin` (28MB) at the repo root.
+- `pip install kokoro-onnx` (onnxruntime, CPU).
 
 ### Why this is the right call
-- **Free** (NVIDIA free endpoint) vs. ElevenLabs' monthly fee.
-- **Reuses** the existing NVIDIA integration — one key, one base URL.
+- **$0 forever** — fully local, no subscription, no inference provider.
 - **Real neural voice** — Kokoro sounds genuinely human, NotebookLM-grade.
+- **Runs on CPU** — a 4-6 min episode voices in ~30-60s, cached per day.
 
 
 ---
