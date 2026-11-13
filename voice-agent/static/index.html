@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice Agent</title>
+<style>
+  :root { --bg:#0b0512; --card:#160c22; --edge:#3a2060; --gold:#d9b45a; --goldHi:#f1dc92; --purple:#8b5cf6; --mute:#9a8fb0; --text:#f1ecf8; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:system-ui,sans-serif; min-height:100vh; }
+  .wrap { max-width:760px; margin:0 auto; padding:30px 18px; display:flex; flex-direction:column; gap:18px; }
+  h1 { font-size:34px; font-weight:900; margin:0; background:linear-gradient(90deg,var(--goldHi),var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:var(--mute); font-size:13px; margin-top:2px; }
+  .card { background:var(--card); border:1px solid var(--edge); border-radius:18px; padding:20px; }
+  .status { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--mute); }
+  .dot { width:10px; height:10px; border-radius:50%; background:var(--mute); }
+  .dot.live { background:#22c55e; box-shadow:0 0 10px #22c55e; }
+  .controls { display:flex; gap:12px; flex-wrap:wrap; }
+  button { border:0; border-radius:999px; padding:12px 22px; font-weight:800; font-size:14px; cursor:pointer; }
+  .btn-talk { background:linear-gradient(135deg,var(--gold),#8a6224); color:#0b0512; }
+  .btn-reset { background:transparent; color:var(--mute); border:1px solid var(--edge); }
+  .transcript { background:rgba(0,0,0,0.4); border:1px solid var(--edge); border-radius:12px; padding:14px; max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; font-size:15px; }
+  .msg { padding:8px 12px; border-radius:10px; max-width:85%; line-height:1.45; }
+  .msg.user { align-self:flex-end; background:rgba(139,92,246,0.18); }
+  .msg.bot { align-self:flex-start; background:rgba(201,165,78,0.12); }
+  .textbox { display:flex; gap:10px; }
+  input[type=text] { flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--edge); border-radius:10px; padding:12px 14px; color:var(--text); font-size:15px; outline:none; }
+  .wave { display:flex; align-items:flex-end; gap:3px; height:28px; }
+  .wave span { width:4px; background:var(--purple); border-radius:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>VOICE AGENT</h1>
+    <div class="sub">Live conversational model · uncensored roleplay · long-term memory (prototype)</div>
+  </div>
+
+  <div class="card status">
+    <span class="dot" id="dot"></span><span id="statusText">Connecting to the voice agent...</span>
+  </div>
+
+  <div class="card controls">
+    <button class="btn-talk" id="talkBtn">🎙️ HOLD TO TALK</button>
+    <button class="btn-reset" id="resetBtn">Reset Memory</button>
+    <div class="wave" id="wave"></div>
+  </div>
+
+  <div class="card textbox">
+    <input type="text" id="textIn" placeholder="Type a message..." />
+    <button class="btn-talk" id="sendBtn">Send</button>
+  </div>
+
+  <div class="card" id="studio">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-weight:800;font-size:16px;color:var(--goldHi)">VOICE STUDIO</div>
+        <div style="font-size:11px;color:var(--mute)">Clone &amp; master a custom voice (max human realism)</div>
+      </div>
+      <button class="btn-talk" id="toggleStudio">Open</button>
+    </div>
+    <div id="studioBody" style="display:none;margin-top:14px;display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <label style="font-size:12px;color:var(--mute)">Base voice
+          <select id="baseVoice" style="width:100%;margin-top:4px;background:#000;color:var(--text);border:1px solid var(--edge);border-radius:8px;padding:8px"></select>
+        </label>
+        <label style="font-size:12px;color:var(--mute)">Blend voice (character)
+          <select id="blendVoice" style="width:100%;margin-top:4px;background:#000;color:var(--text);border:1px solid var(--edge);border-radius:8px;padding:8px"></select>
+        </label>
+      </div>
+      <div style="margin-top:12px">
+        <label style="font-size:12px;color:var(--mute)">Blend ratio: <span id="ratioVal">40%</span>
+          <input type="range" id="blendRatio" min="0" max="100" value="40" style="width:100%;margin-top:4px">
+        </label>
+      </div>
+      <div style="margin-top:12px">
+        <label style="font-size:12px;color:var(--mute)">Mastering / realism
+          <select id="mastering" style="width:100%;margin-top:4px;background:#000;color:var(--text);border:1px solid var(--edge);border-radius:8px;padding:8px">
+            <option value="none">None</option>
+            <option value="clarity">Clarity</option>
+            <option value="warmth">Warmth</option>
+            <option value="natural">Natural</option>
+            <option value="max_realism" selected>Max Realism</option>
+          </select>
+        </label>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-talk" id="testVoice">🔊 Hear Voice</button>
+        <button class="btn-talk" id="cloneBtn">🧬 Clone This Voice</button>
+        <button class="btn-reset" id="resetVoice">Reset</button>
+      </div>
+      <div id="studioMsg" style="font-size:12px;color:var(--mute);margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div class="card transcript" id="transcript"></div>
+</div>
+
+<script>
+const dot = document.getElementById('dot');
+const statusText = document.getElementById('statusText');
+const transcript = document.getElementById('transcript');
+const talkBtn = document.getElementById('talkBtn');
+const resetBtn = document.getElementById('resetBtn');
+const sendBtn = document.getElementById('sendBtn');
+const textIn = document.getElementById('textIn');
+const wave = document.getElementById('wave');
+
+let mediaRecorder = null, chunks = [], audioCtx = null;
+let ws = null;
+
+function addMsg(role, text) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.textContent = text;
+  transcript.appendChild(d);
+  transcript.scrollTop = transcript.scrollHeight;
+}
+
+function playBase64Audio(b64) {
+  const bytes = atob(b64);
+  const buf = new ArrayBuffer(bytes.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i < bytes.length; i++) view[i] = bytes.charCodeAt(i);
+  const blob = new Blob([buf], { type: 'audio/wav' });
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  audio.play();
+}
+
+// voice wave animation
+for (let i = 0; i < 12; i++) { const s = document.createElement('span'); s.style.height = (6 + Math.random()*20) + 'px'; wave.appendChild(s); }
+function animateWave(on) { [...wave.children].forEach(s => s.style.animation = on ? 'pulse 0.5s infinite alternate' : 'none'); }
+
+async function init() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      chunks = [];
+      const audioBuf = await blob.arrayBuffer();
+      const wav = await webmToWav(audioBuf);
+      sendAudio(wav);
+    };
+    statusText.textContent = 'Voice agent ready — hold to talk.';
+    dot.classList.add('live');
+  } catch (e) {
+    statusText.textContent = 'Mic not available — use text input.';
+  }
+}
+
+function webmToWav(arrayBuffer) {
+  // naive: send raw PCM from AudioContext
+  return new Promise((resolve) => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    ctx.decodeAudioData(arrayBuffer).then((audioBuffer) => {
+      const nch = 1, sr = audioBuffer.sampleRate;
+      const ch = audioBuffer.getChannelData(0);
+      const wav = new ArrayBuffer(44 + ch.length * 2);
+      const v = new DataView(wav);
+      const wstr = (o, s) => { for (let i=0;i<s.length;i++) v.setUint8(o+i, s.charCodeAt(i)); };
+      wstr(0,'RIFF'); v.setUint32(4, 36 + ch.length*2, true); wstr(8,'WAVE');
+      wstr(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,nch,true);
+      v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+      wstr(36,'data'); v.setUint32(40, ch.length*2, true);
+      for (let i=0;i<ch.length;i++) v.setInt16(44+i*2, ch[i]*32767, true);
+      resolve(new Blob([wav], {type:'audio/wav'}).arrayBuffer());
+    });
+  });
+}
+
+async function sendAudio(arrayBuffer) {
+  if (!ws || ws.readyState !== 1) { statusText.textContent = 'Not connected'; return; }
+  statusText.textContent = 'Listening...';
+  animateWave(true);
+  ws.send(arrayBuffer);
+}
+
+async function connect() {
+  ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/voice');
+  ws.onopen = () => { statusText.textContent = 'Voice agent ready — hold to talk.'; dot.classList.add('live'); };
+  ws.onmessage = (e) => {
+    const d = JSON.parse(e.data);
+    statusText.textContent = 'Voice agent speaking...';
+    addMsg('user', d.transcript);
+    addMsg('bot', d.reply);
+    playBase64Audio(d.audio);
+    animateWave(false);
+    statusText.textContent = 'Voice agent ready — hold to talk.';
+  };
+  ws.onclose = () => { statusText.textContent = 'Disconnected — reload.'; dot.classList.remove('live'); };
+}
+
+talkBtn.addEventListener('mousedown', () => { if (mediaRecorder) { chunks=[]; mediaRecorder.start(); statusText.textContent='Recording...'; } });
+talkBtn.addEventListener('mouseup', () => { if (mediaRecorder) mediaRecorder.stop(); });
+sendBtn.addEventListener('click', async () => {
+  const t = textIn.value.trim(); if (!t) return;
+  textIn.value='';
+  const r = await fetch('/api/talk', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text:t}) });
+  const d = await r.json();
+  addMsg('user', t); addMsg('bot', d.reply); playBase64Audio(d.audio.split(',')[1]);
+});
+resetBtn.addEventListener('click', () => { transcript.innerHTML=''; addMsg('bot','Memory reset. Fresh start.'); });
+
+// ---- Voice Studio ----
+const studioBody = document.getElementById('studioBody');
+const toggleStudio = document.getElementById('toggleStudio');
+const baseVoice = document.getElementById('baseVoice');
+const blendVoice = document.getElementById('blendVoice');
+const blendRatio = document.getElementById('blendRatio');
+const ratioVal = document.getElementById('ratioVal');
+const mastering = document.getElementById('mastering');
+const testVoice = document.getElementById('testVoice');
+const cloneBtn = document.getElementById('cloneBtn');
+const resetVoice = document.getElementById('resetVoice');
+const studioMsg = document.getElementById('studioMsg');
+
+toggleStudio.addEventListener('click', () => {
+  const open = studioBody.style.display === 'none';
+  studioBody.style.display = open ? 'block' : 'none';
+  toggleStudio.textContent = open ? 'Close' : 'Open';
+});
+
+async function loadVoices() {
+  try {
+    const r = await fetch('/api/voices');
+    const d = await r.json();
+    const opts = d.voices.map(v => `<option value="${v}">${v}</option>`).join('');
+    baseVoice.innerHTML = opts;
+    blendVoice.innerHTML = opts;
+    if (d.settings.baseVoice) baseVoice.value = d.settings.baseVoice;
+    if (d.settings.blendVoice) blendVoice.value = d.settings.blendVoice;
+  } catch(e) {}
+}
+blendRatio.addEventListener('input', () => ratioVal.textContent = blendRatio.value + '%');
+
+function collectSettings() {
+  return {
+    baseVoice: baseVoice.value, blendVoice: blendVoice.value,
+    blendRatio: parseFloat(blendRatio.value)/100, mastering: mastering.value
+  };
+}
+
+async function saveSettings() {
+  await fetch('/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(collectSettings()) });
+}
+
+testVoice.addEventListener('click', async () => {
+  await saveSettings();
+  const r = await fetch('/api/test-voice', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text:'Hey, this is my custom voice. What do you think?'}) });
+  const d = await r.json();
+  playBase64Audio(d.audio.split(',')[1]);
+  studioMsg.textContent = 'Playing sample with current settings.';
+});
+
+cloneBtn.addEventListener('click', async () => {
+  await saveSettings();
+  const name = 'clone_' + Date.now();
+  const r = await fetch('/api/clone', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, ...collectSettings()}) });
+  const d = await r.json();
+  studioMsg.textContent = 'Voice cloned & saved. Using it now.';
+});
+
+resetVoice.addEventListener('click', async () => {
+  await fetch('/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({baseVoice:'af_heart', blendVoice:'af_jessica', blendRatio:0.4, mastering:'max_realism', speed:1.0}) });
+  baseVoice.value='af_heart'; blendVoice.value='af_jessica'; blendRatio.value=40; ratioVal.textContent='40%'; mastering.value='max_realism';
+  studioMsg.textContent = 'Reset to default.';
+});
+
+loadVoices();
+
+init();
+connect();
+</script>
+</body>
+</html>
